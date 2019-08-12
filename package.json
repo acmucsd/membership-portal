@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index",
     "dev": "./node_modules/.bin/nodemon -L -e js -i node_modules -i .git -V index.js",
-    "lint": "./node_modules/.bin/eslint --fix ./app/ --ext .js",
+    "lint": "./node_modules/.bin/eslint ./ --ext .js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
