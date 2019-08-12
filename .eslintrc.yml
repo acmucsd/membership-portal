@@ -4,6 +4,7 @@ extends:
 env:
   browser: true
   node: true
+  jest: true
 rules:
   global-require: "off"
   max-classes-per-file: "warn"
