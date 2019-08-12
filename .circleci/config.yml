@@ -9,7 +9,7 @@ jobs:
       - restore_cache:
           key: package-cache-{{checksum "package.json"}}
       - run:
-          command: npm ci
+          command: npm install
       - save_cache:
           key: package-cache-{{checksum "package.json"}}
           paths:
@@ -24,7 +24,7 @@ jobs:
       - restore_cache:
           key: package-cache-{{checksum "package.json"}}
       - run:
-          command: npm ci
+          command: npm install
       - save_cache:
           key: package-cache-{{checksum "package.json"}}
           paths:
