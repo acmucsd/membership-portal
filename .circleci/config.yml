@@ -9,7 +9,7 @@ jobs:
       - restore_cache:
           key: package-cache-{{checksum "package.json"}}
       - run:
-          command: npm install
+          command: npm ci
       - save_cache:
           key: package-cache-{{checksum "package.json"}}
           paths:
@@ -21,6 +21,14 @@ jobs:
       - image: circleci/node:10.16.2
     steps:
       - checkout
+      - restore_cache:
+          key: package-cache-{{checksum "package.json"}}
+      - run:
+          command: npm ci
+      - save_cache:
+          key: package-cache-{{checksum "package.json"}}
+          paths:
+            - node_modules
       - run:
           command: npm run test
   deploy:
