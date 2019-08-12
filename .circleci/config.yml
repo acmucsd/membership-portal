@@ -16,9 +16,22 @@ jobs:
             - node_modules
       - run:
           command: npm run lint
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - checkout
+      - run:
+          command: git push -f https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
 
 workflows:
   version: 2
   test:
     jobs:
       - lint
+      - deploy:
+          requires:
+            - lint
+          filters:
+            branches:
+              only: master
