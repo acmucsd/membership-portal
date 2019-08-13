@@ -14,6 +14,9 @@ rules:
   no-unused-vars:
     - "error"
     - argsIgnorePattern: "next"
+  object-curly-newline:
+    - "error"
+    - consistent: true
 overrides:
   -
     files:
