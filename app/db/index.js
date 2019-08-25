@@ -11,14 +11,12 @@ Sequelize.useCLS(transactionNamespace);
 const db = new Sequelize(config.database.db, config.database.user, config.database.password, {
   dialect: config.database.dialect,
   host: config.database.host,
-  logging: config.isDevelopment ? logger.debug : false,
+  port: config.database.port,
+  logging: config.isDevelopment ? logger.debug.bind(logger) : false,
 });
 
 /**
- * Handles database errors (separate from the general error handler and the 404 error handler)
- *
- * Specifically, it intercepts validation errors and presents them to the user in a readable
- * manner. All other errors it lets fall through to the general error handler middleware.
+ * Wraps database errors (e.g. validation) as predefined HttpErrors.
  */
 const errorHandler = (err, req, res, next) => {
   if (!err || !(err instanceof Sequelize.Error)) return next(err);

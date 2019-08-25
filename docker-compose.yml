@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+
+  rds.acmucsd.local:
+    container_name: rds.acmucsd.local
+    image: postgres:11.5
+    restart: always
+    ports:
+      - '${RDS_PORT}:5432'
+    environment:
+      POSTGRES_DB: ${RDS_DATABASE}
+      POSTGRES_USER: ${RDS_USER}
+      POSTGRES_PASSWORD: ${RDS_PASSWORD}
+
