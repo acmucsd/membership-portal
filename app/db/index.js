@@ -8,11 +8,14 @@ const error = require('../error');
 const transactionNamespace = cls.createNamespace('portal-transaction-ns');
 Sequelize.useCLS(transactionNamespace);
 
+const dialectOptions = {};
+if (!config.isDevelopment) dialectOptions.ssl = true;
 const db = new Sequelize(config.database.db, config.database.user, config.database.password, {
   dialect: config.database.dialect,
   host: config.database.host,
   port: config.database.port,
   logging: config.isDevelopment ? logger.debug.bind(logger) : false,
+  dialectOptions,
 });
 
 const User = require('./models/user')(Sequelize, db);
