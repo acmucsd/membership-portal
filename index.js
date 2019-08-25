@@ -29,8 +29,8 @@ server.use(app.db.errorHandler);
 server.use(app.error.errorHandler);
 server.use(app.error.notFoundHandler);
 
-// initializes the database
-app.db.setup();
+// initializes the database and populates for non-production environments
+app.db.setup(app.config.isDevelopment, app.config.isDevelopment);
 
 // starts the server
 server.listen(app.config.port, () => {

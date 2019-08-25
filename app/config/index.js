@@ -11,6 +11,17 @@ module.exports = {
     level: 'info',
   },
 
+  admin: {
+    email: 'acm@ucsd.edu',
+    accessType: 'ADMIN',
+    state: 'ACTIVE',
+    firstName: 'ACM',
+    lastName: 'Admin',
+    hash: '$2b$10$vvmimV6gjhO0edbKAfbdB.Tkfp5roGcFUPEbedDJxsdVZahvkIVzW',
+    graduationYear: 2020,
+    major: 'Computer Science',
+  },
+
   database: {
     dialect: 'postgres',
     host: process.env.RDS_HOST,

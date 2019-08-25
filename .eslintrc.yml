@@ -6,20 +6,16 @@ env:
   node: true
   jest: true
 rules:
+  func-names: "off"
   global-require: "off"
   max-classes-per-file: "warn"
   max-len:
     - "error"
     - code: 120
+  no-param-reassign: "off"
   no-unused-vars:
     - "error"
     - argsIgnorePattern: "next"
   object-curly-newline:
     - "error"
     - consistent: true
-overrides:
-  -
-    files:
-      - "./app/error/index.js"
-    rules:
-      no-param-reassign: "off"
