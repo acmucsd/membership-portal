@@ -15,6 +15,13 @@ const db = new Sequelize(config.database.db, config.database.user, config.databa
   logging: config.isDevelopment ? logger.debug.bind(logger) : false,
 });
 
+const User = require('./models/user')(Sequelize, db);
+const Event = require('./models/event')(Sequelize, db);
+const Activity = require('./models/activity')(Sequelize, db);
+const Attendance = require('./models/attendance')(Sequelize, db);
+
+// TODO handle migrations
+
 /**
  * Wraps database errors (e.g. validation) as predefined HttpErrors.
  */
@@ -27,4 +34,4 @@ const errorHandler = (err, req, res, next) => {
   return next(new error.HttpError(err.name, 500, err.message));
 };
 
-module.exports = { db, errorHandler };
+module.exports = { db, User, Event, Activity, Attendance, errorHandler };
