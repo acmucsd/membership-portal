@@ -104,7 +104,6 @@ module.exports = (Sequelize, db) => {
       },
     },
 
-    // TODO write custom validator to check if value is within the next 6 years
     graduationYear: {
       type: Sequelize.INTEGER,
       allowNull: false,
@@ -112,6 +111,13 @@ module.exports = (Sequelize, db) => {
         isInt: true,
         notEmpty: {
           msg: 'Your graduation year is a required field',
+        },
+        isWithinSixYears(value) {
+          const graduationYear = parseInt(value, 10);
+          const currentYear = new Date().getFullYear();
+          if (graduationYear < currentYear || graduationYear > currentYear + 6) {
+            throw new Error('Your graduation year must be within the next 6 years');
+          }
         },
       },
     },
