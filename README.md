@@ -12,6 +12,15 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 6. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`.
 7. Start the Node app: `npm run dev`.
 
+sample dev `.env`:
+```
+RDS_HOST=localhost
+RDS_PORT=5432
+RDS_DATABASE=membership_portal
+RDS_USER=acmucsd_dev
+RDS_PASSWORD=password
+```
+
 #### Useful Commands
 + `docker-compose up -d` to configure and run any required services
 + `npm install` to install the necessary dependencies
