@@ -11,7 +11,6 @@ module.exports = (Sequelize, db) => {
       autoIncrement: true,
     },
 
-    // TODO replace with UCSD PID?
     uuid: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV4,
@@ -140,6 +139,8 @@ module.exports = (Sequelize, db) => {
       type: Sequelize.INTEGER,
       defaultValue: 0,
     },
+
+    // TODO add socials
 
     lastLogin: {
       type: Sequelize.DATE,
