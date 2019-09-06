@@ -33,5 +33,6 @@ RDS_PASSWORD=password
 + `npm run dev` to run the Node app with [Nodemon](https://nodemon.io/)
 + `npm run lint` to lint the Node app with [ESLint](https://eslint.org/) (without `--fix`)
 + `npm run test` to run the test suite with [Jest](https://jestjs.io/)
++ `docker exec -it rds.acmucsd.local psql -U [RDS_USER] -d [RDS_DATABASE]` to access Postgres (`RDS_XYZ` from `.env`).
 
 Take a look at [`package.json`](https://github.com/acmucsd/membership-portal/blob/master/package.json) for the actual commands.
