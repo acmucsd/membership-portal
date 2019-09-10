@@ -14,7 +14,7 @@ const logger = require('../logger');
  *
  * Supports HTTP status codes and a custom message.
  */
-class HTTPError extends Error {
+class HttpError extends Error {
   constructor(name, status, message) {
     if (message === undefined) {
       message = status;
@@ -30,49 +30,49 @@ class HTTPError extends Error {
   }
 }
 
-class UserError extends HTTPError {
+class UserError extends HttpError {
   constructor(message) {
     super(200, message || 'User Error');
   }
 }
 
-class BadRequest extends HTTPError {
+class BadRequest extends HttpError {
   constructor(message) {
     super(400, message || 'Bad Request');
   }
 }
 
-class Unauthorized extends HTTPError {
+class Unauthorized extends HttpError {
   constructor(message) {
     super(401, message || 'Unauthorized');
   }
 }
 
-class Forbidden extends HTTPError {
+class Forbidden extends HttpError {
   constructor(message) {
     super(403, message || 'Permission denied');
   }
 }
 
-class NotFound extends HTTPError {
+class NotFound extends HttpError {
   constructor(message) {
     super(404, message || 'Resource not found');
   }
 }
 
-class Unprocessable extends HTTPError {
+class Unprocessable extends HttpError {
   constructor(message) {
     super(422, message || 'Unprocessable request');
   }
 }
 
-class InternalServerError extends HTTPError {
+class InternalServerError extends HttpError {
   constructor(message) {
     super(500, message || 'Internal server error');
   }
 }
 
-class NotImplemented extends HTTPError {
+class NotImplemented extends HttpError {
   constructor(message) {
     super(501, message || 'Not Implemented');
   }
@@ -116,7 +116,7 @@ const notFoundHandler = (req, res, next) => {
 };
 
 module.exports = {
-  HTTPError,
+  HttpError,
   UserError,
   BadRequest,
   Unauthorized,

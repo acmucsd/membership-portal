@@ -4,6 +4,11 @@ jobs:
   lint:
     docker:
       - image: circleci/node:10.16.2
+        environment:
+          RDS_DB: membership_portal
+          RDS_USER: acmucsd_ci
+          RDS_PASSWORD: password
+      - image: circleci/postgres:11.5
     steps:
       - checkout
       - restore_cache:
