@@ -17,6 +17,7 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 2. Install build tools to compile [native Node modules](https://www.npmjs.com/package/windows-build-tools#examples-of-modules-supported): `npm add -g windows-build-tools`.
 3. Download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/) and run it.
 4. Add the Postgres bin to the PATH environment variable.
+5. Rerun `npm install` in a separate command prompt window.
 
 #### Sample `.env`
 ```
@@ -26,6 +27,7 @@ RDS_DATABASE=membership_portal
 RDS_USER=acmucsd_dev
 RDS_PASSWORD=password
 ```
+**Note**: For Windows users, `localhost` won't work&mdash;you'll need to set `RDS_HOST` to [the Docker Machine's IP address](https://docs.docker.com/machine/reference/ip/).
 
 #### Useful Commands
 + `docker-compose up -d` to configure and run any required services
