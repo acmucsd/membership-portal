@@ -30,4 +30,8 @@ module.exports = {
     user: process.env.RDS_USER,
     password: process.env.RDS_PASSWORD,
   },
+  email: {
+    apiKey: process.env.SENDGRID_API_KEY,
+    from: 'acmucsd@gmail.com',
+  },
 };
