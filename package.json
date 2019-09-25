@@ -7,8 +7,9 @@
     "start": "node index",
     "dev": "./node_modules/.bin/nodemon -L -e js -i node_modules -i .git -V index.js",
     "lint": "./node_modules/.bin/eslint ./ --ext .js",
-    "test": "./node_modules/.bin/jest --config jest.config.json",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "./node_modules/.bin/eslint ./ --ext .js --fix",
+    "test": "./node_modules/.bin/jest --config jest.config.json"
+    
   },
   "repository": {
     "type": "git",
