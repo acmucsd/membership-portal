@@ -1,6 +1,6 @@
 
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('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');
+sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 const msg = {
   to: 'acmucsdmailing@gmail.com',
   from: 'acmucsdmailing@gmail.com',
