@@ -25,6 +25,7 @@
     "continuation-local-storage": "^3.2.1",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
     "morgan": "^1.9.1",
     "pg": "^7.12.1",
     "pg-native": "^3.0.0",

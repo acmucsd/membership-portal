@@ -6,6 +6,7 @@ env:
   node: true
   jest: true
 rules:
+  consistent-return: off
   func-names: "off"
   global-require: "off"
   max-classes-per-file: "warn"
