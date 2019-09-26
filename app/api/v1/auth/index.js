@@ -17,7 +17,7 @@ const authenticated = (req, res, next) => {
   if (!authHeader) return next(new error.Unauthorized());
 
   const authHead = authHeader.split(' ');
-  const invalidAuthFormat = authHead.length !== 2 || authHead[0] !== 'Bearer' || authHead[1].length < 1;
+  const invalidAuthFormat = authHead.length !== 2 || authHead[0] !== 'Bearer' || authHead[1].length === 0;
   if (invalidAuthFormat) return next(new error.Unauthorized());
 
   const token = authHead[1];
@@ -36,8 +36,8 @@ const authenticated = (req, res, next) => {
  * Login route. POST body should be in the format of { email, password } and returns an auth token on success.
  */
 router.post('/login', (req, res, next) => {
-  if (!req.body.email || req.body.email.length < 1) return next(new error.BadRequest('Email must be provided'));
-  if (!req.body.password || req.body.password.length < 1) {
+  if (!req.body.email || req.body.email.length === 0) return next(new error.BadRequest('Email must be provided'));
+  if (!req.body.password || req.body.password.length === 0) {
     return next(new error.BadRequest('Password must be provided'));
   }
 
