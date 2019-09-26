@@ -16,7 +16,7 @@ rules:
   no-param-reassign: "off"
   no-unused-vars:
     - "error"
-    - argsIgnorePattern: "next"
+    - argsIgnorePattern: "next|transaction"
   object-curly-newline:
     - "error"
     - consistent: true

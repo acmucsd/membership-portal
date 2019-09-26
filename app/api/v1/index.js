@@ -4,6 +4,7 @@ const { authenticated } = require('./auth');
 const router = express.Router();
 
 // private API, requires authentication
+router.use('/attendance', authenticated, require('./attendance').router);
 router.use('/leaderboard', authenticated, require('./leaderboard').router);
 
 // public API
