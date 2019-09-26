@@ -5,4 +5,4 @@ sgMail.setApiKey(config.email.apiKey);
 
 const sendEmail = (to, subject, text, html) => sgMail.send({ to, from: config.email.from, subject, text, html });
 
-module.exports = sendEmail;
+module.exports = { sendEmail };

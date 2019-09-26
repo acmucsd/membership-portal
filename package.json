@@ -9,7 +9,6 @@
     "lint": "./node_modules/.bin/eslint ./ --ext .js",
     "lint:fix": "./node_modules/.bin/eslint ./ --ext .js --fix",
     "test": "./node_modules/.bin/jest --config jest.config.json"
-    
   },
   "repository": {
     "type": "git",
