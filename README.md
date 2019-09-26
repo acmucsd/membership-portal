@@ -6,18 +6,20 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 
 1. Clone the repository: `git clone https://github.com/acmucsd/membership-portal`.
 2. Navigate to the directory: `cd membership-portal`.
-3. Install the necessary dependencies: `npm install`. For Windows users, see specific build instructions below.
-4. Create a new `.env` file using `.env.example` as a template: `cp .env.example .env`.
-5. Fill out the `.env`. See below for an example file.
-6. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`.
-7. Start the Node app: `npm run dev`.
+3. Install PostgreSQL. See [installation instructions below](#installing-postgres).
+4. Install the necessary dependencies: `npm install`. For Windows users, see [specific build instructions below](#windows-build-instructions).
+5. Create a new `.env` file using `.env.example` as a template: `cp .env.example .env`.
+6. Fill out the `.env`. See the [example file below](#sample-env).
+7. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`.
+8. Start the Node app: `npm run dev`.
 
-#### For Windows
+#### Installing Postgres
+MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/), run the installer, and add the Postgres bin to the PATH environment variable.
+
+#### Windows Build Instructions
 1. Run the Windows Powershell as administrator.
-2. Install build tools to compile [native Node modules](https://www.npmjs.com/package/windows-build-tools#examples-of-modules-supported): `npm add -g windows-build-tools`.
-3. Download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/) and run it.
-4. Add the Postgres bin to the PATH environment variable.
-5. Rerun `npm install` in a separate command prompt window.
+2. Install build tools to compile [native Node modules](https://www.npmjs.com/package/windows-build-tools#examples-of-modules-supported): `npm install -g windows-build-tools`.
+3. Rerun `npm install` in a separate command prompt window.
 
 #### Sample `.env`
 ```
@@ -26,6 +28,8 @@ RDS_PORT=5432
 RDS_DATABASE=membership_portal
 RDS_USER=acmucsd_dev
 RDS_PASSWORD=password
+AUTH_SECRET=secret
+SENDGRID_API_KEY=
 ```
 **Note**: For Windows users, `localhost` won't work&mdash;you'll need to set `RDS_HOST` to [the Docker Machine's IP address](https://docs.docker.com/machine/reference/ip/).
 
