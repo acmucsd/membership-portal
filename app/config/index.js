@@ -22,6 +22,10 @@ module.exports = {
     major: 'Computer Science',
   },
 
+  auth: {
+    secret: process.env.AUTH_SECRET,
+  },
+
   database: {
     dialect: 'postgres',
     host: process.env.RDS_HOST,
