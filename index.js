@@ -8,6 +8,16 @@ const app = require('./app');
 const log = app.logger;
 const server = express();
 
+// enable CORS in development
+if (app.config.isDevelopment) {
+  server.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE');
+    next();
+  });
+}
+
 // assigns each request a uuid
 server.use((req, res, next) => {
   req.id = uuid.v4().split('-').pop();
