@@ -8,34 +8,34 @@ const router = express.Router();
  * Get all past events as an ordered list of public events, sorted by ascending start date/time. Supports
  * pagination using the 'offset' and 'limit' query parameters.
  */
-router.route('/past')
-  .get((req, res, next) => {
-    const offset = parseInt(req.query.offset, 10);
-    const limit = parseInt(req.query.limit, 10);
-    Event.getPastEvents(offset, limit).then((events) => {
-      res.json({ error: null, events: events.map((e) => e.getPublic()) });
-    }).catch(next);
-  });
+router.get('/past', (req, res, next) => {
+  const offset = parseInt(req.query.offset, 10);
+  const limit = parseInt(req.query.limit, 10);
+  Event.getPastEvents(offset, limit).then((events) => {
+    res.json({ error: null, events: events.map((e) => e.getPublic()) });
+  }).catch(next);
+});
 
 /**
  * Get all future events as an ordered list of public events, sorted by ascending start date/time. Supports
  * pagination using the 'offset' and 'limit' query parameters.
  */
-router.route('/future')
-  .get((req, res, next) => {
-    const offset = parseInt(req.query.offset, 10);
-    const limit = parseInt(req.query.limit, 10);
-    Event.getFutureEvents(offset, limit).then((events) => {
-      res.json({ error: null, events: events.map((e) => e.getPublic()) });
-    }).catch(next);
-  });
+router.get('/future', (req, res, next) => {
+  const offset = parseInt(req.query.offset, 10);
+  const limit = parseInt(req.query.limit, 10);
+  Event.getFutureEvents(offset, limit).then((events) => {
+    res.json({ error: null, events: events.map((e) => e.getPublic()) });
+  }).catch(next);
+});
 
-/**
- * Get all events, all events by committee, or a single event, depending on if a UUID is specified
- * as a route parameter and if a committee name is provided in the 'committee' query parameter. Supports
- * pagination using the 'offset' and 'limit' query parameters.
- */
 router.route('/:uuid?')
+
+  /**
+   * Get all events, all events by committee, or a single event. If an event UUID is provided in the URI,
+   * returns the matching event or null if no such event was found. Otherwise if no event UUID is provided
+   * in the URI, returns all events. If the 'committee' field is provided as a query parameter, returns all
+   * events hosted by that committee. Supports pagination using the 'offset' and 'limit' query parameters.
+   */
   .get((req, res, next) => {
     // if UUID is provided, return matching event
     if (req.params.uuid && req.params.uuid.trim()) {
@@ -73,8 +73,8 @@ router.route('/:uuid?')
     if (req.params.uuid) return next(new error.BadRequest('UUID must not be provided'));
     if (!req.body.event) return next(new error.BadRequest('Event must be provided'));
 
-    const datesProvided = req.body.event.startDate && req.body.event.endDate;
-    if (datesProvided && new Date(req.body.event.startDate) > new Date(req.body.event.endDate)) {
+    const datesProvided = req.body.event.start && req.body.event.end;
+    if (datesProvided && new Date(req.body.event.start) > new Date(req.body.event.end)) {
       return next(new error.BadRequest('Start date must be before end date'));
     }
 
@@ -84,8 +84,10 @@ router.route('/:uuid?')
   })
 
   /**
-   * Updates an event, given an event UUID as a query parameter and a partial event object. UUID must be
-   * provided as a route parameter and the request body should contain an 'event' object with updated fields.
+   * Updates an event, given an event UUID in the URI and a partial 'event' object with updated fields
+   * in the request body, and returns the updated event. Fields that may be updated: title, description,
+   * start, end, attendanceCode, pointValue, committee, thumbnail, cover, location, and eventLink. All other
+   * fields will be ignored.
    */
   .patch((req, res, next) => {
     if (!req.params.uuid || !req.params.uuid.trim() || !req.body.event) {
@@ -106,8 +108,8 @@ router.route('/:uuid?')
   })
 
   /**
-   * Deletes an event, given an event UUID, and returns the number of events deleted (1 if successful,
-   * 0 if no such event found).
+   * Deletes an event, given an event UUID in the URI, and returns the number of events deleted (1 if
+   * successful, 0 if no such event found).
    */
   .delete((req, res, next) => {
     if (!req.params.uuid) return next(new error.BadRequest('UUID must be provided'));

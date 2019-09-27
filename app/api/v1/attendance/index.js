@@ -5,31 +5,31 @@ const { Event, Activity, Attendance, db } = require('../../../db');
 
 const router = express.Router();
 
-/**
- * Gets the attendance for a single event or for the user as a list of public attendance records.
- */
 router.route('/:uuid?')
+
+  /**
+   * Gets the attendance for a single event or for the user as a list of public attendance records. If
+   * an event UUID is provided in the URI, returns all attendance records for that event, i.e. all users
+   * that attended. Otherwise, returns all attendance records for the current user, i.e. all events the
+   * current user attended.
+   */
   .get((req, res, next) => {
-    // maps each Attendance object to its public version
     const callback = (attendance) => res.json({ error: null, attendance: attendance.map((a) => a.getPublic()) });
     if (req.params.uuid) {
-      // if an event UUID is provided, returns all attendance records for that event, i.e. all users that attended
       Attendance.getAttendanceForEvent(req.params.uuid).then(callback).catch(next);
     } else {
-      // otherwise, returns all attendance records for the user, i.e. all events this user attended
       Attendance.getAttendanceForUser(req.user.uuid).then(callback).catch(next);
     }
-  });
+  })
 
-/**
- * Records that the user attended an event and returns the public version of the event.
- */
-router.route('/attend')
+  /**
+   * Records that the user attended an event and returns the public version of the event.
+   */
   .post((req, res, next) => {
-    if (!req.body.event.attendanceCode) return next(new error.BadRequest('Attendance code must be provided'));
+    if (!req.body.attendanceCode) return next(new error.BadRequest('Attendance code must be provided'));
 
     const now = new Date();
-    Event.findByAttendanceCode(req.body.event.attendanceCode).then((event) => {
+    Event.findByAttendanceCode(req.body.attendanceCode).then((event) => {
       if (!event) throw new error.UserError("Oh no! That code didn't work.");
       if (now < event.startDate || now > event.endDate) {
         throw new error.UserError('You can only enter the attendance code during the event!');

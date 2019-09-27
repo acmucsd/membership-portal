@@ -4,17 +4,20 @@ const { User, Activity } = require('../../../db');
 
 const router = express.Router();
 
-/**
- * Gets user profile for current user.
- */
 router.route('/')
+
+  /**
+   * Gets user profile for current user.
+   */
   .get((req, res, next) => {
     res.json({ error: null, user: req.user.getUserProfile() });
   })
 
   /**
-   * Updates user information, given a user object with fields to update and updated information, and
-   * returns the updated pubic version of the user.
+   * Updates user information, given a partial 'user' object in the request body, and returns
+   * the user's updated public profile. Fields that may be updated: firstName, lastName, major,
+   * graduationYear. To update the password, the 'user' object must include matching 'newPassword'
+   * and 'confirmPassword' fields.
    */
   .patch((req, res, next) => {
     if (!req.body.user) return next(new error.BadRequest('User object must be provided'));
@@ -37,8 +40,8 @@ router.route('/')
     }
 
     // case: user wants to change password (has provided and confirmed new password)
-    if (req.body.user.newPassword && req.body.user.confPassword) {
-      if (req.body.user.newPassword !== req.body.user.confPassword) {
+    if (req.body.user.newPassword && req.body.user.confirmPassword) {
+      if (req.body.user.newPassword !== req.body.user.confirmPassword) {
         return next(new error.UserError('Passwords do not match'));
       }
       if (req.body.user.newPassword.length < 10) {
@@ -59,7 +62,7 @@ router.route('/')
         .catch(next);
 
     // case: user provided either new password or confirm password, but not both
-    } else if (!!req.body.user.newPassword ^ !!req.body.user.confPassword) {
+    } else if (!!req.body.user.newPassword ^ !!req.body.user.confirmPassword) {
       return next(new error.UserError('Passwords do not match'));
 
     // case: user does not want to change password
@@ -73,7 +76,7 @@ router.route('/')
   });
 
 /**
- * Gets the user's public activity (account creation, events attendances, etc).
+ * Gets the current user's public activity (account creation, events attendances, etc).
  */
 router.get('/activity', (req, res, next) => {
   Activity.getPublicStream(req.user.uuid).then((activity) => {
@@ -81,10 +84,11 @@ router.get('/activity', (req, res, next) => {
   }).catch(next);
 });
 
-/**
- * All requests on this route require admin access.
- */
 router.route('/milestone')
+
+  /**
+   * All requests on this route require admin access.
+   */
   .all((req, res, next) => {
     if (!req.user.isAdmin()) return next(new error.Forbidden());
     return next();
