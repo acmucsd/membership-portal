@@ -237,7 +237,7 @@ module.exports = (Sequelize, db) => {
     return event;
   };
 
-  Event.prototype.getPublic = function (admin) {
+  Event.prototype.getPublic = function (isAdmin) {
     return {
       uuid: this.getDataValue('uuid'),
       organization: this.getDataValue('organization'),
@@ -249,7 +249,7 @@ module.exports = (Sequelize, db) => {
       eventLink: this.getDataValue('eventLink'),
       start: this.getDataValue('start'),
       end: this.getDataValue('end'),
-      attendanceCode: admin ? this.getDataValue('attendanceCode') : undefined,
+      attendanceCode: isAdmin ? this.getDataValue('attendanceCode') : undefined,
       pointValue: this.getDataValue('pointValue'),
     };
   };

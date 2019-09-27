@@ -24,7 +24,6 @@ const authenticated = (req, res, next) => {
   jwt.verify(token, config.auth.secret, (err, decoded) => {
     if (err) return next(new error.Unauthorized());
 
-    // if the user provided a valid token, use it to deserialize the UUID to an actual user object
     User.findByUUID(decoded.uuid).then((user) => {
       if (!user) throw new error.Unauthorized();
       req.user = user;
@@ -33,7 +32,8 @@ const authenticated = (req, res, next) => {
 };
 
 /**
- * Login route. POST body should be in the format of { email, password } and returns an auth token on success.
+ * Authenticates a user, given 'email' and 'password' fields in the request body, and returns an
+ * auth token on success.
  */
 router.post('/login', (req, res, next) => {
   if (!req.body.email || req.body.email.length === 0) return next(new error.BadRequest('Email must be provided'));
@@ -41,17 +41,17 @@ router.post('/login', (req, res, next) => {
     return next(new error.BadRequest('Password must be provided'));
   }
 
-  let userInfo = null;
+  let userUuid = null;
   return User.findByEmail(req.body.email.toLowerCase()).then((user) => {
-    if (!user) throw new error.UserError('Invalid email or password');
+    if (!user) throw new error.UserError('There is no account associated with that email');
     if (user.isPending()) {
       throw new error.Unauthorized('Please activate your account. Check your email for an activation email');
     }
     if (user.isBlocked()) throw new error.Forbidden('Your account has been blocked');
 
     return user.verifyPassword(req.body.password).then((verified) => {
-      if (!verified) throw new error.UserError('Invalid email or password');
-      userInfo = user;
+      if (!verified) throw new error.UserError('Incorrect password');
+      userUuid = user.uuid;
     }).then(() => new Promise((resolve, reject) => {
       jwt.sign({
         uuid: user.getDataValue('uuid'),
@@ -60,13 +60,15 @@ router.post('/login', (req, res, next) => {
     }));
   }).then((token) => {
     res.json({ error: null, token });
-    Activity.accountLoggedIn(userInfo.uuid);
+    Activity.accountLoggedIn(userUuid);
   }).catch(next);
 });
 
 /**
- * Registration route. POST body accepts a user object (see DB schema for user, sanitize function). Returns the
- * created user on success.
+ * Registers new users, given a 'user' object in the request body, and returns the public
+ * profile of the created user on success. Required 'user' fields: email, firstName, lastName,
+ * password, graduationYear, major. Optional 'user' fields: profilePicture (not currently supported).
+ * All other fields will be ignored.
  */
 router.post('/register', (req, res, next) => {
   if (!req.body.user) return next(new error.BadRequest('User must be provided'));
@@ -76,11 +78,11 @@ router.post('/register', (req, res, next) => {
   }
 
   // TODO account activation via email
-  const userModel = User.sanitize(req.body.user);
-  userModel.state = 'ACTIVE';
+  const newUser = User.sanitize(req.body.user);
+  newUser.state = 'ACTIVE';
   User.generateHash(req.body.user.password).then((hash) => {
-    userModel.hash = hash;
-    return User.create(userModel);
+    newUser.hash = hash;
+    return User.create(newUser);
   }).then((user) => {
     res.json({ error: null, user: user.getPublicProfile() });
     Activity.accountCreated(user.uuid);

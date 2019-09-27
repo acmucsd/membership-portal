@@ -32,7 +32,7 @@ module.exports = (Sequelize, db) => {
       },
     },
 
-    // TODO set default value
+    // TODO implement picture upload and set default value
     profilePicture: {
       type: Sequelize.STRING,
       validate: {
