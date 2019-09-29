@@ -18,6 +18,15 @@ if (app.config.isDevelopment) {
     if (req.method.toLowerCase() === 'options') res.status(200).end();
     else next();
   });
+} else {
+  server.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'https://acmucsd.com');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE, OPTIONS');
+
+    if (req.method.toLowerCase() === 'options') res.status(200).end();
+    else next();
+  });
 }
 
 // assigns each request a uuid
