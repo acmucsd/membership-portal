@@ -49,9 +49,9 @@ router.route('/:uuid?')
           // mark the event as attended by the user
           Attendance.attendEvent(req.user.uuid, event.uuid),
           // add an entry for this attendance in the user's activity
-          Activity.attendedEvent(req.user.uuid, event.title, event.attendancePoints),
+          Activity.attendedEvent(req.user.uuid, event.title, event.pointValue),
           // add the points for the event to the user's point total
-          req.user.addPoints(event.attendancePoints),
+          req.user.addPoints(event.pointValue),
         ]);
       })).then(() => {
         res.json({ error: null, event: event.getPublic() });
