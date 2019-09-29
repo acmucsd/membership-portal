@@ -8,17 +8,15 @@ const app = require('./app');
 const log = app.logger;
 const server = express();
 
-// enable CORS in development
-if (app.config.isDevelopment) {
-  server.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE, OPTIONS');
+// enable CORS
+server.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', app.config.isDevelopment ? '*' : 'https://acmucsd.com');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE, OPTIONS');
 
-    if (req.method.toLowerCase() === 'options') res.status(200).end();
-    else next();
-  });
-}
+  if (req.method.toLowerCase() === 'options') res.status(200).end();
+  else next();
+});
 
 // assigns each request a uuid
 server.use((req, res, next) => {
