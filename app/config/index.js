@@ -36,7 +36,7 @@ module.exports = {
   },
 
   email: {
+    user: process.env.SENDGRID_USER,
     apiKey: process.env.SENDGRID_API_KEY,
-    from: 'acmucsd.portal@gmail.com',
   },
 };

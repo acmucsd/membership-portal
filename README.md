@@ -28,7 +28,10 @@ RDS_PORT=5432
 RDS_DATABASE=membership_portal
 RDS_USER=acmucsd_dev
 RDS_PASSWORD=password
+
 AUTH_SECRET=secret
+
+SENDGRID_USER=
 SENDGRID_API_KEY=
 ```
 **Note**: For Windows users, `localhost` won't work&mdash;you'll need to set `RDS_HOST` to [the Docker Machine's IP address](https://docs.docker.com/machine/reference/ip/).
