@@ -94,8 +94,8 @@ router.route('/:uuid?')
       return next(new error.BadRequest('UUID and partial event object must be provided'));
     }
 
-    const datesProvided = req.body.event.startDate && req.body.event.endDate;
-    if (datesProvided && new Date(req.body.event.startDate) > new Date(req.body.event.endDate)) {
+    const datesProvided = req.body.event.start && req.body.event.end;
+    if (datesProvided && new Date(req.body.event.start) > new Date(req.body.event.end)) {
       return next(new error.BadRequest('Start date must be before end date'));
     }
 
