@@ -23,7 +23,8 @@ router.route('/:uuid?')
   })
 
   /**
-   * Records that the user attended an event and returns the public version of the event.
+   * Records that the user attended an event and returns the public version of the event, given
+   * `attendanceCode` in the request body.
    */
   .post((req, res, next) => {
     if (!req.body.attendanceCode) return next(new error.BadRequest('Attendance code must be provided'));
@@ -31,7 +32,7 @@ router.route('/:uuid?')
     const now = new Date();
     Event.findByAttendanceCode(req.body.attendanceCode).then((event) => {
       if (!event) throw new error.UserError("Oh no! That code didn't work.");
-      if (now < event.startDate || now > event.endDate) {
+      if (now < new Date(event.start) || now > new Date(event.end)) {
         throw new error.UserError('You can only enter the attendance code during the event!');
       }
 
