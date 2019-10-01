@@ -1,4 +1,3 @@
-const bodyParser = require('body-parser');
 const express = require('express');
 const morgan = require('morgan');
 const uuid = require('uuid');
@@ -28,8 +27,8 @@ server.use((req, res, next) => {
 server.use(morgan(':date[web] [IP :req[X-Forwarded-For]] :method :url :status :response-time[3]ms'));
 
 // parses urlencoded and JSON request data
-server.use(bodyParser.urlencoded({ extended: true }));
-server.use(bodyParser.json());
+server.use(express.urlencoded({ extended: true }));
+server.use(express.json());
 
 // routes the API
 server.use('/api/', app.api.router);
