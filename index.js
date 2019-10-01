@@ -27,7 +27,7 @@ server.use((req, res, next) => {
 // enables logging
 server.use(morgan(':date[web] [IP :req[X-Forwarded-For]] :method :url :status :response-time[3]ms'));
 
-// parses urlencoded and JSON POST data
+// parses urlencoded and JSON request data
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 
