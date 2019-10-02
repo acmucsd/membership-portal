@@ -112,8 +112,7 @@ router.get('/resetPassword/:email', (req, res, next) => {
 
 /**
  * Resets a user's password, given the emailed access code in the URI and a 'user' object
- * with 'newPassword' and 'confirmPassword
- *' fields in the request body.
+ * with 'newPassword' and 'confirmPassword' fields in the request body.
  */
 router.post('/resetPassword/:accessCode', (req, res, next) => {
   if (!req.params.accessCode) return next(new error.BadRequest('Access code must be provided'));
