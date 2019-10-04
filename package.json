@@ -25,6 +25,7 @@
     "bcrypt": "^3.0.6",
     "continuation-local-storage": "^3.2.1",
     "dotenv": "^8.1.0",
+    "ejs": "^2.7.1",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.9.1",

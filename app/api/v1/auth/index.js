@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const email = require('../../../email');
 const config = require('../../../config');
 const error = require('../../../error');
 const { User, Activity } = require('../../../db');
@@ -74,7 +75,7 @@ router.post('/register', (req, res, next) => {
   if (!req.body.user) return next(new error.BadRequest('User must be provided'));
   if (!req.body.user.password) return next(new error.BadRequest('Password must be provided'));
   if (req.body.user.password.length < 10) {
-    return next(new error.BadRequest('Password should be at least 10 characters long'));
+    return next(new error.BadRequest('Password must be at least 10 characters long'));
   }
 
   // TODO account activation via email
@@ -86,6 +87,56 @@ router.post('/register', (req, res, next) => {
   }).then((user) => {
     res.json({ error: null, user: user.getPublicProfile() });
     Activity.accountCreated(user.uuid);
+  }).catch(next);
+});
+
+/**
+ * Emails the user a reset password link, given an email in the URI.
+ */
+router.get('/resetPassword/:email', (req, res, next) => {
+  User.findByEmail(req.params.email).then((user) => {
+    if (!user) throw new error.NotFound('Invalid user');
+    if (user.isBlocked()) throw new error.Forbidden('Your account has been blocked');
+    if (user.isPending()) throw new error.Unprocessable('You must activate your account first');
+
+    return User.generateAccessCode().then((code) => {
+      user.accessCode = code;
+      user.state = 'PASSWORD_RESET';
+      return email.sendPasswordReset(user.email, user.firstName, code);
+    }).then(() => user.save());
+  }).then((user) => {
+    res.json({ error: null });
+    Activity.accountRequestedResetPassword(user.uuid);
+  }).catch(next);
+});
+
+/**
+ * Resets a user's password, given the emailed access code in the URI and a 'user' object
+ * with 'newPassword' and 'confirmPassword' fields in the request body.
+ */
+router.post('/resetPassword/:accessCode', (req, res, next) => {
+  if (!req.params.accessCode) return next(new error.BadRequest('Access code must be provided'));
+  if (!req.body.user || !req.body.user.newPassword || !req.body.user.confirmPassword) {
+    return next(new error.BadRequest('User object with new and confirmed passwords must be provided'));
+  }
+  if (req.body.user.newPassword !== req.body.user.confirmPassword) {
+    return next(new error.UserError('Passwords do not match'));
+  }
+  if (req.body.user.newPassword.length < 10) {
+    return next(new error.UserError('Password must be at least 10 characters'));
+  }
+
+  User.findByAccessCode(req.params.accessCode).then((user) => {
+    // if no such user was found, the access code must be invalid/non-existent
+    if (!user || !user.requestedPasswordReset()) throw new error.BadRequest('Invalid access code');
+    return User.generateHash(req.body.user.newPassword).then((hash) => {
+      user.hash = hash;
+      user.state = 'ACTIVE';
+      return user.save();
+    });
+  }).then((user) => {
+    res.json({ error: null });
+    Activity.accountResetPassword(user.uuid);
   }).catch(next);
 });
 
