@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const { pick } = require('underscore');
 
 const SALT_ROUNDS = 10;
