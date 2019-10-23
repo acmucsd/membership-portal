@@ -26,6 +26,8 @@ module.exports = {
     secret: process.env.AUTH_SECRET,
   },
 
+  client: process.env.CLIENT,
+
   database: {
     dialect: 'postgres',
     host: process.env.RDS_HOST,

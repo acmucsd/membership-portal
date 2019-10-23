@@ -3,6 +3,7 @@ const ejs = require('ejs');
 const fs = require('fs');
 const path = require('path');
 const config = require('../config');
+const log = require('../logger');
 
 sgMail.setApiKey(config.email.apiKey);
 
@@ -15,13 +16,15 @@ const sendPasswordReset = (email, firstName, code) => {
   const data = {
     to: email,
     from: config.email.user,
-    subject: 'ACM UCSD Membership Portal Password Rest',
+    subject: 'ACM UCSD Membership Portal Password Reset',
     html: ejs.render(passwordResetTemplate, {
       firstName,
-      link: `https://acmucsd.com/resetPassword/${code}`,
+      link: `${config.client.domain}/resetPassword/${code}`,
     }),
   };
-  sendEmail(data);
+  sendEmail(data).catch((error) => {
+    log.warn(`Failed to send password reset email to ${config.email.user}: ${error}`);
+  });
 };
 
 module.exports = { sendPasswordReset };

@@ -33,6 +33,8 @@ AUTH_SECRET=secret
 
 SENDGRID_USER=
 SENDGRID_API_KEY=
+
+CLIENT=localhost:8000
 ```
 **Note**: For Windows users, `localhost` won't work&mdash;you'll need to set `RDS_HOST` to [the Docker Machine's IP address](https://docs.docker.com/machine/reference/ip/).
 
