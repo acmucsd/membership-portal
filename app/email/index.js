@@ -19,7 +19,7 @@ const sendPasswordReset = (email, firstName, code) => {
     subject: 'ACM UCSD Membership Portal Password Reset',
     html: ejs.render(passwordResetTemplate, {
       firstName,
-      link: `${config.client.domain}/resetPassword/${code}`,
+      link: `${config.client}/resetPassword/${code}`,
     }),
   };
   sendEmail(data).catch((error) => {
