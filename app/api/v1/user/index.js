@@ -1,6 +1,7 @@
+const Sequelize = require('sequelize');
 const express = require('express');
 const error = require('../../../error');
-const { User, Activity } = require('../../../db');
+const { User, Activity, db } = require('../../../db');
 const log = require('../../../logger');
 
 const router = express.Router();
@@ -133,18 +134,26 @@ router.route('/bonus')
     if (!req.body.bonus.users || !Array.isArray(req.body.bonus.users)) {
       return next(new error.BadRequest('Bonus object with users array must be provided'));
     }
+    if (!req.body.bonus.points || req.body.bonus.points < 0) {
+      return next(new error.BadRequest('Bonus object with non-negative point value must be provided'));
+    }
 
-    const { users, description, points } = req.body.bonus;
+    const { users: emails, description, points } = req.body.bonus;
 
-    // TODO all or nothing bonuses
-    users.forEach((email) => {
-      User.findByEmail(email).then((user) => {
-        Activity.grantBonusPoints(user.uuid, description, points);
-        user.addPoints(points);
+    const users = emails.map((address) => User.findByEmail(address)
+      .catch(() => next(new error.BadRequest(`Invalid email ${address}`))));
+    return db.transaction({
+      isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
+    }, (transaction) => Promise.all(users.map((u) => [
+      Activity.grantBonusPoints(u.uuid, description, points),
+      u.addPoints(points),
+    ]).flat())
+      .then(() => {
+        res.json({ error: null });
       }).catch((err) => {
         log.warn(err);
-      });
-    }).then(() => res.json({ error: null }));
+        res.json({ error: err });
+      }));
   });
 
 module.exports = { router };
