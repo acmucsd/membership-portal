@@ -1,6 +1,7 @@
 const express = require('express');
 const error = require('../../../error');
 const { User, Activity } = require('../../../db');
+const log = require('../../../logger');
 
 const router = express.Router();
 
@@ -86,9 +87,9 @@ router.get('/activity', (req, res, next) => {
 
 router.route('/milestone')
 
-  /**
-   * All requests on this route require admin access.
-   */
+/**
+ * All requests on this route require admin access.
+ */
   .all((req, res, next) => {
     if (!req.user.isAdmin()) return next(new error.Forbidden());
     return next();
@@ -110,6 +111,40 @@ router.route('/milestone')
         }
       });
     }).then(() => res.json({ error: null })).catch(next);
+  });
+
+router.route('/bonus')
+
+/**
+ * All requests on this route require admin access.
+ */
+  .all((req, res, next) => {
+    if (!req.user.isAdmin()) return next(new error.Forbidden());
+    return next();
+  })
+
+  /**
+   * Grant bonus points to some users.
+   */
+  .post((req, res, next) => {
+    if (!req.body.bonus || !req.body.bonus.description || typeof req.body.bonus.description !== 'string') {
+      return next(new error.BadRequest('Bonus object with description must be provided'));
+    }
+    if (!req.body.bonus.users || !Array.isArray(req.body.bonus.users)) {
+      return next(new error.BadRequest('Bonus object with users array must be provided'));
+    }
+
+    const { users, description, points } = req.body.bonus;
+
+    // TODO all or nothing bonuses
+    users.forEach((email) => {
+      User.findByEmail(email).then((user) => {
+        Activity.grantBonusPoints(user.uuid, description, points);
+        user.addPoints(points);
+      }).catch((err) => {
+        log.warn(err);
+      });
+    }).then(() => res.json({ error: null }));
   });
 
 module.exports = { router };
