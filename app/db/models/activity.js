@@ -44,6 +44,7 @@ module.exports = (Sequelize, db) => {
         'ACCOUNT_UPDATE_INFO',
         'ACCOUNT_LOGIN',
         'ATTEND_EVENT',
+        'BONUS_POINTS',
         'MILESTONE',
       ),
       allowNull: false,
@@ -165,6 +166,16 @@ module.exports = (Sequelize, db) => {
       description,
       pointsEarned,
       type: 'ATTEND_EVENT',
+      public: true,
+    });
+  };
+
+  Activity.grantBonusPoints = function (user, description, pointsEarned) {
+    return this.create({
+      user,
+      description,
+      pointsEarned,
+      type: 'BONUS_POINTS',
       public: true,
     });
   };
