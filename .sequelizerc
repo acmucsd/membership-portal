@@ -1,0 +1,9 @@
+const path = require('path');
+
+const config = require('./app/config');
+const { host, port, dialect, user, password, db } = config.database;
+
+module.exports = {
+  'migrations-path': path.resolve(__dirname, 'app/db/migrations'),
+  'url': `${dialect}://${user}:${password}:@${host}:${port}/${db}`
+}
