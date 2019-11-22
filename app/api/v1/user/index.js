@@ -2,7 +2,6 @@ const Sequelize = require('sequelize');
 const express = require('express');
 const error = require('../../../error');
 const { User, Activity, db } = require('../../../db');
-const log = require('../../../logger');
 
 const router = express.Router();
 
