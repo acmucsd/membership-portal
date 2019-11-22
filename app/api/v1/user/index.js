@@ -141,6 +141,8 @@ router.route('/bonus')
 
     const { users: emails, description, points } = req.body.bonus;
 
+    // use db transaction to ensure all operations go through (all changes rolled back
+    // if any one operation fails, e.g. invalid email)
     return db.transaction({
       isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
     }, (transaction) => Promise.all(
