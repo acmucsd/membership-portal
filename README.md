@@ -45,6 +45,12 @@ CLIENT=localhost:8000
 + `npm run lint` to lint the Node app with [ESLint](https://eslint.org/) (without `--fix`)
 + `npm run test` to run the test suite with [Jest](https://jestjs.io/)
 + `npm run lint:fix` to handle the simple linter issues automatically
++ `npm run db:migrate` to run any new database migrations
 + `docker exec -it rds.acmucsd.local psql -U [RDS_USER] -d [RDS_DATABASE]` to access Postgres (`RDS_XYZ` from `.env`).
 
 Take a look at [`package.json`](https://github.com/acmucsd/membership-portal/blob/master/package.json) for the actual commands.
+
+#### Database Migrations
+To create and run database migrations, take a look at the [Sequelize documentation](https://sequelize.org/master/manual/migrations.html). Everything's already configured via [`.sequelizerc`](https://github.com/acmucsd/membership-portal/blob/master/.sequelizerc) so executing `npm run db:migrate` should work.
+
+
