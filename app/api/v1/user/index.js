@@ -125,7 +125,7 @@ router.route('/bonus')
 
   /**
    * Grants bonus points to some users given a 'bonus' object with an array
-   * 'emails' of email addresses, a 'points' field with the point value of
+   * 'users' of email addresses, a 'points' field with the point value of
    * the bonus, and a 'description' field with some context for the bonus.
    */
   .post((req, res, next) => {
