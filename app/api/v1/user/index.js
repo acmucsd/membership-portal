@@ -140,20 +140,18 @@ router.route('/bonus')
 
     const { users: emails, description, points } = req.body.bonus;
 
-    const users = emails.map((address) => User.findByEmail(address)
-      .catch(() => next(new error.BadRequest(`Invalid email ${address}`))));
     return db.transaction({
       isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
-    }, (transaction) => Promise.all(users.map((u) => [
-      Activity.grantBonusPoints(u.uuid, description, points),
-      u.addPoints(points),
-    ]).flat())
-      .then(() => {
-        res.json({ error: null });
-      }).catch((err) => {
-        log.warn(err);
-        res.json({ error: err });
-      }));
+    }, (transaction) => Promise.all(
+      emails.map((address) => User.findByEmail(address).then((user) => Promise.all([
+        Activity.grantBonusPoints(user.uuid, description, points),
+        user.addPoints(points),
+      ])).catch(() => {
+        throw new error.BadRequest(`Something went wrong with email ${address}`);
+      })),
+    )).then(() => {
+      res.json({ error: null, emails });
+    }).catch((err) => next(err));
   });
 
 module.exports = { router };
