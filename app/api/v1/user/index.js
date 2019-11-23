@@ -87,9 +87,9 @@ router.get('/activity', (req, res, next) => {
 
 router.route('/milestone')
 
-/**
- * All requests on this route require admin access.
- */
+  /**
+   * All requests on this route require admin access.
+   */
   .all((req, res, next) => {
     if (!req.user.isAdmin()) return next(new error.Forbidden());
     return next();
