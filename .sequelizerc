@@ -4,6 +4,7 @@ const config = require('./app/config');
 const { host, port, dialect, user, password, db, uri } = config.database;
 
 module.exports = {
+  'config-path': path.resolve(__dirname, 'sequelize-config.js'),
   'migrations-path': path.resolve(__dirname, 'app/db/migrations'),
   'url': uri || `${dialect}://${user}:${password}:@${host}:${port}/${db}`
 }
