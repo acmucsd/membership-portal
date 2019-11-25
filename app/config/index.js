@@ -35,6 +35,7 @@ module.exports = {
     db: process.env.RDS_DATABASE,
     user: process.env.RDS_USER,
     password: process.env.RDS_PASSWORD,
+    uri: process.env.RDS_URI,
   },
 
   email: {

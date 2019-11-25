@@ -20,7 +20,7 @@ rules:
   no-param-reassign: "off"
   no-unused-vars:
     - "error"
-    - argsIgnorePattern: "next|transaction"
+    - argsIgnorePattern: "next|transaction|Sequelize"
   object-curly-newline:
     - "error"
     - consistent: true

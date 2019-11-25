@@ -22,8 +22,6 @@ const Event = require('./models/event')(Sequelize, db);
 const Activity = require('./models/activity')(Sequelize, db);
 const Attendance = require('./models/attendance')(Sequelize, db);
 
-// TODO handle migrations
-
 /**
  * Syncs database against models and adds the admin account if it doesn't exist.
  */

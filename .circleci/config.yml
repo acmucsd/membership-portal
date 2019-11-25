@@ -42,6 +42,8 @@ jobs:
     steps:
       - checkout
       - run:
+          command: npm run migrate
+      - run:
           command: git push -f https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
 
 workflows:
