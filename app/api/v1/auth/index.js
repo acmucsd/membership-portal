@@ -71,6 +71,7 @@ router.post('/login', (req, res, next) => {
  * password, graduationYear, major. Optional 'user' fields: profilePicture (not currently supported).
  * All other fields will be ignored.
  */
+// TODO 'register' -> 'registration' (REST routes should use nouns)
 router.post('/register', (req, res, next) => {
   if (!req.body.user) return next(new error.BadRequest('User must be provided'));
   if (!req.body.user.password) return next(new error.BadRequest('Password must be provided'));
@@ -93,6 +94,7 @@ router.post('/register', (req, res, next) => {
 /**
  * Emails the user a reset password link, given an email in the URI.
  */
+// TODO 'resetPassword' -> 'passwordReset' (REST routes should use nouns)
 router.get('/resetPassword/:email', (req, res, next) => {
   User.findByEmail(req.params.email).then((user) => {
     if (!user) throw new error.NotFound('Invalid user');
@@ -114,6 +116,7 @@ router.get('/resetPassword/:email', (req, res, next) => {
  * Resets a user's password, given the emailed access code in the URI and a 'user' object
  * with 'newPassword' and 'confirmPassword' fields in the request body.
  */
+// TODO 'resetPassword' -> 'passwordReset' (REST routes should use nouns)
 router.post('/resetPassword/:accessCode', (req, res, next) => {
   if (!req.params.accessCode) return next(new error.BadRequest('Access code must be provided'));
   if (!req.body.user || !req.body.user.newPassword || !req.body.user.confirmPassword) {
@@ -138,6 +141,25 @@ router.post('/resetPassword/:accessCode', (req, res, next) => {
     res.json({ error: null });
     Activity.accountResetPassword(user.uuid);
   }).catch(next);
+});
+
+router.post('/verification', (req, res, next) => {
+  const authHeader = req.get('Authorization');
+  if (!authHeader) return res.json({ error: 'Auth token must be specified', authenticated: false, admin: false });
+
+  const authHead = authHeader.split(' ');
+  const invalidAuthFormat = authHead.length !== 2 || authHead[0] !== 'Bearer' || authHead[1].length === 0;
+  if (invalidAuthFormat) return res.json({ error: 'Invalid auth token format', authenticated: false, admin: false });
+
+  const token = authHead[1];
+  jwt.verify(token, config.auth.secret, (err, decoded) => {
+    if (err) return res.json({ error: 'Invalid auth token', authenticated: false, admin: false });
+
+    User.findByUUID(decoded.uuid).then((user) => {
+      if (!user) return res.json({ authenticated: false, admin: false });
+      res.json({ authenticated: true, admin: user.isAdmin() });
+    }).then(next).catch(next);
+  });
 });
 
 module.exports = { router, authenticated };
