@@ -143,6 +143,11 @@ router.post('/resetPassword/:accessCode', (req, res, next) => {
   }).catch(next);
 });
 
+/**
+ * Verifies a user's auth token, given the token in the 'Authorization' request header in the form of 'Bearer <TOKEN>'.
+ * Responds with a JSON object with fields 'error', 'authenticated' (if a user's token is valid), and 'admin' (if the
+ * user is an admin).
+ */
 router.post('/verification', (req, res, next) => {
   const authHeader = req.get('Authorization');
   if (!authHeader) return res.json({ error: 'Auth token must be specified', authenticated: false, admin: false });
@@ -156,8 +161,8 @@ router.post('/verification', (req, res, next) => {
     if (err) return res.json({ error: 'Invalid auth token', authenticated: false, admin: false });
 
     User.findByUUID(decoded.uuid).then((user) => {
-      if (!user) return res.json({ authenticated: false, admin: false });
-      res.json({ authenticated: true, admin: user.isAdmin() });
+      if (!user) return res.json({ error: null, authenticated: false, admin: false });
+      res.json({ error:null, authenticated: true, admin: user.isAdmin() });
     }).then(next).catch(next);
   });
 });
