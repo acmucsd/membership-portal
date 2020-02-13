@@ -163,7 +163,7 @@ router.post('/verification', (req, res, next) => {
     User.findByUUID(decoded.uuid).then((user) => {
       if (!user) return res.json({ error: null, authenticated: false, admin: false });
       res.json({ error: null, authenticated: true, admin: user.isAdmin() });
-    }).then(next).catch(next);
+    }).catch(next);
   });
 });
 
