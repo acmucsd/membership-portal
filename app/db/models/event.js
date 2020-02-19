@@ -153,6 +153,27 @@ module.exports = (Sequelize, db) => {
       defaultValue: false,
     },
 
+    // if the event requires staff/volunteers
+    requiresStaff: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+
+    // point bonus for staff/volunteers
+    staffPointBonus: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      validate: {
+        isInt: true,
+        min: {
+          args: [0],
+          msg: 'Staff point bonus cannot be worth fewer than 0 points',
+        },
+      },
+    },
+
   }, {
     indexes: [
       // a hash index on uuid -> lookup by UUID in O(1)
@@ -231,7 +252,7 @@ module.exports = (Sequelize, db) => {
   Event.sanitize = function (event) {
     event = pick(event, [
       'committee', 'thumbnail', 'cover', 'title', 'description', 'location', 'eventLink', 'start', 'end',
-      'attendanceCode', 'pointValue',
+      'attendanceCode', 'pointValue', 'requiresStaff', 'staffPointBonus',
     ]);
     if (event.committee !== undefined && event.committee.length === 0) delete event.committee;
     return event;
@@ -251,6 +272,8 @@ module.exports = (Sequelize, db) => {
       end: this.getDataValue('end'),
       attendanceCode: isAdmin ? this.getDataValue('attendanceCode') : undefined,
       pointValue: this.getDataValue('pointValue'),
+      requiresStaff: this.getDataValue('requiresStaff'),
+      staffPointBonus: this.getDataValue('staffPointBonus'),
     };
   };
 

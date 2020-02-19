@@ -43,10 +43,11 @@ module.exports = (Sequelize, db) => {
 
     // account type
     //   RESTRICTED - not used currently
-    //   STANDARD   - a regular member
+    //   STANDARD   - a regular ACM member
+    //   STAFF      - a Diamond Staff member
     //   ADMIN      - admin type user
     accessType: {
-      type: Sequelize.ENUM('RESTRICTED', 'STANDARD', 'ADMIN'),
+      type: Sequelize.ENUM('RESTRICTED', 'STANDARD', 'STAFF', 'ADMIN'),
       defaultValue: 'STANDARD',
     },
 
@@ -204,7 +205,7 @@ module.exports = (Sequelize, db) => {
   User.getLeaderboard = function (offset, limit) {
     if (!offset || offset < 0) offset = 0;
     if (!limit || limit < 0) limit = undefined;
-    return this.findAll({ where: { accessType: 'STANDARD' }, offset, limit, order: [['points', 'DESC']] });
+    return this.findAll({ where: { accessType: { [Sequelize.Op.not]: 'ADMIN' } }, offset, limit, order: [['points', 'DESC']] });
   };
 
   User.sanitize = function (user) {
@@ -245,6 +246,10 @@ module.exports = (Sequelize, db) => {
 
   User.prototype.isAdmin = function () {
     return this.getDataValue('accessType') === 'ADMIN';
+  };
+
+  User.prototype.isStaff = function () {
+    return this.getDataValue('accessType') === 'STAFF';
   };
 
   User.prototype.isStandard = function () {
