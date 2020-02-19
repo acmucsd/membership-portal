@@ -51,6 +51,6 @@ CLIENT=localhost:8000
 Take a look at [`package.json`](https://github.com/acmucsd/membership-portal/blob/master/package.json) for the actual commands.
 
 #### Database Migrations
-To create and run database migrations, take a look at the [Sequelize documentation](https://sequelize.org/master/manual/migrations.html). Everything's already configured via [`.sequelizerc`](https://github.com/acmucsd/membership-portal/blob/master/.sequelizerc) so executing `npm run db:migrate` should work.
+To write database migrations, take a look at the [Sequelize documentation](https://sequelize.org/master/manual/migrations.html) and [previous migrations](https://github.com/acmucsd/membership-portal/tree/master/app/db/migrations). Everything's already configured via [`.sequelizerc`](https://github.com/acmucsd/membership-portal/blob/master/.sequelizerc) so executing `npm run db:migrate` should work. Migrations on the production database automatically run upon deployment using Heroku's [`release` phrase](https://devcenter.heroku.com/articles/release-phase) (configured in the [Procfile](https://github.com/acmucsd/membership-portal/blob/master/Procfile#L1)).
 
 
