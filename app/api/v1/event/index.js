@@ -1,6 +1,7 @@
 const express = require('express');
 const error = require('../../../error');
 const { Event } = require('../../../db');
+const { authenticated } = require('../auth');
 
 const router = express.Router();
 
@@ -59,6 +60,7 @@ router.route('/:uuid?')
   /**
    * All further requests on this route require admin access.
    */
+  .all(authenticated)
   .all((req, res, next) => {
     if (!req.user.isAdmin()) return next(new error.Forbidden());
     return next();
