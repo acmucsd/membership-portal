@@ -60,8 +60,7 @@ router.route('/:uuid?')
   /**
    * All further requests on this route require admin access.
    */
-  .all(authenticated)
-  .all((req, res, next) => {
+  .all(authenticated, (req, res, next) => {
     if (!req.user.isAdmin()) return next(new error.Forbidden());
     return next();
   })
