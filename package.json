@@ -23,28 +23,28 @@
   },
   "homepage": "https://github.com/acmucsd/membership-portal#readme",
   "dependencies": {
-    "@sendgrid/mail": "^6.4.0",
-    "bcrypt": "^3.0.6",
+    "@sendgrid/mail": "^6.5.3",
+    "bcrypt": "^3.0.8",
     "continuation-local-storage": "^3.2.1",
-    "dotenv": "^8.1.0",
-    "ejs": "^2.7.1",
+    "dotenv": "^8.2.0",
+    "ejs": "^2.7.4",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.9.1",
-    "pg": "^7.12.1",
+    "pg": "^7.18.2",
     "pg-native": "^3.0.0",
     "sendgrid": "^5.2.3",
-    "sequelize": "^5.13.1",
+    "sequelize": "^5.21.5",
     "sequelize-cli": "^5.5.1",
-    "underscore": "^1.9.1",
-    "uuid": "^3.3.2",
+    "underscore": "^1.9.2",
+    "uuid": "^3.4.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "eslint": "^6.1.0",
+    "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-import": "^2.20.1",
     "jest": "^24.8.0",
-    "nodemon": "^1.19.1"
+    "nodemon": "^1.19.4"
   }
 }
