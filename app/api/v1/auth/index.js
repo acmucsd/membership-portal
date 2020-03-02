@@ -150,19 +150,19 @@ router.post('/resetPassword/:accessCode', (req, res, next) => {
  */
 router.post('/verification', (req, res, next) => {
   const authHeader = req.get('Authorization');
-  if (!authHeader) return res.json({ error: 'Auth token must be specified', authenticated: false, admin: false });
+  if (!authHeader) return res.json({ error: 'Auth token must be specified', authenticated: false });
 
   const authHead = authHeader.split(' ');
   const invalidAuthFormat = authHead.length !== 2 || authHead[0] !== 'Bearer' || authHead[1].length === 0;
-  if (invalidAuthFormat) return res.json({ error: 'Invalid auth token format', authenticated: false, admin: false });
+  if (invalidAuthFormat) return res.json({ error: 'Invalid auth token format', authenticated: false });
 
   const token = authHead[1];
   jwt.verify(token, config.auth.secret, (err, decoded) => {
-    if (err) return res.json({ error: 'Invalid auth token', authenticated: false, admin: false });
+    if (err) return res.json({ error: 'Invalid auth token', authenticated: false });
 
     User.findByUUID(decoded.uuid).then((user) => {
-      if (!user) return res.json({ error: null, authenticated: false, admin: false });
-      res.json({ error: null, authenticated: true, admin: user.isAdmin() });
+      if (!user) return res.json({ error: null, authenticated: false });
+      res.json({ error: null, authenticated: true });
     }).catch(next);
   });
 });

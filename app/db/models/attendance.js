@@ -44,6 +44,14 @@ module.exports = (Sequelize, db) => {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW,
     },
+
+    // if the user attended the event as a volunteer staff member
+    asStaff: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+
   }, {
     indexes: [
       // a hash index on uuid -> lookup by UUID in O(1)
@@ -102,8 +110,8 @@ module.exports = (Sequelize, db) => {
     return this.count({ where: { user, event } }).then((c) => c !== 0);
   };
 
-  Attendance.attendEvent = function (user, event) {
-    return this.create({ user, event });
+  Attendance.attendEvent = function (user, event, asStaff) {
+    return this.create({ user, event, asStaff });
   };
 
   Attendance.prototype.getPublic = function () {
@@ -112,6 +120,7 @@ module.exports = (Sequelize, db) => {
       user: this.getDataValue('user'),
       event: this.getDataValue('event'),
       date: this.getDataValue('date'),
+      asStaff: this.getDataValue('asStaff'),
     };
   };
 

@@ -105,7 +105,7 @@ const errorHandler = (err, req, res, next) => {
  * for requests that don't hit a route.
  */
 const notFoundHandler = (req, res, next) => {
-  const err = new NotFound(`The resource ${req.url} was not found`);
+  const err = new NotFound(`The resource ${req.method} ${req.url} was not found`);
   logger.warn('%s [request %s]: %s [%d]: %s', new Date(), req.id, err.name, err.status, err.message);
   res.status(err.status).json({
     error: {

@@ -67,8 +67,9 @@ router.route('/:uuid?')
 
   /**
    * Adds an event, given an 'event' object in the request body, and returns the newly created event upon
-   * success. Required fields: title, description, start, end, attendanceCode, pointValue. Optional fields:
-   * committee, thumbnail, cover, location, eventLink. All other fields will be ignored.
+   * success. Required fields: title, description, start, end, attendanceCode, pointValue, requiresStaff.
+   * Optional fields: committee, thumbnail, cover, location, eventLink, staffPointBonus. All other fields
+   * will be ignored.
    */
   .post((req, res, next) => {
     if (req.params.uuid) return next(new error.BadRequest('UUID must not be provided'));
@@ -87,8 +88,8 @@ router.route('/:uuid?')
   /**
    * Updates an event, given an event UUID in the URI and a partial 'event' object with updated fields
    * in the request body, and returns the updated event. Fields that may be updated: title, description,
-   * start, end, attendanceCode, pointValue, committee, thumbnail, cover, location, and eventLink. All other
-   * fields will be ignored.
+   * start, end, attendanceCode, pointValue, requiresStaff, staffPointBonus, committee, thumbnail, cover,
+   * location, eventLink. All other fields will be ignored.
    */
   .patch((req, res, next) => {
     if (!req.params.uuid || !req.params.uuid.trim() || !req.body.event) {

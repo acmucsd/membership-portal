@@ -1,11 +1,12 @@
 module.exports = (User, Event) => Promise.all([
+  // all user passwords are 'password'
   User.create({
     email: 's3bansal@ucsd.edu',
     accessType: 'STANDARD',
     state: 'ACTIVE',
     firstName: 'Sumeet',
     lastName: 'Bansal',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG', // password
+    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
     points: 125,
     graduationYear: 2020,
     major: 'Computer Science',
@@ -13,46 +14,46 @@ module.exports = (User, Event) => Promise.all([
 
   User.create({
     email: 'jrpadua@ucsd.edu',
-    accessType: 'STANDARD',
+    accessType: 'STAFF',
     state: 'ACTIVE',
     firstName: 'Jaden',
     lastName: 'Padua',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG', // password
+    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
     points: 205,
     graduationYear: 2022,
     major: 'Computer Science',
   }),
 
   User.create({
-    email: 'yix220@ucsd.edu',
+    email: 'stao@ucsd.edu',
     accessType: 'STANDARD',
     state: 'ACTIVE',
-    firstName: 'Cora',
-    lastName: 'Xing',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG', // password
+    firstName: 'Stone',
+    lastName: 'Tao',
+    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
     points: 195,
     graduationYear: 2021,
     major: 'Computer Science',
   }),
 
   User.create({
-    email: 'clp013@ucsd.edu',
+    email: 'jpan@ucsd.edu',
     accessType: 'STANDARD',
     state: 'ACTIVE',
-    firstName: 'Clark',
-    lastName: 'Phan',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG', // password
+    firstName: 'Paul',
+    lastName: 'Pan',
+    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
     graduationYear: 2020,
     major: 'Mathematics - Computer Science',
   }),
 
   User.create({
     email: 'stl005@ucsd.edu',
-    accessType: 'STANDARD',
+    accessType: 'STAFF',
     state: 'ACTIVE',
     firstName: 'Stanley',
     lastName: 'Lee',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG', // password
+    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
     points: 55,
     graduationYear: 2020,
     major: 'Data Science',
@@ -64,32 +65,21 @@ module.exports = (User, Event) => Promise.all([
     state: 'ACTIVE',
     firstName: 'Kendall',
     lastName: 'Nakai',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG', // password
+    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
     points: 160,
     graduationYear: 2020,
     major: 'Computer Engineering',
   }),
 
   Event.create({
-    title: 'Fall 2019 GBM',
-    description: 'Inaugural GBM.',
+    title: 'Bit-Byte Allocation',
+    description: 'The big reveal is here!',
     committee: '',
-    location: 'PC East Ball Room',
-    start: new Date(2019, 8, 29, 18),
-    end: new Date(2019, 8, 29, 20),
-    attendanceCode: '@cmuc5d',
+    location: 'Qualcomm Room',
+    start: new Date(Date.now() - 86400000),
+    end: new Date(Date.now() - 82800000),
+    attendanceCode: 'malloc',
     pointValue: 20,
-  }),
-
-  Event.create({
-    title: 'Pool and Ping Pong',
-    description: 'Game night.',
-    committee: '',
-    location: 'PC Game Room',
-    start: new Date(2019, 9, 8, 19),
-    end: new Date(2019, 9, 8, 21),
-    attendanceCode: 'p0ng',
-    pointValue: 10,
   }),
 
   Event.create({
@@ -97,9 +87,33 @@ module.exports = (User, Event) => Promise.all([
     description: 'Learn Node.',
     committee: '',
     location: 'PC ERC Room',
-    start: new Date(2019, 9, 15, 14),
-    end: new Date(2019, 9, 15, 18),
+    start: new Date(Date.now() - 3600000),
+    end: new Date(Date.now() + 3600000),
     attendanceCode: 'n0d3',
     pointValue: 30,
+    requiresStaff: true,
+    staffPointBonus: 5,
+  }),
+
+  Event.create({
+    title: 'ACM Eats: Taco Stand',
+    description: 'Taco Tuesday.',
+    committee: '',
+    location: 'PC Loop',
+    start: new Date(Date.now() - 3600000),
+    end: new Date(Date.now() + 3600000),
+    attendanceCode: 'tac0',
+    pointValue: 15,
+  }),
+
+  Event.create({
+    title: 'Pool and Ping Pong',
+    description: 'Game night.',
+    committee: '',
+    location: 'PC Game Room',
+    start: new Date(Date.now() + 82800000),
+    end: new Date(Date.now() + 86400000),
+    attendanceCode: 'p0ng',
+    pointValue: 10,
   }),
 ]);

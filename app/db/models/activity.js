@@ -44,6 +44,7 @@ module.exports = (Sequelize, db) => {
         'ACCOUNT_UPDATE_INFO',
         'ACCOUNT_LOGIN',
         'ATTEND_EVENT',
+        'ATTEND_EVENT_AS_STAFF',
         'BONUS_POINTS',
         'MILESTONE',
       ),
@@ -160,12 +161,12 @@ module.exports = (Sequelize, db) => {
     });
   };
 
-  Activity.attendedEvent = function (user, description, pointsEarned) {
+  Activity.attendedEvent = function (user, description, pointsEarned, asStaff) {
     return this.create({
       user,
       description,
       pointsEarned,
-      type: 'ATTEND_EVENT',
+      type: asStaff ? 'ATTEND_EVENT_AS_STAFF' : 'ATTEND_EVENT',
       public: true,
     });
   };

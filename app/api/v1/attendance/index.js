@@ -24,7 +24,7 @@ router.route('/:uuid?')
 
   /**
    * Records that the user attended an event and returns the public version of the event, given
-   * `attendanceCode` in the request body.
+   * `attendanceCode` and 'asStaff' in the request body.
    */
   .post((req, res, next) => {
     if (!req.body.attendanceCode) return next(new error.BadRequest('Attendance code must be provided'));
@@ -44,15 +44,16 @@ router.route('/:uuid?')
         isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
       }, (transaction) => Attendance.userAttendedEvent(req.user.uuid, event.uuid).then((attended) => {
         if (attended) throw new error.UserError('You have already attended this event!');
-
-        // simultaneously execute three promises
+        if (!('asStaff' in req.body)) req.body.asStaff = false;
+        const attendedAsStaff = req.body.asStaff && req.user.isStaff() && event.requiresStaff;
+        const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
         return Promise.all([
           // mark the event as attended by the user
-          Attendance.attendEvent(req.user.uuid, event.uuid),
+          Attendance.attendEvent(req.user.uuid, event.uuid, attendedAsStaff),
           // add an entry for this attendance in the user's activity
-          Activity.attendedEvent(req.user.uuid, event.title, event.pointValue),
+          Activity.attendedEvent(req.user.uuid, event.title, pointsEarned, attendedAsStaff),
           // add the points for the event to the user's point total
-          req.user.addPoints(event.pointValue),
+          req.user.addPoints(pointsEarned),
         ]);
       })).then(() => {
         res.json({ error: null, event: event.getPublic() });
