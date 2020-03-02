@@ -72,13 +72,13 @@ module.exports = (User, Event) => Promise.all([
   }),
 
   Event.create({
-    title: 'Fall 2019 GBM',
-    description: 'Inaugural GBM.',
+    title: 'Bit-Byte Allocation',
+    description: 'The big reveal is here!',
     committee: '',
-    location: 'PC East Ball Room',
+    location: 'Qualcomm Room',
     start: new Date(Date.now() - 86400000),
     end: new Date(Date.now() - 82800000),
-    attendanceCode: '@cmuc5d',
+    attendanceCode: 'malloc',
     pointValue: 20,
   }),
 
