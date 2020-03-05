@@ -29,6 +29,41 @@ router.get('/future', (req, res, next) => {
   }).catch(next);
 });
 
+router.route('/adminFetch/:uuid?')
+  /**
+   * All further requests on this route require admin access.
+   */
+  .all(authenticated, (req, res, next) => {
+    if (!req.user.isAdmin()) return next(new error.Forbidden());
+    return next();
+  })
+
+  /**
+   * Get all events, all events by committee, or a single event. If an event UUID is provided in the URI,
+   * returns the matching event or null if no such event was found. Otherwise if no event UUID is provided
+   * in the URI, returns all events. If the 'committee' field is provided as a query parameter, returns all
+   * events hosted by that committee. Supports pagination using the 'offset' and 'limit' query parameters.
+   */
+  .get((req, res, next) => {
+    // if UUID is provided, return matching event
+    if (req.params.uuid && req.params.uuid.trim()) {
+      Event.findByUUID(req.params.uuid).then((event) => {
+        // if event found, return the public event (or admin version if user is admin), else null
+        res.json({ error: null, event: event ? event.getPublic(true) : null});
+      }).catch(next);
+    // else (UUID is not provided), return all events
+    } else {
+      const offset = parseInt(req.query.offset, 10);
+      const limit = parseInt(req.query.limit, 10);
+      const { committee } = req.query;
+      // if committee is provided, return all events for committee, else return all events
+      const getEvents = committee ? Event.getCommitteeEvents(committee, offset, limit) : Event.getAll(offset, limit);
+      getEvents.then((events) => {
+        res.json({ error: null, events: events.map((e) => e.getPublic(true)) });
+      }).catch(next);
+    }
+  })
+
 router.route('/:uuid?')
 
   /**
@@ -42,7 +77,7 @@ router.route('/:uuid?')
     if (req.params.uuid && req.params.uuid.trim()) {
       Event.findByUUID(req.params.uuid).then((event) => {
         // if event found, return the public event (or admin version if user is admin), else null
-        res.json({ error: null, event: event ? event.getPublic(req.user.isAdmin()) : null });
+        res.json({ error: null, event: event ? event.getPublic(false) : null });
       }).catch(next);
     // else (UUID is not provided), return all events
     } else {
@@ -52,7 +87,7 @@ router.route('/:uuid?')
       // if committee is provided, return all events for committee, else return all events
       const getEvents = committee ? Event.getCommitteeEvents(committee, offset, limit) : Event.getAll(offset, limit);
       getEvents.then((events) => {
-        res.json({ error: null, events: events.map((e) => e.getPublic(req.user.isAdmin())) });
+        res.json({ error: null, events: events.map((e) => e.getPublic(false)) });
       }).catch(next);
     }
   })
