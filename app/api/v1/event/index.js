@@ -49,7 +49,7 @@ router.route('/adminFetch/:uuid?')
     if (req.params.uuid && req.params.uuid.trim()) {
       Event.findByUUID(req.params.uuid).then((event) => {
         // if event found, return the public event (or admin version if user is admin), else null
-        res.json({ error: null, event: event ? event.getPublic(true) : null});
+        res.json({ error: null, event: event ? event.getPublic(true) : null });
       }).catch(next);
     // else (UUID is not provided), return all events
     } else {
@@ -62,7 +62,7 @@ router.route('/adminFetch/:uuid?')
         res.json({ error: null, events: events.map((e) => e.getPublic(true)) });
       }).catch(next);
     }
-  })
+  });
 
 router.route('/:uuid?')
 
