@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const email = require('../../../email');
 const config = require('../../../config');
+const log = require('../../../logger');
 const error = require('../../../error');
 const { User, Activity } = require('../../../db');
 
@@ -28,6 +29,7 @@ const authenticated = (req, res, next) => {
     User.findByUUID(decoded.uuid).then((user) => {
       if (!user) throw new error.Unauthorized();
       req.user = user;
+      log.info('user authentication (middleware)', { request_id: req.id, user_uuid: user.uuid });
     }).then(next).catch(next);
   });
 };
@@ -53,6 +55,7 @@ router.post('/login', (req, res, next) => {
     return user.verifyPassword(req.body.password).then((verified) => {
       if (!verified) throw new error.UserError('Incorrect password');
       userUuid = user.uuid;
+      log.info('user authentication (login)', { request_id: req.id, user_uuid: user.uuid });
     }).then(() => new Promise((resolve, reject) => {
       jwt.sign({
         uuid: user.getDataValue('uuid'),
@@ -86,6 +89,7 @@ router.post('/register', (req, res, next) => {
     newUser.hash = hash;
     return User.create(newUser);
   }).then((user) => {
+    log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
     res.json({ error: null, user: user.getPublicProfile() });
     Activity.accountCreated(user.uuid);
   }).catch(next);
@@ -105,8 +109,10 @@ router.get('/resetPassword/:email', (req, res, next) => {
       user.accessCode = code;
       user.state = 'PASSWORD_RESET';
       return email.sendPasswordReset(user.email, user.firstName, code);
+      // TODO abstract away setting access code for password reset
     }).then(() => user.save());
   }).then((user) => {
+    log.info('user authentication (password reset - email)', { request_id: req.id, user_uuid: user.uuid });
     res.json({ error: null });
     Activity.accountRequestedResetPassword(user.uuid);
   }).catch(next);
@@ -138,6 +144,7 @@ router.post('/resetPassword/:accessCode', (req, res, next) => {
       return user.save();
     });
   }).then((user) => {
+    log.info('user authentication (password reset - access code)', { request_id: req.id, user_uuid: user.uuid });
     res.json({ error: null });
     Activity.accountResetPassword(user.uuid);
   }).catch(next);
@@ -162,6 +169,7 @@ router.post('/verification', (req, res, next) => {
 
     User.findByUUID(decoded.uuid).then((user) => {
       if (!user) return res.json({ error: null, authenticated: false });
+      log.info('user authentication (token verification)', { request_id: req.id, user_uuid: user.uuid });
       res.json({ error: null, authenticated: true });
     }).catch(next);
   });
