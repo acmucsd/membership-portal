@@ -235,6 +235,7 @@ module.exports = (Sequelize, db) => {
   User.prototype.getUserProfile = function () {
     return {
       uuid: this.getDataValue('uuid'),
+      accountType: this.getDataValue('accessType'),
       firstName: this.getDataValue('firstName'),
       lastName: this.getDataValue('lastName'),
       profilePicture: this.getDataValue('profilePicture'),
