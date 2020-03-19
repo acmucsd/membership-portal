@@ -76,6 +76,13 @@ router.route('/')
     }
   });
 
+router.get('/:id', (req, res, next) => {
+  User.findByUUID(req.params.id).then((user) => {
+    if (req.params.id !== req.user.uuid) user = user.getPublicProfile();
+    res.json({ error: null, user });
+  }).catch(next);
+});
+
 /**
  * Gets the current user's public activity (account creation, events attendances, etc).
  */
