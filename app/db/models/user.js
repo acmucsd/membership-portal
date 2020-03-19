@@ -208,7 +208,8 @@ module.exports = (Sequelize, db) => {
     let codePart = this.createEmailVerificationCodePart();
     return new Promise((resolve, reject) => {
       bcrypt.hash(codePart, SALT_ROUNDS).then((hash) => {
-        resolve(hash.replace(/\//g, "s"));
+        console.log(hash);
+        resolve(hash.replace(/\//g, "[sacm]"));
       }).catch((error) => {
         reject(error);
       })
@@ -219,7 +220,8 @@ module.exports = (Sequelize, db) => {
   }
   User.prototype.verifyEmailVerificationCode = function (code) {
     let codePart = this.createEmailVerificationCodePart();
-    code = code.replace(/s/g, "/")
+    code = code.replace(/(\[sacm\])/,"/")
+    console.log(codePart, code);
     return bcrypt.compare(codePart, code);
   };
 
