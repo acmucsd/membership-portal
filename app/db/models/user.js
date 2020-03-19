@@ -219,6 +219,7 @@ module.exports = (Sequelize, db) => {
   }
   User.prototype.verifyEmailVerificationCode = function (code) {
     let codePart = this.createEmailVerificationCodePart();
+    code = code.replace(/s/g, "/")
     return bcrypt.compare(codePart, code);
   };
 
