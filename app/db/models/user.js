@@ -202,10 +202,8 @@ module.exports = (Sequelize, db) => {
     });
   };
 
+
   // Creates a code that is dependent on the user's data, which is assumed to be unchanged since registration
-  User.prototype.createEmailVerificationCodePart = function () {
-    return this.getDataValue('email') + this.getDataValue('uuid') + this.getDataValue('id');
-  }
   User.prototype.createEmailVerificationCode = function () {
     let codePart = this.createEmailVerificationCodePart();
     return new Promise((resolve, reject) => {
@@ -215,6 +213,9 @@ module.exports = (Sequelize, db) => {
         reject(error);
       })
     })
+  }
+  User.prototype.createEmailVerificationCodePart = function () {
+    return this.getDataValue('email') + this.getDataValue('uuid') + this.getDataValue('id');
   }
   User.prototype.verifyEmailVerificationCode = function (code) {
     let codePart = this.createEmailVerificationCodePart();
