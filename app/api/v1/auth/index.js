@@ -1,10 +1,11 @@
 const express = require('express');
+const Sequelize = require('sequelize');
 const jwt = require('jsonwebtoken');
 const email = require('../../../email');
 const config = require('../../../config');
 const log = require('../../../logger');
 const error = require('../../../error');
-const { User, Activity } = require('../../../db');
+const { User, Activity, db } = require('../../../db');
 
 const router = express.Router();
 
@@ -87,11 +88,23 @@ router.post('/register', (req, res, next) => {
   newUser.state = 'ACTIVE';
   User.generateHash(req.body.user.password).then((hash) => {
     newUser.hash = hash;
-    return User.create(newUser);
-  }).then((user) => {
-    log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
-    res.json({ error: null, user: user.getPublicProfile() });
-    Activity.accountCreated(user.uuid);
+    // require that we create a user succesfully and send email succesfully
+    db.transaction({
+      isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
+    }, (transaction) => Promise.all([
+        User.create(newUser).then((user) => {
+          user.createEmailVerificationCode().then((code) => {
+            email.sendEmailVerification(user.email, user.firstName, code)
+          })
+          return user;
+        })
+      ]
+    )).then((transactRes) => {
+      let user = transactRes[0];
+      log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
+      res.json({ error: null, user: user.getPublicProfile() });
+      Activity.accountCreated(user.uuid);
+    }).catch((err) => next(err));
   }).catch(next);
 });
 
@@ -152,8 +165,7 @@ router.post('/resetPassword/:accessCode', (req, res, next) => {
 
 /**
  * Verifies a user's auth token, given the token in the 'Authorization' request header in the form of 'Bearer <TOKEN>'.
- * Responds with a JSON object with fields 'error', 'authenticated' (if a user's token is valid), and 'admin' (if the
- * user is an admin).
+ * Responds with a JSON object with fields 'error', 'authenticated' (if a user's token is valid)
  */
 router.post('/verification', (req, res, next) => {
   const authHeader = req.get('Authorization');
@@ -173,6 +185,28 @@ router.post('/verification', (req, res, next) => {
       res.json({ error: null, authenticated: true });
     }).catch(next);
   });
+});
+
+/**
+ * Verifies a user's email based on a code sent out to the user's provided email
+ * Responds with a JSON object with fields 'error', 'verified' (if a user is succesfully verified)
+ */
+router.post('/verifyEmail', (req, res, next) => {
+  if (!req.body.code || !req.body.email) {
+    return next(new error.BadRequest('Email and Email verification code must be provided'));
+  }
+
+  User.findByEmail(req.body.email.toLowerCase()).then( async (user) => {
+    if (!user) return res.json({ error: "Invalid user email", verified: false });
+    user.verifyEmailVerificationCode(req.body.code).then((verified) => {
+      if (!verified) return next(new error.BadRequest('Code is invalid'));
+
+      user.validateEmail().then(() => {
+        log.info('user authentication (email verified)', { request_id: req.id, user_uuid: user.uuid });
+        res.json({ error: null, verified: true });
+      }).catch(next);
+    });
+  }).catch(next);
 });
 
 module.exports = { router, authenticated };

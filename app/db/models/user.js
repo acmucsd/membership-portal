@@ -42,13 +42,13 @@ module.exports = (Sequelize, db) => {
     },
 
     // account type
-    //   RESTRICTED - not used currently
+    //   RESTRICTED - not used currently / email not verified yet
     //   STANDARD   - a regular ACM member
     //   STAFF      - a Diamond Staff member
     //   ADMIN      - admin type user
     accessType: {
       type: Sequelize.ENUM('RESTRICTED', 'STANDARD', 'STAFF', 'ADMIN'),
-      defaultValue: 'STANDARD',
+      defaultValue: 'RESTRICTED',
     },
 
     // account state
@@ -201,6 +201,37 @@ module.exports = (Sequelize, db) => {
       });
     });
   };
+
+  // Creates a code that is dependent on the user's data, which is assumed to be unchanged since registration
+  User.prototype.createEmailVerificationCodePart = function () {
+    return this.getDataValue('email') + this.getDataValue('uuid') + this.getDataValue('id');
+  }
+  User.prototype.createEmailVerificationCode = function () {
+    let codePart = this.createEmailVerificationCodePart();
+    return new Promise((resolve, reject) => {
+      bcrypt.hash(codePart, SALT_ROUNDS).then((hash) => {
+        resolve(hash.replace(/\//g, "s"));
+      }).catch((error) => {
+        reject(error);
+      })
+    })
+  }
+  User.prototype.verifyEmailVerificationCode = function (code) {
+    let codePart = this.createEmailVerificationCodePart();
+    return bcrypt.compare(codePart, code);
+  };
+
+  // Verifies user's email by setting their account type to STANDARD if it is RESTRICTED
+  User.prototype.validateEmail = function () {
+    if (this.accessType === "RESTRICTED") {
+      return this.update({ accessType: "STANDARD"});
+    }
+    else {
+      return new Promise((resolve) => {
+        resolve();
+      })
+    }
+  }
 
   User.getLeaderboard = function (offset, limit) {
     if (!offset || offset < 0) offset = 0;

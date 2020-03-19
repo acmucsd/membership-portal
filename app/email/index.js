@@ -27,4 +27,24 @@ const sendPasswordReset = (email, firstName, code) => {
   });
 };
 
-module.exports = { sendPasswordReset };
+const emailVerificationTemplate = readTemplate('emailVerification.ejs');
+const sendEmailVerification = (email, firstName, code) => {
+  const data = {
+    to: email,
+    from: config.email.user,
+    subject: 'ACM UCSD Membership Portal Email Verification',
+    html: ejs.render(emailVerificationTemplate, {
+      firstName,
+      link: `${config.client}/verifyEmail/${email}/${code}`,
+    }),
+  };
+  sendEmail(data).then((res)=> {
+    log.info(`Sent verification email to ${email}`)
+  }).catch((error) => {
+    log.warn(`Failed to send email verification email to ${config.email.user}: ${error}`);
+  });
+};
+
+
+
+module.exports = { sendPasswordReset, sendEmailVerification };
