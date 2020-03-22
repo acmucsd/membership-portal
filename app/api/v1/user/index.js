@@ -164,4 +164,43 @@ router.route('/bonus')
     }).catch((err) => next(err));
   });
 
+router.route('/permissions')
+
+  /**
+   * All requests on this route require admin access.
+   */
+  .all((req, res, next) => {
+    if (!req.user.isAdmin()) return next(new error.Forbidden());
+    return next();
+  })
+
+  /**
+   * Changes account type of some users given a 'permissions' object with an array
+   * 'users' of email addresses and a 'target' field with the new account type.
+   */
+  .post((req, res, next) => {
+    if (!req.body.permissions.target || typeof req.body.permissions.target !== 'string'
+        || !User.rawAttributes.accessType.values.includes(req.body.permissions.target)) {
+      return next(new error.BadRequest('Permissions object with valid target account type must be provided'));
+    }
+    if (!req.body.permissions.users || !Array.isArray(req.body.permissions.users)) {
+      return next(new error.BadRequest('Permissions object with users array must be provided'));
+    }
+
+    const { users: emails, target } = req.body.permissions;
+
+
+    // use db transaction to ensure all operations go through (all changes rolled back
+    // if any one operation fails, e.g. invalid email)
+    return db.transaction({
+      isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
+    }, (transaction) => Promise.all(
+      emails.map((address) => User.findByEmail(address).then((user) => user.setAccessType(target)).catch(() => {
+        throw new error.BadRequest(`Something went wrong with email ${address}`);
+      })),
+    )).then(() => {
+      res.json({ error: null, emails });
+    }).catch((err) => next(err));
+  });
+
 module.exports = { router };

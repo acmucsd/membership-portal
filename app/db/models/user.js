@@ -223,6 +223,10 @@ module.exports = (Sequelize, db) => {
     return this.increment({ points });
   };
 
+  User.prototype.setAccessType = function (target) {
+    return this.update({ accessType: target });
+  };
+
   User.prototype.getPublicProfile = function () {
     return {
       firstName: this.getDataValue('firstName'),
