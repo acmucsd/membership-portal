@@ -1,9 +1,19 @@
 const Sequelize = require('sequelize');
 const express = require('express');
+const rateLimit = require('express-rate-limit');
+const config = require('../../../config');
 const error = require('../../../error');
 const { Event, Activity, Attendance, db } = require('../../../db');
 
 const router = express.Router();
+
+const limiter = rateLimit({
+  windowMs: config.rateLimits.attendance.windowMs,
+  max: config.rateLimits.attendance.max,
+});
+
+// apply to all attendance requests
+router.use(limiter);
 
 router.route('/:uuid?')
 

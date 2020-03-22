@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const email = require('../../../email');
 const config = require('../../../config');
 const log = require('../../../logger');
@@ -9,6 +10,14 @@ const { User, Activity } = require('../../../db');
 const router = express.Router();
 
 const TOKEN_EXPIRES = 86400; // 1 day in seconds
+
+const limiter = rateLimit({
+  windowMs: config.rateLimits.auth.windowMs,
+  max: config.rateLimits.auth.max,
+});
+
+// apply to all auth requests
+router.use(limiter);
 
 /**
  * Middleware function that determines if a user is authenticated and assigns req.user to their user info from the db.

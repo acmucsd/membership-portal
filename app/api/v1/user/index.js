@@ -1,9 +1,19 @@
 const Sequelize = require('sequelize');
 const express = require('express');
+const rateLimit = require('express-rate-limit');
+const config = require('../../../config');
 const error = require('../../../error');
 const { User, Activity, db } = require('../../../db');
 
 const router = express.Router();
+
+const limiter = rateLimit({
+  windowMs: config.rateLimits.user.windowMs,
+  max: config.rateLimits.user.max,
+});
+
+// apply to all user requests
+router.use(limiter);
 
 router.route('/')
 

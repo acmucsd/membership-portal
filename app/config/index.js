@@ -42,4 +42,27 @@ module.exports = {
     user: process.env.SENDGRID_USER,
     apiKey: process.env.SENDGRID_API_KEY,
   },
+
+  rateLimits: {
+    attendance: {
+      windowMs: 15 * 60 * 1000, // 15 minutes in ms
+      max: 25,
+    },
+    leaderboard: {
+      windowMs: 15 * 60 * 1000,
+      max: 25,
+    },
+    user: {
+      windowMs: 15 * 60 * 1000,
+      max: 25,
+    },
+    auth: {
+      windowMs: 24 * 60 * 60 * 1000, // 1 day in ms
+      max: 25,
+    },
+    event: {
+      windowMs: 15 * 60 * 1000,
+      max: 25,
+    },
+  },
 };

@@ -1,9 +1,19 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const error = require('../../../error');
+const config = require('../../../config');
 const { Event } = require('../../../db');
 const { authenticated } = require('../auth');
 
 const router = express.Router();
+
+const limiter = rateLimit({
+  windowMs: config.rateLimits.event.windowMs,
+  max: config.rateLimits.event.max,
+});
+
+// apply to all event requests
+router.use(limiter);
 
 /**
  * Get all past events as an ordered list of public events, sorted by ascending start date/time. Supports
