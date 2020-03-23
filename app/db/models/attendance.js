@@ -31,10 +31,10 @@ module.exports = (Sequelize, db) => {
       validate: {
         isUUID: {
           args: 4,
-          msg: 'Invalid value for user UUID',
+          msg: 'Invalid value for event UUID',
         },
         notEmpty: {
-          msg: 'The user UUID is a required field',
+          msg: 'The event UUID is a required field',
         },
       },
     },
