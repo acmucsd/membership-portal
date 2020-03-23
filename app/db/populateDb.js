@@ -26,7 +26,7 @@ module.exports = (User, Event) => Promise.all([
 
   User.create({
     email: 'stao@ucsd.edu',
-    accessType: 'STANDARD',
+    accessType: 'RESTRICTED',
     state: 'ACTIVE',
     firstName: 'Stone',
     lastName: 'Tao',

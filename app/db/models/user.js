@@ -241,7 +241,12 @@ module.exports = (Sequelize, db) => {
     if (!offset || offset < 0) offset = 0;
     if (!limit || limit < 0) limit = undefined;
     return this.findAll({
-      where: { accessType: { [Sequelize.Op.not]: 'ADMIN' } },
+      where: {
+        [Sequelize.Op.and]: [
+            { accessType: { [Sequelize.Op.not]: 'ADMIN' } },
+            { accessType: { [Sequelize.Op.not]: 'RESTRICTED' } }
+        ]
+      },
       offset,
       limit,
       order: [['points', 'DESC']],
