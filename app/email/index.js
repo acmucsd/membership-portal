@@ -28,27 +28,23 @@ const sendPasswordReset = (email, firstName, code) => {
 };
 
 const emailVerificationTemplate = readTemplate('emailVerification.ejs');
-const sendEmailVerification = async (email, firstName, code) => {
-  return new Promise((resolve, reject) => {
-    const data = {
-      to: email,
-      from: config.email.user,
-      subject: 'ACM UCSD Membership Portal Email Verification',
-      html: ejs.render(emailVerificationTemplate, {
-        firstName,
-        link: `${config.client}/verifyEmail/${email}/${code}`,
-      }),
-    };
-    sendEmail(data).then((res)=> {
-      log.info(`Sent verification email to ${email}`);
-      resolve();
-    }).catch((error) => {
-      log.warn(`Failed to send email verification email to ${config.email.user}: ${error}`);
-      reject();
-    });
-  })
-};
-
-
+const sendEmailVerification = async (email, firstName, code) => new Promise((resolve, reject) => {
+  const data = {
+    to: email,
+    from: config.email.user,
+    subject: 'ACM UCSD Membership Portal Email Verification',
+    html: ejs.render(emailVerificationTemplate, {
+      firstName,
+      link: `${config.client}/verifyEmail/${email}/${code}`,
+    }),
+  };
+  sendEmail(data).then(() => {
+    log.info(`Sent verification email to ${email}`);
+    resolve();
+  }).catch((error) => {
+    log.warn(`Failed to send email verification email to ${config.email.user}: ${error}`);
+    reject();
+  });
+});
 
 module.exports = { sendPasswordReset, sendEmailVerification };
