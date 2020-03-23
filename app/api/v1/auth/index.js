@@ -83,7 +83,7 @@ router.post('/register', (req, res, next) => {
     return next(new error.BadRequest('Password must be at least 10 characters long'));
   }
 
-  // TODO account activation via email
+
   const newUser = User.sanitize(req.body.user);
   newUser.state = 'ACTIVE';
   User.generateHash(req.body.user.password).then((hash) => {
@@ -107,6 +107,22 @@ router.post('/register', (req, res, next) => {
     }).catch((err) => next(err));
   }).catch(next);
 });
+
+/**
+ * Emails the user a email verification link
+ */
+ // TODO: RATE LIMIT THIS
+ router.post('/resendEmailVerification', (req, res, next) => {
+   if (!req.body.email) return next(new error.BadRequest('Email must be provided!'));
+   User.findByEmail(req.body.email).then((user) => {
+     user.createEmailVerificationCode().then((code) => {
+       email.sendEmailVerification(user.email, user.firstName, code).then(() => {
+         res.json({ error: null });
+       });
+     });
+   }).catch(next);
+
+ });
 
 /**
  * Emails the user a reset password link, given an email in the URI.
