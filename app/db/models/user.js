@@ -268,6 +268,8 @@ module.exports = (Sequelize, db) => {
       firstName: this.getDataValue('firstName'),
       lastName: this.getDataValue('lastName'),
       profilePicture: this.getDataValue('profilePicture'),
+      graduationYear: this.getDataValue('graduationYear'),
+      major: this.getDataValue('major'),
       points: this.getDataValue('points'),
     };
   };
@@ -275,6 +277,7 @@ module.exports = (Sequelize, db) => {
   User.prototype.getUserProfile = function () {
     return {
       uuid: this.getDataValue('uuid'),
+      accountType: this.getDataValue('accessType'),
       firstName: this.getDataValue('firstName'),
       lastName: this.getDataValue('lastName'),
       profilePicture: this.getDataValue('profilePicture'),
