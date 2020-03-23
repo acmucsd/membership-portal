@@ -92,15 +92,14 @@ router.post('/register', (req, res, next) => {
     db.transaction({
       isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
     }, (transaction) => Promise.all([
-        User.create(newUser).then((user) => {
-          user.createEmailVerificationCode().then((code) => {
-            email.sendEmailVerification(user.email, user.firstName, code)
-          })
-          return user;
-        })
-      ]
-    )).then((transactRes) => {
-      let user = transactRes[0];
+      User.create(newUser).then((user) => {
+        user.createEmailVerificationCode().then((code) => {
+          email.sendEmailVerification(user.email, user.firstName, code);
+        });
+        return user;
+      }),
+    ])).then((transactRes) => {
+      const user = transactRes[0];
       log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
       res.json({ error: null, user: user.getPublicProfile() });
       Activity.accountCreated(user.uuid);
@@ -111,17 +110,17 @@ router.post('/register', (req, res, next) => {
 /**
  * Emails the user a email verification link
  */
- // TODO: RATE LIMIT THIS
- router.post('/emailVerification', (req, res, next) => {
-   if (!req.body.email) return next(new error.BadRequest('Email must be provided!'));
-   User.findByEmail(req.body.email).then((user) => {
-     user.createEmailVerificationCode().then((code) => {
-       email.sendEmailVerification(user.email, user.firstName, code).then(() => {
-         res.json({ error: null });
-       });
-     });
-   }).catch(next);
- });
+// TODO: RATE LIMIT THIS
+router.post('/emailVerification', (req, res, next) => {
+  if (!req.body.email) return next(new error.BadRequest('Email must be provided!'));
+  User.findByEmail(req.body.email).then((user) => {
+    user.createEmailVerificationCode().then((code) => {
+      email.sendEmailVerification(user.email, user.firstName, code).then(() => {
+        res.json({ error: null });
+      });
+    });
+  }).catch(next);
+});
 
 /**
  * Emails the user a reset password link, given an email in the URI.
@@ -211,8 +210,8 @@ router.post('/verifyEmail', (req, res, next) => {
     return next(new error.BadRequest('Email and Email verification code must be provided'));
   }
 
-  User.findByEmail(req.body.email.toLowerCase()).then( async (user) => {
-    if (!user) return res.json({ error: "Invalid user email", verified: false });
+  User.findByEmail(req.body.email.toLowerCase()).then(async (user) => {
+    if (!user) return res.json({ error: 'Invalid user email', verified: false });
     user.verifyEmailVerificationCode(req.body.code).then((verified) => {
       if (!verified) return next(new error.BadRequest('Code is invalid'));
 
