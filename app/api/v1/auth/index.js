@@ -112,7 +112,7 @@ router.post('/register', (req, res, next) => {
  * Emails the user a email verification link
  */
  // TODO: RATE LIMIT THIS
- router.post('/resendEmailVerification', (req, res, next) => {
+ router.post('/emailVerification', (req, res, next) => {
    if (!req.body.email) return next(new error.BadRequest('Email must be provided!'));
    User.findByEmail(req.body.email).then((user) => {
      user.createEmailVerificationCode().then((code) => {
@@ -121,7 +121,6 @@ router.post('/register', (req, res, next) => {
        });
      });
    }).catch(next);
-
  });
 
 /**
