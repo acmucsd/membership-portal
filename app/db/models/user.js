@@ -137,7 +137,14 @@ module.exports = (Sequelize, db) => {
       },
     },
 
+    // total points the user's earned
     points: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+    },
+
+    // spendable store credits, 1 exp point = 100 store credits
+    credits: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
     },
@@ -220,7 +227,11 @@ module.exports = (Sequelize, db) => {
   };
 
   User.prototype.addPoints = function (points) {
-    return this.increment({ points });
+    return this.increment({ points, credits: points * 100 });
+  };
+
+  User.prototype.spendCredits = function (credits) {
+    return this.decrement({ credits });
   };
 
   User.prototype.getPublicProfile = function () {
@@ -243,6 +254,7 @@ module.exports = (Sequelize, db) => {
       graduationYear: this.getDataValue('graduationYear'),
       major: this.getDataValue('major'),
       points: this.getDataValue('points'),
+      credits: this.getDataValue('credits'),
     };
   };
 

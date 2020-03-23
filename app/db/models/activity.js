@@ -35,6 +35,7 @@ module.exports = (Sequelize, db) => {
     //   ACCOUNT_LOGIN              - the user logged into their account
     //   ATTEND_EVENT               - the user attended an event
     //   MILESTONE                  - a custom event (milestone)
+    //   ORDER_MERCHANDISE          - the user placed a merchandise order from the store
     type: {
       type: Sequelize.ENUM(
         'ACCOUNT_CREATE',
@@ -47,6 +48,7 @@ module.exports = (Sequelize, db) => {
         'ATTEND_EVENT_AS_STAFF',
         'BONUS_POINTS',
         'MILESTONE',
+        'ORDER_MERCHANDISE',
       ),
       allowNull: false,
     },
@@ -188,6 +190,14 @@ module.exports = (Sequelize, db) => {
       pointsEarned,
       type: 'MILESTONE',
       public: true,
+    });
+  };
+
+  Activity.orderMerchandise = function (user, description) {
+    return this.create({
+      user,
+      description,
+      type: 'ORDER_MERCHANDISE',
     });
   };
 

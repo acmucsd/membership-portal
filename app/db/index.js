@@ -21,6 +21,9 @@ const User = require('./models/user')(Sequelize, db);
 const Event = require('./models/event')(Sequelize, db);
 const Activity = require('./models/activity')(Sequelize, db);
 const Attendance = require('./models/attendance')(Sequelize, db);
+const Merchandise = require('./models/merchandise')(Sequelize, db);
+const Order = require('./models/order')(Sequelize, db);
+const OrderItem = require('./models/orderItem')(Sequelize, db);
 
 /**
  * Syncs database against models and adds the admin account if it doesn't exist.
@@ -44,4 +47,4 @@ const errorHandler = (err, req, res, next) => {
   return next(new error.HttpError(err.name, 500, err.message));
 };
 
-module.exports = { db, User, Event, Activity, Attendance, setup, errorHandler };
+module.exports = { db, User, Event, Activity, Attendance, Merchandise, Order, OrderItem, setup, errorHandler };
