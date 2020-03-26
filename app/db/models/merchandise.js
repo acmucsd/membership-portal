@@ -43,6 +43,12 @@ module.exports = (Sequelize, db) => {
       type: Sequelize.INTEGER,
       defaultValue: 0,
     },
+
+    hidden: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
   }, {
     indexes: [
       // a unique BTREE index on uuid -> lookup by UUID in O(log n)
@@ -68,7 +74,7 @@ module.exports = (Sequelize, db) => {
   Merchandise.getAllItems = function (offset, limit) {
     if (!offset || offset < 0) offset = 0;
     if (!limit || limit < 0) limit = undefined;
-    return this.findAll({ offset, limit });
+    return this.findAll({ where: { hidden: false }, offset, limit });
   };
 
   Merchandise.getDiscountedItems = function (offset, limit) {

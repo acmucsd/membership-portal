@@ -29,6 +29,11 @@ module.exports = {
         type: Sequelize.INTEGER,
         defaultValue: 0,
       },
+      hidden: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
     }).then(() => Promise.all([
       queryInterface.addIndex('"Merchandise"', {
         using: 'BTREE',
