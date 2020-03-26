@@ -7,6 +7,7 @@ const router = express.Router();
 router.use('/attendance', authenticated, require('./attendance').router);
 router.use('/leaderboard', authenticated, require('./leaderboard').router);
 router.use('/user', authenticated, require('./user').router);
+router.use('/store', authenticated, require('./store').router);
 
 // public API
 router.use('/auth', require('./auth').router);

@@ -75,8 +75,8 @@ module.exports = (Sequelize, db) => {
     return this.findOne({ where: { uuid } });
   };
 
-  Order.findAllByUser = function (uuid) {
-    return this.findAll({ where: { uuid }, order: [['orderedAt', 'DESC']] });
+  Order.findAllByUser = function (uuid, offset, limit) {
+    return this.findAll({ where: { uuid }, offset, limit, order: [['orderedAt', 'DESC']] });
   };
 
   return Order;

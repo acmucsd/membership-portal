@@ -76,6 +76,10 @@ module.exports = (Sequelize, db) => {
     return this.findAll({ where: { order } });
   };
 
+  OrderItem.itemHasBeenOrdered = function (item) {
+    return this.count({ where: { item } }).then((c) => c !== 0);
+  };
+
   OrderItem.prototype.fulfill = function () {
     return this.update({ fulfilled: true, fulfilledAt: Date.now() });
   };

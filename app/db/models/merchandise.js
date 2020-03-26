@@ -1,3 +1,5 @@
+const { pick } = require('underscore');
+
 module.exports = (Sequelize, db) => {
   const Merchandise = db.define('Merchandise', {
     id: {
@@ -88,9 +90,22 @@ module.exports = (Sequelize, db) => {
     });
   };
 
-  // TODO
-  Merchandise.sellItems = function (order) {
-    return this.decrement('quantity', {});
+  Merchandise.sanitize = function (item) {
+    if (item.addQuantity) item.quantity = Sequelize.literal(`quantity + ${item.addQuantity}`);
+    return pick(item, ['itemName', 'price', 'quantity', 'description', 'discountPercentage', 'hidden']);
+  };
+
+  Merchandise.destroyByUUID = function (uuid) {
+    return this.destroy({ where: { uuid } });
+  };
+
+  Merchandise.prototype.getPrice = function () {
+    const { price, discountPercentage } = this.get();
+    return Math.round(price * (1 - (discountPercentage / 100)));
+  };
+
+  Merchandise.prototype.updateQuantity = function (quantity) {
+    return this.decrement({ quantity });
   };
 
   return Merchandise;

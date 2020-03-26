@@ -226,6 +226,10 @@ module.exports = (Sequelize, db) => {
     return user;
   };
 
+  User.hasEnoughCredits = function (uuid, credits) {
+    return this.findOne({ where: { uuid } }).then((user) => user.credits >= credits);
+  };
+
   User.prototype.addPoints = function (points) {
     return this.increment({ points, credits: points * 100 });
   };
