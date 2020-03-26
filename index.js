@@ -9,7 +9,7 @@ const server = express();
 
 // enable CORS
 server.use((req, res, next) => {
-  const regex = '.*acmucsd.com';
+  const regex = '.*\\.acmucsd\\.com';
   let allowedOrigin = 'https://acmucsd.com';
   if (app.config.isDevelopment) {
     allowedOrigin = '*';
