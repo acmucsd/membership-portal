@@ -14,6 +14,9 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      picture: {
+        type: Sequelize.STRING,
+      },
       price: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
@@ -26,6 +29,10 @@ module.exports = {
         type: Sequelize.TEXT,
       },
       discountPercentage: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+      },
+      numSold: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
       },

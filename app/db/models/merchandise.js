@@ -27,14 +27,27 @@ module.exports = (Sequelize, db) => {
       },
     },
 
+    picture: {
+      type: Sequelize.STRING,
+      validate: {
+        isUrl: true,
+      },
+    },
+
     price: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
+      validate: {
+        min: 0,
+      },
     },
 
     quantity: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
+      validate: {
+        min: 0,
+      },
     },
 
     description: {
@@ -42,6 +55,14 @@ module.exports = (Sequelize, db) => {
     },
 
     discountPercentage: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+      validate: {
+        min: 0,
+      },
+    },
+
+    numSold: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
     },
@@ -67,6 +88,9 @@ module.exports = (Sequelize, db) => {
         where: { discountPercentage: { [Sequelize.Op.gt]: 0 } },
       },
     ],
+    freezeTableName: true,
+    tableName: 'Merchandise',
+    timestamps: false,
   });
 
   Merchandise.findByUUID = function (uuid) {
@@ -92,7 +116,7 @@ module.exports = (Sequelize, db) => {
 
   Merchandise.sanitize = function (item) {
     if (item.addQuantity) item.quantity = Sequelize.literal(`quantity + ${item.addQuantity}`);
-    return pick(item, ['itemName', 'price', 'quantity', 'description', 'discountPercentage', 'hidden']);
+    return pick(item, ['itemName', 'picture', 'price', 'quantity', 'description', 'discountPercentage', 'hidden']);
   };
 
   Merchandise.destroyByUUID = function (uuid) {
@@ -105,7 +129,7 @@ module.exports = (Sequelize, db) => {
   };
 
   Merchandise.prototype.updateQuantity = function (quantity) {
-    return this.decrement({ quantity });
+    return this.decrement({ quantity, numSold: quantity * -1 });
   };
 
   return Merchandise;
