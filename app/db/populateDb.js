@@ -1,4 +1,4 @@
-module.exports = (User, Event) => Promise.all([
+module.exports = (User, Event, Merchandise) => Promise.all([
   // all user passwords are 'password'
   User.create({
     email: 's3bansal@ucsd.edu',
@@ -120,5 +120,38 @@ module.exports = (User, Event) => Promise.all([
     end: new Date(Date.now() + 86400000),
     attendanceCode: 'p0ng',
     pointValue: 10,
+  }),
+
+  Merchandise.create({
+    itemName: 'Classic ACM Shirt',
+    price: 3000,
+    quantity: 20,
+    description: '100% cotton.',
+    discountPercentage: 5,
+    hidden: false,
+  }),
+
+  Merchandise.create({
+    itemName: 'ACM Shot Glass',
+    price: 750,
+    quantity: 5,
+    description: 'An ACM-branded shot glass.',
+    discountPercentage: 10,
+    hidden: false,
+  }),
+
+  Merchandise.create({
+    itemName: 'ACM Sticker Pack',
+    price: 600,
+    quantity: 25,
+    description: '4 stickers per pack.',
+    hidden: false,
+  }),
+
+  Merchandise.create({
+    itemName: 'ACM Socks',
+    price: 1200,
+    quantity: 12,
+    description: 'A pair of ACM-branded socks.',
   }),
 ]);

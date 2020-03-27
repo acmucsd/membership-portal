@@ -29,7 +29,7 @@ const OrderItem = require('./models/orderItem')(Sequelize, db);
  * Syncs database against models and adds the admin account if it doesn't exist.
  */
 const setup = (force, isDevelopment) => db.sync({ force })
-  .then(() => { if (isDevelopment) require('./populateDb')(User, Event); })
+  .then(() => { if (isDevelopment) require('./populateDb')(User, Event, Merchandise); })
   .then(() => User.findOrCreate({
     where: { email: config.admin.email },
     defaults: config.admin,
