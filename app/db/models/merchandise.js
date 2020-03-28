@@ -36,7 +36,7 @@ module.exports = (Sequelize, db) => {
 
     price: {
       type: Sequelize.INTEGER,
-      defaultValue: 0,
+      allowNull: false,
       validate: {
         min: 0,
       },
@@ -52,6 +52,7 @@ module.exports = (Sequelize, db) => {
 
     description: {
       type: Sequelize.TEXT,
+      allowNull: false,
     },
 
     discountPercentage: {
@@ -90,7 +91,6 @@ module.exports = (Sequelize, db) => {
     ],
     freezeTableName: true,
     tableName: 'Merchandise',
-    timestamps: false,
   });
 
   Merchandise.findByUUID = function (uuid) {
