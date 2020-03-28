@@ -97,10 +97,10 @@ module.exports = (Sequelize, db) => {
     return this.findOne({ where: { uuid } });
   };
 
-  Merchandise.getAllItems = function (offset, limit) {
+  Merchandise.getAllItems = function (isAdmin, offset, limit) {
     if (!offset || offset < 0) offset = 0;
     if (!limit || limit < 0) limit = undefined;
-    return this.findAll({ where: { hidden: false }, offset, limit });
+    return this.findAll(isAdmin ? { offset, limit } : { where: { hidden: false }, offset, limit });
   };
 
   Merchandise.getDiscountedItems = function (offset, limit) {
@@ -115,6 +115,8 @@ module.exports = (Sequelize, db) => {
   };
 
   Merchandise.sanitize = function (item) {
+    // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
+    delete item.quantity;
     if (item.addQuantity) item.quantity = Sequelize.literal(`quantity + ${item.addQuantity}`);
     return pick(item, ['itemName', 'picture', 'price', 'quantity', 'description', 'discountPercentage', 'hidden']);
   };

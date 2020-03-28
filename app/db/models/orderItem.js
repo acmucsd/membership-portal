@@ -80,8 +80,12 @@ module.exports = (Sequelize, db) => {
     return this.count({ where: { item } }).then((c) => c !== 0);
   };
 
-  OrderItem.prototype.fulfill = function () {
-    return this.update({ fulfilled: true, fulfilledAt: Date.now() });
+  OrderItem.prototype.isFulfilled = function () {
+    return this.fulfilled;
+  };
+
+  OrderItem.fulfill = function (uuid) {
+    return this.update({ fulfilled: true, fulfilledAt: Date.now() }, { where: { uuid } });
   };
 
   return OrderItem;
