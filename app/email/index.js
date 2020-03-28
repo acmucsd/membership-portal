@@ -23,7 +23,20 @@ const sendPasswordReset = (email, firstName, code) => {
     }),
   };
   sendEmail(data).catch((error) => {
-    log.warn(`Failed to send password reset email to ${config.email.user}: ${error}`);
+    log.warn(`Failed to send password reset email to ${email}: ${error}`);
+  });
+};
+
+const orderConfirmationTemplate = readTemplate('orderConfirmation.ejs');
+const sendOrderConfirmation = (email, firstName, order) => {
+  const data = {
+    to: email,
+    from: config.email.user,
+    subject: 'ACM UCSD Merch Store Order Confirmation',
+    html: ejs.render(orderConfirmationTemplate, {}),
+  };
+  sendEmail(data).catch((error) => {
+    log.warn(`Failed to send order confirmation email to ${email}: ${error}`);
   });
 };
 
