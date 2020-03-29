@@ -5,13 +5,19 @@ const { User, Activity, db } = require('../../../db');
 
 const router = express.Router();
 
-router.route('/')
+router.route('/:uuid?')
 
   /**
    * Gets user profile for current user.
    */
   .get((req, res, next) => {
-    res.json({ error: null, user: req.user.getUserProfile() });
+    if (!req.params.uuid || req.params.uuid === req.user.uuid) {
+      res.json({ error: null, user: req.user.getUserProfile() });
+      return;
+    }
+    User.findByUUID(req.params.uuid).then((user) => {
+      res.json({ error: null, user: user.getPublicProfile() });
+    }).catch(next);
   })
 
   /**
@@ -75,13 +81,6 @@ router.route('/')
       }).catch(next);
     }
   });
-
-router.get('/:id', (req, res, next) => {
-  User.findByUUID(req.params.id).then((user) => {
-    if (req.params.id !== req.user.uuid) user = user.getPublicProfile();
-    res.json({ error: null, user });
-  }).catch(next);
-});
 
 /**
  * Gets the current user's public activity (account creation, events attendances, etc).
