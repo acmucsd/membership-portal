@@ -9,7 +9,14 @@ const server = express();
 
 // enable CORS
 server.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', app.config.isDevelopment ? '*' : 'https://members.acmucsd.com');
+  const regex = '.*\\.acmucsd\\.com';
+  let allowedOrigin = 'https://acmucsd.com';
+  if (app.config.isDevelopment) {
+    allowedOrigin = '*';
+  } else if (req.headers.origin.match(regex)) {
+    allowedOrigin = req.headers.origin;
+  }
+  res.header('Access-Control-Allow-Origin', allowedOrigin);
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE, OPTIONS');
 
