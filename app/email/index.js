@@ -33,11 +33,11 @@ const sendOrderConfirmation = (email, firstName, order) => {
     to: email,
     from: config.email.user,
     subject: 'ACM UCSD Merch Store Order Confirmation',
-    html: ejs.render(orderConfirmationTemplate, {}),
+    html: ejs.render(orderConfirmationTemplate, { firstName, order }),
   };
   sendEmail(data).catch((error) => {
     log.warn(`Failed to send order confirmation email to ${email}: ${error}`);
   });
 };
 
-module.exports = { sendPasswordReset };
+module.exports = { sendPasswordReset, sendOrderConfirmation };

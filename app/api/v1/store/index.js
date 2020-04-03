@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const express = require('express');
-const { flatten, any } = require('underscore');
+const { any, flatten, pick } = require('underscore');
+const email = require('../../../email');
 const error = require('../../../error');
 const { Activity, User, Merchandise, Order, OrderItem, db } = require('../../../db');
 
@@ -137,13 +138,24 @@ router.route('/order/:uuid?')
             return Promise.all([
               OrderItem.bulkCreate(orderItems),
               Activity.orderMerchandise(req.user.uuid, `Order ${order.uuid}`),
-            ]);
+            ]).then(() => order);
           }),
           Promise.all(items.map((i) => i.updateQuantity(i.quantityRequested))),
           req.user.spendCredits(totalCost),
         ]);
       });
-    })).then(() => res.json({ error: null })).catch(next);
+    })).then(([order, merch]) => {
+      order = pick(order, ['uuid', 'orderedAt', 'totalCost']);
+      order.items = merch
+        .filter((m) => m.quantityRequested > 0)
+        .map((m) => {
+          m.total = m.price * m.quantityRequested;
+          return m;
+        })
+        .map((m) => pick(m, ['itemName', 'price', 'picture', 'description', 'quantityRequested', 'total']));
+      email.sendOrderConfirmation(req.user.email, req.user.firstName, order);
+      res.json({ error: null, order });
+    }).catch(next);
   })
 
   /**
