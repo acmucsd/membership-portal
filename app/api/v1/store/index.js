@@ -115,7 +115,6 @@ router.route('/order/:uuid?')
    * and 'quantity' fields in the request body, if the user has enough credits and there are enough
    * units of each item in stock.
    */
-  // TODO email
   .post((req, res, next) => {
     if (!req.body.order) return next(new error.BadRequest('Items list must be provided'));
     // a db transaction to ensure all values (e.g. units in stock, user's credits) are the most current
