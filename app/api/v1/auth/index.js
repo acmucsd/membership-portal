@@ -93,11 +93,17 @@ router.post('/register', (req, res, next) => {
       isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
     }, (transaction) => Promise.all([
       User.create(newUser).then((user) => {
-        user.createEmailVerificationCode().then((code) => {
-          email.sendEmailVerification(user.email, user.firstName, code);
+        User.generateAccessCode().then((code) => {
+          user.accessCode = code;
+          email.sendEmailVerification(user.email, user.firstName, code).then(() => {
+            // save the access code if email was sent
+            user.save();
+          }).catch(() => {
+            throw new error.BadRequest(`Something went wrong with sending email verification to ${user.email}`);
+          })
         });
         return user;
-      }),
+      })
     ])).then((transactRes) => {
       const user = transactRes[0];
       log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
@@ -114,10 +120,13 @@ router.post('/register', (req, res, next) => {
 router.post('/emailVerification', (req, res, next) => {
   if (!req.body.email) return next(new error.BadRequest('Email must be provided!'));
   User.findByEmail(req.body.email).then((user) => {
-    user.createEmailVerificationCode().then((code) => {
+    if (!user) return next(new error.BadRequest('Invalid email'));
+    User.generateAccessCode().then((code) => {
+      user.accessCode = code;
       email.sendEmailVerification(user.email, user.firstName, code).then(() => {
+        user.save();
         res.json({ error: null });
-      });
+      }).catch(next)
     });
   }).catch(next);
 });
@@ -168,6 +177,8 @@ router.post('/resetPassword/:accessCode', (req, res, next) => {
     return User.generateHash(req.body.user.newPassword).then((hash) => {
       user.hash = hash;
       user.state = 'ACTIVE';
+      // as user reset password, it means their email must be valid
+      user.validateEmail();
       return user.save();
     });
   }).then((user) => {
@@ -209,17 +220,17 @@ router.post('/verifyEmail', (req, res, next) => {
   if (!req.body.code || !req.body.email) {
     return next(new error.BadRequest('Email and Email verification code must be provided'));
   }
-
   User.findByEmail(req.body.email.toLowerCase()).then(async (user) => {
     if (!user) return res.json({ error: 'Invalid user email', verified: false });
-    user.verifyEmailVerificationCode(req.body.code).then((verified) => {
-      if (!verified) return next(new error.BadRequest('Code is invalid'));
-
+    if (user.accessCode === req.body.code) {
       user.validateEmail().then(() => {
         log.info('user authentication (email verified)', { request_id: req.id, user_uuid: user.uuid });
         res.json({ error: null, verified: true });
       }).catch(next);
-    });
+    }
+    else {
+      return next(new error.BadRequest('Code is invalid'));
+    }
   }).catch(next);
 });
 

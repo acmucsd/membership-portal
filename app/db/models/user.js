@@ -202,31 +202,6 @@ module.exports = (Sequelize, db) => {
     });
   };
 
-
-  // Creates a code that is dependent on the user's data, which is assumed to be unchanged since registration
-  User.prototype.createEmailVerificationCode = function () {
-    const codePart = this.createEmailVerificationCodePart();
-    return new Promise((resolve, reject) => {
-      bcrypt.hash(codePart, SALT_ROUNDS).then((hash) => {
-        resolve(hash.replace(/\//g, '[sacm]'));
-      }).catch((error) => {
-        reject(error);
-      });
-    });
-  };
-
-  // Generates a code part based on this user entry to be used for email verification
-  User.prototype.createEmailVerificationCodePart = function () {
-    return this.getDataValue('email') + this.getDataValue('uuid') + this.getDataValue('id');
-  };
-
-  // Verifies if email verification code corresponds with this user
-  User.prototype.verifyEmailVerificationCode = function (code) {
-    const codePart = this.createEmailVerificationCodePart();
-    code = code.replace(/(\[sacm\])/, '/');
-    return bcrypt.compare(codePart, code);
-  };
-
   // Verifies user's email by setting their account type to STANDARD if it is RESTRICTED
   User.prototype.validateEmail = function () {
     if (this.accessType === 'RESTRICTED') {
