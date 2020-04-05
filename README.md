@@ -31,9 +31,6 @@ RDS_PASSWORD=password
 
 AUTH_SECRET=secret
 
-SENDGRID_USER=
-SENDGRID_API_KEY=
-
 CLIENT=localhost:8000
 ```
 **Note**: For Windows users, `localhost` won't work&mdash;you'll need to set `RDS_HOST` to [the Docker Machine's IP address](https://docs.docker.com/machine/reference/ip/).
@@ -51,6 +48,6 @@ CLIENT=localhost:8000
 Take a look at [`package.json`](https://github.com/acmucsd/membership-portal/blob/master/package.json) for the actual commands.
 
 #### Database Migrations
-To write database migrations, take a look at the [Sequelize documentation](https://sequelize.org/master/manual/migrations.html) and [previous migrations](https://github.com/acmucsd/membership-portal/tree/master/app/db/migrations). Everything's already configured via [`.sequelizerc`](https://github.com/acmucsd/membership-portal/blob/master/.sequelizerc) so executing `npm run db:migrate` should work. Migrations on the production database automatically run upon deployment using Heroku's [`release` phrase](https://devcenter.heroku.com/articles/release-phase) (configured in the [Procfile](https://github.com/acmucsd/membership-portal/blob/master/Procfile#L1)).
+To write database migrations, take a look at the [Sequelize documentation](https://sequelize.org/master/manual/migrations.html) and [previous migrations](https://github.com/acmucsd/membership-portal/tree/master/app/db/migrations). Everything's already configured via [`.sequelizerc`](https://github.com/acmucsd/membership-portal/blob/master/.sequelizerc) so executing `npm run db:migrate` should work. Migrations on the production database automatically run upon deployment using Heroku's [`release` phase](https://devcenter.heroku.com/articles/release-phase) (configured in the [Procfile](https://github.com/acmucsd/membership-portal/blob/master/Procfile#L1)).
 
 
