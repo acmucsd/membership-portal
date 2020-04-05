@@ -28,7 +28,7 @@ const sendPasswordReset = (email, firstName, code) => {
 };
 
 const emailVerificationTemplate = readTemplate('emailVerification.ejs');
-const sendEmailVerification = async (email, firstName, code) => new Promise((resolve, reject) => {
+const sendEmailVerification = async (email, firstName, code) => {
   const data = {
     to: email,
     from: config.email.user,
@@ -38,13 +38,7 @@ const sendEmailVerification = async (email, firstName, code) => new Promise((res
       link: `${config.client}/verifyEmail/${email}/${code}`,
     }),
   };
-  sendEmail(data).then(() => {
-    log.info(`Sent verification email to ${email}`);
-    resolve();
-  }).catch((error) => {
-    log.warn(`Failed to send email verification email to ${config.email.user}: ${error}`);
-    reject();
-  });
-});
+  return sendEmail(data);
+};
 
 module.exports = { sendPasswordReset, sendEmailVerification };

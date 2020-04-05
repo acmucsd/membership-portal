@@ -91,21 +91,20 @@ router.post('/register', (req, res, next) => {
     // require that we create a user succesfully and send email succesfully
     db.transaction({
       isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
-    }, (transaction) => Promise.all([
-      User.create(newUser).then((user) => {
-        User.generateAccessCode().then((code) => {
-          user.accessCode = code;
+    }, (transaction) =>
+      User.generateAccessCode().then((code) => {
+        newUser.accessCode = code;
+        return User.create(newUser).then((user) => {
           email.sendEmailVerification(user.email, user.firstName, code).then(() => {
-            // save the access code if email was sent
-            user.save();
           }).catch(() => {
             throw new error.BadRequest(`Something went wrong with sending email verification to ${user.email}`);
           });
+          return user;
         });
-        return user;
+        
       }),
-    ])).then((transactRes) => {
-      const user = transactRes[0];
+    ).then((transactRes) => {
+      const user = transactRes;
       log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
       res.json({ error: null, user: user.getPublicProfile() });
       Activity.accountCreated(user.uuid);
@@ -120,11 +119,12 @@ router.post('/register', (req, res, next) => {
 router.post('/emailVerification', (req, res, next) => {
   if (!req.body.email) return next(new error.BadRequest('Email must be provided!'));
   User.findByEmail(req.body.email).then((user) => {
-    if (!user) return next(new error.BadRequest('Invalid email'));
-    User.generateAccessCode().then((code) => {
+    if (!user) throw new error.BadRequest('Invalid email');
+    User.generateAccessCode().then(async (code) => {
       user.accessCode = code;
+      // wait for user to save first before sending email
+      await user.save();
       email.sendEmailVerification(user.email, user.firstName, code).then(() => {
-        user.save();
         res.json({ error: null });
       }).catch(next);
     });
@@ -174,11 +174,11 @@ router.post('/resetPassword/:accessCode', (req, res, next) => {
   User.findByAccessCode(req.params.accessCode).then((user) => {
     // if no such user was found, the access code must be invalid/non-existent
     if (!user || !user.requestedPasswordReset()) throw new error.BadRequest('Invalid access code');
-    return User.generateHash(req.body.user.newPassword).then((hash) => {
+    return User.generateHash(req.body.user.newPassword).then(async (hash) => {
       user.hash = hash;
       user.state = 'ACTIVE';
       // as user reset password, it means their email must be valid
-      user.validateEmail();
+      await user.validateEmail();
       return user.save();
     });
   }).then((user) => {
