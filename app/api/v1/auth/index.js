@@ -100,10 +100,10 @@ router.post('/register', (req, res, next) => {
             user.save();
           }).catch(() => {
             throw new error.BadRequest(`Something went wrong with sending email verification to ${user.email}`);
-          })
+          });
         });
         return user;
-      })
+      }),
     ])).then((transactRes) => {
       const user = transactRes[0];
       log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
@@ -126,7 +126,7 @@ router.post('/emailVerification', (req, res, next) => {
       email.sendEmailVerification(user.email, user.firstName, code).then(() => {
         user.save();
         res.json({ error: null });
-      }).catch(next)
+      }).catch(next);
     });
   }).catch(next);
 });
@@ -227,8 +227,7 @@ router.post('/verifyEmail', (req, res, next) => {
         log.info('user authentication (email verified)', { request_id: req.id, user_uuid: user.uuid });
         res.json({ error: null, verified: true });
       }).catch(next);
-    }
-    else {
+    } else {
       return next(new error.BadRequest('Code is invalid'));
     }
   }).catch(next);
