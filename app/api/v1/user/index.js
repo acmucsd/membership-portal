@@ -2,8 +2,16 @@ const Sequelize = require('sequelize');
 const express = require('express');
 const error = require('../../../error');
 const { User, Activity, db } = require('../../../db');
+const storage = require('../../../storage');
 
 const router = express.Router();
+
+router.post('/picture', storage.single('image'), (req, res, next) => {
+  // TODO make sure image doesn't exceed some max file size
+  const { location } = req.file;
+  req.user.updateProfilePicture(location);
+  res.json({ error: null, location });
+});
 
 router.route('/:uuid?')
 

@@ -1,6 +1,7 @@
 const aws = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
+const path = require('path');
 const config = require('../config');
 
 const s3 = new aws.S3({
@@ -15,7 +16,7 @@ const s3Upload = multer({
     bucket: config.s3.bucket,
     acl: 'public-read',
     key: (req, file, next) => {
-      next(null, `portal/profiles/${req.user.uuid}`);
+      next(null, `portal/profiles/${req.user.uuid}${path.extname(file.originalname)}`);
     },
   }),
 });
