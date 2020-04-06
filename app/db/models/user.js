@@ -42,7 +42,7 @@ module.exports = (Sequelize, db) => {
     },
 
     // account type
-    //   RESTRICTED - not used currently / email not verified yet
+    //   RESTRICTED - unverified user / member
     //   STANDARD   - a regular ACM member
     //   STAFF      - a Diamond Staff member
     //   ADMIN      - admin type user

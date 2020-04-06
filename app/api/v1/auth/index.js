@@ -133,18 +133,18 @@ router.get('/emailVerification/:email', (req, res, next) => {
  * Responds with a JSON object with fields 'error', 'verified' (if a user is succesfully verified)
  */
 router.post('/emailVerification/:accessCode', (req, res, next) => {
-  if (!req.params.accessCode || !req.body.email) {
-    return next(new error.BadRequest('Email and Email verification code must be provided'));
+  if (!req.params.accessCode) {
+    return next(new error.BadRequest('Email verification code must be provided'));
   }
-  User.findByEmail(req.body.email.toLowerCase()).then(async (user) => {
-    if (!user) return res.json({ error: 'Invalid user email', verified: false });
+  User.findByAccessCode(req.params.accessCode).then(async (user) => {
+    if (!user) throw new error.BadRequest('Code is invalid');
     if (user.accessCode === req.params.accessCode) {
       user.validateEmail().then(() => {
         log.info('user authentication (email verified)', { request_id: req.id, user_uuid: user.uuid });
         res.json({ error: null, verified: true });
       }).catch(next);
     } else {
-      return next(new error.BadRequest('Code is invalid'));
+      throw new error.BadRequest('Code is invalid');
     }
   }).catch(next);
 });
