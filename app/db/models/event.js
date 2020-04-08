@@ -179,6 +179,7 @@ module.exports = (Sequelize, db) => {
       // for lookup by UUID
       {
         using: 'BTREE',
+        unique: true,
         fields: ['uuid'],
       },
 

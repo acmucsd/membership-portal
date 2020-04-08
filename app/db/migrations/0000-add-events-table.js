@@ -64,6 +64,7 @@ module.exports = {
     }).then(() => Promise.all([
       queryInterface.addIndex(TABLE_NAME, {
         using: 'BTREE',
+        unique: true,
         fields: ['uuid'],
         transaction: t,
       }),
