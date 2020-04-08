@@ -43,9 +43,11 @@ CLIENT=localhost:8000
 + `npm install` to install the necessary dependencies
 + `npm run dev` to run the Node app with [Nodemon](https://nodemon.io/)
 + `npm run lint` to lint the Node app with [ESLint](https://eslint.org/) (without `--fix`)
-+ `npm run test` to run the test suite with [Jest](https://jestjs.io/)
 + `npm run lint:fix` to handle the simple linter issues automatically
++ `npm run test` to run the test suite with [Jest](https://jestjs.io/)
 + `npm run db:migrate` to run any new database migrations
++ `npm run db:seed` to populate the database with seeds
++ `npm run db:unseed` to completely clear the database
 + `docker exec -it rds.acmucsd.local psql -U [RDS_USER] -d [RDS_DATABASE]` to access Postgres (`RDS_XYZ` from `.env`).
 
 Take a look at [`package.json`](https://github.com/acmucsd/membership-portal/blob/master/package.json) for the actual commands.
