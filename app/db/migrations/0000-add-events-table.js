@@ -71,7 +71,7 @@ module.exports = {
       queryInterface.addIndex(TABLE_NAME, {
         using: 'BTREE',
         name: 'event_start_end_index',
-        fields: [{ attribute: 'start', order: 'DESC' }, { attribute: 'end', order: 'DESC' }],
+        fields: [{ attribute: 'start', order: 'ASC' }, { attribute: 'end', order: 'ASC' }],
         transaction: t,
       }),
       queryInterface.addIndex(TABLE_NAME, {

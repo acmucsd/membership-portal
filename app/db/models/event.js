@@ -187,7 +187,7 @@ module.exports = (Sequelize, db) => {
       {
         using: 'BTREE',
         name: 'event_start_end_index',
-        fields: [{ attribute: 'start', order: 'DESC' }, { attribute: 'end', order: 'DESC' }],
+        fields: [{ attribute: 'start', order: 'ASC' }, { attribute: 'end', order: 'ASC' }],
       },
 
       // for retrieving all events a committee is hosting
