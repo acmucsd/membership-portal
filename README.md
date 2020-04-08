@@ -11,7 +11,9 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 5. Create a new `.env` file using `.env.example` as a template: `cp .env.example .env`.
 6. Fill out the `.env`. See the [example file below](#sample-env).
 7. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`.
-8. Start the Node app: `npm run dev`.
+8. Initialize the database: `npm run db:migrate`.
+9. Populate the database: `npm run db:seed`.
+10. Start the Node app: `npm run dev`.
 
 #### Installing Postgres
 MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/), run the installer, and add the Postgres bin to the PATH environment variable.
@@ -46,6 +48,7 @@ CLIENT=localhost:8000
 + `npm run lint:fix` to handle the simple linter issues automatically
 + `npm run test` to run the test suite with [Jest](https://jestjs.io/)
 + `npm run db:migrate` to run any new database migrations
++ `npm run db:rollback` to roll back the last database migration
 + `npm run db:seed` to populate the database with seeds
 + `npm run db:unseed` to completely clear the database
 + `docker exec -it rds.acmucsd.local psql -U [RDS_USER] -d [RDS_DATABASE]` to access Postgres (`RDS_XYZ` from `.env`).
