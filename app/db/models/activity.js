@@ -74,40 +74,18 @@ module.exports = (Sequelize, db) => {
     },
   }, {
     indexes: [
-      // a hash index on uuid -> lookup by UUID in O(1)
+      // for lookup by UUID
       {
-        unique: true,
+        using: 'BTREE',
         fields: ['uuid'],
       },
 
-      // a BTREE index on type -> retrieving activities by type O(n)
+      // for retrieving all public activities for a user
       {
-        name: 'activity_type_btree_index',
-        method: 'BTREE',
-        fields: ['type', { attribute: 'type', order: 'ASC' }],
-      },
-
-      // a BTREE index on public -> retrieving public activities in O(n), where
-      // n: number of public activities
-      {
-        name: 'activity_public_btree_index',
-        method: 'BTREE',
-        fields: ['public', { attribute: 'public', order: 'ASC' }],
-      },
-
-      // a BTREE index on date -> retrieving all events in chronological order in O(n)
-      {
-        name: 'activity_date_btree_index',
-        method: 'BTREE',
-        fields: ['date', { attribute: 'date', order: 'ASC' }],
-      },
-
-      // a BTREE index on user -> retrieving all events for a user in O(n), where
-      // n: number of activities for given user
-      {
-        name: 'activity_user_btree_index',
-        method: 'BTREE',
-        fields: ['user', { attribute: 'user', order: 'ASC' }],
+        using: 'BTREE',
+        name: 'public_activities_by_user_index',
+        fields: ['user'],
+        where: { public: true },
       },
     ],
   });
