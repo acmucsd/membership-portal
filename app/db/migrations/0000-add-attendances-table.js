@@ -19,7 +19,7 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
-      date: {
+      timestamp: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,
       },

@@ -40,7 +40,7 @@ module.exports = (Sequelize, db) => {
     },
 
     // stored as UTC datetime string, not Pacific
-    date: {
+    timestamp: {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW,
     },
@@ -96,7 +96,7 @@ module.exports = (Sequelize, db) => {
       uuid: this.getDataValue('uuid'),
       user: this.getDataValue('user'),
       event: this.getDataValue('event'),
-      date: this.getDataValue('date'),
+      timestamp: this.getDataValue('timestamp'),
       asStaff: this.getDataValue('asStaff'),
     };
   };

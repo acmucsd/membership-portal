@@ -35,7 +35,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         defaultValue: 0,
       },
-      date: {
+      timestamp: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,
       },

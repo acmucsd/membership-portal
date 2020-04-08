@@ -62,7 +62,7 @@ module.exports = (Sequelize, db) => {
       defaultValue: 0,
     },
 
-    date: {
+    timestamp: {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW,
     },
@@ -179,7 +179,7 @@ module.exports = (Sequelize, db) => {
       uuid: this.getDataValue('uuid'),
       user: this.getDataValue('user'),
       type: this.getDataValue('type'),
-      date: this.getDataValue('date'),
+      timestamp: this.getDataValue('timestamp'),
       description: this.getDataValue('description'),
       pointsEarned: this.getDataValue('pointsEarned'),
     };
