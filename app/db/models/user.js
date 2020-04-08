@@ -149,6 +149,7 @@ module.exports = (Sequelize, db) => {
       defaultValue: Sequelize.NOW,
     },
   }, {
+    timestamps: false,
     indexes: [
       // a hash index on uuid -> lookup by UUID in O(1)
       {
