@@ -88,20 +88,21 @@ router.post('/register', (req, res, next) => {
   newUser.state = 'ACTIVE';
   User.generateHash(req.body.user.password).then((hash) => {
     newUser.hash = hash;
-    // require that we create a user succesfully and send email succesfully
+    // require that we create a user successfully and send email succesfully
     db.transaction({
       isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
     }, (transaction) => User.generateAccessCode().then((code) => {
       newUser.accessCode = code;
+      console.log(newUser.accessCode);
       return User.create(newUser).then((user) => {
-        email.sendEmailVerification(user.email, user.firstName, code).then(() => {
+        return email.sendEmailVerification(user.email, user.firstName, code).then(() => {
+        }).then(() => {
+          return user;
         }).catch(() => {
           throw new error.BadRequest(`Something went wrong with sending email verification to ${user.email}`);
         });
-        return user;
       });
-    })).then((transactRes) => {
-      const user = transactRes;
+    })).then((user) => {
       log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
       res.json({ error: null, user: user.getPublicProfile() });
       Activity.accountCreated(user.uuid);
@@ -110,7 +111,8 @@ router.post('/register', (req, res, next) => {
 });
 
 /**
- * Emails the user a email verification link
+ * Emails the user a email verification link given an email in the URI.
+ * Responds with a JSON object with fields 'error' if successful
  */
 // TODO: RATE LIMIT THIS
 router.get('/emailVerification/:email', (req, res, next) => {
@@ -129,23 +131,19 @@ router.get('/emailVerification/:email', (req, res, next) => {
 });
 
 /**
- * Verifies a user's email based on a code sent out to the user's provided email
+ * Verifies a user's email given an accessCode in the URI
  * Responds with a JSON object with fields 'error', 'verified' (if a user is succesfully verified)
  */
 router.post('/emailVerification/:accessCode', (req, res, next) => {
   if (!req.params.accessCode) {
     return next(new error.BadRequest('Email verification code must be provided'));
   }
-  User.findByAccessCode(req.params.accessCode).then(async (user) => {
+  User.findByAccessCode(req.params.accessCode).then((user) => {
     if (!user) throw new error.BadRequest('Code is invalid');
-    if (user.accessCode === req.params.accessCode) {
-      user.validateEmail().then(() => {
-        log.info('user authentication (email verified)', { request_id: req.id, user_uuid: user.uuid });
-        res.json({ error: null, verified: true });
-      }).catch(next);
-    } else {
-      throw new error.BadRequest('Code is invalid');
-    }
+    user.validateEmail().then(() => {
+      log.info('user authentication (email verified)', { request_id: req.id, user_uuid: user.uuid });
+      res.json({ error: null, verified: true });
+    }).catch(next);
   }).catch(next);
 });
 
@@ -192,12 +190,11 @@ router.post('/resetPassword/:accessCode', (req, res, next) => {
   User.findByAccessCode(req.params.accessCode).then((user) => {
     // if no such user was found, the access code must be invalid/non-existent
     if (!user || !user.requestedPasswordReset()) throw new error.BadRequest('Invalid access code');
-    return User.generateHash(req.body.user.newPassword).then(async (hash) => {
+    return User.generateHash(req.body.user.newPassword).then((hash) => {
       user.hash = hash;
       user.state = 'ACTIVE';
       // as user reset password, it means their email must be valid
-      await user.validateEmail();
-      return user.save();
+      return user.validateEmail().then(() => user.save());
     });
   }).then((user) => {
     log.info('user authentication (password reset - access code)', { request_id: req.id, user_uuid: user.uuid });
