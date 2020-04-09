@@ -93,15 +93,10 @@ router.post('/register', (req, res, next) => {
       isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
     }, (transaction) => User.generateAccessCode().then((code) => {
       newUser.accessCode = code;
-      console.log(newUser.accessCode);
-      return User.create(newUser).then((user) => {
-        return email.sendEmailVerification(user.email, user.firstName, code).then(() => {
-        }).then(() => {
-          return user;
-        }).catch(() => {
+      return User.create(newUser).then((user) => email.sendEmailVerification(user.email, user.firstName, code)
+        .then(() => user).catch(() => {
           throw new error.BadRequest(`Something went wrong with sending email verification to ${user.email}`);
-        });
-      });
+        }));
     })).then((user) => {
       log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
       res.json({ error: null, user: user.getPublicProfile() });
