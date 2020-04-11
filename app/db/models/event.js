@@ -175,31 +175,25 @@ module.exports = (Sequelize, db) => {
     },
 
   }, {
+    timestamps: false,
     indexes: [
-      // a hash index on uuid -> lookup by UUID in O(1)
+      // for lookup by UUID
       {
+        using: 'BTREE',
         unique: true,
         fields: ['uuid'],
       },
 
-      // a BTREE index on the start datetime -> retrieving all events in chronological order in O(n)
+      // for retrieving all events in chronological order
       {
-        name: 'event_start_date_index',
-        method: 'BTREE',
-        fields: ['start', { attribute: 'start', order: 'DESC' }],
+        using: 'BTREE',
+        name: 'event_start_end_index',
+        fields: [{ attribute: 'start', order: 'ASC' }, { attribute: 'end', order: 'ASC' }],
       },
 
-      // a BTREE index on the end datetime -> retrieving all events in chronological order in O(n)
+      // for retrieving all events a committee is hosting
       {
-        name: 'event_end_date_index',
-        method: 'BTREE',
-        fields: ['end', { attribute: 'end', order: 'DESC' }],
-      },
-
-      // a BTREE index on committee -> retrieving all events a committee is hosting in O(n)
-      {
-        name: 'committee_index',
-        method: 'BTREE',
+        using: 'BTREE',
         fields: ['committee'],
       },
     ],

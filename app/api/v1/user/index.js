@@ -6,11 +6,95 @@ const storage = require('../../../storage');
 
 const router = express.Router();
 
+/**
+ * Gets the current user's public activity (account creation, events attendances, etc).
+ */
+router.get('/activity', (req, res, next) => {
+  Activity.getPublicStream(req.user.uuid).then((activity) => {
+    res.json({ error: null, activity: activity.map((a) => a.getPublic()) });
+  }).catch(next);
+});
+
+/**
+ * Uploads a profile picture for the current user.
+ */
 router.post('/picture', storage.single('image'), (req, res, next) => {
   const { location } = req.file;
   req.user.updateProfilePicture(location);
   res.json({ error: null, location });
 });
+
+router.route('/milestone')
+
+  /**
+   * All requests on this route require admin access.
+   */
+  .all((req, res, next) => {
+    if (!req.user.isAdmin()) return next(new error.Forbidden());
+    return next();
+  })
+
+  /**
+   * Create a milestone for all users.
+   */
+  .post((req, res, next) => {
+    if (!req.body.milestone || !req.body.milestone.name || typeof req.body.milestone.name !== 'string') {
+      return next(new error.BadRequest('Milestone object with name must be provided'));
+    }
+
+    User.findAll({}).then((users) => {
+      users.forEach((user) => {
+        Activity.createMilestone(user.uuid, req.body.milestone.name, user.points);
+        if (req.body.milestone.resetPoints) {
+          user.update({ points: 0 });
+        }
+      });
+    }).then(() => res.json({ error: null })).catch(next);
+  });
+
+router.route('/bonus')
+
+  /**
+   * All requests on this route require admin access.
+   */
+  .all((req, res, next) => {
+    if (!req.user.isAdmin()) return next(new error.Forbidden());
+    return next();
+  })
+
+  /**
+   * Grants bonus points to some users given a 'bonus' object with an array
+   * 'users' of email addresses, a 'points' field with the point value of
+   * the bonus, and a 'description' field with some context for the bonus.
+   */
+  .post((req, res, next) => {
+    if (!req.body.bonus || !req.body.bonus.description || typeof req.body.bonus.description !== 'string') {
+      return next(new error.BadRequest('Bonus object with description must be provided'));
+    }
+    if (!req.body.bonus.users || !Array.isArray(req.body.bonus.users)) {
+      return next(new error.BadRequest('Bonus object with users array must be provided'));
+    }
+    if (!req.body.bonus.points || req.body.bonus.points < 0) {
+      return next(new error.BadRequest('Bonus object with non-negative point value must be provided'));
+    }
+
+    const { users: emails, description, points } = req.body.bonus;
+
+    // use db transaction to ensure all operations go through (all changes rolled back
+    // if any one operation fails, e.g. invalid email)
+    return db.transaction({
+      isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
+    }, (transaction) => Promise.all(
+      emails.map((address) => User.findByEmail(address).then((user) => Promise.all([
+        Activity.grantBonusPoints(user.uuid, description, points),
+        user.addPoints(points),
+      ])).catch(() => {
+        throw new error.BadRequest(`Something went wrong with email ${address}`);
+      })),
+    )).then(() => {
+      res.json({ error: null, emails });
+    }).catch((err) => next(err));
+  });
 
 router.route('/:uuid?')
 
@@ -87,87 +171,6 @@ router.route('/:uuid?')
         Activity.accountUpdatedInfo(user.uuid, Object.keys(updatedUser).join(', '));
       }).catch(next);
     }
-  });
-
-/**
- * Gets the current user's public activity (account creation, events attendances, etc).
- */
-router.get('/activity', (req, res, next) => {
-  Activity.getPublicStream(req.user.uuid).then((activity) => {
-    res.json({ error: null, activity: activity.map((a) => a.getPublic()) });
-  }).catch(next);
-});
-
-router.route('/milestone')
-
-  /**
-   * All requests on this route require admin access.
-   */
-  .all((req, res, next) => {
-    if (!req.user.isAdmin()) return next(new error.Forbidden());
-    return next();
-  })
-
-  /**
-   * Create a milestone for all users.
-   */
-  .post((req, res, next) => {
-    if (!req.body.milestone || !req.body.milestone.name || typeof req.body.milestone.name !== 'string') {
-      return next(new error.BadRequest('Milestone object with name must be provided'));
-    }
-
-    User.findAll({}).then((users) => {
-      users.forEach((user) => {
-        Activity.createMilestone(user.uuid, req.body.milestone.name, user.points);
-        if (req.body.milestone.resetPoints) {
-          user.update({ points: 0 });
-        }
-      });
-    }).then(() => res.json({ error: null })).catch(next);
-  });
-
-router.route('/bonus')
-
-  /**
-   * All requests on this route require admin access.
-   */
-  .all((req, res, next) => {
-    if (!req.user.isAdmin()) return next(new error.Forbidden());
-    return next();
-  })
-
-  /**
-   * Grants bonus points to some users given a 'bonus' object with an array
-   * 'users' of email addresses, a 'points' field with the point value of
-   * the bonus, and a 'description' field with some context for the bonus.
-   */
-  .post((req, res, next) => {
-    if (!req.body.bonus || !req.body.bonus.description || typeof req.body.bonus.description !== 'string') {
-      return next(new error.BadRequest('Bonus object with description must be provided'));
-    }
-    if (!req.body.bonus.users || !Array.isArray(req.body.bonus.users)) {
-      return next(new error.BadRequest('Bonus object with users array must be provided'));
-    }
-    if (!req.body.bonus.points || req.body.bonus.points < 0) {
-      return next(new error.BadRequest('Bonus object with non-negative point value must be provided'));
-    }
-
-    const { users: emails, description, points } = req.body.bonus;
-
-    // use db transaction to ensure all operations go through (all changes rolled back
-    // if any one operation fails, e.g. invalid email)
-    return db.transaction({
-      isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
-    }, (transaction) => Promise.all(
-      emails.map((address) => User.findByEmail(address).then((user) => Promise.all([
-        Activity.grantBonusPoints(user.uuid, description, points),
-        user.addPoints(points),
-      ])).catch(() => {
-        throw new error.BadRequest(`Something went wrong with email ${address}`);
-      })),
-    )).then(() => {
-      res.json({ error: null, emails });
-    }).catch((err) => next(err));
   });
 
 module.exports = { router };
