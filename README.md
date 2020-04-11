@@ -11,7 +11,8 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 5. Create a new `.env` file using `.env.example` as a template: `cp .env.example .env`.
 6. Fill out the `.env`. See the [example file below](#sample-env).
 7. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`.
-8. Start the Node app: `npm run dev`.
+8. [Optional] Initialize the database: `npm run db:migrate`.
+9. Start the Node app: `npm run dev`.
 
 #### Installing Postgres
 MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/), run the installer, and add the Postgres bin to the PATH environment variable.
@@ -45,7 +46,8 @@ CLIENT=localhost:8000
 + `npm run lint` to lint the Node app with [ESLint](https://eslint.org/) (without `--fix`)
 + `npm run test` to run the test suite with [Jest](https://jestjs.io/)
 + `npm run lint:fix` to handle the simple linter issues automatically
-+ `npm run db:migrate` to run any new database migrations
++ `npm run db:migrate` to run all database migrations
++ `npm run db:rollback` to roll back the last database migration
 + `docker exec -it rds.acmucsd.local psql -U [RDS_USER] -d [RDS_DATABASE]` to access Postgres (`RDS_XYZ` from `.env`).
 
 Take a look at [`package.json`](https://github.com/acmucsd/membership-portal/blob/master/package.json) for the actual commands.
