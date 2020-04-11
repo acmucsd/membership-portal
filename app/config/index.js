@@ -39,6 +39,15 @@ module.exports = {
     uri: process.env.RDS_URI,
   },
 
+  s3: {
+    region: process.env.S3_REGION,
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY_ID,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    },
+    bucket: process.env.S3_BUCKET,
+  },
+
   email: {
     user: process.env.SENDGRID_USER,
     apiKey: process.env.SENDGRID_API_KEY,

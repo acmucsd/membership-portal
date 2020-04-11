@@ -225,6 +225,10 @@ module.exports = (Sequelize, db) => {
     return this.increment({ points });
   };
 
+  User.prototype.updateProfilePicture = function (profilePicture) {
+    return this.update({ profilePicture });
+  };
+
   User.prototype.getPublicProfile = function () {
     return {
       firstName: this.getDataValue('firstName'),

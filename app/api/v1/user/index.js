@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 const express = require('express');
 const error = require('../../../error');
 const { User, Activity, db } = require('../../../db');
+const storage = require('../../../storage');
 
 const router = express.Router();
 
@@ -12,6 +13,15 @@ router.get('/activity', (req, res, next) => {
   Activity.getPublicStream(req.user.uuid).then((activity) => {
     res.json({ error: null, activity: activity.map((a) => a.getPublic()) });
   }).catch(next);
+});
+
+/**
+ * Uploads a profile picture for the current user.
+ */
+router.post('/picture', storage.single('image'), (req, res, next) => {
+  const { location } = req.file;
+  req.user.updateProfilePicture(location);
+  res.json({ error: null, location });
 });
 
 router.route('/milestone')
