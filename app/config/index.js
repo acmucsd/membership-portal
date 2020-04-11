@@ -12,6 +12,7 @@ module.exports = {
   },
 
   admin: {
+    uuid: '45b4b5b6-9e9e-48b4-9cd6-7952d642c3e7',
     email: 'acm@ucsd.edu',
     accessType: 'ADMIN',
     state: 'ACTIVE',
@@ -19,7 +20,7 @@ module.exports = {
     lastName: 'Admin',
     hash: '$2b$10$vvmimV6gjhO0edbKAfbdB.Tkfp5roGcFUPEbedDJxsdVZahvkIVzW',
     graduationYear: 2020,
-    major: 'Computer Science',
+    major: 'Computing Machinery',
   },
 
   auth: {
