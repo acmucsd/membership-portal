@@ -25,7 +25,7 @@ const Attendance = require('./models/attendance')(Sequelize, db);
 /**
  * Adds the admin account if it doesn't exist.
  */
-const initializeAdmin = User.findOrCreate({
+const initializeAdmin = () => User.findOrCreate({
   where: { email: config.admin.email },
   defaults: config.admin,
 });
