@@ -142,37 +142,39 @@ module.exports = (Sequelize, db) => {
       defaultValue: 0,
     },
 
-    // TODO add socials
-
     lastLogin: {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW,
     },
   }, {
+    timestamps: false,
     indexes: [
-      // a hash index on uuid -> lookup by UUID in O(1)
+      // for lookup by UUID
       {
+        using: 'BTREE',
         unique: true,
         fields: ['uuid'],
       },
 
-      // a hash index on email -> lookup by email in O(1)
+      // for lookup by email and ensuring uniqueness
       {
+        using: 'BTREE',
         unique: true,
         fields: ['email'],
       },
 
-      // a hash index on access code -> lookup by access code in O(1)
+      // for lookup by access code and ensuring uniqueness
       {
+        using: 'BTREE',
         unique: true,
         fields: ['accessCode'],
       },
 
-      // a BTREE index on points -> retrieving the leaderboard in O(n)
+      // for retrieving the leaderboard
       {
-        name: 'user_points_btree_index',
-        method: 'BTREE',
-        fields: ['points', { attribute: 'points', order: 'DESC' }],
+        name: 'leaderboard_index',
+        using: 'BTREE',
+        fields: [{ attribute: 'points', order: 'DESC' }],
       },
     ],
   });

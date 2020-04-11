@@ -40,7 +40,7 @@ module.exports = (Sequelize, db) => {
     },
 
     // stored as UTC datetime string, not Pacific
-    date: {
+    timestamp: {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW,
     },
@@ -53,47 +53,25 @@ module.exports = (Sequelize, db) => {
     },
 
   }, {
+    timestamps: false,
     indexes: [
-      // a hash index on uuid -> lookup by UUID in O(1)
+      // for lookup by UUID
       {
+        using: 'BTREE',
         unique: true,
         fields: ['uuid'],
       },
 
-      // a hash index on user -> lookup by user in O(1)
+      // for retrieving all attendances for a user
       {
-        unique: false,
+        using: 'BTREE',
         fields: ['user'],
       },
 
-      // a hash index on event -> lookup by event in O(1)
+      // for retrieving all attendances for an event
       {
-        unique: false,
+        using: 'BTREE',
         fields: ['event'],
-      },
-
-      // a BTREE index on date -> retrieving attendances in chronological order in O(n), where
-      // n: number of attendance records
-      {
-        name: 'attendance_date_btree_index',
-        method: 'BTREE',
-        fields: ['date', { attribute: 'date', order: 'ASC' }],
-      },
-
-      // a BTREE index on user -> retrieving all attendances for a user in O(n), where
-      // n: number of attendances for given user
-      {
-        name: 'attendance_user_btree_index',
-        method: 'BTREE',
-        fields: ['user', { attribute: 'user', order: 'ASC' }],
-      },
-
-      // a BTREE index on event -> retrieving all attendances for a event in O(n), where
-      // n: number of attendances for given event
-      {
-        name: 'attendance_event_btree_index',
-        method: 'BTREE',
-        fields: ['event', { attribute: 'event', order: 'ASC' }],
       },
     ],
   });
@@ -119,7 +97,7 @@ module.exports = (Sequelize, db) => {
       uuid: this.getDataValue('uuid'),
       user: this.getDataValue('user'),
       event: this.getDataValue('event'),
-      date: this.getDataValue('date'),
+      timestamp: this.getDataValue('timestamp'),
       asStaff: this.getDataValue('asStaff'),
     };
   };
