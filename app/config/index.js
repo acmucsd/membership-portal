@@ -12,6 +12,7 @@ module.exports = {
   },
 
   admin: {
+    uuid: '45b4b5b6-9e9e-48b4-9cd6-7952d642c3e7',
     email: 'acm@ucsd.edu',
     accessType: 'ADMIN',
     state: 'ACTIVE',
@@ -19,7 +20,7 @@ module.exports = {
     lastName: 'Admin',
     hash: '$2b$10$vvmimV6gjhO0edbKAfbdB.Tkfp5roGcFUPEbedDJxsdVZahvkIVzW',
     graduationYear: 2020,
-    major: 'Computer Science',
+    major: 'Computing Machinery',
   },
 
   auth: {
@@ -36,6 +37,15 @@ module.exports = {
     user: process.env.RDS_USER,
     password: process.env.RDS_PASSWORD,
     uri: process.env.RDS_URI,
+  },
+
+  s3: {
+    region: process.env.S3_REGION,
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY_ID,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    },
+    bucket: process.env.S3_BUCKET,
   },
 
   email: {

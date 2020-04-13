@@ -23,14 +23,12 @@ const Activity = require('./models/activity')(Sequelize, db);
 const Attendance = require('./models/attendance')(Sequelize, db);
 
 /**
- * Syncs database against models and adds the admin account if it doesn't exist.
+ * Adds the admin account if it doesn't exist.
  */
-const setup = (force, isDevelopment) => db.sync({ force })
-  .then(() => { if (isDevelopment) require('./populateDb')(User, Event); })
-  .then(() => User.findOrCreate({
-    where: { email: config.admin.email },
-    defaults: config.admin,
-  }));
+const initializeAdmin = () => User.findOrCreate({
+  where: { email: config.admin.email },
+  defaults: config.admin,
+});
 
 /**
  * Wraps database errors (e.g. validation) as predefined HttpErrors.
@@ -44,4 +42,4 @@ const errorHandler = (err, req, res, next) => {
   return next(new error.HttpError(err.name, 500, err.message));
 };
 
-module.exports = { db, User, Event, Activity, Attendance, setup, errorHandler };
+module.exports = { db, User, Event, Activity, Attendance, initializeAdmin, errorHandler };
