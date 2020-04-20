@@ -259,7 +259,7 @@ module.exports = (Sequelize, db) => {
       graduationYear: this.getDataValue('graduationYear'),
       major: this.getDataValue('major'),
       points: this.getDataValue('points'),
-      state: this.getDataValue('state')
+      state: this.getDataValue('state'),
     };
   };
 
