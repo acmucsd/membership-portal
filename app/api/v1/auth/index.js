@@ -80,7 +80,6 @@ router.post('/register', (req, res, next) => {
     return next(new error.BadRequest('Password must be at least 10 characters long'));
   }
 
-
   const newUser = User.sanitize(req.body.user);
   User.generateHash(req.body.user.password).then((hash) => {
     newUser.hash = hash;
@@ -90,7 +89,8 @@ router.post('/register', (req, res, next) => {
     }, (transaction) => User.generateAccessCode().then((code) => {
       newUser.accessCode = code;
       return User.create(newUser).then((user) => email.sendEmailVerification(user.email, user.firstName, code)
-        .then(() => user).catch(() => {
+        .then(() => user)
+        .catch(() => {
           throw new error.BadRequest(`Something went wrong with sending email verification to ${user.email}`);
         }));
     })).then((user) => {
@@ -105,7 +105,6 @@ router.post('/register', (req, res, next) => {
  * Emails the user a email verification link given an email in the URI.
  * Responds with a JSON object with fields 'error' if successful
  */
-// TODO: RATE LIMIT THIS
 router.get('/emailVerification/:email', (req, res, next) => {
   if (!req.params.email) return next(new error.BadRequest('Email must be provided!'));
   User.findByEmail(req.params.email).then((user) => {
@@ -127,11 +126,9 @@ router.get('/emailVerification/:email', (req, res, next) => {
  * Responds with a JSON object with fields 'error', 'verified' (if a user is succesfully verified)
  */
 router.post('/emailVerification/:accessCode', (req, res, next) => {
-  if (!req.params.accessCode) {
-    return next(new error.BadRequest('Email verification code must be provided'));
-  }
+  if (!req.params.accessCode) return next(new error.BadRequest('Access code must be provided'));
   User.findByAccessCode(req.params.accessCode).then((user) => {
-    if (!user) throw new error.BadRequest('Code is invalid');
+    if (!user) throw new error.BadRequest('Invalid access code');
     user.validateEmail().then(() => {
       log.info('user authentication (email verified)', { request_id: req.id, user_uuid: user.uuid });
       res.json({ error: null, verified: true });

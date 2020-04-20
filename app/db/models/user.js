@@ -42,12 +42,12 @@ module.exports = (Sequelize, db) => {
     },
 
     // account type
-    //   RESTRICTED - unverified user / member
+    //   RESTRICTED - not used currently
     //   STANDARD   - a regular ACM member
     //   STAFF      - a Diamond Staff member
     //   ADMIN      - admin type user
     accessType: {
-      type: Sequelize.ENUM('PENDING', 'STANDARD', 'STAFF', 'ADMIN'),
+      type: Sequelize.ENUM('RESTRICTED', 'STANDARD', 'STAFF', 'ADMIN'),
       defaultValue: 'STANDARD',
     },
 
