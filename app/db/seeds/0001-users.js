@@ -26,7 +26,7 @@ module.exports = {
     uuid: 'bb063686-9579-4020-81fa-3c27b3c45b4c',
     email: 'stao@ucsd.edu',
     accessType: 'STANDARD',
-    state: 'ACTIVE',
+    state: 'PENDING',
     firstName: 'Stone',
     lastName: 'Tao',
     hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',

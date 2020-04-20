@@ -1,10 +1,11 @@
 const express = require('express');
+const Sequelize = require('sequelize');
 const jwt = require('jsonwebtoken');
 const email = require('../../../email');
 const config = require('../../../config');
 const log = require('../../../logger');
 const error = require('../../../error');
-const { User, Activity } = require('../../../db');
+const { User, Activity, db } = require('../../../db');
 
 const router = express.Router();
 
@@ -47,9 +48,6 @@ router.post('/login', (req, res, next) => {
   let userUuid = null;
   return User.findByEmail(req.body.email.toLowerCase()).then((user) => {
     if (!user) throw new error.UserError('There is no account associated with that email');
-    if (user.isPending()) {
-      throw new error.Unauthorized('Please activate your account. Check your email for an activation email');
-    }
     if (user.isBlocked()) throw new error.Forbidden('Your account has been blocked');
 
     return user.verifyPassword(req.body.password).then((verified) => {
@@ -82,16 +80,59 @@ router.post('/register', (req, res, next) => {
     return next(new error.BadRequest('Password must be at least 10 characters long'));
   }
 
-  // TODO account activation via email
   const newUser = User.sanitize(req.body.user);
-  newUser.state = 'ACTIVE';
   User.generateHash(req.body.user.password).then((hash) => {
     newUser.hash = hash;
-    return User.create(newUser);
-  }).then((user) => {
-    log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
-    res.json({ error: null, user: user.getPublicProfile() });
-    Activity.accountCreated(user.uuid);
+    // require that we create a user successfully and send email succesfully
+    db.transaction({
+      isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
+    }, (transaction) => User.generateAccessCode().then((code) => {
+      newUser.accessCode = code;
+      return User.create(newUser).then((user) => email.sendEmailVerification(user.email, user.firstName, code)
+        .then(() => user)
+        .catch(() => {
+          throw new error.BadRequest(`Something went wrong with sending email verification to ${user.email}`);
+        }));
+    })).then((user) => {
+      log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
+      res.json({ error: null, user: user.getPublicProfile() });
+      Activity.accountCreated(user.uuid);
+    });
+  }).catch(next);
+});
+
+/**
+ * Emails the user a email verification link given an email in the URI.
+ * Responds with a JSON object with fields 'error' if successful
+ */
+router.get('/emailVerification/:email', (req, res, next) => {
+  if (!req.params.email) return next(new error.BadRequest('Email must be provided!'));
+  User.findByEmail(req.params.email).then((user) => {
+    if (!user) throw new error.BadRequest('Invalid email');
+    User.generateAccessCode().then((code) => {
+      user.accessCode = code;
+      // wait for user to save first before sending email
+      user.save().then(() => {
+        email.sendEmailVerification(user.email, user.firstName, code).then(() => {
+          res.json({ error: null });
+        });
+      });
+    });
+  }).catch(next);
+});
+
+/**
+ * Verifies a user's email given an accessCode in the URI
+ * Responds with a JSON object with fields 'error', 'verified' (if a user is succesfully verified)
+ */
+router.post('/emailVerification/:accessCode', (req, res, next) => {
+  if (!req.params.accessCode) return next(new error.BadRequest('Access code must be provided'));
+  User.findByAccessCode(req.params.accessCode).then((user) => {
+    if (!user) throw new error.BadRequest('Invalid access code');
+    user.validateEmail().then(() => {
+      log.info('user authentication (email verified)', { request_id: req.id, user_uuid: user.uuid });
+      res.json({ error: null, verified: true });
+    });
   }).catch(next);
 });
 
@@ -141,7 +182,8 @@ router.post('/resetPassword/:accessCode', (req, res, next) => {
     return User.generateHash(req.body.user.newPassword).then((hash) => {
       user.hash = hash;
       user.state = 'ACTIVE';
-      return user.save();
+      // as user reset password, it means their email must be valid
+      return user.validateEmail().then(() => user.save());
     });
   }).then((user) => {
     log.info('user authentication (password reset - access code)', { request_id: req.id, user_uuid: user.uuid });
@@ -152,8 +194,7 @@ router.post('/resetPassword/:accessCode', (req, res, next) => {
 
 /**
  * Verifies a user's auth token, given the token in the 'Authorization' request header in the form of 'Bearer <TOKEN>'.
- * Responds with a JSON object with fields 'error', 'authenticated' (if a user's token is valid), and 'admin' (if the
- * user is an admin).
+ * Responds with a JSON object with fields 'error', 'authenticated' (if a user's token is valid)
  */
 router.post('/verification', (req, res, next) => {
   const authHeader = req.get('Authorization');

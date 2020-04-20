@@ -204,11 +204,22 @@ module.exports = (Sequelize, db) => {
     });
   };
 
+  // Verifies user's email by setting their account type to STANDARD if it is RESTRICTED
+  User.prototype.validateEmail = function () {
+    return this.update({ state: 'ACTIVE' });
+  };
+
   User.getLeaderboard = function (offset, limit) {
     if (!offset || offset < 0) offset = 0;
     if (!limit || limit < 0) limit = undefined;
     return this.findAll({
-      where: { accessType: { [Sequelize.Op.not]: 'ADMIN' } },
+      where: {
+        [Sequelize.Op.and]: [
+          { accessType: { [Sequelize.Op.not]: 'ADMIN' } },
+          { state: { [Sequelize.Op.not]: 'PENDING' } },
+          { state: { [Sequelize.Op.not]: 'BLOCKED' } },
+        ],
+      },
       offset,
       limit,
       order: [['points', 'DESC']],
@@ -234,8 +245,6 @@ module.exports = (Sequelize, db) => {
       firstName: this.getDataValue('firstName'),
       lastName: this.getDataValue('lastName'),
       profilePicture: this.getDataValue('profilePicture'),
-      graduationYear: this.getDataValue('graduationYear'),
-      major: this.getDataValue('major'),
       points: this.getDataValue('points'),
     };
   };
@@ -243,7 +252,6 @@ module.exports = (Sequelize, db) => {
   User.prototype.getUserProfile = function () {
     return {
       uuid: this.getDataValue('uuid'),
-      accountType: this.getDataValue('accessType'),
       firstName: this.getDataValue('firstName'),
       lastName: this.getDataValue('lastName'),
       profilePicture: this.getDataValue('profilePicture'),
@@ -251,6 +259,7 @@ module.exports = (Sequelize, db) => {
       graduationYear: this.getDataValue('graduationYear'),
       major: this.getDataValue('major'),
       points: this.getDataValue('points'),
+      state: this.getDataValue('state'),
     };
   };
 
