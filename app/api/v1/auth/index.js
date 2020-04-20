@@ -48,7 +48,6 @@ router.post('/login', (req, res, next) => {
   let userUuid = null;
   return User.findByEmail(req.body.email.toLowerCase()).then((user) => {
     if (!user) throw new error.UserError('There is no account associated with that email');
-    
     if (user.isBlocked()) throw new error.Forbidden('Your account has been blocked');
 
     return user.verifyPassword(req.body.password).then((verified) => {
