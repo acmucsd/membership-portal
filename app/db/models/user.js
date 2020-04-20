@@ -47,8 +47,8 @@ module.exports = (Sequelize, db) => {
     //   STAFF      - a Diamond Staff member
     //   ADMIN      - admin type user
     accessType: {
-      type: Sequelize.ENUM('RESTRICTED', 'STANDARD', 'STAFF', 'ADMIN'),
-      defaultValue: 'RESTRICTED',
+      type: Sequelize.ENUM('PENDING', 'STANDARD', 'STAFF', 'ADMIN'),
+      defaultValue: 'STANDARD',
     },
 
     // account state
@@ -206,12 +206,7 @@ module.exports = (Sequelize, db) => {
 
   // Verifies user's email by setting their account type to STANDARD if it is RESTRICTED
   User.prototype.validateEmail = function () {
-    if (this.accessType === 'RESTRICTED') {
-      return this.update({ accessType: 'STANDARD' });
-    }
-    return new Promise((resolve) => {
-      resolve();
-    });
+    return this.update({ state: 'ACTIVE' });
   };
 
   User.getLeaderboard = function (offset, limit) {
@@ -221,7 +216,8 @@ module.exports = (Sequelize, db) => {
       where: {
         [Sequelize.Op.and]: [
           { accessType: { [Sequelize.Op.not]: 'ADMIN' } },
-          { accessType: { [Sequelize.Op.not]: 'RESTRICTED' } },
+          { state: { [Sequelize.Op.not]: 'PENDING' } },
+          { state: { [Sequelize.Op.not]: 'BLOCKED' } },
         ],
       },
       offset,
@@ -263,6 +259,7 @@ module.exports = (Sequelize, db) => {
       graduationYear: this.getDataValue('graduationYear'),
       major: this.getDataValue('major'),
       points: this.getDataValue('points'),
+      state: this.getDataValue('state')
     };
   };
 

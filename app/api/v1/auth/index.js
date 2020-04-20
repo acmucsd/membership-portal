@@ -48,9 +48,9 @@ router.post('/login', (req, res, next) => {
   let userUuid = null;
   return User.findByEmail(req.body.email.toLowerCase()).then((user) => {
     if (!user) throw new error.UserError('There is no account associated with that email');
-    if (user.isPending()) {
-      throw new error.Unauthorized('Please activate your account. Check your email for an activation email');
-    }
+    // if (user.isPending()) {
+    //   throw new error.Unauthorized('Please activate your account. Check your email for an activation email');
+    // }
     if (user.isBlocked()) throw new error.Forbidden('Your account has been blocked');
 
     return user.verifyPassword(req.body.password).then((verified) => {
@@ -85,7 +85,6 @@ router.post('/register', (req, res, next) => {
 
 
   const newUser = User.sanitize(req.body.user);
-  newUser.state = 'ACTIVE';
   User.generateHash(req.body.user.password).then((hash) => {
     newUser.hash = hash;
     // require that we create a user successfully and send email succesfully
@@ -101,7 +100,7 @@ router.post('/register', (req, res, next) => {
       log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
       res.json({ error: null, user: user.getPublicProfile() });
       Activity.accountCreated(user.uuid);
-    }).catch((err) => next(err));
+    });
   }).catch(next);
 });
 
@@ -114,13 +113,14 @@ router.get('/emailVerification/:email', (req, res, next) => {
   if (!req.params.email) return next(new error.BadRequest('Email must be provided!'));
   User.findByEmail(req.params.email).then((user) => {
     if (!user) throw new error.BadRequest('Invalid email');
-    User.generateAccessCode().then(async (code) => {
+    User.generateAccessCode().then((code) => {
       user.accessCode = code;
       // wait for user to save first before sending email
-      await user.save();
-      email.sendEmailVerification(user.email, user.firstName, code).then(() => {
-        res.json({ error: null });
-      }).catch(next);
+      user.save().then(() => {
+        email.sendEmailVerification(user.email, user.firstName, code).then(() => {
+          res.json({ error: null });
+        });
+      });
     });
   }).catch(next);
 });
@@ -138,7 +138,7 @@ router.post('/emailVerification/:accessCode', (req, res, next) => {
     user.validateEmail().then(() => {
       log.info('user authentication (email verified)', { request_id: req.id, user_uuid: user.uuid });
       res.json({ error: null, verified: true });
-    }).catch(next);
+    });
   }).catch(next);
 });
 

@@ -35,7 +35,7 @@ const sendEmailVerification = async (email, firstName, code) => {
     subject: 'ACM UCSD Membership Portal Email Verification',
     html: ejs.render(emailVerificationTemplate, {
       firstName,
-      link: `${config.client}/verifyEmail/${email}/${code}`,
+      link: `${config.client}/verifyEmail/${code}`,
     }),
   };
   return sendEmail(data);
