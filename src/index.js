@@ -5,7 +5,6 @@ const uuid = require('uuid');
 const config = require('./config');
 const db = require('./db');
 const error = require('./error');
-const log = require('./logger');
 
 const server = express();
 
