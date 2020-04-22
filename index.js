@@ -1,6 +1,6 @@
-const server = require('./app');
-const { initializeAdmin } = require('./app/db');
-const log = require('./app/logger');
+const server = require('./src');
+const { initializeAdmin } = require('./src/db');
+const log = require('./src/logger');
 
 // ensures an admin account is created
 initializeAdmin();
