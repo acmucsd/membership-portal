@@ -114,7 +114,7 @@ router.route('/:uuid?')
   /**
    * Updates user information, given a partial 'user' object in the request body, and returns
    * the user's updated public profile. Fields that may be updated: firstName, lastName, major,
-   * graduationYear. To update the password, the 'user' object must include matching 'newPassword'
+   * graduationYear, bio. To update the password, the 'user' object must include matching 'newPassword'
    * and 'confirmPassword' fields.
    */
   .patch((req, res, next) => {
@@ -132,6 +132,9 @@ router.route('/:uuid?')
     }
     if (validateStringField(req.body.user.major) && req.body.user.major !== req.user.major) {
       updatedUser.major = req.body.user.major;
+    }
+    if (validateStringField(req.body.user.bio) && req.body.user.bio !== req.user.bio) {
+      updatedUser.bio = req.body.user.bio;
     }
     if (req.body.user.graduationYear && !Number.isNaN(parseInt(req.body.user.graduationYear, 10))) {
       updatedUser.graduationYear = req.body.user.graduationYear;
