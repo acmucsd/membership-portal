@@ -137,6 +137,10 @@ module.exports = (Sequelize, db) => {
       },
     },
 
+    bio: {
+      type: Sequelize.TEXT,
+    },
+
     points: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
@@ -227,7 +231,7 @@ module.exports = (Sequelize, db) => {
   };
 
   User.sanitize = function (user) {
-    user = pick(user, ['profilePicture', 'email', 'firstName', 'lastName', 'graduationYear', 'major']);
+    user = pick(user, ['profilePicture', 'email', 'firstName', 'lastName', 'graduationYear', 'major', 'bio']);
     user.email = user.email.toLowerCase();
     return user;
   };
@@ -245,6 +249,7 @@ module.exports = (Sequelize, db) => {
       firstName: this.getDataValue('firstName'),
       lastName: this.getDataValue('lastName'),
       profilePicture: this.getDataValue('profilePicture'),
+      bio: this.getDataValue('bio'),
       points: this.getDataValue('points'),
     };
   };
@@ -258,6 +263,7 @@ module.exports = (Sequelize, db) => {
       email: this.getDataValue('email'),
       graduationYear: this.getDataValue('graduationYear'),
       major: this.getDataValue('major'),
+      bio: this.getDataValue('bio'),
       points: this.getDataValue('points'),
       state: this.getDataValue('state'),
     };
