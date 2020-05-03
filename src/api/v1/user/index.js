@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const express = require('express');
 const error = require('../../../error');
-const { User, Activity, db } = require('../../../db');
+const { User, Activity, Attendance, db } = require('../../../db');
 const storage = require('../../../storage');
 
 const router = express.Router();
@@ -171,6 +171,25 @@ router.route('/:uuid?')
         Activity.accountUpdatedInfo(user.uuid, Object.keys(updatedUser).join(', '));
       }).catch(next);
     }
-  });
+  })
+
+  .delete((req, res, next) => {
+    if (!req.user.isAdmin()) return next(new error.Forbidden());
+
+    User.findByUUID(req.params.uuid).then((user) => {
+      if (!user) throw new error.NotFound("User not found");
+
+      return db.transaction({
+        isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
+      }, (transaction) => Promise.all([
+        User.destroy({where: {uuid: req.params.uuid}}),
+        Attendance.destroy({where: {user: req.params.uuid}}),
+        Activity.destroy({where: {user: req.params.uuid}})
+      ])
+      )
+    }).then(() => {
+      res.json({error: null});
+    }).catch(next);
+    });
 
 module.exports = { router };
