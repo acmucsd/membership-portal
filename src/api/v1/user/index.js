@@ -176,7 +176,7 @@ router.route('/:uuid?')
   /**
    * Deletes user with the provided UUID parameter. This endpoint will also delete all
    * objects related to the user, such as their Acitivities and Attendances.
-   * 
+   *
    * Only admin accounts are allowed to delete users.
    */
   .delete((req, res, next) => {
@@ -184,21 +184,19 @@ router.route('/:uuid?')
     if (!req.user.isAdmin()) return next(new error.Forbidden());
 
     User.findByUUID(req.params.uuid).then((user) => {
-      if (!user) throw new error.NotFound("User not found");
+      if (!user) throw new error.NotFound('User not found');
 
       // DB transaction to make sure every change goes through (i.e. if user can't
       // get deleted, we shouldn't get rid of their Attendances)
       return db.transaction({
         isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
       }, (transaction) => Promise.all([
-        User.destroy({where: {uuid: req.params.uuid}}),
-        Attendance.destroy({where: {user: req.params.uuid}}),
-        Activity.destroy({where: {user: req.params.uuid}})
-      ])
-      )
+        User.destroy({ where: { uuid: req.params.uuid } }),
+        Attendance.destroy({ where: { user: req.params.uuid } }),
+        Activity.destroy({ where: { user: req.params.uuid } })]));
     }).then(() => {
-      res.json({error: null});
+      res.json({ error: null });
     }).catch(next);
-    });
+  });
 
 module.exports = { router };
