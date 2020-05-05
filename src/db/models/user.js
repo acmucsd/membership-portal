@@ -249,6 +249,8 @@ module.exports = (Sequelize, db) => {
       firstName: this.getDataValue('firstName'),
       lastName: this.getDataValue('lastName'),
       profilePicture: this.getDataValue('profilePicture'),
+      graduationYear: this.getDataValue('graduationYear'),
+      major: this.getDataValue('major'),
       bio: this.getDataValue('bio'),
       points: this.getDataValue('points'),
     };
