@@ -137,6 +137,10 @@ module.exports = (Sequelize, db) => {
       },
     },
 
+    bio: {
+      type: Sequelize.TEXT,
+    },
+
     // total points the user's earned
     points: {
       type: Sequelize.INTEGER,
@@ -149,37 +153,39 @@ module.exports = (Sequelize, db) => {
       defaultValue: 0,
     },
 
-    // TODO add socials
-
     lastLogin: {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW,
     },
   }, {
+    timestamps: false,
     indexes: [
-      // a hash index on uuid -> lookup by UUID in O(1)
+      // for lookup by UUID
       {
+        using: 'BTREE',
         unique: true,
         fields: ['uuid'],
       },
 
-      // a hash index on email -> lookup by email in O(1)
+      // for lookup by email and ensuring uniqueness
       {
+        using: 'BTREE',
         unique: true,
         fields: ['email'],
       },
 
-      // a hash index on access code -> lookup by access code in O(1)
+      // for lookup by access code and ensuring uniqueness
       {
+        using: 'BTREE',
         unique: true,
         fields: ['accessCode'],
       },
 
-      // a BTREE index on points -> retrieving the leaderboard in O(n)
+      // for retrieving the leaderboard
       {
-        name: 'user_points_btree_index',
-        method: 'BTREE',
-        fields: ['points', { attribute: 'points', order: 'DESC' }],
+        name: 'leaderboard_index',
+        using: 'BTREE',
+        fields: [{ attribute: 'points', order: 'DESC' }],
       },
     ],
   });
@@ -209,11 +215,22 @@ module.exports = (Sequelize, db) => {
     });
   };
 
+  // Verifies user's email by setting their account type to STANDARD if it is RESTRICTED
+  User.prototype.validateEmail = function () {
+    return this.update({ state: 'ACTIVE' });
+  };
+
   User.getLeaderboard = function (offset, limit) {
     if (!offset || offset < 0) offset = 0;
     if (!limit || limit < 0) limit = undefined;
     return this.findAll({
-      where: { accessType: { [Sequelize.Op.not]: 'ADMIN' } },
+      where: {
+        [Sequelize.Op.and]: [
+          { accessType: { [Sequelize.Op.not]: 'ADMIN' } },
+          { state: { [Sequelize.Op.not]: 'PENDING' } },
+          { state: { [Sequelize.Op.not]: 'BLOCKED' } },
+        ],
+      },
       offset,
       limit,
       order: [['points', 'DESC']],
@@ -221,7 +238,7 @@ module.exports = (Sequelize, db) => {
   };
 
   User.sanitize = function (user) {
-    user = pick(user, ['profilePicture', 'email', 'firstName', 'lastName', 'graduationYear', 'major']);
+    user = pick(user, ['profilePicture', 'email', 'firstName', 'lastName', 'graduationYear', 'major', 'bio']);
     user.email = user.email.toLowerCase();
     return user;
   };
@@ -238,11 +255,18 @@ module.exports = (Sequelize, db) => {
     return this.decrement({ credits });
   };
 
+  User.prototype.updateProfilePicture = function (profilePicture) {
+    return this.update({ profilePicture });
+  };
+
   User.prototype.getPublicProfile = function () {
     return {
       firstName: this.getDataValue('firstName'),
       lastName: this.getDataValue('lastName'),
       profilePicture: this.getDataValue('profilePicture'),
+      graduationYear: this.getDataValue('graduationYear'),
+      major: this.getDataValue('major'),
+      bio: this.getDataValue('bio'),
       points: this.getDataValue('points'),
     };
   };
@@ -257,8 +281,10 @@ module.exports = (Sequelize, db) => {
       email: this.getDataValue('email'),
       graduationYear: this.getDataValue('graduationYear'),
       major: this.getDataValue('major'),
+      bio: this.getDataValue('bio'),
       points: this.getDataValue('points'),
       credits: this.getDataValue('credits'),
+      state: this.getDataValue('state'),
     };
   };
 

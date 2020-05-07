@@ -27,6 +27,20 @@ const sendPasswordReset = (email, firstName, code) => {
   });
 };
 
+const emailVerificationTemplate = readTemplate('emailVerification.ejs');
+const sendEmailVerification = async (email, firstName, code) => {
+  const data = {
+    to: email,
+    from: config.email.user,
+    subject: 'ACM UCSD Membership Portal Email Verification',
+    html: ejs.render(emailVerificationTemplate, {
+      firstName,
+      link: `${config.client}/verifyEmail/${code}`,
+    }),
+  };
+  return sendEmail(data);
+};
+
 const orderConfirmationTemplate = readTemplate('orderConfirmation.ejs');
 const sendOrderConfirmation = (email, firstName, order) => {
   const data = {
@@ -40,4 +54,4 @@ const sendOrderConfirmation = (email, firstName, order) => {
   });
 };
 
-module.exports = { sendPasswordReset, sendOrderConfirmation };
+module.exports = { sendPasswordReset, sendEmailVerification, sendOrderConfirmation };

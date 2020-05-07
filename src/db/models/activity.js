@@ -64,7 +64,7 @@ module.exports = (Sequelize, db) => {
       defaultValue: 0,
     },
 
-    date: {
+    timestamp: {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW,
     },
@@ -75,41 +75,21 @@ module.exports = (Sequelize, db) => {
       default: false,
     },
   }, {
+    timestamps: false,
     indexes: [
-      // a hash index on uuid -> lookup by UUID in O(1)
+      // for lookup by UUID
       {
+        using: 'BTREE',
         unique: true,
         fields: ['uuid'],
       },
 
-      // a BTREE index on type -> retrieving activities by type O(n)
+      // for retrieving all public activities for a user
       {
-        name: 'activity_type_btree_index',
-        method: 'BTREE',
-        fields: ['type', { attribute: 'type', order: 'ASC' }],
-      },
-
-      // a BTREE index on public -> retrieving public activities in O(n), where
-      // n: number of public activities
-      {
-        name: 'activity_public_btree_index',
-        method: 'BTREE',
-        fields: ['public', { attribute: 'public', order: 'ASC' }],
-      },
-
-      // a BTREE index on date -> retrieving all events in chronological order in O(n)
-      {
-        name: 'activity_date_btree_index',
-        method: 'BTREE',
-        fields: ['date', { attribute: 'date', order: 'ASC' }],
-      },
-
-      // a BTREE index on user -> retrieving all events for a user in O(n), where
-      // n: number of activities for given user
-      {
-        name: 'activity_user_btree_index',
-        method: 'BTREE',
-        fields: ['user', { attribute: 'user', order: 'ASC' }],
+        using: 'BTREE',
+        name: 'public_activities_by_user_index',
+        fields: ['user'],
+        where: { public: true },
       },
     ],
   });
@@ -210,7 +190,7 @@ module.exports = (Sequelize, db) => {
       uuid: this.getDataValue('uuid'),
       user: this.getDataValue('user'),
       type: this.getDataValue('type'),
-      date: this.getDataValue('date'),
+      timestamp: this.getDataValue('timestamp'),
       description: this.getDataValue('description'),
       pointsEarned: this.getDataValue('pointsEarned'),
     };
