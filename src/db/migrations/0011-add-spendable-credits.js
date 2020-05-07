@@ -7,7 +7,7 @@ module.exports = {
       defaultValue: 0,
       transaction: t,
     }).then(() => queryInterface.sequelize.query(
-      `UPDATE ${TABLE_NAME} SET credits = points * 100`,
+      `UPDATE "${TABLE_NAME}" SET credits = points * 100`,
       { transaction: t },
     ))),
 
