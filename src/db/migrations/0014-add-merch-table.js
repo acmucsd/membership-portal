@@ -1,6 +1,7 @@
+const TABLE_NAME = 'Merchandise';
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.sequelize.transaction((t) => queryInterface
-    .createTable('"Merchandise"', {
+    .createTable(TABLE_NAME, {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -43,13 +44,13 @@ module.exports = {
         defaultValue: true,
       },
     }).then(() => Promise.all([
-      queryInterface.addIndex('"Merchandise"', {
+      queryInterface.addIndex(TABLE_NAME, {
         using: 'BTREE',
         unique: true,
         fields: ['uuid'],
         transaction: t,
       }),
-      queryInterface.addIndex('"Merchandise"', {
+      queryInterface.addIndex(TABLE_NAME, {
         using: 'BTREE',
         fields: [{ attribute: 'discountPercentage', order: 'DESC' }],
         where: { discountPercentage: { [Sequelize.Op.gt]: 0 } },

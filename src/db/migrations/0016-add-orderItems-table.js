@@ -1,6 +1,7 @@
+const TABLE_NAME = 'OrderItems';
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.sequelize.transaction((t) => queryInterface
-    .createTable('"OrderItems"', {
+    .createTable(TABLE_NAME, {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -26,13 +27,13 @@ module.exports = {
         type: Sequelize.DATE,
       },
     }).then(() => Promise.all([
-      queryInterface.addIndex('"OrderItems"', {
+      queryInterface.addIndex(TABLE_NAME, {
         using: 'BTREE',
         unique: true,
         fields: ['uuid'],
         transaction: t,
       }),
-      queryInterface.addIndex('"OrderItems"', {
+      queryInterface.addIndex(TABLE_NAME, {
         name: 'items_per_order_index',
         using: 'BTREE',
         fields: ['order'],

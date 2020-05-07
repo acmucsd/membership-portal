@@ -1,14 +1,15 @@
+const TABLE_NAME = 'Users';
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.sequelize.transaction((t) => queryInterface
-    .addColumn('"Users"', 'credits', {
+    .addColumn(TABLE_NAME, 'credits', {
       type: Sequelize.INTEGER,
       allowNull: false,
       defaultValue: 0,
       transaction: t,
     }).then(() => queryInterface.sequelize.query(
-      'UPDATE "Users" SET credits = points * 100',
+      `UPDATE ${TABLE_NAME} SET credits = points * 100`,
       { transaction: t },
     ))),
 
-  down: (queryInterface, Sequelize) => queryInterface.removeColumn('"Users"', 'credits'),
+  down: (queryInterface, Sequelize) => queryInterface.removeColumn(TABLE_NAME, 'credits'),
 };
