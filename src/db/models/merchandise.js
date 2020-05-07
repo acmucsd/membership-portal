@@ -27,6 +27,11 @@ module.exports = (Sequelize, db) => {
       },
     },
 
+    collection: {
+      type: Sequelize.UUID,
+      allowNull: false,
+    },
+
     picture: {
       type: Sequelize.STRING,
       validate: {
@@ -88,6 +93,13 @@ module.exports = (Sequelize, db) => {
         fields: [{ attribute: 'discountPercentage', order: 'DESC' }],
         where: { discountPercentage: { [Sequelize.Op.gt]: 0 } },
       },
+
+      // for retrieving all items in a collection
+      {
+        name: 'merchandise_collections_index',
+        using: 'BTREE',
+        fields: ['collection'],
+      },
     ],
     freezeTableName: true,
     tableName: 'Merchandise',
@@ -101,6 +113,10 @@ module.exports = (Sequelize, db) => {
     if (!offset || offset < 0) offset = 0;
     if (!limit || limit < 0) limit = undefined;
     return this.findAll(isAdmin ? { offset, limit } : { where: { hidden: false }, offset, limit });
+  };
+
+  Merchandise.findAllByCollection = function (collection) {
+    return this.findAll({ where: { collection } });
   };
 
   Merchandise.getDiscountedItems = function (offset, limit) {
