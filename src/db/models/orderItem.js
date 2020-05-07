@@ -51,14 +51,14 @@ module.exports = (Sequelize, db) => {
 
   }, {
     indexes: [
-      // a unique BTREE index on uuid -> lookup by UUID in O(log n)
+      // for lookup by UUID
       {
         using: 'BTREE',
         unique: true,
         fields: ['uuid'],
       },
 
-      // a BTREE index on order -> retrieving all items in an order in O(n)
+      // for retrieving all items in an order
       {
         name: 'items_per_order_index',
         using: 'BTREE',

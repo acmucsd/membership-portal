@@ -41,22 +41,21 @@ module.exports = (Sequelize, db) => {
 
   }, {
     indexes: [
-      // a unique BTREE index on uuid -> lookup by UUID in O(log n)
+      // for lookup by UUID
       {
         using: 'BTREE',
         unique: true,
         fields: ['uuid'],
       },
 
-      // a BTREE index on user -> retrieving all orders a user has placed in O(n)
+      // for retrieving all orders a user has placed
       {
         name: 'orders_per_user_index',
         using: 'BTREE',
         fields: ['user'],
       },
 
-      // a BTREE index on orderedAt -> retrieving all orders in reverse chronological order in O(n)
-      // the table is inherently chronologically sorted, but that's worst case for Postgres' in-memory sort (quicksort)
+      // for retrieving all orders in reverse chronological order
       {
         name: 'recent_orders_index',
         using: 'BTREE',

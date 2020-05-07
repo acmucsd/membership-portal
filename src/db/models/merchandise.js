@@ -75,14 +75,14 @@ module.exports = (Sequelize, db) => {
     },
   }, {
     indexes: [
-      // a unique BTREE index on uuid -> lookup by UUID in O(log n)
+      // for lookup by UUID
       {
         using: 'BTREE',
         unique: true,
         fields: ['uuid'],
       },
 
-      // a partial BTREE index on discount -> retrieving discounted inventory, sorted by highest discount, in O(n)
+      // for retrieving discounted inventory, sorted by highest discount
       {
         using: 'BTREE',
         fields: [{ attribute: 'discountPercentage', order: 'DESC' }],
