@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 const express = require('express');
-const { any, flatten, pick } = require('underscore');
+const { any, flatten, pick, intersection } = require('underscore');
 const email = require('../../../email');
 const error = require('../../../error');
 const { Activity, User, MerchandiseCollection, Merchandise, Order, OrderItem, db } = require('../../../db');
@@ -230,20 +230,35 @@ router.route('/order/:uuid?')
   })
 
   /**
-   * Given a 'fulfilled' array of OrderItem UUIDs in the request body, marks all order items as fulfilled
-   * if none of the order items have already been fulfilled, and returns the number of items marked fulfilled.
+   * Given an 'orders' array of objects with 'uuid' and optional 'fulfilled' and 'notes' fields in the request
+   * body, marks all order items as fulfilled if none of the order items have already been fulfilled, and
+   * returns the number of items marked fulfilled.
    */
-  .patch((req, res, next) => db
+  .patch((req, res, next) => {
+    const updatedOrderItemsLookup = {};
+    for (let i = 0; i < req.body.items.length; i += 1) {
+      const oi = req.body.items[i];
+      updatedOrderItemsLookup[oi.uuid] = { fulfilled: Boolean(oi.fulfilled) };
+      if (oi.notes) updatedOrderItemsLookup[oi.uuid].notes = oi.notes;
+    }
     // a db transaction to ensure either all items are marked fulfilled or none are (request fails)
-    .transaction({
+    db.transaction({
       isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
-    }, (transaction) => Promise.all(req.body.fulfilled.map((uuid) => OrderItem.findByUUID(uuid)))
+    }, (transaction) => Promise
+      .all(req.body.items.map((o) => OrderItem.findByUUID(o.uuid)))
       .then((orderItems) => {
-        const alreadyFulfilled = orderItems.map((oi) => oi.isFulfilled());
-        if (any(alreadyFulfilled)) throw new error.UserError('At least one order item has already been fulfilled.');
+        const toBeFulfilled = req.body.items.filter((oi) => Boolean(oi.fulfilled)).map((oi) => oi.uuid);
+        const alreadyFulfilled = orderItems.filter((oi) => oi.isFulfilled()).map((oi) => oi.uuid);
+        if (intersection(toBeFulfilled, alreadyFulfilled).length > 0) {
+          throw new error.UserError('At least one order item marked to be fulfilled has already been fulfilled.');
+        }
         return orderItems;
-      }).then((orderItems) => Promise.all(orderItems.map((oi) => OrderItem.fulfill(oi.uuid)))))
-    .then((fulfilledItems) => res.json({ error: null, numFulfilled: fulfilledItems.length }))
-    .catch(next));
+      }).then((orderItems) => Promise.all(orderItems.map((oi) => {
+        const updatedOrderItem = updatedOrderItemsLookup[oi.uuid];
+        return OrderItem.fulfill(oi.uuid, updatedOrderItem.fulfilled, updatedOrderItem.notes);
+      }))))
+      .then((items) => res.json({ error: null, items }))
+      .catch(next);
+  });
 
 module.exports = { router };

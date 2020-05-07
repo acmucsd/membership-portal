@@ -26,6 +26,9 @@ module.exports = {
       fulfilledAt: {
         type: Sequelize.DATE,
       },
+      notes: {
+        type: Sequelize.TEXT,
+      },
     }).then(() => Promise.all([
       queryInterface.addIndex(TABLE_NAME, {
         using: 'BTREE',

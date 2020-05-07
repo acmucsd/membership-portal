@@ -49,6 +49,10 @@ module.exports = (Sequelize, db) => {
       type: Sequelize.DATE,
     },
 
+    notes: {
+      type: Sequelize.TEXT,
+    },
+
   }, {
     indexes: [
       // for lookup by UUID
@@ -80,12 +84,14 @@ module.exports = (Sequelize, db) => {
     return this.count({ where: { item } }).then((c) => c !== 0);
   };
 
-  OrderItem.prototype.isFulfilled = function () {
-    return this.fulfilled;
+  OrderItem.fulfill = function (uuid, fulfilled, notes) {
+    const changes = fulfilled ? { fulfilled, fulfilledAt: Date.now() } : {};
+    if (notes) changes.notes = notes;
+    return this.update(changes, { where: { uuid } });
   };
 
-  OrderItem.fulfill = function (uuid) {
-    return this.update({ fulfilled: true, fulfilledAt: Date.now() }, { where: { uuid } });
+  OrderItem.prototype.isFulfilled = function () {
+    return this.fulfilled;
   };
 
   return OrderItem;
