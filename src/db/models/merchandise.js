@@ -134,7 +134,8 @@ module.exports = (Sequelize, db) => {
     // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
     delete item.quantity;
     if (item.addQuantity) item.quantity = Sequelize.literal(`quantity + ${item.addQuantity}`);
-    return pick(item, ['itemName', 'picture', 'price', 'quantity', 'description', 'discountPercentage', 'hidden']);
+    return pick(item,
+      ['itemName', 'collection', 'picture', 'price', 'quantity', 'description', 'discountPercentage', 'hidden']);
   };
 
   Merchandise.destroyByUUID = function (uuid) {

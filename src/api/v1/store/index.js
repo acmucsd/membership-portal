@@ -3,9 +3,73 @@ const express = require('express');
 const { any, flatten, pick } = require('underscore');
 const email = require('../../../email');
 const error = require('../../../error');
-const { Activity, User, Merchandise, Order, OrderItem, db } = require('../../../db');
+const { Activity, User, MerchandiseCollection, Merchandise, Order, OrderItem, db } = require('../../../db');
 
 const router = express.Router();
+
+router.route('/collection/:uuid?')
+  .get((req, res, next) => {
+    if (req.params.uuid) {
+      return MerchandiseCollection.findByUUID(req.params.uuid).then((collection) => {
+        if (!collection) throw new error.NotFound('No such merchandise collection found');
+        return Merchandise.findAllByCollection(collection.uuid).then((merchandise) => {
+          collection.dataValues.merchandise = merchandise;
+          res.json({ error: null, collection });
+        });
+      }).catch(next);
+    }
+    MerchandiseCollection.getAllCollections().then((collectionsMinusMerch) => Promise
+      .all(collectionsMinusMerch.map((c) => Merchandise.findAllByCollection(c.uuid).then((merchandise) => {
+        c.dataValues.merchandise = merchandise;
+        return c;
+      }))).then((collections) => {
+        res.json({ error: null, collections });
+      })).catch(next);
+  })
+
+  /**
+   * All further requests on this route require authentication and admin access.
+   */
+  .all((req, res, next) => {
+    if (!req.user.isAdmin()) return next(new error.Forbidden());
+    return next();
+  })
+
+  .post((req, res, next) => {
+    if (!req.body.collection) return next(new error.BadRequest('Merchandise collection must be provided'));
+
+    MerchandiseCollection.create(MerchandiseCollection.sanitize(req.body.collection)).then((collection) => {
+      res.json({ error: null, collection });
+    }).catch(next);
+  })
+
+  .patch((req, res, next) => {
+    if (!req.params.uuid || !req.body.collection) {
+      return next(new error.BadRequest('UUID and partial merchandise collection object must be provided'));
+    }
+
+    MerchandiseCollection.findByUUID(req.params.uuid).then((collection) => {
+      if (!collection) throw new error.BadRequest('No such merchandise collection found');
+      return collection.update(MerchandiseCollection.sanitize(req.body.collection));
+    }).then((collection) => res.json({ error: null, collection })).catch(next);
+  })
+
+  .delete((req, res, next) => {
+    if (!req.params.uuid) return next(new error.BadRequest('UUID must be provided'));
+    MerchandiseCollection.findByUUID(req.params.uuid).then((collection) => {
+      if (!collection) throw new error.BadRequest('No such merchandise collection found');
+      return Merchandise.findAllByCollection(collection.uuid)
+        .then((merchandise) => Promise.all(merchandise.map((m) => OrderItem.itemHasBeenOrdered(m.uuid)))
+          .then((itemsHaveBeenOrdered) => {
+            if (any(itemsHaveBeenOrdered)) {
+              throw new error.BadRequest('An item from this collection has been previous ordered');
+            }
+            return Promise
+              .all(merchandise.map((m) => Merchandise.destroyByUUID(m.uuid)))
+              .then(() => MerchandiseCollection.destroyByUUID(collection.uuid));
+          }));
+    }).then(() => res.json({ error: null })).catch(next);
+  });
 
 router.route('/merchandise/:uuid?')
 
@@ -40,7 +104,7 @@ router.route('/merchandise/:uuid?')
   .post((req, res, next) => {
     if (!req.body.merchandise) return next(new error.BadRequest('Merchandise item must be provided'));
 
-    Merchandise.create(req.body.merchandise).then((merchandise) => {
+    Merchandise.create(Merchandise.sanitize(req.body.merchandise)).then((merchandise) => {
       res.json({ error: null, merchandise });
     }).catch(next);
   })
@@ -73,7 +137,7 @@ router.route('/merchandise/:uuid?')
         if (itemHasBeenOrdered) {
           throw new error.BadRequest('This item has been previously ordered and cannot be deleted.');
         }
-        return Merchandise.destroyByUUID(req.params.uuid).then((numDeleted) => res.json({ error: null, numDeleted }));
+        return Merchandise.destroyByUUID(req.params.uuid).then(() => res.json({ error: null }));
       });
     }).catch(next);
   });
