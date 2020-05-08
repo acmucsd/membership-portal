@@ -54,6 +54,7 @@ module.exports = (Sequelize, db) => {
     },
 
   }, {
+    timestamps: false,
     indexes: [
       // for lookup by UUID
       {

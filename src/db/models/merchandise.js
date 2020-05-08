@@ -87,6 +87,7 @@ module.exports = (Sequelize, db) => {
       defaultValue: true,
     },
   }, {
+    timestamps: false,
     indexes: [
       // for lookup by UUID
       {

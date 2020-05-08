@@ -1,5 +1,6 @@
+const TABLE_NAME = 'Events';
 module.exports = {
-  up: (queryInterface, Sequelize) => queryInterface.bulkInsert('Events', [{
+  up: (queryInterface, Sequelize) => queryInterface.bulkInsert(TABLE_NAME, [{
     uuid: 'f9de28ca-80cc-4aeb-b8ed-ee9a92954e24',
     title: 'Bit-Byte Allocation',
     description: 'The big reveal is here!',
@@ -49,5 +50,5 @@ module.exports = {
     staffPointBonus: 0,
   }]),
 
-  down: (queryInterface, Sequelize) => queryInterface.bulkDelete('Events', null, {}),
+  down: (queryInterface, Sequelize) => queryInterface.bulkDelete(TABLE_NAME, null, {}),
 };
