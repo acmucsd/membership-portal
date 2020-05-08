@@ -8,23 +8,27 @@ const { Activity, User, MerchandiseCollection, Merchandise, Order, OrderItem, db
 const router = express.Router();
 
 router.route('/collection/:uuid?')
-  .get((req, res, next) => {
-    if (req.params.uuid) {
-      return MerchandiseCollection.findByUUID(req.params.uuid).then((collection) => {
-        if (!collection) throw new error.NotFound('No such merchandise collection found');
-        return Merchandise.findAllByCollection(collection.uuid).then((merchandise) => {
-          collection.dataValues.merchandise = merchandise;
-          res.json({ error: null, collection });
-        });
-      }).catch(next);
+  .get(async (req, res, next) => {
+    try {
+      if (req.params.uuid) {
+        const collection = await MerchandiseCollection.findByUUID(req.params.uuid).get();
+        if (!collection) return next(new error.NotFound('No such merchandise collection found'));
+        const merchandise = await Merchandise.findAllByCollection(collection.uuid);
+        res.json({ error: null, collection });
+        return;
+      }
+      const collectionsMinusMerch = await MerchandiseCollection.getAllCollections()
+        .then((cs) => cs.map((c) => c.get()));
+      const collections = await Promise.all(collectionsMinusMerch
+        .map((c) => Merchandise
+          .findAllByCollection(c.uuid)
+          .then((merchandise) => {
+            return { ...c, merchandise };
+          })));
+      res.json({ error: null, collections });
+    } catch (err) {
+      return next(err);
     }
-    MerchandiseCollection.getAllCollections().then((collectionsMinusMerch) => Promise
-      .all(collectionsMinusMerch.map((c) => Merchandise.findAllByCollection(c.uuid).then((merchandise) => {
-        c.dataValues.merchandise = merchandise;
-        return c;
-      }))).then((collections) => {
-        res.json({ error: null, collections });
-      })).catch(next);
   })
 
   /**
@@ -35,40 +39,50 @@ router.route('/collection/:uuid?')
     return next();
   })
 
-  .post((req, res, next) => {
+  .post(async (req, res, next) => {
     if (!req.body.collection) return next(new error.BadRequest('Merchandise collection must be provided'));
 
-    MerchandiseCollection.create(MerchandiseCollection.sanitize(req.body.collection)).then((collection) => {
+    try {
+      const collection = await MerchandiseCollection.create(MerchandiseCollection.sanitize(req.body.collection));
       res.json({ error: null, collection });
-    }).catch(next);
+    } catch (err) {
+      return next(err);
+    }
   })
 
-  .patch((req, res, next) => {
+  .patch(async (req, res, next) => {
     if (!req.params.uuid || !req.body.collection) {
       return next(new error.BadRequest('UUID and partial merchandise collection object must be provided'));
     }
 
-    MerchandiseCollection.findByUUID(req.params.uuid).then((collection) => {
-      if (!collection) throw new error.BadRequest('No such merchandise collection found');
-      return collection.update(MerchandiseCollection.sanitize(req.body.collection));
-    }).then((collection) => res.json({ error: null, collection })).catch(next);
+    try {
+      let collection = await MerchandiseCollection.findByUUID(req.params.uuid);
+      if (!collection) return next(new error.BadRequest('No such merchandise collection found'));
+      collection = await collection.update(MerchandiseCollection.sanitize(req.body.collection));
+      res.json({ error: null, collection });
+    } catch (err) {
+      return next(err);
+    }
   })
 
-  .delete((req, res, next) => {
+  .delete(async (req, res, next) => {
     if (!req.params.uuid) return next(new error.BadRequest('UUID must be provided'));
-    MerchandiseCollection.findByUUID(req.params.uuid).then((collection) => {
-      if (!collection) throw new error.BadRequest('No such merchandise collection found');
-      return Merchandise.findAllByCollection(collection.uuid)
-        .then((merchandise) => Promise.all(merchandise.map((m) => OrderItem.itemHasBeenOrdered(m.uuid)))
-          .then((itemsHaveBeenOrdered) => {
-            if (any(itemsHaveBeenOrdered)) {
-              throw new error.BadRequest('An item from this collection has been previous ordered');
-            }
-            return Promise
-              .all(merchandise.map((m) => Merchandise.destroyByUUID(m.uuid)))
-              .then(() => MerchandiseCollection.destroyByUUID(collection.uuid));
-          }));
-    }).then(() => res.json({ error: null })).catch(next);
+
+    try {
+      const collection = await MerchandiseCollection.findByUUID(req.params.uuid);
+      if (!collection) return next(new error.BadRequest('No such merchandise collection found'));
+      const merchandise = await Merchandise.findAllByCollection(collection.uuid);
+      const itemsHaveBeenOrdered = await Promise.all(merchandise.map((m) => OrderItem.itemHasBeenOrdered(m.uuid)));
+      if (any(itemsHaveBeenOrdered)) {
+        return next(new error.BadRequest('An item from this collection has been previous ordered'));
+      }
+      await Promise
+        .all(merchandise.map((m) => Merchandise.destroyByUUID(m.uuid)))
+        .then(() => MerchandiseCollection.destroyByUUID(collection.uuid));
+      res.json({ error: null });
+    } catch (err) {
+      next(err);
+    }
   });
 
 router.route('/merchandise/:uuid?')
@@ -77,15 +91,19 @@ router.route('/merchandise/:uuid?')
    * Given a merch item UUID in the URI, return the matching item or null if no such item was found.
    * Otherwise, returns all items listed on the store, including hidden items for admins.
    */
-  .get((req, res, next) => {
+  .get(async (req, res, next) => {
     const offset = parseInt(req.query.offset, 10);
     const limit = parseInt(req.query.limit, 10);
     const findMerchandise = req.params.uuid
       ? Merchandise.findByUUID(req.params.uuid)
       : Merchandise.getAllItems(req.user.isAdmin(), offset, limit);
-    findMerchandise.then((merchandise) => {
+
+    try {
+      const merchandise = await findMerchandise;
       res.json({ error: null, merchandise });
-    }).catch(next);
+    } catch (err) {
+      return next(err);
+    }
   })
 
   /**
@@ -101,12 +119,15 @@ router.route('/merchandise/:uuid?')
    * upon success. Required fields: itemName, price, description. Optional fields: picture, quantity,
    * discountPercentage, hidden. All other fields will be ignored.
    */
-  .post((req, res, next) => {
+  .post(async (req, res, next) => {
     if (!req.body.merchandise) return next(new error.BadRequest('Merchandise item must be provided'));
 
-    Merchandise.create(Merchandise.sanitize(req.body.merchandise)).then((merchandise) => {
+    try {
+      const merchandise = await Merchandise.create(Merchandise.sanitize(req.body.merchandise));
       res.json({ error: null, merchandise });
-    }).catch(next);
+    } catch (err) {
+      return next(err);
+    }
   })
 
   /**
@@ -114,32 +135,40 @@ router.route('/merchandise/:uuid?')
    * returns the updated item upon success. Optional fields: itemName, price, picture, description, addQuantity,
    * discountPercentage, hidden. All other fields will be ignored.
    */
-  .patch((req, res, next) => {
+  .patch(async (req, res, next) => {
     if (!req.params.uuid || !req.body.merchandise) {
       return next(new error.BadRequest('UUID and partial merchandise item object must be provided'));
     }
 
-    Merchandise.findByUUID(req.params.uuid).then((item) => {
-      if (!item) throw new error.BadRequest('No such merchandise item found');
+    try {
+      let item = await Merchandise.findByUUID(req.params.uuid);
+      if (!item) return next(new error.BadRequest('No such merchandise item found'));
       // reloads item to get the updated 'quantity' (see Merchandise::sanitize)
-      return item.update(Merchandise.sanitize(req.body.merchandise)).then((i) => i.reload());
-    }).then((item) => res.json({ error: null, item })).catch(next);
+      item = await item.update(Merchandise.sanitize(req.body.merchandise)).then((i) => i.reload());
+      res.json({ error: null, item });
+    } catch (err) {
+      return next(err);
+    }
   })
 
   /**
    * Deletes an item, given an item UUID in the URI, if that item has not yet been ordered.
    */
-  .delete((req, res, next) => {
+  .delete(async (req, res, next) => {
     if (!req.params.uuid) return next(new error.BadRequest('UUID must be provided'));
-    Merchandise.findByUUID(req.params.uuid).then((item) => {
-      if (!item) throw new error.BadRequest('No such merchandise item found');
-      return OrderItem.itemHasBeenOrdered(req.params.uuid).then((itemHasBeenOrdered) => {
-        if (itemHasBeenOrdered) {
-          throw new error.BadRequest('This item has been previously ordered and cannot be deleted.');
-        }
-        return Merchandise.destroyByUUID(req.params.uuid).then(() => res.json({ error: null }));
-      });
-    }).catch(next);
+
+    try {
+      const item = await Merchandise.findByUUID(req.params.uuid);
+      if (!item) return next(new error.BadRequest('No such merchandise item found'));
+      const itemHasBeenOrdered = await OrderItem.itemHasBeenOrdered(req.params.uuid);
+      if (itemHasBeenOrdered) {
+        return next(new error.BadRequest('This item has been previously ordered and cannot be deleted.'));
+      }
+      await Merchandise.destroyByUUID(req.params.uuid);
+      res.json({ error: null });
+    } catch (err) {
+      return next(err);
+    }
   });
 
 router.route('/order/:uuid?')
@@ -148,29 +177,29 @@ router.route('/order/:uuid?')
    * Given an order UUID in the URI, return the matching order or null if no such order was found.
    * Otherwise, returns all orders placed by the current user, or all orders if the user is an admin.
    */
-  .get((req, res, next) => {
-    // assigns OrderItems to the 'dataValues' object because of how Sequelize instances are converted to JSON
-    const attachOrderItems = (orders) => Promise.all(orders.map((o) => OrderItem.findAllByOrder(o.uuid)))
-      .then((orderItems) => {
-        for (let i = 0; i < orders.length; i += 1) {
-          orders[i].dataValues.items = orderItems[i];
-        }
-        res.json({ error: null, orders });
-      });
-    if (req.params.uuid) {
-      Order.findByUUID(req.params.uuid).then((order) => {
-        if (!req.user.isAdmin() && req.user.uuid !== order.user) {
-          throw new error.Forbidden();
-        }
-        OrderItem.findAllByOrder(order.uuid).then((orderItems) => {
-          order.dataValues.items = orderItems;
-          res.json({ error: null, order });
+  .get(async (req, res, next) => {
+    try {
+      const attachOrderItems = (orders) => Promise
+        .all(orders.map((o) => OrderItem.findAllByOrder(o.uuid)))
+        .then((orderItems) => {
+          for (let i = 0; i < orders.length; i += 1) {
+            orders[i].dataValues.items = orderItems[i];
+          }
+          res.json({ error: null, orders });
         });
-      }).catch(next);
-    } else if (req.user.isAdmin()) {
-      Order.getAllOrders().then(attachOrderItems).catch(next);
-    } else {
-      Order.findAllByUser(req.user.uuid).then(attachOrderItems).catch(next);
+      if (req.params.uuid) {
+        const order = await Order.findByUUID(req.params.uuid).then((o) => o.get());
+        if (!req.user.isAdmin() && req.user.uuid !== order.user) {
+          return next(new error.Forbidden());
+        }
+        order.items = await OrderItem.findAllByOrder(order.uuid);
+        res.json({ error: null, order });
+        return;
+      }
+      const findOrders = req.user.isAdmin() ? Order.getAllOrders() : Order.findAllByUser(req.user.uuid);
+      await attachOrderItems(await findOrders);
+    } catch (err) {
+      return next(err);
     }
   })
 
@@ -264,31 +293,34 @@ router.route('/order/:uuid?')
    * body, marks all order items as fulfilled if none of the order items have already been fulfilled, and
    * returns the number of items marked fulfilled.
    */
-  .patch((req, res, next) => {
+  .patch(async (req, res, next) => {
     const updatedOrderItemsLookup = {};
     for (let i = 0; i < req.body.items.length; i += 1) {
       const oi = req.body.items[i];
       updatedOrderItemsLookup[oi.uuid] = { fulfilled: Boolean(oi.fulfilled) };
       if (oi.notes) updatedOrderItemsLookup[oi.uuid].notes = oi.notes;
     }
-    // a db transaction to ensure either all items are marked fulfilled or none are (request fails)
-    db.transaction({
-      isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
-    }, (transaction) => Promise
-      .all(req.body.items.map((o) => OrderItem.findByUUID(o.uuid)))
-      .then((orderItems) => {
+
+    try {
+      // a db transaction to ensure either all items are marked fulfilled or none are (request fails)
+      const items = await db.transaction({
+        isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
+      }, async (transaction) => {
+        const orderItems = Promise.all(req.body.items.map((o) => OrderItem.findByUUID(o.uuid)));
         const toBeFulfilled = req.body.items.filter((oi) => Boolean(oi.fulfilled)).map((oi) => oi.uuid);
         const alreadyFulfilled = orderItems.filter((oi) => oi.isFulfilled()).map((oi) => oi.uuid);
         if (intersection(toBeFulfilled, alreadyFulfilled).length > 0) {
           throw new error.UserError('At least one order item marked to be fulfilled has already been fulfilled.');
         }
-        return orderItems;
-      }).then((orderItems) => Promise.all(orderItems.map((oi) => {
-        const updatedOrderItem = updatedOrderItemsLookup[oi.uuid];
-        return OrderItem.fulfill(oi.uuid, updatedOrderItem.fulfilled, updatedOrderItem.notes);
-      }))))
-      .then((items) => res.json({ error: null, items }))
-      .catch(next);
+        return Promise.all(orderItems.map((oi) => {
+          const updatedOrderItem = updatedOrderItemsLookup[oi.uuid];
+          return OrderItem.fulfill(oi.uuid, updatedOrderItem.fulfilled, updatedOrderItem.notes);
+        }));
+      });
+      res.json({ error: null, items });
+    } catch (err) {
+      return next(err);
+    }
   });
 
 module.exports = { router };
