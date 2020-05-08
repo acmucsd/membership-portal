@@ -20,7 +20,7 @@ module.exports = {
     picture: null,
     price: 1500,
     quantity: 120,
-    description: 'Make space on your laptop cover for these 2 in x 2 stickers. Pack of 4.',
+    description: 'Make space on your laptop cover for these 2 in x 2 in stickers. Pack of 4.',
     discountPercentage: 15,
     monthlyLimit: 5,
     lifetimeLimit: 25,
