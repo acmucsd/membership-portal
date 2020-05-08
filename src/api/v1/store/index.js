@@ -11,7 +11,7 @@ router.route('/collection/:uuid?')
   .get(async (req, res, next) => {
     try {
       if (req.params.uuid) {
-        const collection = await MerchandiseCollection.findByUUID(req.params.uuid).then((c) => c.get());
+        const collection = await MerchandiseCollection.findByUUID(req.params.uuid).then((c) => (c ? c.get() : c));
         if (!collection) return next(new error.NotFound('No such merchandise collection found'));
         const merchandise = await Merchandise.findAllByCollection(collection.uuid);
         collection.merchandise = req.user.isAdmin() ? merchandise : merchandise.map((m) => m.getPublicItem());
