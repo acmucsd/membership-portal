@@ -68,6 +68,14 @@ module.exports = (Sequelize, db) => {
       },
     },
 
+    monthlyLimit: {
+      type: Sequelize.INTEGER,
+    },
+
+    lifetimeLimit: {
+      type: Sequelize.INTEGER,
+    },
+
     numSold: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
@@ -134,8 +142,18 @@ module.exports = (Sequelize, db) => {
     // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
     delete item.quantity;
     if (item.addQuantity) item.quantity = Sequelize.literal(`quantity + ${item.addQuantity}`);
-    return pick(item,
-      ['itemName', 'collection', 'picture', 'price', 'quantity', 'description', 'discountPercentage', 'hidden']);
+    return pick(item, [
+      'itemName',
+      'collection',
+      'picture',
+      'price',
+      'quantity',
+      'description',
+      'discountPercentage',
+      'monthlyLimit',
+      'lifetimeLimit',
+      'hidden',
+    ]);
   };
 
   Merchandise.destroyByUUID = function (uuid) {

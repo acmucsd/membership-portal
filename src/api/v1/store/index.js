@@ -179,46 +179,76 @@ router.route('/order/:uuid?')
    * and 'quantity' fields in the request body, if the user has enough credits and there are enough
    * units of each item in stock.
    */
-  .post((req, res, next) => {
-    if (!req.body.order) return next(new error.BadRequest('Items list must be provided'));
-    // a db transaction to ensure all values (e.g. units in stock, user's credits) are the most current
-    return db.transaction({
-      isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
-    }, (transaction) => Promise.all(req.body.order.map((o) => Merchandise.findByUUID(o.item))).then((items) => {
-      for (let i = 0; i < items.length; i += 1) {
-        if (items[i].quantity < req.body.order[i].quantity) {
-          throw new error.UserError(`There aren't enough units of "${items[i].itemName}" in stock`);
+  .post(async (req, res, next) => {
+    try {
+      if (!req.body.order) return next(new error.BadRequest('Items list must be provided'));
+      // a db transaction to ensure all values (e.g. units in stock, user's credits) are the most current
+      const [order, merch] = await db.transaction({
+        isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
+      }, async (transaction) => {
+        // checks that enough units of requested items are in stock
+        const items = await Promise.all(req.body.order.map((o) => Merchandise.findByUUID(o.item)));
+        for (let i = 0; i < items.length; i += 1) {
+          if (items[i].quantity < req.body.order[i].quantity) {
+            throw new error.UserError(`There aren't enough units of "${items[i].itemName}" in stock`);
+          }
+          items[i].quantityRequested = req.body.order[i].quantity;
         }
-        items[i].quantityRequested = req.body.order[i].quantity;
-      }
-      const totalCost = items.reduce((sum, i) => sum + (i.getPrice() * i.quantityRequested), 0);
-      return User.hasEnoughCredits(req.user.uuid, totalCost).then((hasEnoughCredits) => {
+        // checks that the user hasn't exceeded monthly/lifetime purchase limits for item
+        const lifetimePurchaseHistory = await Order.findAllByUser(req.user.uuid);
+        const oneMonthAgo = new Date().setMonth(new Date().getMonth() - 1);
+        const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
+        const countOrderItems = (orders) => {
+          const orderItemCounts = {};
+          const orderedItems = Promise
+            .all(orders.map((o) => OrderItem.findAllByOrder(o.uuid)))
+            .then((ois) => flatten(ois));
+          for (let i = 0; i < orderedItems.length; i += 1) {
+            const oi = orderedItems[i];
+            if (!(oi.uuid in orderItemCounts)) orderItemCounts[oi.uuid] = 0;
+            orderItemCounts[oi.uuid] += 1;
+          }
+          return orderItemCounts;
+        };
+        const lifetimeOrderItemCounts = countOrderItems(lifetimePurchaseHistory);
+        const pastMonthOrderItemCounts = countOrderItems(pastMonthPurchaseHistory);
+        for (let i = 0; i < items.length; i += 1) {
+          if (lifetimeOrderItemCounts[items[i].uuid] + items[i].quantityRequested > items[i].lifetimeLimit) {
+            throw new error.UserError(`This order exceeds the lifetime limit for "${items[i].itemName}"`);
+          }
+          if (pastMonthOrderItemCounts[items[i].uuid] + items[i].quantityRequested > items[i].monthlyLimit) {
+            throw new error.UserError(`This order exceeds the monthly limit for "${items[i].itemName}"`);
+          }
+        }
+        // checks that the user has enough credits to place order
+        const totalCost = items.reduce((sum, i) => sum + (i.getPrice() * i.quantityRequested), 0);
+        const hasEnoughCredits = await User.hasEnoughCredits(req.user.uuid, totalCost);
         if (!hasEnoughCredits) throw new error.UserError('You don\'t have enough credits');
+        // if all checks pass, the order is placed
         return Promise.all([
-          Order.create({ user: req.user.uuid, totalCost }).then((order) => {
-            const orderItems = flatten(req.body.order
-              .map(({ item, quantity }) => Array(quantity).fill({ order: order.uuid, item })));
-            return Promise.all([
-              OrderItem.bulkCreate(orderItems),
-              Activity.orderMerchandise(req.user.uuid, `Order ${order.uuid}`),
-            ]).then(() => order);
-          }),
+          Order.create({ user: req.user.uuid, totalCost })
+            .then(async (o) => {
+              const orderItems = flatten(req.body.order
+                .map(({ item, quantity }) => Array(quantity).fill({ order: o.uuid, item })));
+              await Promise.all([
+                OrderItem.bulkCreate(orderItems),
+                Activity.orderMerchandise(req.user.uuid, `Order ${o.uuid}`),
+              ]);
+              return pick(o, 'uuid', 'orderedAt', 'totalCost');
+            }),
           Promise.all(items.map((i) => i.updateQuantity(i.quantityRequested))),
           req.user.spendCredits(totalCost),
         ]);
       });
-    })).then(([order, merch]) => {
-      order = pick(order, ['uuid', 'orderedAt', 'totalCost']);
       order.items = merch
         .filter((m) => m.quantityRequested > 0)
-        .map((m) => {
-          m.total = m.price * m.quantityRequested;
-          return m;
-        })
+        .map((m) => ({ ...m, total: m.price * m.quantityRequested }))
         .map((m) => pick(m, ['itemName', 'price', 'picture', 'description', 'quantityRequested', 'total']));
       email.sendOrderConfirmation(req.user.email, req.user.firstName, order);
       res.json({ error: null, order });
-    }).catch(next);
+    } catch (err) {
+      next(err);
+    }
   })
 
   /**

@@ -38,6 +38,12 @@ module.exports = {
         type: Sequelize.INTEGER,
         defaultValue: 0,
       },
+      monthlyLimit: {
+        type: Sequelize.INTEGER,
+      },
+      lifetimeLimit: {
+        type: Sequelize.INTEGER,
+      },
       numSold: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
