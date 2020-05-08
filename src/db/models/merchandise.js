@@ -170,5 +170,19 @@ module.exports = (Sequelize, db) => {
     return this.decrement({ quantity, numSold: quantity * -1 });
   };
 
+  Merchandise.prototype.getPublicItem = function () {
+    return pick(this.get(), [
+      'uuid',
+      'itemName',
+      'collection',
+      'picture',
+      'price',
+      'description',
+      'discountPercentage',
+      'monthlyLimit',
+      'lifetimeLimit',
+    ]);
+  };
+
   return Merchandise;
 };

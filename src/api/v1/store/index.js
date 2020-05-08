@@ -14,6 +14,7 @@ router.route('/collection/:uuid?')
         const collection = await MerchandiseCollection.findByUUID(req.params.uuid).get();
         if (!collection) return next(new error.NotFound('No such merchandise collection found'));
         const merchandise = await Merchandise.findAllByCollection(collection.uuid);
+        collection.merchandise = req.user.isAdmin() ? merchandise : merchandise.map((m) => m.getPublicItem());
         res.json({ error: null, collection });
         return;
       }
@@ -23,6 +24,7 @@ router.route('/collection/:uuid?')
         .map((c) => Merchandise
           .findAllByCollection(c.uuid)
           .then((merchandise) => {
+            merchandise = req.user.isAdmin() ? merchandise : merchandise.map((m) => m.getPublicItem());
             return { ...c, merchandise };
           })));
       res.json({ error: null, collections });
