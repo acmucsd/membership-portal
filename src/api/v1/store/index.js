@@ -299,9 +299,9 @@ router.route('/order/:uuid?')
   })
 
   /**
-   * Given an 'orders' array of objects with 'uuid' and optional 'fulfilled' and 'notes' fields in the request
-   * body, marks all order items as fulfilled if none of the order items have already been fulfilled, and
-   * returns the number of items marked fulfilled.
+   * Given an 'items' array of objects with 'uuid' and optional 'fulfilled' and 'notes' fields in the request
+   * body, marks the appropriate order items as fulfilled if none of the order items that are set to be fulfilled
+   * have already been fulfilled.
    */
   .patch(async (req, res, next) => {
     const updatedOrderItemsLookup = {};
@@ -313,10 +313,10 @@ router.route('/order/:uuid?')
 
     try {
       // a db transaction to ensure either all items are marked fulfilled or none are (request fails)
-      const items = await db.transaction({
+      await db.transaction({
         isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
       }, async (transaction) => {
-        const orderItems = Promise.all(req.body.items.map((o) => OrderItem.findByUUID(o.uuid)));
+        const orderItems = await Promise.all(req.body.items.map((o) => OrderItem.findByUUID(o.uuid)));
         const toBeFulfilled = req.body.items.filter((oi) => Boolean(oi.fulfilled)).map((oi) => oi.uuid);
         const alreadyFulfilled = orderItems.filter((oi) => oi.isFulfilled()).map((oi) => oi.uuid);
         if (intersection(toBeFulfilled, alreadyFulfilled).length > 0) {
@@ -327,7 +327,7 @@ router.route('/order/:uuid?')
           return OrderItem.fulfill(oi.uuid, updatedOrderItem.fulfilled, updatedOrderItem.notes);
         }));
       });
-      res.json({ error: null, items });
+      res.json({ error: null });
     } catch (err) {
       return next(err);
     }
