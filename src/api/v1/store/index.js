@@ -183,14 +183,6 @@ router.route('/order/:uuid?')
    */
   .get(async (req, res, next) => {
     try {
-      const attachOrderItems = (orders) => Promise
-        .all(orders.map((o) => OrderItem.findAllByOrder(o.uuid)))
-        .then((orderItems) => {
-          for (let i = 0; i < orders.length; i += 1) {
-            orders[i].dataValues.items = orderItems[i];
-          }
-          res.json({ error: null, orders });
-        });
       if (req.params.uuid) {
         const order = await Order.findByUUID(req.params.uuid).then((o) => o.get());
         if (!req.user.isAdmin() && req.user.uuid !== order.user) {
@@ -201,7 +193,12 @@ router.route('/order/:uuid?')
         return;
       }
       const findOrders = req.user.isAdmin() ? Order.getAllOrders() : Order.findAllByUser(req.user.uuid);
-      await attachOrderItems(await findOrders);
+      const orders = Promise.all((await findOrders).map(async (o) => {
+        o = o.get();
+        o.items = await OrderItem.findAllByOrder(o.uuid);
+        return o;
+      }));
+      res.json({ error: null, orders });
     } catch (err) {
       return next(err);
     }
