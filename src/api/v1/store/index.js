@@ -208,46 +208,55 @@ router.route('/order/:uuid?')
    * Places an order for the current user, given an 'order' array of objects with 'item' (UUID)
    * and 'quantity' fields in the request body, if the user has enough credits and there are enough
    * units of each item in stock.
+   *
+   * Error priority:
+   *  1. purchase limits ("you are not allowed to order more and will not be allowed to")
+   *  2. out of stock ("we cannot fulfill your current order for the time being")
+   *  3. insufficient credits ("we can fulfill but you cannot pay for your current order")
    */
   .post(async (req, res, next) => {
     try {
       if (!req.body.order) return next(new error.BadRequest('Items list must be provided'));
+      const orderIsEmpty = req.body.order.reduce(((x, n) => x + n.quantity), 0) === 0;
+      if (orderIsEmpty) return next(new error.UserError('There are no items in this order'));
       // a db transaction to ensure all values (e.g. units in stock, user's credits) are the most current
       const [order, merch] = await db.transaction({
         isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
       }, async (transaction) => {
-        // checks that enough units of requested items are in stock
         const items = await Promise.all(req.body.order.map((o) => Merchandise.findByUUID(o.item)));
-        for (let i = 0; i < items.length; i += 1) {
-          if (items[i].quantity < req.body.order[i].quantity) {
-            throw new error.UserError(`There aren't enough units of "${items[i].itemName}" in stock`);
-          }
-          items[i].quantityRequested = req.body.order[i].quantity;
-        }
         // checks that the user hasn't exceeded monthly/lifetime purchase limits for item
         const lifetimePurchaseHistory = await Order.findAllByUser(req.user.uuid);
         const oneMonthAgo = new Date().setMonth(new Date().getMonth() - 1);
         const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
-        const countOrderItems = (orders) => {
+        const countOrderItems = async (orders) => {
           const orderItemCounts = {};
-          const orderedItems = Promise
+          const orderedItems = await Promise
             .all(orders.map((o) => OrderItem.findAllByOrder(o.uuid)))
             .then((ois) => flatten(ois));
+          for (let i = 0; i < items.length; i += 1) {
+            orderItemCounts[items[i].uuid] = 0;
+          }
           for (let i = 0; i < orderedItems.length; i += 1) {
             const oi = orderedItems[i];
-            if (!(oi.uuid in orderItemCounts)) orderItemCounts[oi.uuid] = 0;
-            orderItemCounts[oi.uuid] += 1;
+            if (oi.item in orderItemCounts) orderItemCounts[oi.item] += 1;
           }
           return orderItemCounts;
         };
-        const lifetimeOrderItemCounts = countOrderItems(lifetimePurchaseHistory);
-        const pastMonthOrderItemCounts = countOrderItems(pastMonthPurchaseHistory);
+        const lifetimeOrderItemCounts = await countOrderItems(lifetimePurchaseHistory);
+        const pastMonthOrderItemCounts = await countOrderItems(pastMonthPurchaseHistory);
         for (let i = 0; i < items.length; i += 1) {
+          items[i].quantityRequested = req.body.order[i].quantity;
           if (lifetimeOrderItemCounts[items[i].uuid] + items[i].quantityRequested > items[i].lifetimeLimit) {
             throw new error.UserError(`This order exceeds the lifetime limit for "${items[i].itemName}"`);
           }
           if (pastMonthOrderItemCounts[items[i].uuid] + items[i].quantityRequested > items[i].monthlyLimit) {
             throw new error.UserError(`This order exceeds the monthly limit for "${items[i].itemName}"`);
+          }
+        }
+        // checks that enough units of requested items are in stock
+        for (let i = 0; i < items.length; i += 1) {
+          if (items[i].quantity < req.body.order[i].quantity) {
+            throw new error.UserError(`There aren't enough units of "${items[i].itemName}" in stock`);
           }
         }
         // checks that the user has enough credits to place order
@@ -272,8 +281,8 @@ router.route('/order/:uuid?')
       });
       order.items = merch
         .filter((m) => m.quantityRequested > 0)
-        .map((m) => ({ ...m, total: m.price * m.quantityRequested }))
-        .map((m) => pick(m, ['itemName', 'price', 'picture', 'description', 'quantityRequested', 'total']));
+        .map((m) => pick(m, ['itemName', 'price', 'picture', 'description', 'quantityRequested']))
+        .map((m) => ({ ...m, total: m.price * m.quantityRequested }));
       email.sendOrderConfirmation(req.user.email, req.user.firstName, order);
       res.json({ error: null, order });
     } catch (err) {
