@@ -98,7 +98,9 @@ router.route('/merchandise/:uuid?')
     const limit = parseInt(req.query.limit, 10);
     const findMerchandise = req.params.uuid
       ? Merchandise.findByUUID(req.params.uuid)
-      : Merchandise.getAllItems(req.user.isAdmin(), offset, limit);
+        .then((m) => (req.user.isAdmin() ? m : m.getPublicItem()))
+      : Merchandise.getAllItems(req.user.isAdmin(), offset, limit)
+        .then((merchandise) => merchandise.map((m) => (req.user.isAdmin() ? m : m.getPublicItem())));
 
     try {
       const merchandise = await findMerchandise;
