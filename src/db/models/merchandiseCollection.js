@@ -22,6 +22,11 @@ module.exports = (Sequelize, db) => {
       type: Sequelize.TEXT,
     },
 
+    archived: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false,
+    },
+
   }, {
     timestamps: false,
     indexes: [
@@ -42,12 +47,16 @@ module.exports = (Sequelize, db) => {
     return this.findAll();
   };
 
+  MerchandiseCollection.getAllUnarchivedCollections = function () {
+    return this.findAll({ where: { archived: false } });
+  };
+
   MerchandiseCollection.destroyByUUID = function (uuid) {
     return this.destroy({ where: { uuid } });
   };
 
   MerchandiseCollection.sanitize = function (item) {
-    return pick(item, ['title', 'description']);
+    return pick(item, ['title', 'description', 'archived']);
   };
 
   return MerchandiseCollection;

@@ -13,16 +13,17 @@ router.route('/collection/:uuid?')
       if (req.params.uuid) {
         const collection = await MerchandiseCollection.findByUUID(req.params.uuid).then((c) => (c ? c.get() : c));
         if (!collection) return next(new error.NotFound('No such merchandise collection found'));
-        const merchandise = await Merchandise.findAllByCollection(collection.uuid);
+        const merchandise = await Merchandise.findAllByCollection(collection.uuid, req.user.isAdmin());
         collection.merchandise = req.user.isAdmin() ? merchandise : merchandise.map((m) => m.getPublicItem());
         res.json({ error: null, collection });
         return;
       }
-      const collectionsMinusMerch = await MerchandiseCollection.getAllCollections()
-        .then((cs) => cs.map((c) => c.get()));
+      const findCollectionsMinusMerch = req.user.isAdmin()
+        ? MerchandiseCollection.getAllCollections() : MerchandiseCollection.getAllUnarchivedCollections();
+      const collectionsMinusMerch = (await findCollectionsMinusMerch).then((cs) => cs.map((c) => c.get()));
       const collections = await Promise.all(collectionsMinusMerch
         .map((c) => Merchandise
-          .findAllByCollection(c.uuid)
+          .findAllByCollection(c.uuid, req.user.isAdmin())
           .then((merchandise) => {
             merchandise = req.user.isAdmin() ? merchandise : merchandise.map((m) => m.getPublicItem());
             return { ...c, merchandise };
@@ -73,7 +74,7 @@ router.route('/collection/:uuid?')
     try {
       const collection = await MerchandiseCollection.findByUUID(req.params.uuid);
       if (!collection) return next(new error.BadRequest('No such merchandise collection found'));
-      const merchandise = await Merchandise.findAllByCollection(collection.uuid);
+      const merchandise = await Merchandise.findAllByCollection(collection.uuid, req.user.isAdmin());
       const itemsHaveBeenOrdered = await Promise.all(merchandise.map((m) => OrderItem.itemHasBeenOrdered(m.uuid)));
       if (any(itemsHaveBeenOrdered)) {
         return next(new error.BadRequest('An item from this collection has been previous ordered'));
@@ -94,16 +95,11 @@ router.route('/merchandise/:uuid?')
    * Otherwise, returns all items listed on the store, including hidden items for admins.
    */
   .get(async (req, res, next) => {
-    const offset = parseInt(req.query.offset, 10);
-    const limit = parseInt(req.query.limit, 10);
-    const findMerchandise = req.params.uuid
-      ? Merchandise.findByUUID(req.params.uuid)
-        .then((m) => (req.user.isAdmin() ? m : m.getPublicItem()))
-      : Merchandise.getAllItems(req.user.isAdmin(), offset, limit)
-        .then((merchandise) => merchandise.map((m) => (req.user.isAdmin() ? m : m.getPublicItem())));
+    if (!req.params.uuid) return next(new error.BadRequest('UUID must be provided'));
 
     try {
-      const merchandise = await findMerchandise;
+      const merchandise = await Merchandise.findByUUID(req.params.uuid)
+        .then((m) => (req.user.isAdmin() ? m : m.getPublicItem()));
       res.json({ error: null, merchandise });
     } catch (err) {
       return next(err);

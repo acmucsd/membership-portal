@@ -118,14 +118,9 @@ module.exports = (Sequelize, db) => {
     return this.findOne({ where: { uuid } });
   };
 
-  Merchandise.getAllItems = function (isAdmin, offset, limit) {
-    if (!offset || offset < 0) offset = 0;
-    if (!limit || limit < 0) limit = undefined;
-    return this.findAll(isAdmin ? { offset, limit } : { where: { hidden: false }, offset, limit });
-  };
-
-  Merchandise.findAllByCollection = function (collection) {
-    return this.findAll({ where: { collection } });
+  Merchandise.findAllByCollection = function (collection, isAdmin) {
+    const where = isAdmin ? { collection } : { collection, hidden: false };
+    return this.findAll({ where });
   };
 
   Merchandise.getDiscountedItems = function (offset, limit) {

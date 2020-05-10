@@ -18,6 +18,10 @@ module.exports = {
       description: {
         type: Sequelize.TEXT,
       },
+      archived: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
     }).then(() => queryInterface.addIndex(TABLE_NAME, {
       using: 'BTREE',
       unique: true,
