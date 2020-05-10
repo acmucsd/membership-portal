@@ -219,6 +219,11 @@ router.route('/order/:uuid?')
       if (!req.body.order) return next(new error.BadRequest('Items list must be provided'));
       const orderIsEmpty = req.body.order.reduce(((x, n) => x + n.quantity), 0) === 0;
       if (orderIsEmpty) return next(new error.UserError('There are no items in this order'));
+      const numUniqueUUIDs = (new Set(req.body.order.map((oi) => oi.uuid))).size;
+      if (req.body.order.length !== numUniqueUUIDs) {
+        return next(new error.BadRequest('There are duplicate or invalid items in this order'));
+      }
+
       // a db transaction to ensure all values (e.g. units in stock, user's credits) are the most current
       const [order, merch] = await db.transaction({
         isolationLevel: Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
