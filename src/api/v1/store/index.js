@@ -20,7 +20,7 @@ router.route('/collection/:uuid?')
       }
       const findCollectionsMinusMerch = req.user.isAdmin()
         ? MerchandiseCollection.getAllCollections() : MerchandiseCollection.getAllUnarchivedCollections();
-      const collectionsMinusMerch = (await findCollectionsMinusMerch).then((cs) => cs.map((c) => c.get()));
+      const collectionsMinusMerch = await findCollectionsMinusMerch.then((cs) => cs.map((c) => c.get()));
       const collections = await Promise.all(collectionsMinusMerch
         .map((c) => Merchandise
           .findAllByCollection(c.uuid, req.user.isAdmin())
