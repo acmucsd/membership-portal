@@ -96,13 +96,6 @@ module.exports = (Sequelize, db) => {
         fields: ['uuid'],
       },
 
-      // for retrieving discounted inventory, sorted by highest discount
-      {
-        using: 'BTREE',
-        fields: [{ attribute: 'discountPercentage', order: 'DESC' }],
-        where: { discountPercentage: { [Sequelize.Op.gt]: 0 } },
-      },
-
       // for retrieving all items in a collection
       {
         name: 'merchandise_collections_index',
@@ -121,17 +114,6 @@ module.exports = (Sequelize, db) => {
   Merchandise.findAllByCollection = function (collection, isAdmin) {
     const where = isAdmin ? { collection } : { collection, hidden: false };
     return this.findAll({ where });
-  };
-
-  Merchandise.getDiscountedItems = function (offset, limit) {
-    if (!offset || offset < 0) offset = 0;
-    if (!limit || limit < 0) limit = undefined;
-    return this.findAll({
-      where: { discountPercentage: { [Sequelize.Op.gt]: 0 } },
-      offset,
-      limit,
-      order: [['discountPercentage', 'DESC']],
-    });
   };
 
   Merchandise.sanitize = function (item) {

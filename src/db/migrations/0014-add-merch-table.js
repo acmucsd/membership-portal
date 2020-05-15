@@ -61,12 +61,6 @@ module.exports = {
         transaction: t,
       }),
       queryInterface.addIndex(TABLE_NAME, {
-        using: 'BTREE',
-        fields: [{ attribute: 'discountPercentage', order: 'DESC' }],
-        where: { discountPercentage: { [Sequelize.Op.gt]: 0 } },
-        transaction: t,
-      }),
-      queryInterface.addIndex(TABLE_NAME, {
         name: 'merchandise_collections_index',
         using: 'BTREE',
         fields: ['collection'],
