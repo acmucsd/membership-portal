@@ -62,6 +62,10 @@ router.route('/collection/:uuid?')
       let collection = await MerchandiseCollection.findByUUID(req.params.uuid);
       if (!collection) return next(new error.BadRequest('No such merchandise collection found'));
       collection = await collection.update(MerchandiseCollection.sanitize(req.body.collection));
+      if (req.body.collection.discountPercentage) {
+        await Merchandise.findAllByCollection(collection.uuid).then((merch) => Promise
+          .all(merch.map((m) => m.update({ discountPercentage: req.body.collection.discountPercentage }))));
+      }
       res.json({ error: null, collection });
     } catch (err) {
       return next(err);
