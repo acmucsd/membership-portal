@@ -19,6 +19,14 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
+      salePriceAtPurchase: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      discountPercentageAtPurchase: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
       fulfilled: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,

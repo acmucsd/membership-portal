@@ -39,6 +39,16 @@ module.exports = (Sequelize, db) => {
       },
     },
 
+    salePriceAtPurchase: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+    },
+
+    discountPercentageAtPurchase: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+    },
+
     fulfilled: {
       type: Sequelize.BOOLEAN,
       allowNull: false,

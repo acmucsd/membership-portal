@@ -268,8 +268,13 @@ router.route('/order/:uuid?')
         return Promise.all([
           Order.create({ user: req.user.uuid, totalCost })
             .then(async (o) => {
-              const orderItems = flatten(req.body.order
-                .map(({ item, quantity }) => Array(quantity).fill({ order: o.uuid, item })));
+              const orderItems = flatten(items
+                .map((i) => Array(i.quantityRequested).fill({
+                  order: o.uuid,
+                  item: i.uuid,
+                  salePriceAtPurchase: i.getPrice(),
+                  discountPercentageAtPurchase: i.discountPercentage,
+                })));
               await Promise.all([
                 OrderItem.bulkCreate(orderItems),
                 Activity.orderMerchandise(req.user.uuid, `Order ${o.uuid}`),
