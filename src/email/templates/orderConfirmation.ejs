@@ -93,44 +93,11 @@
         <td class="container" style="font-family: sans-serif; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 580px; padding: 10px; width: 580px;">
             <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 580px; padding: 10px;">
 
-                <!-- START CENTERED WHITE CONTAINER -->
-                <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 3px;">
-
-                    <!-- START MAIN CONTENT AREA -->
-                    <tr>
-                        <td class="wrapper" style="font-family: sans-serif; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 20px;">
-                            <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
-                                <tr>
-                                    <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
-                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Hi <%= firstName %>,</p>
-                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your merch order on the ACM membership portal has been placed:</p>
-                                        <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">
-                                            <tbody>
-                                            <tr>
-                                                <td align="left" style="font-family: sans-serif; font-size: 14px; vertical-align: top; padding-bottom: 15px;">
-                                                    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
-                                                        <tbody>
-                                                        <tr>
-                                                            <th>Item</th>
-                                                            <th>Price</th>
-                                                            <th>Quantity</th>
-                                                            <th>Total</th>
-                                                        </tr>
-
-                                                        <% for(var i=0; i < order.items.length; i++) { %>
-                                                            <tr>
-                                                                <td><%= order.items[i].itemName %></td>
-                                                                <td><%= order.items[i].price %></td>
-                                                                <td><%= order.items[i].quantityRequested %></td>
-                                                                <td><%= order.items[i].total %></td>
-                                                            </tr>
-                                                        <% } %>
-                                                        </tbody>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
+<% for(var i=0; i < order.items.length; i++) { %>
+                    <p><%= order.items[i].itemName %></p>
+                    <p><small><%= order.items[i].salePrice %> x <%= order.items[i].quantityRequested %> = <%= order.items[i].total %></small></p>
+<% } %>
+    <h1><%= order.items[i].totalCost %></h1>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">To pick up your items, find a merch distribution event on the membership portal and stop by.</p>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Regards, <br />ACM UCSD</p>
                                     </td>

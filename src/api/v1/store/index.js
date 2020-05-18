@@ -193,7 +193,7 @@ router.route('/order/:uuid?')
         return;
       }
       const findOrders = req.user.isAdmin() ? Order.getAllOrders() : Order.findAllByUser(req.user.uuid);
-      const orders = Promise.all((await findOrders).map(async (o) => {
+      const orders = await Promise.all((await findOrders).map(async (o) => {
         o = o.get();
         o.items = await OrderItem.findAllByOrder(o.uuid);
         return o;
@@ -219,7 +219,7 @@ router.route('/order/:uuid?')
       if (!req.body.order) return next(new error.BadRequest('Items list must be provided'));
       const orderIsEmpty = req.body.order.reduce(((x, n) => x + n.quantity), 0) === 0;
       if (orderIsEmpty) return next(new error.UserError('There are no items in this order'));
-      const numUniqueUUIDs = (new Set(req.body.order.map((oi) => oi.uuid))).size;
+      const numUniqueUUIDs = (new Set(req.body.order.map((oi) => oi.item))).size;
       if (req.body.order.length !== numUniqueUUIDs) {
         return next(new error.BadRequest('There are duplicate or invalid items in this order'));
       }
@@ -291,8 +291,11 @@ router.route('/order/:uuid?')
       });
       order.items = merch
         .filter((m) => m.quantityRequested > 0)
-        .map((m) => pick(m, ['itemName', 'price', 'picture', 'description', 'quantityRequested']))
-        .map((m) => ({ ...m, total: m.price * m.quantityRequested }));
+        .map((m) => {
+          const salePrice = m.getPrice();
+          m = pick(m, ['itemName', 'picture', 'description', 'quantityRequested']);
+          return { ...m, salePrice, total: salePrice * m.quantityRequested };
+        });
       email.sendOrderConfirmation(req.user.email, req.user.firstName, order);
       res.json({ error: null, order });
     } catch (err) {
