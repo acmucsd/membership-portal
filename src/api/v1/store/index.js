@@ -8,6 +8,12 @@ const { Activity, User, MerchandiseCollection, Merchandise, Order, OrderItem, db
 const router = express.Router();
 
 router.route('/collection/:uuid?')
+
+  /**
+   * Given a merch collection UUID in the URI, return the matching item or null if no such
+   * collection was found. Otherwise, returns all unarchived collections listed on the store,
+   * including unarchived collections and hidden items for admins.
+   */
   .get(async (req, res, next) => {
     try {
       if (req.params.uuid) {
@@ -42,6 +48,11 @@ router.route('/collection/:uuid?')
     return next();
   })
 
+  /**
+   * Creates a merchandise collection, given a 'collection' object in the request body, and returns the
+   * newly created collection upon success. Required fields: title, description. Optional fields: archived.
+   * All other fields will be ignored.
+   */
   .post(async (req, res, next) => {
     if (!req.body.collection) return next(new error.BadRequest('Merchandise collection must be provided'));
 
@@ -53,6 +64,10 @@ router.route('/collection/:uuid?')
     }
   })
 
+  /**
+   * Edits a merchandise collection, given a 'collection' object in the request body, and returns the edited
+   * collection upon success. Optional fields: title, description, archived.
+   */
   .patch(async (req, res, next) => {
     if (!req.params.uuid || !req.body.collection) {
       return next(new error.BadRequest('UUID and partial merchandise collection object must be provided'));
@@ -72,6 +87,10 @@ router.route('/collection/:uuid?')
     }
   })
 
+  /**
+   * Given a collection UUID as a route parameter, deletes the matching collection if no item from
+   * the collection has been ordered yet.
+   */
   .delete(async (req, res, next) => {
     if (!req.params.uuid) return next(new error.BadRequest('UUID must be provided'));
 
