@@ -1,12 +1,17 @@
+const TABLE_NAME = 'Events';
+const HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
+const DAY_IN_MILLISECONDS = 24 * HOUR_IN_MILLISECONDS;
+const roundToHour = (date) => new Date(Math.round(date.getTime() / HOUR_IN_MILLISECONDS) * HOUR_IN_MILLISECONDS);
+
 module.exports = {
-  up: (queryInterface, Sequelize) => queryInterface.bulkInsert('Events', [{
+  up: (queryInterface, Sequelize) => queryInterface.bulkInsert(TABLE_NAME, [{
     uuid: 'f9de28ca-80cc-4aeb-b8ed-ee9a92954e24',
     title: 'Bit-Byte Allocation',
     description: 'The big reveal is here!',
     committee: '',
     location: 'Qualcomm Room',
-    start: new Date(Date.now() - 86400000),
-    end: new Date(Date.now() - 82800000),
+    start: roundToHour(new Date(Date.now() - DAY_IN_MILLISECONDS)),
+    end: roundToHour(new Date(Date.now() - (DAY_IN_MILLISECONDS - HOUR_IN_MILLISECONDS))),
     attendanceCode: 'malloc',
     pointValue: 20,
     requiresStaff: false,
@@ -17,8 +22,8 @@ module.exports = {
     description: 'Learn Node.',
     committee: '',
     location: 'PC ERC Room',
-    start: new Date(Date.now() - 3600000),
-    end: new Date(Date.now() + 3600000),
+    start: roundToHour(new Date(Date.now() - HOUR_IN_MILLISECONDS)),
+    end: roundToHour(new Date(Date.now() + HOUR_IN_MILLISECONDS)),
     attendanceCode: 'n0d3',
     pointValue: 30,
     requiresStaff: true,
@@ -29,8 +34,8 @@ module.exports = {
     description: 'Taco Tuesday.',
     committee: '',
     location: 'PC Loop',
-    start: new Date(Date.now() - 3600000),
-    end: new Date(Date.now() + 3600000),
+    start: roundToHour(new Date(Date.now() - HOUR_IN_MILLISECONDS)),
+    end: roundToHour(new Date(Date.now() + HOUR_IN_MILLISECONDS)),
     attendanceCode: 'tac0',
     pointValue: 15,
     requiresStaff: false,
@@ -41,13 +46,13 @@ module.exports = {
     description: 'Game night.',
     committee: '',
     location: 'PC Game Room',
-    start: new Date(Date.now() + 82800000),
-    end: new Date(Date.now() + 86400000),
+    start: roundToHour(new Date(Date.now() + (DAY_IN_MILLISECONDS - HOUR_IN_MILLISECONDS))),
+    end: roundToHour(new Date(Date.now() + DAY_IN_MILLISECONDS)),
     attendanceCode: 'p0ng',
     pointValue: 10,
     requiresStaff: false,
     staffPointBonus: 0,
   }]),
 
-  down: (queryInterface, Sequelize) => queryInterface.bulkDelete('Events', null, {}),
+  down: (queryInterface, Sequelize) => queryInterface.bulkDelete(TABLE_NAME, null, {}),
 };
