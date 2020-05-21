@@ -233,14 +233,14 @@ module.exports = (Sequelize, db) => {
     if (!offset || offset < 0) offset = 0;
     if (!limit || limit < 0) limit = undefined;
     const now = new Date();
-    return this.findAll({ where: { start: { [Sequelize.Op.lt]: now } }, offset, limit, order: [['start', 'ASC']] });
+    return this.findAll({ where: { end: { [Sequelize.Op.lt]: now } }, offset, limit, order: [['start', 'ASC']] });
   };
 
   Event.getFutureEvents = function (offset, limit) {
     if (!offset || offset < 0) offset = 0;
     if (!limit || limit < 0) limit = undefined;
     const now = new Date();
-    return this.findAll({ where: { start: { [Sequelize.Op.gte]: now } }, offset, limit, order: [['start', 'ASC']] });
+    return this.findAll({ where: { end: { [Sequelize.Op.gte]: now } }, offset, limit, order: [['start', 'ASC']] });
   };
 
   Event.sanitize = function (event) {
