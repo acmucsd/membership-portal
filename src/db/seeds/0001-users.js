@@ -1,6 +1,7 @@
+const TABLE_NAME = 'Users';
 module.exports = {
   // all user passwords are 'password'
-  up: (queryInterface, Sequelize) => queryInterface.bulkInsert('Users', [{
+  up: (queryInterface, Sequelize) => queryInterface.bulkInsert(TABLE_NAME, [{
     uuid: '2bf4c870-80d3-4fe8-885c-85cc1925faf9',
     email: 's3bansal@ucsd.edu',
     accessType: 'STANDARD',
@@ -56,5 +57,5 @@ module.exports = {
     major: 'Computer Engineering',
   }]),
 
-  down: (queryInterface, Sequelize) => queryInterface.bulkDelete('Users', null, {}),
+  down: (queryInterface, Sequelize) => queryInterface.bulkDelete(TABLE_NAME, null, {}),
 };
