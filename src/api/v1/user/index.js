@@ -20,14 +20,14 @@ router.get('/activity', (req, res, next) => {
  */
 router.post('/picture', (req, res, next) => {
   Storage.upload(req, res, async (err) => {
-    if(err) next(err);
+    if (err) next(err);
     try {
-      const { path, originalname } = req.file
-      const profile_url = await Storage.uploadToS3(path, originalname, req.user.uuid)
-      req.user.updateProfilePicture(profile_url);
-      res.json({ error: null, profile_url });
-    } catch(error) {
-      next(error)
+      const { path, originalname } = req.file;
+      const profileUrl = await Storage.uploadToS3(path, originalname, req.user.uuid);
+      req.user.updateProfilePicture(profileUrl);
+      res.json({ error: null, profileUrl });
+    } catch (er) {
+      next(er);
     }
   });
 });
