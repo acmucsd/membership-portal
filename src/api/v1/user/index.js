@@ -19,17 +19,20 @@ router.get('/activity', (req, res, next) => {
  * Uploads a profile picture for the current user.
  */
 router.post('/picture', (req, res, next) => {
-  Storage.upload(req, res, async (err) => {
-    if (err) next(err);
-    try {
-      const { path, originalname } = req.file;
-      const profileUrl = await Storage.uploadToS3(path, originalname, req.user.uuid);
-      req.user.updateProfilePicture(profileUrl);
-      res.json({ error: null, profileUrl });
-    } catch (er) {
-      next(er);
-    }
-  });
+  try {
+    const fileUpload = Storage.getFileUpload('image', 256);
+    fileUpload(req, res, async (err) => {
+      if (err) next(err);
+      if (req.file) {
+        const { path, originalname } = req.file;
+        const profileUrl = await Storage.uploadToS3(path, originalname, req.user.uuid);
+        req.user.updateProfilePicture(profileUrl);
+        res.json({ error: null, profileUrl });
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.route('/milestone')

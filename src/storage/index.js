@@ -6,7 +6,7 @@ const config = require('../config');
 const log = require('../logger');
 
 // sets maximum file size for profile pictures to 256 KB
-const MAXIMUM_FILE_SIZE = 256 * 1024;
+const BYTES_PER_KILOBYTE = 1024;
 
 const s3 = new aws.S3({
   apiVersion: '2006-03-01',
@@ -32,11 +32,15 @@ const uploadToS3 = async (filePath, originalName, uuid) => {
   return profileUrl;
 };
 
-const upload = multer({
-  dest: './src/storage/uploads',
-  limits: {
-    fileSize: MAXIMUM_FILE_SIZE,
-  },
-}).single('image');
+const getFileUpload = (fileTag, maxFileSize) => {
+  const fileUpload = multer({
+    dest: './src/storage/uploads',
+    limits: {
+      fileSize: maxFileSize * BYTES_PER_KILOBYTE,
+    },
+  }).single(fileTag);
+  return fileUpload;
+};
 
-module.exports = { upload, uploadToS3 };
+
+module.exports = { getFileUpload, uploadToS3 };
