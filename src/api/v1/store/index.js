@@ -19,7 +19,12 @@ router.route('/collection/:uuid?')
       if (req.params.uuid) {
         const collection = await MerchandiseCollection.findByUUID(req.params.uuid).then((c) => (c ? c.get() : c));
         if (!collection) return next(new error.NotFound('No such merchandise collection found'));
-        const merchandise = await Merchandise.findAllByCollection(collection.uuid, req.user.isAdmin());
+        const merchandise = await Merchandise
+          .findAllByCollection(collection.uuid, req.user.isAdmin())
+          .then((merch) => merch.map((m) => {
+            if (m.metadata) m.metadata = JSON.parse(m.metadata);
+            return m;
+          }));
         collection.merchandise = req.user.isAdmin() ? merchandise : merchandise.map((m) => m.getPublicItem());
         res.json({ error: null, collection });
         return;
@@ -31,6 +36,10 @@ router.route('/collection/:uuid?')
         .map((c) => Merchandise
           .findAllByCollection(c.uuid, req.user.isAdmin())
           .then((merchandise) => {
+            merchandise = merchandise.map((m) => {
+              if (m.metadata) m.metadata = JSON.parse(m.metadata);
+              return m;
+            });
             merchandise = req.user.isAdmin() ? merchandise : merchandise.map((m) => m.getPublicItem());
             return { ...c, merchandise };
           })));
@@ -122,6 +131,10 @@ router.route('/merchandise/:uuid?')
 
     try {
       const merchandise = await Merchandise.findByUUID(req.params.uuid)
+        .then((m) => {
+          if (m.metadata) m.metadata = JSON.parse(m.metadata);
+          return m;
+        })
         .then((m) => (req.user.isAdmin() ? m : m.getPublicItem()));
       res.json({ error: null, merchandise });
     } catch (err) {
@@ -168,6 +181,7 @@ router.route('/merchandise/:uuid?')
       if (!item) return next(new error.BadRequest('No such merchandise item found'));
       // reloads item to get the updated 'quantity' (see Merchandise::sanitize)
       item = await item.update(Merchandise.sanitize(req.body.merchandise)).then((i) => i.reload());
+      if (item.metadata) item.metadata = JSON.parse(item.metadata);
       res.json({ error: null, item });
     } catch (err) {
       return next(err);

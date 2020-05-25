@@ -86,6 +86,10 @@ module.exports = (Sequelize, db) => {
       allowNull: false,
       defaultValue: true,
     },
+
+    metadata: {
+      type: Sequelize.TEXT,
+    },
   }, {
     timestamps: false,
     indexes: [
@@ -120,6 +124,7 @@ module.exports = (Sequelize, db) => {
     // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
     delete item.quantity;
     if (item.addQuantity) item.quantity = Sequelize.literal(`quantity + ${item.addQuantity}`);
+    if (item.metadata) item.metadata = JSON.stringify(item.metadata);
     return pick(item, [
       'itemName',
       'collection',
@@ -131,6 +136,7 @@ module.exports = (Sequelize, db) => {
       'monthlyLimit',
       'lifetimeLimit',
       'hidden',
+      'metadata',
     ]);
   };
 

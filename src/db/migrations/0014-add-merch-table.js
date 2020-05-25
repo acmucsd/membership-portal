@@ -53,6 +53,9 @@ module.exports = {
         allowNull: false,
         defaultValue: true,
       },
+      metadata: {
+        type: Sequelize.TEXT,
+      },
     }).then(() => Promise.all([
       queryInterface.addIndex(TABLE_NAME, {
         using: 'BTREE',
