@@ -54,6 +54,17 @@ module.exports = {
     points: 160,
     graduationYear: 2022,
     major: 'Computer Engineering',
+  }, {
+    uuid: '7dc03709-4a52-4ff1-b886-982a56d3d0de',
+    email: 'smhariha@ucsd.edu',
+    accessType: 'STANDARD',
+    state: 'ACTIVE',
+    firstName: 'Shravan',
+    lastName: 'Hariharan',
+    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
+    points: 750,
+    graduationYear: 2023,
+    major: 'Computer Science',
   }]),
 
   down: (queryInterface, Sequelize) => queryInterface.bulkDelete('Users', null, {}),
