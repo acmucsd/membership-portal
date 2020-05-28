@@ -21,13 +21,12 @@ router.get('/activity', (req, res, next) => {
 router.post('/picture', (req, res, next) => {
   try {
     const fileUpload = Storage.getFileUpload('image', 256);
-    fileUpload(req, res, async (err) => {
+    fileUpload(req, res, (err) => {
       if (err) next(err);
       if (req.file) {
-        const { path, originalname } = req.file;
-        const profileUrl = await Storage.uploadToS3(path, originalname, req.user.uuid);
-        req.user.updateProfilePicture(profileUrl);
-        res.json({ error: null, profileUrl });
+        const { location } = req.file;
+        req.user.updateProfilePicture(location);
+        res.json({ error: null, location });
       }
     });
   } catch (err) {
