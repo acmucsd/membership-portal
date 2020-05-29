@@ -5,7 +5,7 @@ const path = require('path');
 const config = require('../config');
 
 // sets maximum file size for profile pictures to 256 KB
-const MAXIMUM_FILE_SIZE = 256 * 1024;
+const BYTES_PER_KILOBYTE = 1024;
 
 const s3 = new aws.S3({
   apiVersion: '2006-03-01',
@@ -13,18 +13,22 @@ const s3 = new aws.S3({
   credentials: config.s3.credentials,
 });
 
-const s3Upload = multer({
-  storage: multerS3({
-    s3,
-    bucket: config.s3.bucket,
-    acl: 'public-read',
-    key: (req, file, next) => {
-      next(null, `portal/profiles/${req.user.uuid}${path.extname(file.originalname)}`);
+const getFileUpload = (fileTag, maxFileSize) => {
+  const fileUpload = multer({
+    storage: multerS3({
+      s3,
+      bucket: config.s3.bucket,
+      acl: 'public-read',
+      key: (req, file, next) => {
+        next(null, `portal/profiles/${req.user.uuid}${path.extname(file.originalname)}`);
+      },
+    }),
+    limits: {
+      fileSize: maxFileSize * BYTES_PER_KILOBYTE,
     },
-  }),
-  limits: {
-    fileSize: MAXIMUM_FILE_SIZE,
-  },
-});
+  }).single(fileTag);
+  return fileUpload;
+};
 
-module.exports = s3Upload;
+
+module.exports = { getFileUpload };

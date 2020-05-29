@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 const express = require('express');
 const error = require('../../../error');
 const { User, Activity, db } = require('../../../db');
-const storage = require('../../../storage');
+const Storage = require('../../../storage');
 
 const router = express.Router();
 
@@ -18,10 +18,20 @@ router.get('/activity', (req, res, next) => {
 /**
  * Uploads a profile picture for the current user.
  */
-router.post('/picture', storage.single('image'), (req, res, next) => {
-  const { location } = req.file;
-  req.user.updateProfilePicture(location);
-  res.json({ error: null, location });
+router.post('/picture', (req, res, next) => {
+  try {
+    const fileUpload = Storage.getFileUpload('image', 256);
+    fileUpload(req, res, (err) => {
+      if (err) next(err);
+      if (req.file) {
+        const { location } = req.file;
+        req.user.updateProfilePicture(location);
+        res.json({ error: null, location });
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.route('/milestone')
