@@ -13,14 +13,14 @@ const s3 = new aws.S3({
   credentials: config.s3.credentials,
 });
 
-const getFileUpload = (fileTag, maxFileSize) => {
+const getFileUpload = (fileTag, fileLocation, maxFileSize) => {
   const fileUpload = multer({
     storage: multerS3({
       s3,
       bucket: config.s3.bucket,
       acl: 'public-read',
       key: (req, file, next) => {
-        next(null, `portal/profiles/${req.user.uuid}${path.extname(file.originalname)}`);
+        next(null, `portal/${fileLocation}/${req.user.uuid}${path.extname(file.originalname)}`);
       },
     }),
     limits: {

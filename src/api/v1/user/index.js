@@ -20,7 +20,7 @@ router.get('/activity', (req, res, next) => {
  */
 router.post('/picture', (req, res, next) => {
   try {
-    const fileUpload = Storage.getFileUpload('image', 256);
+    const fileUpload = Storage.getFileUpload('image', 'profiles', 256);
     fileUpload(req, res, (err) => {
       if (err) next(err);
       if (req.file) {
