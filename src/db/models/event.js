@@ -252,6 +252,10 @@ module.exports = (Sequelize, db) => {
     return event;
   };
 
+  Event.prototype.updateCover = function (cover) {
+    return this.update({ cover });
+  };
+
   Event.prototype.getPublic = function (isAdmin) {
     return {
       uuid: this.getDataValue('uuid'),
