@@ -1,8 +1,8 @@
 const aws = require('aws-sdk');
 const multer = require('multer');
-const multerS3 = require('multer-s3');
 const path = require('path');
 const config = require('../config');
+const log = require('../logger');
 
 // sets maximum file size for profile pictures to 256 KB
 const BYTES_PER_KILOBYTE = 1024;
@@ -13,22 +13,30 @@ const s3 = new aws.S3({
   credentials: config.s3.credentials,
 });
 
-const getFileUpload = (fileTag, fileLocation, maxFileSize) => {
-  const fileUpload = multer({
-    storage: multerS3({
-      s3,
-      bucket: config.s3.bucket,
-      acl: 'public-read',
-      key: (req, file, next) => {
-        next(null, `portal/${fileLocation}/${req.user.uuid}${path.extname(file.originalname)}`);
-      },
-    }),
+const uploadToS3 = async (folder, file, uuid) => {
+  const params = {
+    ACL: 'public-read',
+    Body: file.buffer,
+    Bucket: config.s3.bucket,
+    Key: `portal/${folder}/${uuid}${path.extname(file.originalname)}`,
+  };
+  const coverUrl = await s3.upload(params).promise()
+    .then((data) => data.Location)
+    .catch((error) => {
+      log.warn(`Failed to upload profile picture to S3: ${error}`);
+    });
+
+  return coverUrl;
+};
+
+const getFile = (maxFileSize) => {
+  const file = multer({
     limits: {
       fileSize: maxFileSize * BYTES_PER_KILOBYTE,
     },
-  }).single(fileTag);
-  return fileUpload;
+  });
+  return file;
 };
 
 
-module.exports = { getFileUpload };
+module.exports = { getFile, uploadToS3 };

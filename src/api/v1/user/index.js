@@ -18,17 +18,11 @@ router.get('/activity', (req, res, next) => {
 /**
  * Uploads a profile picture for the current user.
  */
-router.post('/picture', (req, res, next) => {
+router.post('/picture', Storage.getFile(256).single('image'), async (req, res, next) => {
   try {
-    const fileUpload = Storage.getFileUpload('image', 'profiles', 256);
-    fileUpload(req, res, (err) => {
-      if (err) next(err);
-      if (req.file) {
-        const { location } = req.file;
-        req.user.updateProfilePicture(location);
-        res.json({ error: null, location });
-      }
-    });
+    const profileUrl = await Storage.uploadToS3('profiles', req.file, req.user.uuid);
+    req.user.updateProfilePicture(profileUrl);
+    res.json({ error: null, profileUrl });
   } catch (err) {
     next(err);
   }
