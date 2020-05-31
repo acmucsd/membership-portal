@@ -13,26 +13,26 @@ const s3 = new aws.S3({
   credentials: config.s3.credentials,
 });
 
-const uploadToS3 = async (mediaType, file, uuid) => {
+const upload = async (mediaType, file, uuid) => {
   const mediaTypeConfig = Media.getMediaTypeConfig(mediaType);
   const params = {
     ACL: 'public-read',
     Body: file.buffer,
     Bucket: config.s3.bucket,
-    Key: `portal/${mediaTypeConfig.uploadPath}/${uuid}${path.extname(file.originalname)}`,
+    Key: `${mediaTypeConfig.uploadPath}/${uuid}${path.extname(file.originalname)}`,
   };
-  return s3.upload(params).promise();
+  return s3.upload(params).promise().then((data) => data.Location);
 };
 
-const bufferImageBlob = (mediaType) => {
+const bufferImageBlob = (mediaType, fileTag) => {
   const mediaTypeConfig = Media.getMediaTypeConfig(mediaType);
   return multer({
     storage: multer.memoryStorage(),
     limits: {
       fileSize: mediaTypeConfig.maxFileSize * BYTES_PER_KILOBYTE,
     },
-  }).single(mediaTypeConfig.fileTag);
+  }).single(fileTag);
 };
 
 
-module.exports = { bufferImageBlob, uploadToS3 };
+module.exports = { bufferImageBlob, upload, mediaTypes: Media.mediaTypes };

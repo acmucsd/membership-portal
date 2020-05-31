@@ -1,4 +1,5 @@
 const config = require('../config');
+const error = require('../error');
 
 const mediaTypes = {
   EVENT_COVER: 1,
@@ -6,28 +7,22 @@ const mediaTypes = {
 };
 
 const getMediaTypeConfig = (mediaType) => {
-  let mediaTypeConfig;
   switch (mediaType) {
     case mediaTypes.EVENT_COVER:
-      mediaTypeConfig = {
+      return {
         type: mediaTypes.EVENT_COVER,
         maxFileSize: config.file.MAX_EVENT_COVER_FILE_SIZE,
         uploadPath: config.file.EVENT_COVER_UPLOAD_PATH,
-        fileTag: 'image',
       };
-      break;
     case mediaTypes.PROFILE_PICTURE:
-      mediaTypeConfig = {
+      return {
         type: mediaTypes.PROFILE_PICTURE,
         maxFileSize: config.file.MAX_PROFILE_PICTURE_FILE_SIZE,
         uploadPath: config.file.EVENT_COVER_UPLOAD_PATH,
-        fileTag: 'image',
       };
-      break;
     default:
-      mediaTypeConfig = {};
+      throw new error.InternalServerError('Invalid media type for file');
   }
-  return mediaTypeConfig;
 };
 
 module.exports = { mediaTypes, getMediaTypeConfig };
