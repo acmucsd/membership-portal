@@ -21,16 +21,16 @@ const uploadToS3 = async (mediaType, file, uuid) => {
     Bucket: config.s3.bucket,
     Key: `portal/${mediaTypeConfig.uploadPath}/${uuid}${path.extname(file.originalname)}`,
   };
-  return s3.upload(params).promise()
+  return s3.upload(params).promise();
 };
 
 const bufferImageBlob = (mediaType) => {
-  const mediaTypeConfig = Media.getMediaTypeConfig(mediaType)
+  const mediaTypeConfig = Media.getMediaTypeConfig(mediaType);
   return multer({
     storage: multer.memoryStorage(),
-    limits: { 
-      fileSize: mediaTypeConfig.maxFileSize * BYTES_PER_KILOBYTE 
-    } 
+    limits: {
+      fileSize: mediaTypeConfig.maxFileSize * BYTES_PER_KILOBYTE,
+    },
   }).single(mediaTypeConfig.fileTag);
 };
 

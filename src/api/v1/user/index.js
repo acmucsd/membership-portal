@@ -23,12 +23,12 @@ router.post('/picture', Storage.bufferImageBlob(Media.mediaTypes.PROFILE_PICTURE
   try {
     const profilePicture = await Storage
       .uploadToS3(Media.mediaTypes.PROFILE_PICTURE, req.file, req.user.uuid)
-      .then(data => data.Location)
-      .catch(error => next(error));
+      .then((data) => data.Location)
+      .catch((err) => next(err));
     await req.user.updateProfilePicture(profilePicture);
     res.json({ error: null, user: req.user.getPublicProfile() });
-  } catch (err) {
-    next(err);
+  } catch (er) {
+    next(er);
   }
 });
 

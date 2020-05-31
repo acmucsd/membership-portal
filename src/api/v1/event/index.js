@@ -141,13 +141,13 @@ router.post('/picture', Storage.bufferImageBlob(Media.mediaTypes.EVENT_COVER), a
   try {
     const cover = await Storage
       .uploadToS3(Media.mediaTypes.EVENT_COVER, req.file, req.body.uuid)
-      .then(data => data.Location)
-      .catch(error => next(error));
-    const event = await Event
+      .then((data) => data.Location)
+      .catch((er) => next(er));
+    const updatedEvent = await Event
       .findByUUID(req.body.uuid)
       .then((event) => event.updateCover(cover))
       .catch(next);
-    res.json({ error: null, event });
+    res.json({ error: null, event: updatedEvent });
   } catch (err) {
     next(err);
   }

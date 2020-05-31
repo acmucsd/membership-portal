@@ -3,11 +3,11 @@ const config = require('../config');
 const mediaTypes = {
   EVENT_COVER: 1,
   PROFILE_PICTURE: 2,
-}
+};
 
 const getMediaTypeConfig = (mediaType) => {
-  let mediaTypeConfig = {}
-  switch(mediaType) {
+  let mediaTypeConfig;
+  switch (mediaType) {
     case mediaTypes.EVENT_COVER:
       mediaTypeConfig = {
         type: mediaTypes.EVENT_COVER,
@@ -21,11 +21,13 @@ const getMediaTypeConfig = (mediaType) => {
         type: mediaTypes.PROFILE_PICTURE,
         maxFileSize: config.file.MAX_PROFILE_PICTURE_FILE_SIZE,
         uploadPath: config.file.EVENT_COVER_UPLOAD_PATH,
-        fileTag: 'image'
+        fileTag: 'image',
       };
       break;
+    default:
+      mediaTypeConfig = {};
   }
   return mediaTypeConfig;
-}
+};
 
 module.exports = { mediaTypes, getMediaTypeConfig };
