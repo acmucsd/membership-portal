@@ -134,17 +134,22 @@ router.route('/')
 /**
  * Uploads a profile picture for a given event. Requires admin access
  */
-router.post('/picture/:uuid', authenticated, Storage.bufferImageBlob(Storage.mediaTypes.EVENT_COVER, 'image'), async (req, res, next) => {
-  if (!req.user.isAdmin()) return next(new error.Forbidden());
-  try {
-    const cover = await Storage.upload(Storage.mediaTypes.EVENT_COVER, req.file, req.params.uuid);
-    const updatedEvent = await Event
-      .findByUUID(req.params.uuid)
-      .then((event) => event.updateCover(cover))
-    res.json({ error: null, event: updatedEvent });
-  } catch (err) {
-    next(err);
-  }
-});
+router.post(
+  '/picture/:uuid',
+  authenticated,
+  Storage.bufferImageBlob(Storage.mediaTypes.EVENT_COVER, 'image'),
+  async (req, res, next) => {
+    if (!req.user.isAdmin()) return next(new error.Forbidden());
+    try {
+      const cover = await Storage.upload(Storage.mediaTypes.EVENT_COVER, req.file, req.params.uuid);
+      const updatedEvent = await Event
+        .findByUUID(req.params.uuid)
+        .then((event) => event.updateCover(cover));
+      res.json({ error: null, event: updatedEvent });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 module.exports = { router };
