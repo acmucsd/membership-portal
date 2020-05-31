@@ -3,7 +3,6 @@ const express = require('express');
 const error = require('../../../error');
 const { User, Activity, db } = require('../../../db');
 const Storage = require('../../../storage');
-const Media = require('../../../storage/media');
 
 const router = express.Router();
 
@@ -19,16 +18,13 @@ router.get('/activity', (req, res, next) => {
 /**
  * Uploads a profile picture for the current user.
  */
-router.post('/picture', Storage.bufferImageBlob(Media.mediaTypes.PROFILE_PICTURE), async (req, res, next) => {
+router.post('/picture/:uuid', Storage.bufferImageBlob(Storage.mediaTypes.PROFILE_PICTURE, 'image'), async (req, res, next) => {
   try {
-    const profilePicture = await Storage
-      .uploadToS3(Media.mediaTypes.PROFILE_PICTURE, req.file, req.user.uuid)
-      .then((data) => data.Location)
-      .catch((err) => next(err));
+    const profilePicture = await Storage.upload(Storage.mediaTypes.PROFILE_PICTURE, req.file, req.params.uuid);
     await req.user.updateProfilePicture(profilePicture);
     res.json({ error: null, user: req.user.getPublicProfile() });
-  } catch (er) {
-    next(er);
+  } catch (err) {
+    next(err);
   }
 });
 

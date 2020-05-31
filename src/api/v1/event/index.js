@@ -2,7 +2,6 @@ const express = require('express');
 const error = require('../../../error');
 const { Event } = require('../../../db');
 const Storage = require('../../../storage');
-const Media = require('../../../storage/media');
 const { authenticated } = require('../auth');
 
 const router = express.Router();
@@ -135,18 +134,13 @@ router.route('/')
 /**
  * Uploads a profile picture for a given event. Requires admin access
  */
-router.post('/picture', Storage.bufferImageBlob(Media.mediaTypes.EVENT_COVER), async (req, res, next) => {
+router.post('/picture/:uuid', authenticated, Storage.bufferImageBlob(Storage.mediaTypes.EVENT_COVER, 'image'), async (req, res, next) => {
   if (!req.user.isAdmin()) return next(new error.Forbidden());
-  if (!req.body.uuid) return next(new error.BadRequest('UUID must be provided in body'));
   try {
-    const cover = await Storage
-      .uploadToS3(Media.mediaTypes.EVENT_COVER, req.file, req.body.uuid)
-      .then((data) => data.Location)
-      .catch((er) => next(er));
+    const cover = await Storage.upload(Storage.mediaTypes.EVENT_COVER, req.file, req.params.uuid);
     const updatedEvent = await Event
-      .findByUUID(req.body.uuid)
+      .findByUUID(req.params.uuid)
       .then((event) => event.updateCover(cover))
-      .catch(next);
     res.json({ error: null, event: updatedEvent });
   } catch (err) {
     next(err);
