@@ -48,6 +48,13 @@ module.exports = {
     bucket: process.env.S3_BUCKET,
   },
 
+  file: {
+    MAX_PROFILE_PICTURE_FILE_SIZE: process.env.MAX_PROFILE_PICTURE_FILE_SIZE,
+    MAX_EVENT_COVER_FILE_SIZE: process.env.MAX_EVENT_COVER_FILE_SIZE,
+    PROFILE_PICTURE_UPLOAD_PATH: process.env.BASE_UPLOAD_PATH + process.env.PROFILE_PICTURE_UPLOAD_PATH,
+    EVENT_COVER_UPLOAD_PATH: process.env.BASE_UPLOAD_PATH + process.env.EVENT_COVER_UPLOAD_PATH,
+  },
+
   email: {
     user: process.env.SENDGRID_USER,
     apiKey: process.env.SENDGRID_API_KEY,
