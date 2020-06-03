@@ -9,7 +9,7 @@ const { User, Activity, db } = require('../../../db');
 
 const router = express.Router();
 
-const TOKEN_EXPIRES = 86400; // 1 day in seconds
+const TOKEN_LIFESPAN = 14 * 24 * 60 * 60; // 2 weeks in seconds
 
 /**
  * Middleware function that determines if a user is authenticated and assigns req.user to their user info from the db.
@@ -58,7 +58,7 @@ router.post('/login', (req, res, next) => {
       jwt.sign({
         uuid: user.getDataValue('uuid'),
         admin: user.isAdmin(),
-      }, config.auth.secret, { expiresIn: TOKEN_EXPIRES }, (err, token) => (err ? reject(err) : resolve(token)));
+      }, config.auth.secret, { expiresIn: TOKEN_LIFESPAN }, (err, token) => (err ? reject(err) : resolve(token)));
     }));
   }).then((token) => {
     res.json({ error: null, token });
