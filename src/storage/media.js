@@ -4,6 +4,7 @@ const error = require('../error');
 const mediaTypes = {
   EVENT_COVER: 1,
   PROFILE_PICTURE: 2,
+  MAIN_BANNER: 3,
 };
 
 const getMediaTypeConfig = (mediaType) => {
@@ -20,6 +21,12 @@ const getMediaTypeConfig = (mediaType) => {
         maxFileSize: config.file.MAX_PROFILE_PICTURE_FILE_SIZE,
         uploadPath: config.file.PROFILE_PICTURE_UPLOAD_PATH,
       };
+    case mediaTypes.BANNER_MAIN:
+      return {
+        type: mediaTypes.MAIN_BANNER,
+        maxFileSize: config.file.MAX_MAIN_BANNER_FILE_SIZE,
+        uploadPath: config.file.MAIN_BANNER_UPLOAD_PATH,
+      }
     default:
       throw new error.InternalServerError('Invalid media type for file');
   }
