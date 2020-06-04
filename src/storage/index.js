@@ -13,13 +13,13 @@ const s3 = new aws.S3({
   credentials: config.s3.credentials,
 });
 
-const upload = async (mediaType, file, uuid) => {
+const upload = async (mediaType, file, fileName) => {
   const mediaTypeConfig = Media.getMediaTypeConfig(mediaType);
   const params = {
     ACL: 'public-read',
     Body: file.buffer,
     Bucket: config.s3.bucket,
-    Key: `${mediaTypeConfig.uploadPath}/${uuid}${path.extname(file.originalname)}`,
+    Key: `${mediaTypeConfig.uploadPath}/${fileName}${path.extname(file.originalname)}`,
   };
   return s3.upload(params).promise().then((data) => data.Location);
 };
