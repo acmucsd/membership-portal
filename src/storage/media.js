@@ -7,6 +7,10 @@ const mediaTypes = {
   BANNER: 3,
 };
 
+const bannerTypes = [
+  'main-banner',
+];
+
 const getMediaTypeConfig = (mediaType) => {
   switch (mediaType) {
     case mediaTypes.EVENT_COVER:
@@ -32,4 +36,4 @@ const getMediaTypeConfig = (mediaType) => {
   }
 };
 
-module.exports = { mediaTypes, getMediaTypeConfig };
+module.exports = { mediaTypes, bannerTypes, getMediaTypeConfig };

@@ -35,4 +35,4 @@ const bufferImageBlob = (mediaType, fileTag) => {
 };
 
 
-module.exports = { bufferImageBlob, upload, mediaTypes: Media.mediaTypes };
+module.exports = { bufferImageBlob, upload, mediaTypes: Media.mediaTypes, bannerTypes: Media.bannerTypes };
