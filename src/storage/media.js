@@ -18,7 +18,7 @@ const getMediaTypeConfig = (mediaType) => {
       return {
         type: mediaTypes.PROFILE_PICTURE,
         maxFileSize: config.file.MAX_PROFILE_PICTURE_FILE_SIZE,
-        uploadPath: config.file.EVENT_COVER_UPLOAD_PATH,
+        uploadPath: config.file.PROFILE_PICTURE_UPLOAD_PATH,
       };
     default:
       throw new error.InternalServerError('Invalid media type for file');
