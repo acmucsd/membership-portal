@@ -140,7 +140,14 @@ module.exports = (Sequelize, db) => {
       type: Sequelize.TEXT,
     },
 
+    // total points the user's earned
     points: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+    },
+
+    // spendable store credits, 1 exp point = 100 store credits
+    credits: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
     },
@@ -235,8 +242,16 @@ module.exports = (Sequelize, db) => {
     return user;
   };
 
+  User.hasEnoughCredits = function (uuid, credits) {
+    return this.findOne({ where: { uuid } }).then((user) => user.credits >= credits);
+  };
+
   User.prototype.addPoints = function (points) {
-    return this.increment({ points });
+    return this.increment({ points, credits: points * 100 });
+  };
+
+  User.prototype.spendCredits = function (credits) {
+    return this.decrement({ credits });
   };
 
   User.prototype.updateProfilePicture = function (profilePicture) {
@@ -258,6 +273,7 @@ module.exports = (Sequelize, db) => {
   User.prototype.getUserProfile = function () {
     return {
       uuid: this.getDataValue('uuid'),
+      accountType: this.getDataValue('accessType'),
       firstName: this.getDataValue('firstName'),
       lastName: this.getDataValue('lastName'),
       profilePicture: this.getDataValue('profilePicture'),
@@ -266,6 +282,7 @@ module.exports = (Sequelize, db) => {
       major: this.getDataValue('major'),
       bio: this.getDataValue('bio'),
       points: this.getDataValue('points'),
+      credits: this.getDataValue('credits'),
       state: this.getDataValue('state'),
     };
   };

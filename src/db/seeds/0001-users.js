@@ -31,7 +31,7 @@ module.exports = {
     firstName: 'Stone',
     lastName: 'Tao',
     hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
-    points: 195,
+    points: 425,
     graduationYear: 2021,
     major: 'Computer Science',
   }, {
@@ -42,6 +42,7 @@ module.exports = {
     firstName: 'Paul',
     lastName: 'Pan',
     hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
+    points: 0,
     graduationYear: 2020,
     major: 'Mathematics - Computer Science',
   }, {
@@ -49,8 +50,8 @@ module.exports = {
     email: 'asudhart@ucsd.edu',
     accessType: 'STANDARD',
     state: 'ACTIVE',
-    firstName: 'Kendall',
-    lastName: 'Nakai',
+    firstName: 'Andrea',
+    lastName: 'Sudharta',
     hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
     points: 160,
     graduationYear: 2022,
