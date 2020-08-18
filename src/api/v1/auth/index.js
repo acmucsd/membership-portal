@@ -92,12 +92,12 @@ router.post('/register', (req, res, next) => {
         .then(() => user)
         .catch(() => {
           throw new error.BadRequest(`Something went wrong with sending email verification to ${user.email}`);
-        }));
+        })).catch(next);
     })).then((user) => {
       log.info('user authentication (registration)', { request_id: req.id, user_uuid: user.uuid });
       res.json({ error: null, user: user.getPublicProfile() });
       Activity.accountCreated(user.uuid);
-    });
+    }).catch(next);
   }).catch(next);
 });
 
