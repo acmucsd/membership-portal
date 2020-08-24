@@ -77,7 +77,7 @@ module.exports = (Sequelize, db) => {
   });
 
   Attendance.getAttendanceForUser = function (user) {
-    return this.findAll({ where: { user }, order: [['date', 'ASC']] });
+    return this.findAll({ where: { user }, order: [['timestamp', 'ASC']] });
   };
 
   Attendance.getAttendanceForEvent = function (event) {
