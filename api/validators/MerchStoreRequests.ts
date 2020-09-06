@@ -113,6 +113,7 @@ export class MerchItemAndQuantity implements IMerchItemAndQuantity {
 }
 
 export class PlaceOrderRequest implements IPlaceOrderRequest {
+  @Type(() => MerchItemAndQuantity)
   @IsDefined()
   @ValidateNested()
   order: MerchItemAndQuantity[];

@@ -68,7 +68,6 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
 
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN uuid SET NOT NULL');
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN quantity SET NOT NULL');
-    await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN picture SET NOT NULL');
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN "discountPercentage" SET NOT NULL');
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN "numSold" SET NOT NULL');
 
@@ -76,7 +75,6 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
 
     await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN uuid SET NOT NULL');
     await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN fulfilled SET NOT NULL');
-    await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN "fulfilledAt" SET NOT NULL');
 
     /* Add defaults for NOT NULL columns */
     await queryRunner.query('ALTER TABLE "Users" ALTER COLUMN uuid SET DEFAULT uuid_generate_v4()');
@@ -184,7 +182,6 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
 
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN uuid DROP NOT NULL');
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN quantity DROP NOT NULL');
-    await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN picture DROP NOT NULL');
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN "discountPercentage" DROP NOT NULL');
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN "numSold" DROP NOT NULL');
 
@@ -192,7 +189,6 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
 
     await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN uuid DROP NOT NULL');
     await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN fulfilled DROP NOT NULL');
-    await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN "fulfilledAt" DROP NOT NULL');
 
     /* Remove defaults for NOT NULL columns */
     await queryRunner.query('ALTER TABLE "Users" ALTER COLUMN uuid DROP DEFAULT');

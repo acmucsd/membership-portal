@@ -26,7 +26,7 @@ export class MerchandiseModel extends BaseEntity {
   @JoinColumn({ name: 'collection' })
   collection: MerchandiseCollectionModel;
 
-  @Column()
+  @Column({ nullable: true })
   picture: string;
 
   @Column()

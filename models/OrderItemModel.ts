@@ -14,6 +14,7 @@ export class OrderItemModel extends BaseEntity {
   uuid: Uuid;
 
   @ManyToOne((type) => OrderModel, (order) => order.items)
+  @JoinColumn({ name: 'order'})
   order: OrderModel;
 
   @ManyToOne((type) => MerchandiseModel, (item) => item.orders, { eager: true })

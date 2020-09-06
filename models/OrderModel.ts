@@ -1,4 +1,4 @@
-import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, Index, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, Index, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { Uuid, PublicOrder } from '../types';
 import { UserModel } from './UserModel';
 import { OrderItemModel } from './OrderItemModel';
@@ -14,6 +14,7 @@ export class OrderModel extends BaseEntity {
   uuid: Uuid;
 
   @ManyToOne((type) => UserModel, (user) => user.orders, { eager: true })
+  @JoinColumn({ name: 'user' })
   @Index('orders_per_user_index')
   user: UserModel;
 
