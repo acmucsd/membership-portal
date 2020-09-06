@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "outDir": "./build",
+    "paths": {
+      "@Config/*": [
+        "./config/*"
+      ],
+      "@Models/*": [
+        "./models/*"
+      ],
+      "@Services/*": [
+        "./services/*"
+      ]
+    },
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+}

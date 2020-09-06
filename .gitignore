@@ -1,8 +1,7 @@
-node_modules/
-npm-debug.log
-coverage/
 .idea/
+node_modules/
+build/
+logs/
+
 .DS_Store
 .env
-yarn.lock
-
