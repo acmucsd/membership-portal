@@ -1,10 +1,10 @@
 import {
   JsonController, Param, Get, Post, Patch, NotFoundError, BodyParam, UseBefore, UploadedFile,
 } from 'routing-controllers';
-import { UserModel } from '@Models/UserModel';
-import UserAccountService from '@Services/UserAccountService';
 import { Inject } from 'typedi';
-import StorageService from '@Services/StorageService';
+import { UserModel } from '../../models/UserModel';
+import UserAccountService from '../../services/UserAccountService';
+import StorageService from '../../services/StorageService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { MediaType, Uuid, File } from '../../types';

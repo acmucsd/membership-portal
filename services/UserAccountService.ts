@@ -1,12 +1,19 @@
-import { UserModel } from '@Models/UserModel';
-import { UserRepository } from 'repositories/UserRepository';
 import { BadRequestError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
-import { Uuid, CreateMilestoneRequest, PublicProfile, ActivityType } from 'types';
 import { EntityManager } from 'typeorm';
-import Repositories from 'repositories';
-import { PatchUserRequest, PublicActivity, RegistrationRequest } from '../types';
+import Repositories from '../repositories';
+import {
+  Uuid,
+  CreateMilestoneRequest,
+  PublicProfile,
+  ActivityType,
+  PatchUserRequest,
+  PublicActivity,
+  RegistrationRequest,
+} from '../types';
+import { UserRepository } from '../repositories/UserRepository';
+import { UserModel } from '../models/UserModel';
 
 @Service()
 export default class UserAccountService {

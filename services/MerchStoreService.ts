@@ -1,6 +1,9 @@
 import { Service, Inject } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError, ForbiddenError } from 'routing-controllers';
+import { EntityManager } from 'typeorm';
+import { difference, flatten, intersection } from 'underscore';
+import * as moment from 'moment';
 import {
   Uuid,
   PublicMerchCollection,
@@ -12,16 +15,13 @@ import {
   PublicOrder,
   ActivityType,
   OrderItemFulfillmentUpdate,
-} from 'types';
-import { EntityManager } from 'typeorm';
-import { MerchandiseModel } from '@Models/MerchandiseItemModel';
-import { OrderModel } from '@Models/OrderModel';
-import { UserModel } from '@Models/UserModel';
-import { MerchItemAndQuantity } from 'api/validators/MerchStoreRequests';
-import { difference, flatten, intersection } from 'underscore';
-import * as moment from 'moment';
-import Repositories from 'repositories';
-import { MerchandiseCollectionModel } from '@Models/MerchandiseCollectionModel';
+} from '../types';
+import { MerchandiseModel } from '../models/MerchandiseItemModel';
+import { OrderModel } from '../models/OrderModel';
+import { UserModel } from '../models/UserModel';
+import { MerchItemAndQuantity } from '../api/validators/MerchStoreRequests';
+import Repositories from '../repositories';
+import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
 

@@ -1,4 +1,14 @@
-import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, Index, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  BaseEntity,
+  Column,
+  Generated,
+  PrimaryGeneratedColumn,
+  Index,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Uuid, PublicOrder } from '../types';
 import { UserModel } from './UserModel';
 import { OrderItemModel } from './OrderItemModel';

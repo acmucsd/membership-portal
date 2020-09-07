@@ -1,13 +1,13 @@
 import { Service } from 'typedi';
-import { UserModel } from '@Models/UserModel';
 import { ForbiddenError, NotFoundError, BadRequestError } from 'routing-controllers';
-import { Config } from '@Config/index';
 import * as jwt from 'jsonwebtoken';
-import { UserRepository } from 'repositories/UserRepository';
 import { InjectManager } from 'typeorm-typedi-extensions';
-import { Uuid, ActivityType, UserState } from 'types';
 import { EntityManager } from 'typeorm';
-import Repositories from 'repositories';
+import { UserRepository } from '../repositories/UserRepository';
+import { Uuid, ActivityType, UserState } from '../types';
+import { Config } from '../config';
+import { UserModel } from '../models/UserModel';
+import Repositories from '../repositories';
 
 interface AuthToken {
   uuid: Uuid;

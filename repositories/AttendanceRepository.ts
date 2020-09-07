@@ -1,8 +1,8 @@
 import { EntityRepository } from 'typeorm';
-import { AttendanceModel } from '@Models/AttendanceModel';
 import { Uuid } from 'types';
-import { UserModel } from '@Models/UserModel';
-import { EventModel } from '@Models/EventModel';
+import { AttendanceModel } from '../models/AttendanceModel';
+import { UserModel } from '../models/UserModel';
+import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(AttendanceModel)

@@ -1,8 +1,8 @@
 import { IsEmail, IsDefined, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import {
   IsValidPassword, IsValidName, IsValidGraduationYear, IsValidMajor, HasMatchingPasswords,
-} from 'api/decorators/Validators';
-import { Type } from 'class-transformer';
+} from '../decorators/Validators';
 import {
   LoginRequest as ILoginRequest,
   RegistrationRequest as IRegistrationRequest,

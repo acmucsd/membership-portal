@@ -1,6 +1,6 @@
 import { EntityRepository, LessThan, MoreThanOrEqual } from 'typeorm';
-import { Uuid } from 'types';
-import { EventModel } from '@Models/EventModel';
+import { Uuid } from '../types';
+import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(EventModel)

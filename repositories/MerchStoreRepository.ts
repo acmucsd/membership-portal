@@ -1,7 +1,7 @@
 import { EntityRepository } from 'typeorm';
-import { Uuid } from 'types';
-import { MerchandiseCollectionModel } from '@Models/MerchandiseCollectionModel';
-import { MerchandiseModel } from '@Models/MerchandiseItemModel';
+import { Uuid } from '../types';
+import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
+import { MerchandiseModel } from '../models/MerchandiseItemModel';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(MerchandiseCollectionModel)

@@ -2,12 +2,12 @@ import {
   JsonController, Get, Patch, Delete, Post, UseBefore, Param, BodyParam, ForbiddenError, QueryParams, UploadedFile,
 } from 'routing-controllers';
 import { Inject } from 'typedi';
-import EventService from '@Services/EventService';
-import { UserAuthentication, OptionalUserAuthentication } from 'api/middleware/UserAuthentication';
-import { AuthenticatedUser } from 'api/decorators/AuthenticatedUser';
-import { UserModel } from '@Models/UserModel';
-import PermissionsService from '@Services/PermissionsService';
-import StorageService from '@Services/StorageService';
+import EventService from '../../services/EventService';
+import { UserAuthentication, OptionalUserAuthentication } from '../middleware/UserAuthentication';
+import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
+import { UserModel } from '../../models/UserModel';
+import PermissionsService from '../../services/PermissionsService';
+import StorageService from '../../services/StorageService';
 import { Uuid, MediaType, File } from '../../types';
 import { EventSearchOptions, PatchEventRequest, PostEventRequest } from '../validators/EventControllerRequests';
 

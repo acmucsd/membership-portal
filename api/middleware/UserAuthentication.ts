@@ -1,8 +1,8 @@
 import { ExpressMiddlewareInterface } from 'routing-controllers';
 import * as express from 'express';
 import { Inject } from 'typedi';
-import UserAuthService from '@Services/UserAuthService';
-import { authActionMetadata } from 'utils/AuthActionMetadata';
+import UserAuthService from '../../services/UserAuthService';
+import { authActionMetadata } from '../../utils/AuthActionMetadata';
 import { logger as log } from '../../utils/Logger';
 
 export class UserAuthentication implements ExpressMiddlewareInterface {

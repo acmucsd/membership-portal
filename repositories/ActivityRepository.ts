@@ -1,7 +1,7 @@
 import { EntityRepository } from 'typeorm';
-import { UserModel } from '@Models/UserModel';
-import { ActivityType, Uuid } from 'types';
-import { ActivityModel } from '@Models/ActivityModel';
+import { ActivityType, Uuid } from '../types';
+import { UserModel } from '../models/UserModel';
+import { ActivityModel } from '../models/ActivityModel';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(ActivityModel)

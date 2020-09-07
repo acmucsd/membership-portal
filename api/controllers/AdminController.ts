@@ -1,13 +1,13 @@
-import PermissionsService from '@Services/PermissionsService';
-import StorageService from '@Services/StorageService';
-import UserAccountService from '@Services/UserAccountService';
-import { UserAuthentication } from 'api/middleware/UserAuthentication';
-import { CreateBonusRequest, CreateMilestoneRequest } from 'api/validators/AdminControllerRequests';
 import { BodyParam, JsonController, Post, UploadedFile, UseBefore, ForbiddenError } from 'routing-controllers';
 import { Inject } from 'typedi';
-import { File, MediaType } from 'types';
-import { AuthenticatedUser } from 'api/decorators/AuthenticatedUser';
-import { UserModel } from '@Models/UserModel';
+import { UserAuthentication } from '../middleware/UserAuthentication';
+import { CreateBonusRequest, CreateMilestoneRequest } from '../validators/AdminControllerRequests';
+import { File, MediaType } from '../../types';
+import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
+import UserAccountService from '../../services/UserAccountService';
+import StorageService from '../../services/StorageService';
+import PermissionsService from '../../services/PermissionsService';
+import { UserModel } from '../../models/UserModel';
 
 @UseBefore(UserAuthentication)
 @JsonController('/admin')

@@ -1,6 +1,6 @@
-import { IsValidName, IsValidMajor, IsValidGraduationYear, HasMatchingPasswords } from 'api/decorators/Validators';
 import { ValidateNested, IsNotEmpty, IsDefined } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsValidName, IsValidMajor, IsValidGraduationYear, HasMatchingPasswords } from '../decorators/Validators';
 import { PasswordUpdate as IPasswordUpdate, PatchUserRequest as IPatchUserRequest } from '../../types';
 import { PasswordChange } from './AuthControllerRequests';
 

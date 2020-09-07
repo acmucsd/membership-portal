@@ -1,11 +1,11 @@
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError } from 'routing-controllers';
-import { ActivityType, PublicAttendance, Uuid } from 'types';
 import { EntityManager } from 'typeorm';
-import { UserModel } from '@Models/UserModel';
-import { UserError } from 'utils/Errors';
-import Repositories from 'repositories';
+import { ActivityType, PublicAttendance, Uuid } from '../types';
+import { UserModel } from '../models/UserModel';
+import { UserError } from '../utils/Errors';
+import Repositories from '../repositories';
 
 @Service()
 export default class AttendanceService {

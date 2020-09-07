@@ -1,5 +1,3 @@
-import PermissionsService from '@Services/PermissionsService';
-import { UserAuthentication } from 'api/middleware/UserAuthentication';
 import {
   JsonController,
   UseBefore,
@@ -15,10 +13,12 @@ import {
   BadRequestError,
 } from 'routing-controllers';
 import { Inject } from 'typedi';
-import { Uuid } from 'types';
-import { AuthenticatedUser } from 'api/decorators/AuthenticatedUser';
-import { UserModel } from '@Models/UserModel';
-import MerchStoreService from '@Services/MerchStoreService';
+import PermissionsService from '../../services/PermissionsService';
+import { UserAuthentication } from '../middleware/UserAuthentication';
+import { Uuid } from '../../types';
+import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
+import { UserModel } from '../../models/UserModel';
+import MerchStoreService from '../../services/MerchStoreService';
 import {
   CreateMerchCollectionRequest,
   EditMerchCollectionRequest,
@@ -26,8 +26,8 @@ import {
   EditMerchItemRequest,
   PlaceOrderRequest,
   FulfillMerchOrderRequest,
-} from 'api/validators/MerchStoreRequests';
-import { UserError } from 'utils/Errors';
+} from '../validators/MerchStoreRequests';
+import { UserError } from '../../utils/Errors';
 
 @UseBefore(UserAuthentication)
 @JsonController('/store')

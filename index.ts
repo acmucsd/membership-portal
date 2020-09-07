@@ -1,16 +1,15 @@
 import 'reflect-metadata'; // this shim is required
 
-import { Config } from '@Config/index';
-
 import { createExpressServer, useContainer as routingUseContainer } from 'routing-controllers';
 
 import { createConnection, useContainer as ormUseContainer } from 'typeorm';
-import { models as entities } from '@Models/index';
-
 import { Container } from 'typedi';
-import { RequestLogger } from 'api/middleware/RequestLogger';
-import { logger as log } from 'utils/Logger';
-import { controllers } from './api/controllers/index';
+import { models as entities } from './models';
+
+import { Config } from './config';
+import { RequestLogger } from './api/middleware/RequestLogger';
+import { logger as log } from './utils/Logger';
+import { controllers } from './api/controllers';
 
 routingUseContainer(Container);
 ormUseContainer(Container);
@@ -47,7 +46,7 @@ const app = createExpressServer({
   },
 });
 
-app.listen(3000);
+app.listen(Config.port);
 
 /**
 

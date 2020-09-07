@@ -1,10 +1,10 @@
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
-import { EventModel } from '@Models/EventModel';
 import { NotFoundError } from 'routing-controllers';
-import { Uuid, PublicEvent } from 'types';
 import { EntityManager } from 'typeorm';
-import Repositories from 'repositories';
+import { EventModel } from '../models/EventModel';
+import { Uuid, PublicEvent } from '../types';
+import Repositories from '../repositories';
 import { UserError } from '../utils/Errors';
 
 @Service()

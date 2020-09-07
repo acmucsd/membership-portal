@@ -1,10 +1,10 @@
 import { JsonController, Param, Body, Get, Post, BodyParam } from 'routing-controllers';
-import UserAccountService from '@Services/UserAccountService';
 import { Inject } from 'typedi';
-import UserAuthService from '@Services/UserAuthService';
-import { logger as log } from 'utils/Logger';
-import { RequestTrace } from 'api/decorators/RequestTrace';
-import EmailService from '@Services/EmailService';
+import UserAccountService from '../../services/UserAccountService';
+import UserAuthService from '../../services/UserAuthService';
+import { logger as log } from '../../utils/Logger';
+import { RequestTrace } from '../decorators/RequestTrace';
+import EmailService from '../../services/EmailService';
 import { LoginRequest, RegistrationRequest, PasswordResetRequest } from '../validators/AuthControllerRequests';
 import { authActionMetadata } from '../../utils/AuthActionMetadata';
 

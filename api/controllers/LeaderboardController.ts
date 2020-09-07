@@ -1,7 +1,7 @@
 import { UseBefore, JsonController, Get } from 'routing-controllers';
-import { UserAuthentication } from 'api/middleware/UserAuthentication';
 import { Inject } from 'typedi';
-import UserAccountService from '@Services/UserAccountService';
+import { UserAuthentication } from '../middleware/UserAuthentication';
+import UserAccountService from '../../services/UserAccountService';
 
 @UseBefore(UserAuthentication)
 @JsonController('/leaderboard')

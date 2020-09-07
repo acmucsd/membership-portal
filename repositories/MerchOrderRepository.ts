@@ -1,8 +1,8 @@
 import { EntityRepository } from 'typeorm';
-import { Uuid } from 'types';
-import { OrderModel } from '@Models/OrderModel';
-import { UserModel } from '@Models/UserModel';
-import { OrderItemModel } from '@Models/OrderItemModel';
+import { Uuid } from '../types';
+import { OrderModel } from '../models/OrderModel';
+import { UserModel } from '../models/UserModel';
+import { OrderItemModel } from '../models/OrderItemModel';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(OrderModel)

@@ -1,6 +1,6 @@
 import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
-import { PublicAttendance, Uuid } from 'types';
 import { pick } from 'underscore';
+import { PublicAttendance, Uuid } from '../types';
 import { UserModel } from './UserModel';
 import { EventModel } from './EventModel';
 

@@ -1,8 +1,8 @@
 import { EntityRepository, Not, In } from 'typeorm';
-import { UserModel } from '@Models/UserModel';
-import { Uuid, UserState, UserAccessType } from 'types';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { UserModel } from '../models/UserModel';
+import { Uuid, UserState, UserAccessType } from '../types';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(UserModel)

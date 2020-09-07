@@ -6,20 +6,9 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "baseUrl": ".",
-    "outDir": "./build",
-    "paths": {
-      "@Config/*": [
-        "./config/*"
-      ],
-      "@Models/*": [
-        "./models/*"
-      ],
-      "@Services/*": [
-        "./services/*"
-      ]
-    },
+    "outDir": "./build"
   },
   "include": [
     "./**/*.ts"
-  ],
+  ]
 }

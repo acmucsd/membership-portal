@@ -1,10 +1,10 @@
 import { Service } from 'typedi';
-import { MediaType } from 'types';
-import { Config } from '@Config/index';
 import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as multer from 'multer';
 import { InternalServerError } from 'routing-controllers';
+import { Config } from '../config';
+import { MediaType } from '../types';
 
 type File = Express.Multer.File;
 type FileOptions = multer.Options;
