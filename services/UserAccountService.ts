@@ -23,6 +23,8 @@ export default class UserAccountService {
   public async registerUser(registrationRequest: RegistrationRequest): Promise<UserModel> {
     return this.entityManager.transaction(async (txn) => {
       const userRepository = Repositories.user(txn);
+      const emailAlreadyUsed = !!(await userRepository.findByEmail(registrationRequest.email));
+      if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
       const user = await userRepository.upsertUser(UserModel.create({
         ...registrationRequest,
         hash: await UserRepository.generateHash(registrationRequest.password),
