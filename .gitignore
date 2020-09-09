@@ -1,7 +1,16 @@
+# config
+.env
+
+# IDE
 .idea/
-node_modules/
+
+# build
 build/
+node_modules/
+yarn.lock
+
+# stdout
 logs/
 
+# misc
 .DS_Store
-.env
