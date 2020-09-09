@@ -26,7 +26,6 @@ export class AddMerchCollectionsTable1598590154911 implements MigrationInterface
         {
           name: 'description',
           type: 'text',
-          isNullable: true,
         },
         {
           name: 'archived',

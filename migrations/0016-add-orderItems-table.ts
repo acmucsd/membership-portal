@@ -44,6 +44,7 @@ export class AddOrderItemsTable1598590991046 implements MigrationInterface {
           name: 'fulfilledAt',
           type: 'timestamptz',
           default: 'CURRENT_TIMESTAMP',
+          isNullable: true,
         },
         {
           name: 'notes',

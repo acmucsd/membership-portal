@@ -23,7 +23,7 @@ export class OrderModel extends BaseEntity {
   @Index({ unique: true })
   uuid: Uuid;
 
-  @ManyToOne((type) => UserModel, (user) => user.orders, { eager: true })
+  @ManyToOne((type) => UserModel, (user) => user.orders, { eager: true, nullable: false })
   @JoinColumn({ name: 'user' })
   @Index('orders_per_user_index')
   user: UserModel;

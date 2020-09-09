@@ -30,6 +30,7 @@ export class AddMerchTable1598590965470 implements MigrationInterface {
         {
           name: 'picture',
           type: 'varchar(255)',
+          isNullable: true,
         },
         {
           name: 'price',

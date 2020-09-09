@@ -50,7 +50,6 @@ export class AddEventsTable1595474505142 implements MigrationInterface {
         {
           name: 'location',
           type: 'varchar(255)',
-          isNullable: true,
         },
         {
           name: 'eventLink',

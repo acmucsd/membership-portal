@@ -13,11 +13,11 @@ export class OrderItemModel extends BaseEntity {
   @Index({ unique: true })
   uuid: Uuid;
 
-  @ManyToOne((type) => OrderModel, (order) => order.items)
+  @ManyToOne((type) => OrderModel, (order) => order.items, { nullable: false })
   @JoinColumn({ name: 'order' })
   order: OrderModel;
 
-  @ManyToOne((type) => MerchandiseModel, (item) => item.orders, { eager: true })
+  @ManyToOne((type) => MerchandiseModel, (item) => item.orders, { eager: true, nullable: false })
   @JoinColumn({ name: 'item' })
   item: MerchandiseModel;
 
