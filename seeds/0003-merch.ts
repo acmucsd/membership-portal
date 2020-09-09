@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 
-export class MerchandiseCollections1598593350442 implements MigrationInterface {
+export class Merch1598593350442 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.manager.getRepository(MerchandiseCollectionModel).save([
       {
@@ -32,28 +32,6 @@ export class MerchandiseCollections1598593350442 implements MigrationInterface {
             monthlyLimit: 5,
             lifetimeLimit: 25,
             hidden: false,
-          }, {
-            uuid: '1b6cc4e9-ccf2-4975-8424-7ff43c13d722',
-            itemName: 'Unisex Raccoon Print Shell Jacket - M',
-            picture: '',
-            price: 19500,
-            quantity: 10,
-            description: 'Self-explanatory.',
-            discountPercentage: 0,
-            monthlyLimit: 1,
-            lifetimeLimit: 2,
-            hidden: false,
-          }, {
-            uuid: '5b9b68d6-60ef-4a4a-a897-6a13db3d70af',
-            itemName: 'Unisex Raccoon Print Shell Jacket - L',
-            picture: '',
-            price: 19500,
-            quantity: 10,
-            description: 'Self-explanatory',
-            discountPercentage: 0,
-            monthlyLimit: 1,
-            lifetimeLimit: 2,
-            hidden: false,
           },
         ],
       }, {
@@ -82,6 +60,28 @@ export class MerchandiseCollections1598593350442 implements MigrationInterface {
             discountPercentage: 20,
             monthlyLimit: 3,
             lifetimeLimit: 10,
+            hidden: false,
+          }, {
+            uuid: '1b6cc4e9-ccf2-4975-8424-7ff43c13d722',
+            itemName: 'Unisex Raccoon Print Shell Jacket - M',
+            picture: '',
+            price: 19500,
+            quantity: 10,
+            description: 'Self-explanatory.',
+            discountPercentage: 0,
+            monthlyLimit: 1,
+            lifetimeLimit: 2,
+            hidden: false,
+          }, {
+            uuid: '5b9b68d6-60ef-4a4a-a897-6a13db3d70af',
+            itemName: 'Unisex Raccoon Print Shell Jacket - L',
+            picture: '',
+            price: 19500,
+            quantity: 10,
+            description: 'Self-explanatory',
+            discountPercentage: 0,
+            monthlyLimit: 1,
+            lifetimeLimit: 2,
             hidden: false,
           },
         ],
