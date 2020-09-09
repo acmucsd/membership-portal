@@ -1,4 +1,4 @@
-import { JsonController, Param, Body, Get, Post, BodyParam } from 'routing-controllers';
+import { JsonController, Param, Body, Get, Post, BodyParam, UseBefore } from 'routing-controllers';
 import { Inject } from 'typedi';
 import UserAccountService from '../../services/UserAccountService';
 import UserAuthService from '../../services/UserAuthService';
@@ -7,6 +7,9 @@ import { RequestTrace } from '../decorators/RequestTrace';
 import EmailService from '../../services/EmailService';
 import { LoginRequest, RegistrationRequest, PasswordResetRequest } from '../validators/AuthControllerRequests';
 import { authActionMetadata } from '../../utils/AuthActionMetadata';
+import { OptionalUserAuthentication } from '../middleware/UserAuthentication';
+import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
+import { UserModel } from '../../models/UserModel';
 
 @JsonController('/auth')
 export class AuthController {
@@ -66,5 +69,13 @@ export class AuthController {
     const user = await this.userAuthService.resetPassword(accessCode, passwordResetRequest.user.newPassword);
     log.info('user authentication (password reset - access code)', authActionMetadata(trace, user));
     return { error: null };
+  }
+
+  @UseBefore(OptionalUserAuthentication)
+  @Post('/verification')
+  async verifyAuthToken(@AuthenticatedUser() user: UserModel) {
+    log.info('user authentication (token verification)');
+    const isValidAuthToken = !!user;
+    return { error: null, authenticated: isValidAuthToken };
   }
 }
