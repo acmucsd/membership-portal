@@ -7,11 +7,11 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: package-cache-{{checksum "package.json"}}
+          key: package-cache-{{ checksum "package-lock.json" }}
       - run:
           command: npm install
       - save_cache:
-          key: package-cache-{{checksum "package.json"}}
+          key: package-cache-{{ checksum "package-lock.json" }}
           paths:
             - node_modules
       - run:
@@ -22,11 +22,11 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: package-cache-{{checksum "package.json"}}
+          key: package-cache-{{ checksum "package-lock.json" }}
       - run:
           command: npm install
       - save_cache:
-          key: package-cache-{{checksum "package.json"}}
+          key: package-cache-{{ checksum "package-lock.json" }}
           paths:
             - node_modules
       - run:
@@ -42,11 +42,11 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: package-cache-{{checksum "package.json"}}
+          key: package-cache-{{ checksum "package-lock.json" }}
       - run:
           command: npm install
       - save_cache:
-          key: package-cache-{{checksum "package.json"}}
+          key: package-cache-{{ checksum "package-lock.json" }}
           paths:
             - node_modules
       - run:

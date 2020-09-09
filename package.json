@@ -1,22 +1,31 @@
 {
-  "name": "new-portal",
+  "name": "membership-portal",
   "version": "1.0.0",
-  "description": "",
+  "description": "REST API for ACM UCSD's membership portal.",
   "main": "build/index.js",
   "scripts": {
-    "build": "tsc --skipLibCheck",
+    "build": "tsc && cp -r templates/ build/templates/",
     "start": "node build/index.js",
+    "test": "jest --config jest.config.json",
+    "dev": "nodemon -L -e js -i node_modules -i .git -V index.ts",
     "lint": "eslint ./ --ext .ts",
     "lint:fix": "eslint ./ --ext .ts --fix",
-    "test": "jest --config jest.config.json",
     "db:migrate:create": "ts-node ./node_modules/.bin/typeorm migration:create -n",
     "db:migrate": "ts-node ./node_modules/.bin/typeorm migration:run",
     "db:rollback": "ts-node ./node_modules/.bin/typeorm migration:revert",
     "db:seed:create": "ts-node ./node_modules/.bin/typeorm migration:create -c seed -n",
     "db:seed": "ts-node ./node_modules/.bin/typeorm migration:run -c seed"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acmucsd/membership-portal.git"
+  },
+  "author": "Sumeet Bansal",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/acmucsd/membership-portal/issues"
+  },
+  "homepage": "https://github.com/acmucsd/membership-portal#readme",
   "dependencies": {
     "@sendgrid/mail": "^7.2.1",
     "@types/node": "^14.0.13",
@@ -65,6 +74,7 @@
     "eslint": "^7.3.0",
     "eslint-config-airbnb-typescript": "^8.0.2",
     "eslint-plugin-import": "^2.21.2",
-    "jest": "^26.4.2"
+    "jest": "^26.4.2",
+    "nodemon": "^2.0.4"
   }
 }
