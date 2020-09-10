@@ -6,12 +6,14 @@ import { EventController } from './EventController';
 import { AttendanceController } from './AttendanceController';
 import { AdminController } from './AdminController';
 import { MerchStoreController } from './MerchStoreController';
+import { LeaderboardController } from './LeaderboardController';
 
 export const controllers = [
   AuthController,
   UserController,
   EventController,
   AttendanceController,
+  LeaderboardController,
   AdminController,
   MerchStoreController,
 ];
