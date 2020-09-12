@@ -1,4 +1,4 @@
-import { EntityRepository, Not, In } from 'typeorm';
+import { EntityRepository, Not, In, Raw } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { UserModel } from '../models/UserModel';
@@ -57,10 +57,7 @@ export class UserRepository extends BaseRepository<UserModel> {
       take: limit,
       where: {
         accessType: Not(UserAccessType.ADMIN),
-        state: [
-          Not(UserState.PENDING),
-          Not(UserState.BLOCKED),
-        ],
+        state: Raw((state) => `NOT ${state} = '${UserState.BLOCKED}' AND NOT ${state} = '${UserState.PENDING}'`),
       },
       order: { points: 'DESC' },
     });
