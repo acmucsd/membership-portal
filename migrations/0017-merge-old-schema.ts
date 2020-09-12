@@ -64,6 +64,7 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN public SET NOT NULL');
 
     await queryRunner.query('ALTER TABLE "MerchandiseCollections" ALTER COLUMN uuid SET NOT NULL');
+    await queryRunner.query('ALTER TABLE "MerchandiseCollections" ALTER COLUMN description SET NOT NULL');
     await queryRunner.query('ALTER TABLE "MerchandiseCollections" ALTER COLUMN archived SET NOT NULL');
 
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN uuid SET NOT NULL');
@@ -178,6 +179,7 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN public DROP NOT NULL');
 
     await queryRunner.query('ALTER TABLE "MerchandiseCollections" ALTER COLUMN uuid DROP NOT NULL');
+    await queryRunner.query('ALTER TABLE "MerchandiseCollections" ALTER COLUMN description DROP NOT NULL');
     await queryRunner.query('ALTER TABLE "MerchandiseCollections" ALTER COLUMN archived DROP NOT NULL');
 
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN uuid DROP NOT NULL');
