@@ -48,9 +48,10 @@ export default class MerchStoreService {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       if (canSeeInactiveCollections) {
         const collections = await merchCollectionRepository.getAllCollections();
-        return collections.map((c) => c.getPublicMerchCollection());
+        return collections;
       }
-      return merchCollectionRepository.getAllActiveCollections();
+      const collections = await merchCollectionRepository.getAllActiveCollections();
+      return collections.map((c) => c.getPublicMerchCollection());
     });
   }
 

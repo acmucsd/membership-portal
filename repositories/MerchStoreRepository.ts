@@ -17,6 +17,7 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
   public async getAllActiveCollections(): Promise<MerchandiseCollectionModel[]> {
     return this.repository.find({
       where: { archived: false },
+      relations: ['items'],
     });
   }
 
