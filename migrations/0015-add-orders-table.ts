@@ -30,7 +30,7 @@ export class AddOrdersTable1598590986254 implements MigrationInterface {
         {
           name: 'orderedAt',
           type: 'timestamptz',
-          default: 'CURRENT_TIMESTAMP',
+          default: 'CURRENT_TIMESTAMP(6)',
         },
       ],
     }));

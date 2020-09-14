@@ -51,7 +51,7 @@ export class AddActivitiesTable1595474518615 implements MigrationInterface {
         {
           name: 'timestamp',
           type: 'timestamptz',
-          default: 'CURRENT_TIMESTAMP',
+          default: 'CURRENT_TIMESTAMP(6)',
         },
         {
           name: 'public',

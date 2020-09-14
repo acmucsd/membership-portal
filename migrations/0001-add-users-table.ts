@@ -76,7 +76,7 @@ export class AddUsersTable1595474487693 implements MigrationInterface {
         {
           name: 'lastLogin',
           type: 'timestamptz',
-          default: 'CURRENT_TIMESTAMP',
+          default: 'CURRENT_TIMESTAMP(6)',
         },
       ],
     }));
