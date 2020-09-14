@@ -31,6 +31,7 @@ module.exports = [
     migrations: [
       'seeds/*.ts',
     ],
+    migrationsTableName: 'seeds',
     cli: {
       entitiesDir: 'models/',
       migrationsDir: 'seeds/',
