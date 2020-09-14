@@ -63,7 +63,6 @@ TODOS:
   - run 'UPDATE "Activities" SET public = false WHERE public IS NULL' before migration
 - API response types
 - publishing types
-- roll our own error responses
 
 maybe TODOs:
 - remove soft deleting events?

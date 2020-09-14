@@ -14,7 +14,8 @@
     "db:migrate": "ts-node ./node_modules/.bin/typeorm migration:run",
     "db:rollback": "ts-node ./node_modules/.bin/typeorm migration:revert",
     "db:seed:create": "ts-node ./node_modules/.bin/typeorm migration:create -c seed -n",
-    "db:seed": "ts-node ./node_modules/.bin/typeorm migration:run -c seed"
+    "db:seed": "ts-node ./node_modules/.bin/typeorm migration:run -c seed",
+    "db:seed:rollback": "ts-node ./node_modules/.bin/typeorm migration:revert -c seed"
   },
   "repository": {
     "type": "git",

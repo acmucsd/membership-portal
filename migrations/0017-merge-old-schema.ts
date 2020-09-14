@@ -79,23 +79,23 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
 
     /* Add defaults for NOT NULL columns */
     await queryRunner.query('ALTER TABLE "Users" ALTER COLUMN uuid SET DEFAULT uuid_generate_v4()');
-    await queryRunner.query('ALTER TABLE "Users" ALTER COLUMN "lastLogin" SET DEFAULT CURRENT_TIMESTAMP');
+    await queryRunner.query('ALTER TABLE "Users" ALTER COLUMN "lastLogin" SET DEFAULT CURRENT_TIMESTAMP(6)');
 
     await queryRunner.query('ALTER TABLE "Events" ALTER COLUMN uuid SET DEFAULT uuid_generate_v4()');
 
     await queryRunner.query('ALTER TABLE "Attendances" ALTER COLUMN uuid SET DEFAULT uuid_generate_v4()');
-    await queryRunner.query('ALTER TABLE "Attendances" ALTER COLUMN timestamp SET DEFAULT CURRENT_TIMESTAMP');
+    await queryRunner.query('ALTER TABLE "Attendances" ALTER COLUMN timestamp SET DEFAULT CURRENT_TIMESTAMP(6)');
 
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN uuid SET DEFAULT uuid_generate_v4()');
-    await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN timestamp SET DEFAULT CURRENT_TIMESTAMP');
+    await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN timestamp SET DEFAULT CURRENT_TIMESTAMP(6)');
 
     await queryRunner.query('ALTER TABLE "MerchandiseCollections" ALTER COLUMN uuid SET DEFAULT uuid_generate_v4()');
     await queryRunner.query('ALTER TABLE "Merchandise" ALTER COLUMN uuid SET DEFAULT uuid_generate_v4()');
 
     await queryRunner.query('ALTER TABLE "Orders" ALTER COLUMN uuid SET DEFAULT uuid_generate_v4()');
-    await queryRunner.query('ALTER TABLE "Orders" ALTER COLUMN "orderedAt" SET DEFAULT CURRENT_TIMESTAMP');
+    await queryRunner.query('ALTER TABLE "Orders" ALTER COLUMN "orderedAt" SET DEFAULT CURRENT_TIMESTAMP(6)');
     await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN uuid SET DEFAULT uuid_generate_v4()');
-    await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN "fulfilledAt" SET DEFAULT CURRENT_TIMESTAMP');
+    await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN "fulfilledAt" SET DEFAULT CURRENT_TIMESTAMP(6)');
 
     /* Re-order rewrite's indexes to match old schema's index ordering */
     await queryRunner.query('DROP INDEX leaderboard_index');
@@ -103,6 +103,23 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
 
     await queryRunner.query('DROP INDEX recent_orders_index');
     await queryRunner.query('CREATE INDEX recent_orders_index ON "Orders" USING btree ("orderedAt" DESC NULLS FIRST)');
+
+    /* Add foreign keys */
+    await queryRunner.query('ALTER TABLE "Activities" ADD CONSTRAINT "FK_9a937195f1c04b94f53f4fb00d3" '
+                + 'FOREIGN KEY ("user") REFERENCES "Users"("uuid") ON DELETE NO ACTION ON UPDATE NO ACTION');
+    await queryRunner.query('ALTER TABLE "Attendances" ADD CONSTRAINT "FK_6d240e175789376a0324491f1ac" '
+                + 'FOREIGN KEY ("user") REFERENCES "Users"("uuid") ON DELETE NO ACTION ON UPDATE NO ACTION');
+    await queryRunner.query('ALTER TABLE "Attendances" ADD CONSTRAINT "FK_1bfe2a60f758bb2f7c3ddff35d0"'
+                + 'FOREIGN KEY ("event") REFERENCES "Events"("uuid") ON DELETE NO ACTION ON UPDATE NO ACTION');
+    await queryRunner.query('ALTER TABLE "Merchandise" ADD CONSTRAINT "FK_366fa6b0e1ed10fc8d43bd08b0d"'
+                + 'FOREIGN KEY ("collection") REFERENCES "MerchandiseCollections"("uuid") ON DELETE CASCADE '
+                + 'ON UPDATE NO ACTION');
+    await queryRunner.query('ALTER TABLE "OrderItems" ADD CONSTRAINT "FK_ef589ebbdb5eebec30a52ea9c95"'
+                + 'FOREIGN KEY ("order") REFERENCES "Orders"("uuid") ON DELETE NO ACTION ON UPDATE NO ACTION');
+    await queryRunner.query('ALTER TABLE "OrderItems" ADD CONSTRAINT "FK_9f816e831abbf7e97fa16df1425"'
+                + 'FOREIGN KEY ("item") REFERENCES "Merchandise"("uuid") ON DELETE NO ACTION ON UPDATE NO ACTION');
+    await queryRunner.query('ALTER TABLE "Orders" ADD CONSTRAINT "FK_11c5a02e75c453582d4b17ac57b"'
+                + 'FOREIGN KEY ("user") REFERENCES "Users"("uuid") ON DELETE NO ACTION ON UPDATE NO ACTION');
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -211,5 +228,14 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
     await queryRunner.query('ALTER TABLE "Orders" ALTER COLUMN "orderedAt" DROP DEFAULT');
     await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN uuid DROP DEFAULT');
     await queryRunner.query('ALTER TABLE "OrderItems" ALTER COLUMN "fulfilledAt" DROP DEFAULT');
+
+    /* Drop foreign keys */
+    await queryRunner.query('ALTER TABLE "Activities" DROP CONSTRAINT "FK_9a937195f1c04b94f53f4fb00d3"');
+    await queryRunner.query('ALTER TABLE "Attendances" DROP CONSTRAINT "FK_6d240e175789376a0324491f1ac"');
+    await queryRunner.query('ALTER TABLE "Attendances" DROP CONSTRAINT "FK_1bfe2a60f758bb2f7c3ddff35d0"');
+    await queryRunner.query('ALTER TABLE "Merchandise" DROP CONSTRAINT "FK_366fa6b0e1ed10fc8d43bd08b0d"');
+    await queryRunner.query('ALTER TABLE "OrderItems" DROP CONSTRAINT "FK_ef589ebbdb5eebec30a52ea9c95"');
+    await queryRunner.query('ALTER TABLE "OrderItems" DROP CONSTRAINT "FK_9f816e831abbf7e97fa16df1425"');
+    await queryRunner.query('ALTER TABLE "Orders" DROP CONSTRAINT "FK_11c5a02e75c453582d4b17ac57b"');
   }
 }
