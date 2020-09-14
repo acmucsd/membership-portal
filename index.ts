@@ -7,9 +7,9 @@ import { Container } from 'typedi';
 import { models as entities } from './models';
 
 import { Config } from './config';
-import { RequestLogger } from './api/middleware/RequestLogger';
 import { logger as log } from './utils/Logger';
 import { controllers } from './api/controllers';
+import { middlewares } from './api/middleware';
 
 routingUseContainer(Container);
 ormUseContainer(Container);
@@ -33,7 +33,7 @@ const app = createExpressServer({
   cors: true,
   routePrefix: '/api/v1',
   controllers,
-  middlewares: [RequestLogger],
+  middlewares,
   defaults: {
     paramOptions: {
       required: true,
@@ -44,6 +44,7 @@ const app = createExpressServer({
     skipMissingProperties: true,
     forbidUnknownValues: true,
   },
+  defaultErrorHandler: false,
 });
 
 app.listen(Config.port);
@@ -62,6 +63,7 @@ TODOS:
   - run 'UPDATE "Activities" SET public = false WHERE public IS NULL' before migration
 - API response types
 - publishing types
+- roll our own error responses
 
 maybe TODOs:
 - remove soft deleting events?

@@ -171,3 +171,14 @@ export interface AttendEventRequest {
   attendanceCode: string;
   asStaff?: boolean;
 }
+
+// ERROR
+
+export interface CustomError {
+  error: {
+    name: string;
+    message: string;
+    status: number;
+    stack?: string;
+  }
+}
