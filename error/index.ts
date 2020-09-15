@@ -20,7 +20,7 @@ export function handleError(error: Error,
   if (Config.isDevelopment) {
     errorResponse.error.stack = stack;
   }
-  log.warn('%s [request %s]: %s [%d]: %s', new Date(), request.trace, name, status, message, stack);
+  log.warn('%s [request %s]: %s [%d]: %s \n%s', new Date(), request.trace, name, status, message, stack);
   response.status(status).json(errorResponse);
   next();
 }
