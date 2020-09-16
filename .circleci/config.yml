@@ -6,14 +6,8 @@ jobs:
       - image: circleci/node:12.18.3
     steps:
       - checkout
-      - restore_cache:
-          key: package-cache-{{ checksum "package-lock.json" }}
       - run:
-          command: npm install
-      - save_cache:
-          key: package-cache-{{ checksum "package-lock.json" }}
-          paths:
-            - node_modules
+          command: npm ci
       - run:
           command: npm run build
   lint:
