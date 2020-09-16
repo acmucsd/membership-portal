@@ -56,7 +56,9 @@ Take a look at [`package.json`](https://github.com/acmucsd/membership-portal/blo
 To write database migrations, take a look at the [TypeORM documentation](https://github.com/typeorm/typeorm/blob/master/docs/migrations.md) and [previous migrations](https://github.com/acmucsd/membership-portal/tree/master/migrations). Everything's already configured via [`ormconfig.ts`](https://github.com/acmucsd/membership-portal/blob/master/ormconfig.ts) so executing `npm run db:migrate` should work. Migrations on the production database automatically run upon deployment using Heroku's [`release` phase](https://devcenter.heroku.com/articles/release-phase) (configured in the [Procfile](https://github.com/acmucsd/membership-portal/blob/master/Procfile#L1)).
 
 ### Upgrading to Latest Version
-The first iteration of the membership portal is a JavaScript app written in 2019. The second and latest iteration, written 2020, is a TypeScript app built with better reliability and error handling, stronger concurrency guarantees, and a smoother development experience in mind, and includes a number of breaking changes at the API and database levels. To make upgrades to API clients and deployed environments easy and consistent, we've put together a list of API breaks and changes:
+The first iteration of the membership portal is a JavaScript app written in 2019. The second and latest iteration, written 2020, is a TypeScript app built with better reliability and error handling, stronger concurrency guarantees, and a smoother development experience in mind, and includes a number of breaking changes at the API and database levels. For a more concrete list of improvements, see [acmucsd/membership-portal#115](https://github.com/acmucsd/membership-portal/pull/115).
+
+#### API Breaks and Changes
 + `GET /auth/resetPassword`: renamed to `/auth/passwordReset`
 + `POST /auth/resetPassword`: renamed to `/auth/passwordReset`
 + some routes (e.g. events search) accept optional auth tokens for more detailed responses
@@ -69,20 +71,8 @@ The first iteration of the membership portal is a JavaScript app written in 2019
 + `GET /attendance/:uuid?`: the `attendance` field in the response body has been renamed `attendances`
 + `POST /attendance/attend`: no longer reachable, requests should be made to `/attendance`
 
-and a simple upgrade procedure:
+#### To Upgrade
 1. Update the app to the latest release of the first iteration ([0.14.2](https://github.com/acmucsd/membership-portal/releases/tag/v0.14.2)).
 2. Manually run this SQL script.
 3. Update the app to the latest release ([latest](https://github.com/acmucsd/membership-portal/releases/latest)).
-
-<!--
-validation
-typing
-transactions-by-default
-service layer for better code reuse
-more natural relations
-paging by default
-flexible security
-complex querying
--->
-
 
