@@ -73,6 +73,6 @@ The first iteration of the membership portal is a JavaScript app written in 2019
 
 #### To Upgrade
 1. Update the app to the latest release of the first iteration ([0.14.2](https://github.com/acmucsd/membership-portal/releases/tag/v0.14.2)).
-2. Manually run this SQL script.
+2. Manually run this SQL script ([`0000-sequelize-to-typeorm.sql`](https://github.com/acmucsd/membership-portal/blob/typescript-rewrite/migrations/0000-sequelize-to-typeorm.sql)).
 3. Update the app to the latest release ([latest](https://github.com/acmucsd/membership-portal/releases/latest)).
 
