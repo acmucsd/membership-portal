@@ -61,6 +61,8 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN "pointsEarned" SET NOT NULL');
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN timestamp SET NOT NULL');
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN public SET DEFAULT false');
+    /* Change all null publics to false before setting null constraint */
+    await queryRunner.query('UPDATE "Activities" SET public = false WHERE public IS NULL');
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN public SET NOT NULL');
 
     await queryRunner.query('ALTER TABLE "MerchandiseCollections" ALTER COLUMN uuid SET NOT NULL');
