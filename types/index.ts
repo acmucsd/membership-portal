@@ -2,9 +2,23 @@ import { ActivityType } from './Enums';
 
 export * from './Enums';
 export * from './ApiRequests';
+export * from './ApiResponses';
 
 export type Uuid = string;
 export type File = Express.Multer.File;
+
+// AUTH
+
+export interface PasswordChange {
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface PasswordUpdate extends PasswordChange {
+  password: string;
+}
+
+// ATTENDANCE
 
 export interface PublicAttendance {
   user: PublicProfile;
@@ -12,6 +26,8 @@ export interface PublicAttendance {
   timestamp: Date;
   asStaff: boolean;
 }
+
+// EVENT
 
 export interface PublicEvent {
   uuid: string;
@@ -30,6 +46,22 @@ export interface PublicEvent {
   requiresStaff: boolean;
   staffPointBonus: number;
 }
+
+export interface EventSearchOptions {
+  offset?: number;
+  limit?: number;
+}
+
+export interface OptionalEventProperties {
+  organization?: string;
+  committee?: string;
+  thumbnail?: string;
+  eventLink?: string;
+  requiresStaff?: boolean;
+  staffPointBonus?: number;
+}
+
+// USER
 
 export interface PublicProfile {
   firstName: string,
@@ -54,6 +86,8 @@ export interface PublicActivity {
   pointsEarned: number,
   timestamp: Date;
 }
+
+// MERCH STORE
 
 export interface PublicMerchCollection {
   uuid: Uuid;
@@ -92,93 +126,13 @@ export interface PublicOrder {
   items: PublicOrderItem[];
 }
 
-// AUTH
-
-export interface PasswordChange {
-  newPassword: string;
-  confirmPassword: string;
+export interface OrderItemFulfillmentUpdate {
+  uuid: string;
+  fulfilled?: boolean;
+  notes?: string;
 }
 
-export interface PasswordUpdate extends PasswordChange {
-  password: string;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface PasswordResetRequest {
-  user: PasswordChange;
-}
-
-// USER
-
-export interface RegistrationRequest {
-  email: string;
-  firstName: string;
-  lastName: string;
-  password: string;
-  graduationYear: number;
-  major: string;
-}
-
-export interface PatchUserRequest {
-  firstName?: string;
-  lastName?: string;
-  major?: string;
-  graduationYear?: number;
-  bio?: string;
-  passwordChange?: PasswordUpdate;
-}
-
-export interface UserEmails {
-  emails: string[];
-}
-
-// EVENT
-
-export interface OptionalEventProperties {
-  organization?: string;
-  committee?: string;
-  thumbnail?: string;
-  eventLink?: string;
-  requiresStaff?: boolean;
-  staffPointBonus?: number;
-}
-
-export interface PostEventRequest extends OptionalEventProperties {
-  cover: string;
-  title: string;
-  description: string;
-  location: string;
-  start: Date;
-  end: Date;
-  attendanceCode: string;
-  pointValue: number;
-}
-
-export interface PatchEventRequest extends Partial<PostEventRequest> {}
-
-export interface EventSearchOptions {
-  offset?: number;
-  limit?: number;
-}
-
-// ATTENDANCE
-
-export interface AttendEventRequest {
-  attendanceCode: string;
-  asStaff?: boolean;
-}
-
-// ERROR
-
-export interface CustomError {
-  error: {
-    name: string;
-    message: string;
-    status: number;
-    stack?: string;
-  }
+export interface MerchItemAndQuantity {
+  item: string;
+  quantity: number;
 }

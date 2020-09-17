@@ -9,7 +9,7 @@ import {
   PlaceOrderRequest as IPlaceOrderRequest,
   OrderItemFulfillmentUpdate as IOrderItemFulfillmentUpdate,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
-} from '../../types/ApiRequests';
+} from '../../types';
 
 export class CreateMerchCollectionRequest implements ICreateMerchCollectionRequest {
   @IsDefined()

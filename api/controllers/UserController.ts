@@ -31,7 +31,7 @@ export class UserController {
     @AuthenticatedUser() user: UserModel) {
     const profilePicture = await this.storageService.upload(file, MediaType.PROFILE_PICTURE, user.uuid);
     const updatedUser = await this.userAccountService.updateProfilePicture(user, profilePicture);
-    return { error: null, user: updatedUser };
+    return { error: null, user: updatedUser.getFullUserProfile() };
   }
 
   @Get('/:uuid')
