@@ -1,18 +1,12 @@
-import { Allow, IsNotEmpty, IsDateString, IsDefined } from 'class-validator';
+import { Allow, IsNotEmpty, IsDateString, IsDefined, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import {
   EventSearchOptions as IEventSearchOptions,
   OptionalEventProperties as IOptionalEventProperties,
-  PostEventRequest as IPostEventRequest,
+  CreateEventRequest as ICreateEventRequest,
   PatchEventRequest as IPatchEventRequest,
+  Event as IEvent,
 } from '../../types';
-
-export class EventSearchOptions implements IEventSearchOptions {
-  @Allow()
-  offset?: number;
-
-  @Allow()
-  limit?: number;
-}
 
 export class OptionalEventProperties implements IOptionalEventProperties {
   @IsNotEmpty()
@@ -34,7 +28,7 @@ export class OptionalEventProperties implements IOptionalEventProperties {
   staffPointBonus?: number;
 }
 
-export class PostEventRequest extends OptionalEventProperties implements IPostEventRequest {
+export class Event extends OptionalEventProperties implements IEvent {
   @IsNotEmpty()
   cover: string;
 
@@ -62,7 +56,7 @@ export class PostEventRequest extends OptionalEventProperties implements IPostEv
   pointValue: number;
 }
 
-export class PatchEventRequest extends OptionalEventProperties implements IPatchEventRequest {
+export class EventPatches extends OptionalEventProperties implements IEvent {
   @IsNotEmpty()
   cover: string;
 
@@ -86,4 +80,26 @@ export class PatchEventRequest extends OptionalEventProperties implements IPatch
 
   @Allow()
   pointValue: number;
+}
+
+export class EventSearchOptions implements IEventSearchOptions {
+  @Allow()
+  offset?: number;
+
+  @Allow()
+  limit?: number;
+}
+
+export class CreateEventRequest implements ICreateEventRequest {
+  @Type(() => Event)
+  @ValidateNested()
+  @IsDefined()
+  event: Event;
+}
+
+export class PatchEventRequest implements IPatchEventRequest {
+  @Type(() => EventPatches)
+  @ValidateNested()
+  @IsDefined()
+  event: EventPatches;
 }

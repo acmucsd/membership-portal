@@ -1,8 +1,14 @@
-import { BodyParam, JsonController, Post, UploadedFile, UseBefore, ForbiddenError } from 'routing-controllers';
+import { JsonController, Post, UploadedFile, UseBefore, ForbiddenError, Body } from 'routing-controllers';
 import { Inject } from 'typedi';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { CreateBonusRequest, CreateMilestoneRequest } from '../validators/AdminControllerRequests';
-import { File, MediaType } from '../../types';
+import {
+  File,
+  MediaType,
+  CreateMilestoneResponse,
+  CreateBonusResponse,
+  UploadBannerResponse,
+} from '../../types';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import UserAccountService from '../../services/UserAccountService';
 import StorageService from '../../services/StorageService';
@@ -19,23 +25,27 @@ export class AdminController {
   private userAccountService: UserAccountService;
 
   @Post('/milestone')
-  async createMilestone(@BodyParam('milestone') milestone: CreateMilestoneRequest,
-    @AuthenticatedUser() user: UserModel) {
+  async createMilestone(@Body() createMilestoneRequest: CreateMilestoneRequest,
+    @AuthenticatedUser() user: UserModel): Promise<CreateMilestoneResponse> {
     if (!PermissionsService.canCreateMilestones(user)) throw new ForbiddenError();
-    await this.userAccountService.createMilestone(milestone);
+    await this.userAccountService.createMilestone(createMilestoneRequest.milestone);
     return { error: null };
   }
 
   @Post('/bonus')
-  async addBonus(@BodyParam('bonus') bonus: CreateBonusRequest, @AuthenticatedUser() user: UserModel) {
+  async addBonus(@Body() createBonusRequest: CreateBonusRequest,
+    @AuthenticatedUser() user: UserModel): Promise<CreateBonusResponse> {
     if (!PermissionsService.canGrantPointBonuses(user)) throw new ForbiddenError();
+    const { bonus } = createBonusRequest;
     const emails = bonus.users;
     await this.userAccountService.grantBonusPoints(emails, bonus.description, bonus.points);
     return { error: null, emails };
   }
 
   @Post('/banner')
-  async uploadBanner(@UploadedFile('image', { options: StorageService.getFileOptions(MediaType.BANNER) }) file: File) {
+  async uploadBanner(@UploadedFile(
+    'image', { options: StorageService.getFileOptions(MediaType.BANNER) },
+  ) file: File): Promise<UploadBannerResponse> {
     const banner = await this.storageService.upload(file, MediaType.BANNER, 'banner');
     return { error: null, banner };
   }

@@ -5,12 +5,12 @@ import { EntityManager } from 'typeorm';
 import Repositories from '../repositories';
 import {
   Uuid,
-  CreateMilestoneRequest,
   PublicProfile,
   ActivityType,
-  PatchUserRequest,
   PublicActivity,
-  RegistrationRequest,
+  Milestone,
+  UserPatches,
+  UserRegistration,
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
@@ -20,14 +20,14 @@ export default class UserAccountService {
   @InjectManager()
   private entityManager: EntityManager;
 
-  public async registerUser(registrationRequest: RegistrationRequest): Promise<UserModel> {
+  public async registerUser(registration: UserRegistration): Promise<UserModel> {
     return this.entityManager.transaction(async (txn) => {
       const userRepository = Repositories.user(txn);
-      const emailAlreadyUsed = !!(await userRepository.findByEmail(registrationRequest.email));
+      const emailAlreadyUsed = !!(await userRepository.findByEmail(registration.email));
       if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
       const user = await userRepository.upsertUser(UserModel.create({
-        ...registrationRequest,
-        hash: await UserRepository.generateHash(registrationRequest.password),
+        ...registration,
+        hash: await UserRepository.generateHash(registration.password),
         accessCode: UserRepository.generateAccessCode(),
       }));
       const activityRepository = Repositories.activity(txn);
@@ -78,10 +78,10 @@ export default class UserAccountService {
     return users.map((u) => u.getPublicProfile());
   }
 
-  public async update(user: UserModel, patchUserRequest: PatchUserRequest): Promise<UserModel> {
-    const changes: Partial<UserModel> = patchUserRequest;
-    if (patchUserRequest.passwordChange) {
-      const { password: currentPassword, newPassword } = patchUserRequest.passwordChange;
+  public async update(user: UserModel, userPatches: UserPatches): Promise<UserModel> {
+    const changes: Partial<UserModel> = userPatches;
+    if (userPatches.passwordChange) {
+      const { password: currentPassword, newPassword } = userPatches.passwordChange;
       if (!(await user.verifyPass(currentPassword))) {
         throw new BadRequestError('Incorrect password');
       }
@@ -89,7 +89,7 @@ export default class UserAccountService {
     }
     return this.entityManager.transaction(async (txn) => {
       const activityRepository = Repositories.activity(txn);
-      const updatedFields = Object.keys(patchUserRequest).join(', ');
+      const updatedFields = Object.keys(userPatches).join(', ');
       await activityRepository.logActivity(user, ActivityType.ACCOUNT_UPDATE_INFO, 0, updatedFields);
       const userRepository = Repositories.user(txn);
       return userRepository.upsertUser(user, changes);
@@ -111,7 +111,7 @@ export default class UserAccountService {
     return stream.map((activity) => activity.getPublicActivity());
   }
 
-  public async createMilestone(milestone: CreateMilestoneRequest): Promise<void> {
+  public async createMilestone(milestone: Milestone): Promise<void> {
     return this.entityManager.transaction(async (txn) => {
       const userRepository = Repositories.user(txn);
       await userRepository.addPointsToAll(milestone.points);

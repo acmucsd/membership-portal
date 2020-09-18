@@ -1,5 +1,5 @@
 import {
-  JsonController, Param, Get, Post, Patch, NotFoundError, BodyParam, UseBefore, UploadedFile,
+  JsonController, Param, Get, Post, Patch, NotFoundError, UseBefore, UploadedFile, Body,
 } from 'routing-controllers';
 import { Inject } from 'typedi';
 import { UserModel } from '../../models/UserModel';
@@ -7,7 +7,16 @@ import UserAccountService from '../../services/UserAccountService';
 import StorageService from '../../services/StorageService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { MediaType, Uuid, File } from '../../types';
+import {
+  MediaType,
+  Uuid,
+  File,
+  GetUserActivityStreamResponse,
+  UpdateProfilePictureResponse,
+  GetUserResponse,
+  GetCurrentUserResponse,
+  PatchUserResponse,
+} from '../../types';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
 
 @UseBefore(UserAuthentication)
@@ -20,7 +29,7 @@ export class UserController {
   private storageService: StorageService;
 
   @Get('/activity')
-  async getUserActivityStream(@AuthenticatedUser() user: UserModel) {
+  async getUserActivityStream(@AuthenticatedUser() user: UserModel): Promise<GetUserActivityStreamResponse> {
     const stream = await this.userAccountService.getUserActivityStream(user.uuid);
     return { error: null, activity: stream };
   }
@@ -28,14 +37,14 @@ export class UserController {
   @Post('/picture')
   async updateProfilePicture(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.PROFILE_PICTURE) }) file: File,
-    @AuthenticatedUser() user: UserModel) {
+    @AuthenticatedUser() user: UserModel): Promise<UpdateProfilePictureResponse> {
     const profilePicture = await this.storageService.upload(file, MediaType.PROFILE_PICTURE, user.uuid);
     const updatedUser = await this.userAccountService.updateProfilePicture(user, profilePicture);
     return { error: null, user: updatedUser.getFullUserProfile() };
   }
 
   @Get('/:uuid')
-  async getUser(@Param('uuid') uuid: Uuid, @AuthenticatedUser() currentUser: UserModel) {
+  async getUser(@Param('uuid') uuid: Uuid, @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
     if (uuid === currentUser.uuid) {
       return this.getCurrentUser(currentUser);
     }
@@ -47,13 +56,14 @@ export class UserController {
   }
 
   @Get()
-  async getCurrentUser(@AuthenticatedUser() user: UserModel) {
+  async getCurrentUser(@AuthenticatedUser() user: UserModel): Promise<GetCurrentUserResponse> {
     return { error: null, user: user.getFullUserProfile() };
   }
 
   @Patch()
-  async patchCurrentUser(@BodyParam('user') patches: PatchUserRequest, @AuthenticatedUser() user: UserModel) {
-    const patchedUser = await this.userAccountService.update(user, patches);
+  async patchCurrentUser(@Body() patchUserRequest: PatchUserRequest,
+    @AuthenticatedUser() user: UserModel): Promise<PatchUserResponse> {
+    const patchedUser = await this.userAccountService.update(user, patchUserRequest.user);
     return { error: null, user: patchedUser.getFullUserProfile() };
   }
 }

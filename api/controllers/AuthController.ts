@@ -1,5 +1,14 @@
-import { JsonController, Param, Body, Get, Post, BodyParam, UseBefore } from 'routing-controllers';
+import { JsonController, Param, Body, Get, Post, UseBefore } from 'routing-controllers';
 import { Inject } from 'typedi';
+import {
+  RegistrationResponse,
+  LoginResponse,
+  VerifyAuthTokenResponse,
+  ResetPasswordResponse,
+  SendPasswordResetEmailResponse,
+  VerifyEmailResponse,
+  ResendEmailVerificationResponse,
+} from 'types';
 import UserAccountService from '../../services/UserAccountService';
 import UserAuthService from '../../services/UserAuthService';
 import { logger as log } from '../../utils/Logger';
@@ -23,15 +32,16 @@ export class AuthController {
   private emailService: EmailService;
 
   @Post('/registration')
-  async register(@BodyParam('user') registrationRequest: RegistrationRequest, @RequestTrace() trace: string) {
-    const user = await this.userAccountService.registerUser(registrationRequest);
+  async register(@Body() registrationRequest: RegistrationRequest,
+    @RequestTrace() trace: string): Promise<RegistrationResponse> {
+    const user = await this.userAccountService.registerUser(registrationRequest.user);
     this.emailService.sendEmailVerification(user.email, user.firstName, user.accessCode);
     log.info('user authentication (registration)', authActionMetadata(trace, user));
     return { error: null, user: user.getFullUserProfile() };
   }
 
   @Post('/login')
-  async login(@Body() loginRequest: LoginRequest, @RequestTrace() trace: string) {
+  async login(@Body() loginRequest: LoginRequest, @RequestTrace() trace: string): Promise<LoginResponse> {
     const user = await this.userAuthService.checkCredentials(loginRequest.email, loginRequest.password);
     const token = UserAuthService.generateAuthToken(user);
     log.info('user authentication (login)', authActionMetadata(trace, user));
@@ -39,7 +49,7 @@ export class AuthController {
   }
 
   @Get('/emailVerification/:email')
-  async resendEmailVerification(@Param('email') email: string) {
+  async resendEmailVerification(@Param('email') email: string): Promise<ResendEmailVerificationResponse> {
     const user = await this.userAccountService.findByEmail(email);
     await this.userAuthService.changeAccessCode(user);
     await this.emailService.sendEmailVerification(user.email, user.firstName, user.accessCode);
@@ -47,14 +57,15 @@ export class AuthController {
   }
 
   @Post('/emailVerification/:accessCode')
-  async verifyEmail(@Param('accessCode') accessCode: string) {
+  async verifyEmail(@Param('accessCode') accessCode: string): Promise<VerifyEmailResponse> {
     const user = await this.userAccountService.findByAccessCode(accessCode);
     await user.markAsVerified();
     return { error: null };
   }
 
   @Get('/passwordReset/:email')
-  async sendPasswordResetEmail(@Param('email') email: string, @RequestTrace() trace: string) {
+  async sendPasswordResetEmail(@Param('email') email: string,
+    @RequestTrace() trace: string): Promise<SendPasswordResetEmailResponse> {
     const user = await this.userAccountService.findByEmail(email);
     await this.userAuthService.setAccountStateToPasswordReset(user);
     await this.emailService.sendPasswordReset(user.email, user.firstName, user.accessCode);
@@ -65,7 +76,7 @@ export class AuthController {
   @Post('/passwordReset/:accessCode')
   async resetPassword(@Param('accessCode') accessCode: string,
     @Body() passwordResetRequest: PasswordResetRequest,
-    @RequestTrace() trace: string) {
+    @RequestTrace() trace: string): Promise<ResetPasswordResponse> {
     const user = await this.userAuthService.resetPassword(accessCode, passwordResetRequest.user.newPassword);
     log.info('user authentication (password reset - access code)', authActionMetadata(trace, user));
     return { error: null };
@@ -73,7 +84,7 @@ export class AuthController {
 
   @UseBefore(OptionalUserAuthentication)
   @Post('/verification')
-  async verifyAuthToken(@AuthenticatedUser() user: UserModel) {
+  async verifyAuthToken(@AuthenticatedUser() user: UserModel): Promise<VerifyAuthTokenResponse> {
     log.info('user authentication (token verification)');
     const isValidAuthToken = !!user;
     return { error: null, authenticated: isValidAuthToken };

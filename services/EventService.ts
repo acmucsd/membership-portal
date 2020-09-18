@@ -3,7 +3,7 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { EventModel } from '../models/EventModel';
-import { Uuid, PublicEvent } from '../types';
+import { Uuid, PublicEvent, Event } from '../types';
 import Repositories from '../repositories';
 import { UserError } from '../utils/Errors';
 
@@ -12,14 +12,14 @@ export default class EventService {
   @InjectManager()
   private entityManager: EntityManager;
 
-  public async create(postEventRequest: Partial<EventModel>) {
-    const event = await this.entityManager.transaction(async (txn) => {
+  public async create(event: Event) {
+    const eventCreated = await this.entityManager.transaction(async (txn) => {
       const eventRepository = Repositories.event(txn);
-      const isUnusedAttendanceCode = eventRepository.isUnusedAttendanceCode(postEventRequest.attendanceCode);
+      const isUnusedAttendanceCode = eventRepository.isUnusedAttendanceCode(event.attendanceCode);
       if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
-      return eventRepository.upsertEvent(EventModel.create(postEventRequest));
+      return eventRepository.upsertEvent(EventModel.create(event));
     });
-    return event.getPublicEvent();
+    return eventCreated.getPublicEvent();
   }
 
   public async getAllEvents(canSeeAttendanceCode = false, offset = 0, limit = 0): Promise<PublicEvent[]> {

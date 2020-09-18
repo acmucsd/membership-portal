@@ -5,13 +5,17 @@ import {
   EditMerchCollectionRequest as IEditMerchCollectionRequest,
   CreateMerchItemRequest as ICreateMerchItemRequest,
   EditMerchItemRequest as IEditMerchItemRequest,
-  MerchItemAndQuantity as IMerchItemAndQuantity,
-  PlaceOrderRequest as IPlaceOrderRequest,
-  OrderItemFulfillmentUpdate as IOrderItemFulfillmentUpdate,
+  PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
+  MerchItemAndQuantity as IMerchItemAndQuantity,
+  OrderItemFulfillmentUpdate as IOrderItemFulfillmentUpdate,
+  MerchCollection as IMerchCollection,
+  MerchCollectionEdit as IMerchCollectionEdit,
+  MerchItem as IMerchItem,
+  MerchItemEdit as IMerchItemEdit,
 } from '../../types';
 
-export class CreateMerchCollectionRequest implements ICreateMerchCollectionRequest {
+export class MerchCollection implements IMerchCollection {
   @IsDefined()
   @IsNotEmpty()
   title: string;
@@ -24,7 +28,7 @@ export class CreateMerchCollectionRequest implements ICreateMerchCollectionReque
   archived?: boolean;
 }
 
-export class EditMerchCollectionRequest implements IEditMerchCollectionRequest {
+export class MerchCollectionEdit implements IMerchCollectionEdit {
   @IsNotEmpty()
   title?: string;
 
@@ -39,7 +43,7 @@ export class EditMerchCollectionRequest implements IEditMerchCollectionRequest {
   discountPercentage?: number;
 }
 
-export class CreateMerchItemRequest implements ICreateMerchItemRequest {
+export class MerchItem implements IMerchItem {
   @IsDefined()
   @IsNotEmpty()
   itemName: string;
@@ -72,7 +76,7 @@ export class CreateMerchItemRequest implements ICreateMerchItemRequest {
   metadata?: object;
 }
 
-export class EditMerchItemRequest implements IEditMerchItemRequest {
+export class MerchItemEdit implements IMerchItemEdit {
   @IsNotEmpty()
   itemName?: string;
 
@@ -112,13 +116,6 @@ export class MerchItemAndQuantity implements IMerchItemAndQuantity {
   quantity: number;
 }
 
-export class PlaceOrderRequest implements IPlaceOrderRequest {
-  @Type(() => MerchItemAndQuantity)
-  @IsDefined()
-  @ValidateNested()
-  order: MerchItemAndQuantity[];
-}
-
 export class OrderItemFulfillmentUpdate implements IOrderItemFulfillmentUpdate {
   @IsDefined()
   @IsUUID()
@@ -131,9 +128,44 @@ export class OrderItemFulfillmentUpdate implements IOrderItemFulfillmentUpdate {
   notes?: string;
 }
 
+export class CreateMerchCollectionRequest implements ICreateMerchCollectionRequest {
+  @Type(() => MerchCollection)
+  @ValidateNested()
+  @IsDefined()
+  collection: MerchCollection;
+}
+
+export class EditMerchCollectionRequest implements IEditMerchCollectionRequest {
+  @Type(() => MerchCollectionEdit)
+  @ValidateNested()
+  @IsDefined()
+  collection: MerchCollectionEdit;
+}
+
+export class CreateMerchItemRequest implements ICreateMerchItemRequest {
+  @Type(() => MerchItem)
+  @ValidateNested()
+  @IsDefined()
+  merchandise: MerchItem;
+}
+
+export class EditMerchItemRequest implements IEditMerchItemRequest {
+  @Type(() => MerchItemEdit)
+  @ValidateNested()
+  @IsDefined()
+  merchandise: MerchItemEdit;
+}
+
+export class PlaceMerchOrderRequest implements IPlaceMerchOrderRequest {
+  @Type(() => MerchItemAndQuantity)
+  @ValidateNested()
+  @IsDefined()
+  order: MerchItemAndQuantity[];
+}
+
 export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {
   @Type(() => OrderItemFulfillmentUpdate)
-  @IsDefined()
   @ValidateNested()
+  @IsDefined()
   items: OrderItemFulfillmentUpdate[];
 }

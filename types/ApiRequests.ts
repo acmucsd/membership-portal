@@ -1,10 +1,4 @@
-import {
-  PasswordChange,
-  PasswordUpdate,
-  MerchItemAndQuantity,
-  OrderItemFulfillmentUpdate,
-  OptionalEventProperties,
-} from '.';
+// REQUEST TYPES
 
 // AUTH
 
@@ -18,6 +12,69 @@ export interface PasswordResetRequest {
 }
 
 export interface RegistrationRequest {
+  user: UserRegistration;
+}
+
+// USER
+
+export interface PatchUserRequest {
+  user: UserPatches;
+}
+
+// ADMIN
+
+export interface CreateMilestoneRequest {
+  milestone: Milestone;
+}
+
+export interface CreateBonusRequest {
+  bonus: Bonus;
+}
+
+// EVENT
+
+export interface CreateEventRequest {
+  event: Event;
+}
+
+export interface PatchEventRequest {
+  event: Partial<Event>;
+}
+
+export interface AttendEventRequest {
+  attendanceCode: string;
+  asStaff?: boolean;
+}
+
+// MERCH STORE
+
+export interface CreateMerchCollectionRequest {
+  collection: MerchCollection;
+}
+
+export interface EditMerchCollectionRequest {
+  collection: MerchCollectionEdit;
+}
+
+export interface CreateMerchItemRequest {
+  merchandise: MerchItem;
+}
+
+export interface EditMerchItemRequest {
+  merchandise: MerchItemEdit;
+}
+
+export interface PlaceMerchOrderRequest {
+  order: MerchItemAndQuantity[];
+}
+
+export interface FulfillMerchOrderRequest {
+  items: OrderItemFulfillmentUpdate[];
+}
+
+// RAW TYPES
+
+export interface UserRegistration {
   email: string;
   firstName: string;
   lastName: string;
@@ -26,9 +83,7 @@ export interface RegistrationRequest {
   major: string;
 }
 
-// USER
-
-export interface PatchUserRequest {
+export interface UserPatches {
   firstName?: string;
   lastName?: string;
   major?: string;
@@ -37,22 +92,27 @@ export interface PatchUserRequest {
   passwordChange?: PasswordUpdate;
 }
 
-// ADMIN
+export interface PasswordChange {
+  newPassword: string;
+  confirmPassword: string;
+}
 
-export interface CreateMilestoneRequest {
+export interface PasswordUpdate extends PasswordChange {
+  password: string;
+}
+
+export interface Milestone {
   name: string;
   points?: number;
 }
 
-export interface CreateBonusRequest {
+export interface Bonus {
   description: string;
   users: string[]
   points: number;
 }
 
-// EVENT
-
-export interface PostEventRequest extends OptionalEventProperties {
+export interface Event extends OptionalEventProperties {
   cover: string;
   title: string;
   description: string;
@@ -63,28 +123,26 @@ export interface PostEventRequest extends OptionalEventProperties {
   pointValue: number;
 }
 
-export interface PatchEventRequest extends Partial<PostEventRequest> {}
-
-// ATTENDANCE
-
-export interface AttendEventRequest {
-  attendanceCode: string;
-  asStaff?: boolean;
+export interface OptionalEventProperties {
+  organization?: string;
+  committee?: string;
+  thumbnail?: string;
+  eventLink?: string;
+  requiresStaff?: boolean;
+  staffPointBonus?: number;
 }
 
-// MERCH STORE
-
-export interface CreateMerchCollectionRequest {
+export interface MerchCollection {
   title: string;
   description: string;
   archived?: boolean;
 }
 
-export interface EditMerchCollectionRequest extends Partial<CreateMerchCollectionRequest> {
+export interface MerchCollectionEdit extends Partial<MerchCollection> {
   discountPercentage?: number;
 }
 
-export interface CreateMerchItemRequest {
+export interface MerchItem {
   itemName: string;
   collection: string;
   price: number;
@@ -96,12 +154,15 @@ export interface CreateMerchItemRequest {
   metadata?: object;
 }
 
-export interface EditMerchItemRequest extends Partial<CreateMerchItemRequest> {}
+export interface MerchItemEdit extends Partial<MerchItem> {}
 
-export interface PlaceOrderRequest {
-  order: MerchItemAndQuantity[];
+export interface OrderItemFulfillmentUpdate {
+  uuid: string;
+  fulfilled?: boolean;
+  notes?: string;
 }
 
-export interface FulfillMerchOrderRequest {
-  items: OrderItemFulfillmentUpdate[];
+export interface MerchItemAndQuantity {
+  item: string;
+  quantity: number;
 }

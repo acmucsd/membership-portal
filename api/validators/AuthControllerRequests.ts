@@ -7,18 +7,11 @@ import {
   LoginRequest as ILoginRequest,
   RegistrationRequest as IRegistrationRequest,
   PasswordResetRequest as IPasswordResetRequest,
+  UserRegistration as IUserRegistration,
+  PasswordChange as IPasswordChange,
 } from '../../types';
 
-export class PasswordChange {
-  @IsDefined()
-  @IsValidPassword()
-  newPassword: string;
-
-  @IsDefined()
-  confirmPassword: string;
-}
-
-export class RegistrationRequest implements IRegistrationRequest {
+export class UserRegistration implements IUserRegistration {
   @IsDefined()
   @IsEmail()
   email: string;
@@ -44,6 +37,22 @@ export class RegistrationRequest implements IRegistrationRequest {
   major: string;
 }
 
+export class PasswordChange implements IPasswordChange {
+  @IsDefined()
+  @IsValidPassword()
+  newPassword: string;
+
+  @IsDefined()
+  confirmPassword: string;
+}
+
+export class RegistrationRequest implements IRegistrationRequest {
+  @Type(() => UserRegistration)
+  @ValidateNested()
+  @IsDefined()
+  user: UserRegistration;
+}
+
 export class LoginRequest implements ILoginRequest {
   @IsDefined()
   @IsEmail()
@@ -54,8 +63,6 @@ export class LoginRequest implements ILoginRequest {
 }
 
 export class PasswordResetRequest implements IPasswordResetRequest {
-  // manually annotate nested type for class-transsformer
-  // bc TypeScript lacks proper reflection
   @Type(() => PasswordChange)
   @IsDefined()
   @ValidateNested()

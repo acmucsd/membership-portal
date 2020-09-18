@@ -1,13 +1,6 @@
-import {
-  PublicAttendance,
-  PrivateProfile,
-  PublicEvent,
-  PublicProfile,
-  PublicMerchCollection,
-  PublicMerchItem,
-  PublicOrder,
-  PublicActivity,
-} from '.';
+import { ActivityType } from './Enums';
+
+// REQUEST TYPES
 
 export interface CustomErrorResponse {
   error: {
@@ -19,7 +12,7 @@ export interface CustomErrorResponse {
 }
 
 export interface APIResponse {
-  error: null | CustomErrorResponse;
+  error: CustomErrorResponse;
 }
 
 // ADMIN
@@ -48,7 +41,7 @@ export interface AttendEventResponse extends APIResponse {}
 
 // AUTH
 
-export interface RegisterUserResponse extends APIResponse {
+export interface RegistrationResponse extends APIResponse {
   user: PrivateProfile;
 }
 
@@ -78,7 +71,7 @@ export interface GetFutureEventsResponse extends APIResponse {
   events: PublicEvent[];
 }
 
-export interface UploadEventCoverResponse extends APIResponse {
+export interface UpdateEventCoverResponse extends APIResponse {
   event: PublicEvent;
 }
 
@@ -86,7 +79,7 @@ export interface GetOneEventResponse extends APIResponse {
   event: PublicEvent;
 }
 
-export interface UpdateEventResponse extends APIResponse {
+export interface PatchEventResponse extends APIResponse {
   event: PublicEvent;
 }
 
@@ -103,7 +96,7 @@ export interface CreateEventResponse extends APIResponse {
 // LEADERBOARD
 
 export interface GetLeaderboardResponse extends APIResponse {
-  leaderboard: PublicProfile;
+  leaderboard: PublicProfile[];
 }
 
 // MERCH STORE
@@ -113,18 +106,18 @@ export interface GetOneMerchCollectionResponse extends APIResponse {
 }
 
 export interface GetAllMerchCollectionsResponse extends APIResponse {
-  collection: PublicMerchCollection[];
+  collections: PublicMerchCollection[];
 }
 
 export interface CreateMerchCollectionResponse extends APIResponse {
   collection: PublicMerchCollection;
 }
 
-export interface EditMerchCollectionResponse extends APIResponse {}
-
-export interface DeleteMerchCollectionResponse extends APIResponse {
+export interface EditMerchCollectionResponse extends APIResponse {
   collection: PublicMerchCollection;
 }
+
+export interface DeleteMerchCollectionResponse extends APIResponse {}
 
 export interface GetOneMerchItemResponse extends APIResponse {
   item: PublicMerchItem;
@@ -157,7 +150,7 @@ export interface EditMerchOrderResponse extends APIResponse {}
 // USER
 
 export interface GetUserActivityStreamResponse extends APIResponse {
-  activity: PublicActivity;
+  activity: PublicActivity[];
 }
 
 export interface UpdateProfilePictureResponse extends APIResponse {
@@ -172,6 +165,96 @@ export interface GetCurrentUserResponse extends APIResponse {
   user: PrivateProfile;
 }
 
-export interface PatchCurrentUserResponse extends APIResponse {
+export interface PatchUserResponse extends APIResponse {
   user: PrivateProfile;
+}
+
+// RAW TYPES
+
+export type Uuid = string;
+
+export interface PublicAttendance {
+  user: PublicProfile;
+  event: PublicEvent;
+  timestamp: Date;
+  asStaff: boolean;
+}
+
+export interface PublicEvent {
+  uuid: string;
+  organization: string;
+  committee: string;
+  thumbnail: string;
+  cover: string;
+  title: string;
+  description: string;
+  location: string;
+  eventLink: string;
+  start: Date;
+  end: Date;
+  attendanceCode?: string;
+  pointValue: number;
+  requiresStaff: boolean;
+  staffPointBonus: number;
+}
+
+export interface PublicProfile {
+  firstName: string,
+  lastName: string,
+  profilePicture: string,
+  graduationYear: number,
+  major: string,
+  bio: string,
+  points: number,
+}
+
+export interface PrivateProfile extends PublicProfile {
+  email: string,
+  accessType: string,
+  state: string,
+  credits: number,
+}
+
+export interface PublicActivity {
+  type: ActivityType,
+  description: string,
+  pointsEarned: number,
+  timestamp: Date;
+}
+
+export interface PublicMerchCollection {
+  uuid: Uuid;
+  title: string;
+  description: string;
+  items: PublicMerchItem[];
+}
+
+export interface PublicMerchItem {
+  uuid: Uuid;
+  itemName: string;
+  collection: PublicMerchCollection;
+  picture: string;
+  price: number;
+  description: string;
+  discountPercentage: number;
+  monthlyLimit: number;
+  lifetimeLimit: number;
+}
+
+export interface PublicOrderItem {
+  uuid: Uuid;
+  item: PublicMerchItem;
+  salePriceAtPurchase: number;
+  discountPercentageAtPurchase: number;
+  fulfilled: boolean;
+  fulfilledAt?: Date;
+  notes?: string;
+}
+
+export interface PublicOrder {
+  uuid: Uuid;
+  user: Uuid;
+  totalCost: number;
+  orderedAt: Date;
+  items: PublicOrderItem[];
 }

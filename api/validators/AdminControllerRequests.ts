@@ -1,9 +1,13 @@
-import { ArrayNotEmpty, IsDefined, IsNotEmpty, IsPositive } from 'class-validator';
+import { ArrayNotEmpty, IsDefined, IsNotEmpty, IsPositive, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import {
-  CreateBonusRequest as ICreateBonusRequest, CreateMilestoneRequest as ICreateMilestoneRequest,
+  CreateBonusRequest as ICreateBonusRequest,
+  CreateMilestoneRequest as ICreateMilestoneRequest,
+  Milestone as IMilestone,
+  Bonus as IBonus,
 } from '../../types';
 
-export class CreateMilestoneRequest implements ICreateMilestoneRequest {
+export class Milestone implements IMilestone {
   @IsDefined()
   @IsNotEmpty()
   name: string;
@@ -13,7 +17,7 @@ export class CreateMilestoneRequest implements ICreateMilestoneRequest {
   points: number;
 }
 
-export class CreateBonusRequest implements ICreateBonusRequest {
+export class Bonus implements IBonus {
   @IsDefined()
   @IsNotEmpty()
   description: string;
@@ -25,4 +29,18 @@ export class CreateBonusRequest implements ICreateBonusRequest {
   @IsDefined()
   @IsPositive()
   points: number;
+}
+
+export class CreateMilestoneRequest implements ICreateMilestoneRequest {
+  @Type(() => Milestone)
+  @ValidateNested()
+  @IsDefined()
+  milestone: Milestone;
+}
+
+export class CreateBonusRequest implements ICreateBonusRequest {
+  @Type(() => Bonus)
+  @ValidateNested()
+  @IsDefined()
+  bonus: Bonus;
 }
