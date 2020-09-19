@@ -1,4 +1,5 @@
 import { Config } from './config';
+import { DatabaseNamingStrategy } from './config/DatabaseNamingStrategy';
 
 const dbConfig = {
   type: 'postgres',
@@ -12,6 +13,7 @@ const dbConfig = {
     'models/*.ts',
   ],
   synchronize: false,
+  namingStrategy: new DatabaseNamingStrategy(),
 };
 
 module.exports = [
