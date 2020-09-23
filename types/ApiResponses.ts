@@ -181,7 +181,7 @@ export interface PublicAttendance {
 }
 
 export interface PublicEvent {
-  uuid: string;
+  uuid: Uuid;
   organization: string;
   committee: string;
   thumbnail: string;
@@ -199,6 +199,7 @@ export interface PublicEvent {
 }
 
 export interface PublicProfile {
+  uuid: Uuid,
   firstName: string,
   lastName: string,
   profilePicture: string,

@@ -108,6 +108,7 @@ export class UserModel extends BaseEntity {
 
   public getPublicProfile(): PublicProfile {
     return pick(this, [
+      'uuid',
       'firstName',
       'lastName',
       'profilePicture',
@@ -120,6 +121,7 @@ export class UserModel extends BaseEntity {
 
   public getFullUserProfile(): PrivateProfile {
     return pick(this, [
+      'uuid',
       'email',
       'firstName',
       'lastName',
