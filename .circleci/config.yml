@@ -45,6 +45,21 @@ jobs:
             - node_modules
       - run:
           command: npm run test
+  publish:
+    docker:
+      - image: circleci/node:12.18.3
+    steps:
+      - checkout
+      - restore_cache:
+          key: package-cache-{{ checksum "package-lock.json" }}
+      - run:
+          command: npm install
+      - save_cache:
+          key: package-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - run:
+          command: npm run update-package
   deploy:
     machine:
       enabled: true
@@ -60,11 +75,20 @@ workflows:
       - build
       - lint
       - test
+      - publish:
+          requires:
+            - build
+            - lint
+            - test
+          filters:
+            branches:
+              only: master
       - deploy:
           requires:
             - build
             - lint
             - test
+            - publish
           filters:
             branches:
               only: master

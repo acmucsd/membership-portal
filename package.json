@@ -1,8 +1,10 @@
 {
-  "name": "membership-portal",
+  "name": "@acmucsd/membership-portal",
   "version": "1.0.0",
   "description": "REST API for ACM UCSD's membership portal.",
-  "main": "build/index.js",
+  "main": "index.d.ts",
+  "types": "types/index.d.ts",
+  "files": ["index.d.ts", "types/*.d.ts"],
   "scripts": {
     "build": "tsc && cp -r templates/ build/templates/",
     "start": "node build/index.js",
@@ -15,7 +17,9 @@
     "db:rollback": "ts-node ./node_modules/.bin/typeorm migration:revert",
     "db:seed:create": "ts-node ./node_modules/.bin/typeorm migration:create -c seed -n",
     "db:seed": "ts-node ./node_modules/.bin/typeorm migration:run -c seed",
-    "db:seed:rollback": "ts-node ./node_modules/.bin/typeorm migration:revert -c seed"
+    "db:seed:rollback": "ts-node ./node_modules/.bin/typeorm migration:revert -c seed",
+    "publish-package": "cp package.json build && npm publish build --access public",
+    "update-package": "npm version patch && npm run publish-package"
   },
   "repository": {
     "type": "git",
@@ -33,6 +37,7 @@
   "dependencies": {
     "@sendgrid/mail": "^7.2.1",
     "@types/node": "^14.0.13",
+    "@types/multer": "^1.4.3",
     "aws-sdk": "^2.713.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
@@ -70,7 +75,6 @@
     "@types/jest": "^26.0.8",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/morgan": "^1.9.1",
-    "@types/multer": "^1.4.3",
     "@types/underscore": "^1.10.4",
     "@types/uuid": "^8.0.0",
     "@typescript-eslint/eslint-plugin": "^3.3.0",
