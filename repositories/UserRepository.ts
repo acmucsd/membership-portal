@@ -72,10 +72,11 @@ export class UserRepository extends BaseRepository<UserModel> {
   }
 
   public async addPointsToMany(users: UserModel[], points: number) {
+    const uuids = users.map((user) => user.uuid);
     return this.repository.createQueryBuilder()
       .update()
       .set({ points: () => `points + ${points}` })
-      .where(users)
+      .where('uuid IN (:...uuids) ', { uuids })
       .execute();
   }
 
