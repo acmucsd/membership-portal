@@ -1,6 +1,6 @@
-import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, Index, OneToMany } from 'typeorm';
+import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Uuid, PublicMerchCollection } from '../types';
-import { MerchandiseModel } from './MerchandiseItemModel';
+import { MerchandiseItemModel } from './MerchandiseItemModel';
 
 @Entity('MerchandiseCollections')
 export class MerchandiseCollectionModel extends BaseEntity {
@@ -9,7 +9,6 @@ export class MerchandiseCollectionModel extends BaseEntity {
   id: number;
 
   @PrimaryGeneratedColumn('uuid')
-  @Index({ unique: true })
   uuid: Uuid;
 
   @Column()
@@ -21,15 +20,16 @@ export class MerchandiseCollectionModel extends BaseEntity {
   @Column({ default: false })
   archived: boolean;
 
-  @OneToMany((type) => MerchandiseModel, (item) => item.collection, { cascade: true })
-  items: MerchandiseModel[];
+  @OneToMany((type) => MerchandiseItemModel, (item) => item.collection, { cascade: true })
+  items: MerchandiseItemModel[];
 
   public getPublicMerchCollection(): PublicMerchCollection {
-    return {
+    const baseMerchCollection: any = {
       uuid: this.uuid,
       title: this.title,
       description: this.description,
-      items: this.items.map((i) => i.getPublicMerchItem()),
     };
+    if (this.items) baseMerchCollection.items = this.items.map((i) => i.getPublicMerchItem());
+    return baseMerchCollection;
   }
 }

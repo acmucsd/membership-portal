@@ -7,8 +7,22 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface PasswordChange {
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export interface PasswordResetRequest {
   user: PasswordChange;
+}
+
+export interface UserRegistration {
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  graduationYear: number;
+  major: string;
 }
 
 export interface RegistrationRequest {
@@ -17,14 +31,38 @@ export interface RegistrationRequest {
 
 // USER
 
+export interface PasswordUpdate extends PasswordChange {
+  password: string;
+}
+
+export interface UserPatches {
+  firstName?: string;
+  lastName?: string;
+  major?: string;
+  graduationYear?: number;
+  bio?: string;
+  passwordChange?: PasswordUpdate;
+}
+
 export interface PatchUserRequest {
   user: UserPatches;
 }
 
 // ADMIN
 
+export interface Milestone {
+  name: string;
+  points?: number;
+}
+
 export interface CreateMilestoneRequest {
   milestone: Milestone;
+}
+
+export interface Bonus {
+  description: string;
+  users: string[]
+  points: number;
 }
 
 export interface CreateBonusRequest {
@@ -32,6 +70,26 @@ export interface CreateBonusRequest {
 }
 
 // EVENT
+
+export interface OptionalEventProperties {
+  organization?: string;
+  committee?: string;
+  thumbnail?: string;
+  eventLink?: string;
+  requiresStaff?: boolean;
+  staffPointBonus?: number;
+}
+
+export interface Event extends OptionalEventProperties {
+  cover: string;
+  title: string;
+  description: string;
+  location: string;
+  start: Date;
+  end: Date;
+  attendanceCode: string;
+  pointValue: number;
+}
 
 export interface CreateEventRequest {
   event: Event;
@@ -65,71 +123,11 @@ export interface EditMerchItemRequest {
 }
 
 export interface PlaceMerchOrderRequest {
-  order: MerchItemAndQuantity[];
+  order: MerchItemOptionAndQuantity[];
 }
 
 export interface FulfillMerchOrderRequest {
   items: OrderItemFulfillmentUpdate[];
-}
-
-// RAW TYPES
-
-export interface UserRegistration {
-  email: string;
-  firstName: string;
-  lastName: string;
-  password: string;
-  graduationYear: number;
-  major: string;
-}
-
-export interface UserPatches {
-  firstName?: string;
-  lastName?: string;
-  major?: string;
-  graduationYear?: number;
-  bio?: string;
-  passwordChange?: PasswordUpdate;
-}
-
-export interface PasswordChange {
-  newPassword: string;
-  confirmPassword: string;
-}
-
-export interface PasswordUpdate extends PasswordChange {
-  password: string;
-}
-
-export interface Milestone {
-  name: string;
-  points?: number;
-}
-
-export interface Bonus {
-  description: string;
-  users: string[]
-  points: number;
-}
-
-export interface Event extends OptionalEventProperties {
-  cover: string;
-  title: string;
-  description: string;
-  location: string;
-  start: Date;
-  end: Date;
-  attendanceCode: string;
-  pointValue: number;
-}
-
-export interface OptionalEventProperties {
-  organization?: string;
-  committee?: string;
-  thumbnail?: string;
-  eventLink?: string;
-  requiresStaff?: boolean;
-  staffPointBonus?: number;
 }
 
 export interface MerchCollection {
@@ -142,19 +140,32 @@ export interface MerchCollectionEdit extends Partial<MerchCollection> {
   discountPercentage?: number;
 }
 
-export interface MerchItem {
+export interface CommonMerchItemProperties {
   itemName: string;
   collection: string;
-  price: number;
   description: string;
   picture?: string;
-  quantity?: number;
-  discountPercentage?: number;
   hidden?: boolean;
   metadata?: object;
 }
 
-export interface MerchItemEdit extends Partial<MerchItem> {}
+export interface MerchItemOption {
+  quantity: number;
+  price: number;
+  discountPercentage?: number;
+}
+
+export interface MerchItem extends CommonMerchItemProperties {
+  options: MerchItemOption[];
+}
+
+export interface MerchItemOptionEdit extends Partial<MerchItemOption> {
+  uuid: string;
+}
+
+export interface MerchItemEdit extends Partial<CommonMerchItemProperties> {
+  options?: MerchItemOptionEdit[];
+}
 
 export interface OrderItemFulfillmentUpdate {
   uuid: string;
@@ -162,7 +173,7 @@ export interface OrderItemFulfillmentUpdate {
   notes?: string;
 }
 
-export interface MerchItemAndQuantity {
-  item: string;
+export interface MerchItemOptionAndQuantity {
+  option: string;
   quantity: number;
 }

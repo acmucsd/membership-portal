@@ -8,6 +8,7 @@ export interface CustomErrorResponse {
     message: string;
     status: number;
     stack?: string;
+    errors?: any;
   }
 }
 
@@ -233,18 +234,23 @@ export interface PublicMerchCollection {
 export interface PublicMerchItem {
   uuid: Uuid;
   itemName: string;
-  collection: PublicMerchCollection;
+  collection?: PublicMerchCollection;
   picture: string;
-  price: number;
   description: string;
-  discountPercentage: number;
   monthlyLimit: number;
   lifetimeLimit: number;
+  options: PublicMerchItemOption[];
+}
+
+export interface PublicMerchItemOption {
+  uuid: Uuid;
+  price: number;
+  discountPercentage: number;
 }
 
 export interface PublicOrderItem {
   uuid: Uuid;
-  item: PublicMerchItem;
+  option: PublicMerchItemOption;
   salePriceAtPurchase: number;
   discountPercentageAtPurchase: number;
   fulfilled: boolean;

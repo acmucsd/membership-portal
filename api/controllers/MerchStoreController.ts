@@ -44,7 +44,7 @@ import {
 import { UserError } from '../../utils/Errors';
 
 @UseBefore(UserAuthentication)
-@JsonController('/store')
+@JsonController('/merch')
 export class MerchStoreController {
   @Inject()
   private merchStoreService: MerchStoreService;
@@ -89,7 +89,7 @@ export class MerchStoreController {
     return { error: null };
   }
 
-  @Get('/merchandise/:uuid')
+  @Get('/item/:uuid')
   async getOneMerchItem(@Param('uuid') uuid: Uuid,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchItemResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
@@ -97,7 +97,7 @@ export class MerchStoreController {
     return { error: null, item };
   }
 
-  @Post('/merchandise')
+  @Post('/item')
   async createMerchItem(@Body() createItemRequest: CreateMerchItemRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateMerchItemResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
@@ -105,7 +105,7 @@ export class MerchStoreController {
     return { error: null, item };
   }
 
-  @Patch('/merchandise/:uuid')
+  @Patch('/item/:uuid')
   async editMerchItem(@Param('uuid') uuid: Uuid,
     @Body() editItemRequest: EditMerchItemRequest,
     @AuthenticatedUser() user: UserModel): Promise<EditMerchItemResponse> {
@@ -114,7 +114,7 @@ export class MerchStoreController {
     return { error: null, item };
   }
 
-  @Delete('/merchandise/:uuid')
+  @Delete('/item/:uuid')
   async deleteMerchItem(@Param('uuid') uuid: Uuid,
     @AuthenticatedUser() user: UserModel): Promise<DeleteMerchItemResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
@@ -146,7 +146,7 @@ export class MerchStoreController {
     const originalOrder = placeOrderRequest.order.filter((oi) => oi.quantity > 0);
     const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
     if (orderIsEmpty) throw new UserError('There are no items in this order');
-    const numUniqueUuids = (new Set(originalOrder.map((oi) => oi.item))).size;
+    const numUniqueUuids = (new Set(originalOrder.map((oi) => oi.option))).size;
     if (originalOrder.length !== numUniqueUuids) throw new BadRequestError('There are duplicate items in this order');
     const order = await this.merchStoreService.placeOrder(originalOrder, user);
     return { error: null, order };

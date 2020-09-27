@@ -4,6 +4,7 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment';
+import { MerchandiseItemOptionModel } from 'models/MerchandiseItemOptionModel';
 import {
   Uuid,
   PublicMerchCollection,
@@ -14,16 +15,17 @@ import {
   MerchCollection,
   MerchCollectionEdit,
   MerchItem,
-  MerchItemAndQuantity,
+  MerchItemOptionAndQuantity,
   MerchItemEdit,
 } from '../types';
-import { MerchandiseModel } from '../models/MerchandiseItemModel';
+import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import Repositories from '../repositories';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
+import { OrderItemModel } from '../models/OrderItemModel';
 
 @Service()
 export default class MerchStoreService {
@@ -40,7 +42,7 @@ export default class MerchStoreService {
     });
     if (!collection) throw new NotFoundError('Collection not found');
     if (collection.archived && !canSeeSeeHiddenItems) throw new ForbiddenError();
-    return canSeeSeeHiddenItems ? collection.getPublicMerchCollection() : collection;
+    return canSeeSeeHiddenItems ? collection : collection.getPublicMerchCollection();
   }
 
   public async getAllCollections(canSeeInactiveCollections = false): Promise<PublicMerchCollection[]> {
@@ -71,8 +73,8 @@ export default class MerchStoreService {
       let updatedCollection = await merchCollectionRepository.upsertMerchCollection(currentCollection, changes);
       if (changes.discountPercentage) {
         const { discountPercentage } = changes;
-        const merchItemRepository = Repositories.merchStoreItem(txn);
-        await merchItemRepository.updateMerchItemsInCollection(uuid, discountPercentage);
+        const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+        await merchItemOptionRepository.updateMerchItemOptionsInCollection(uuid, discountPercentage);
         updatedCollection = await merchCollectionRepository.findByUuid(uuid);
       }
       return updatedCollection;
@@ -100,37 +102,46 @@ export default class MerchStoreService {
     return item.getPublicMerchItem();
   }
 
-  public async createItem(item: MerchItem): Promise<MerchandiseModel> {
+  public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
     return this.entityManager.transaction(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       const collection = await merchCollectionRepository.findByUuid(item.collection);
       if (!collection) throw new NotFoundError('Collection not found');
       const merchItemRepository = Repositories.merchStoreItem(txn);
-      const merchItem = MerchandiseModel.create({ ...item, collection });
-      return merchItemRepository.upsertMerchItem(merchItem);
+      const merchItem = MerchandiseItemModel.create({ ...item, collection });
+      await merchItemRepository.upsertMerchItem(merchItem);
+      return merchItemRepository.findByUuid(merchItem.uuid);
     });
   }
 
-  public async editItem(uuid: Uuid, itemEdit: MerchItemEdit): Promise<MerchandiseModel> {
-    const updatedItem = await this.entityManager.transaction(async (txn) => {
+  public async editItem(uuid: Uuid, itemEdit: MerchItemEdit): Promise<MerchandiseItemModel> {
+    return this.entityManager.transaction(async (txn) => {
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
-      const changes = { ...itemEdit, collection: item.collection };
-      if (changes.collection) {
+      const { options, collection: updatedCollection, ...changes } = itemEdit;
+
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      await Promise.all(options.map(async (optionUpdate) => {
+        const option = await merchItemOptionRepository.findByUuid(optionUpdate.uuid);
+        if (!option) throw new NotFoundError('Item option not found');
+        // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
+        // e.g. there's 10 of an item and someone adds 5 to stock while someone else orders 1
+        // so the merch store admin sets quantity to 15 but the true quantity is 14
+        if (optionUpdate.quantity) optionUpdate.quantity += option.quantity;
+        return merchItemOptionRepository.upsertMerchItemOption(option, optionUpdate);
+      }));
+
+      if (updatedCollection) {
         const merchCollectionRepository = Repositories.merchStoreCollection(txn);
-        const collection = await merchCollectionRepository.findByUuid(itemEdit.collection);
+        const collection = await merchCollectionRepository.findByUuid(updatedCollection);
         if (!collection) throw new NotFoundError('Collection not found');
-        changes.collection = collection;
       }
-      // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
-      // e.g. there's 10 of an item and someone adds 5 to stock while someone else orders 1
-      // so the merch store admin sets quantity to 15 but the true quantity is 14
-      if (changes.quantity) changes.quantity += item.quantity;
-      return merchItemRepository.upsertMerchItem(item, changes);
+
+      item.reload();
+      await merchItemRepository.upsertMerchItem(item, changes);
+      return merchItemRepository.findByUuid(uuid);
     });
-    delete updatedItem.collection.items;
-    return updatedItem;
   }
 
   public async deleteItem(uuid: Uuid): Promise<void> {
@@ -164,15 +175,16 @@ export default class MerchStoreService {
     return orders.map((o) => o.getPublicOrder());
   }
 
-  public async placeOrder(originalOrder: MerchItemAndQuantity[], user: UserModel): Promise<PublicOrder> {
-    const [order, merchItems] = await this.entityManager.transaction('SERIALIZABLE', async (txn) => {
-      const merchItemRepository = Repositories.merchStoreItem(txn);
-      const items = await merchItemRepository.batchFindByUuid(originalOrder.map((oi) => oi.item));
-      if (items.size !== originalOrder.length) {
-        const requestedItems = originalOrder.map((oi) => oi.item);
-        const foundItems = Array.from(items.values())
-          .filter((i) => !i.hidden)
-          .map((i) => i.uuid);
+  public async placeOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<PublicOrder> {
+    const [order, merchItemOptions] = await this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+      await user.reload();
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
+      if (itemOptions.size !== originalOrder.length) {
+        const requestedItems = originalOrder.map((oi) => oi.option);
+        const foundItems = Array.from(itemOptions.values())
+          .filter((o) => !o.item.hidden)
+          .map((o) => o.uuid);
         const missingItems = difference(requestedItems, foundItems);
         throw new NotFoundError(`Missing: ${missingItems}`);
       }
@@ -182,76 +194,81 @@ export default class MerchStoreService {
       const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersForUser(user);
       const oneMonthAgo = new Date(moment().subtract('months', 1).unix());
       const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
-      const lifetimeOrderItemCounts = MerchStoreService
-        .countOrderItems(Array.from(items.values()), lifetimePurchaseHistory);
-      const pastMonthOrderItemCounts = MerchStoreService
-        .countOrderItems(Array.from(items.values()), pastMonthPurchaseHistory);
-      for (let i = 0; i < originalOrder.length; i += 1) {
-        const item = items.get(originalOrder[i].item);
-        const quantityRequested = originalOrder[i].quantity;
-        if (!!item.lifetimeLimit && lifetimeOrderItemCounts[item.uuid] + quantityRequested > item.lifetimeLimit) {
+      const lifetimeItemOrderCounts = MerchStoreService
+        .countItemOrders(Array.from(itemOptions.values()), lifetimePurchaseHistory);
+      const pastMonthItemOrderCounts = MerchStoreService
+        .countItemOrders(Array.from(itemOptions.values()), pastMonthPurchaseHistory);
+      // aggregate requested quantities by item
+      const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
+        .countItemRequestedQuantities(originalOrder, itemOptions)
+        .entries());
+      for (let i = 0; i < requestedQuantitiesByMerchItem.length; i += 1) {
+        const [item, quantityRequested] = requestedQuantitiesByMerchItem[i];
+        if (!!item.lifetimeLimit && lifetimeItemOrderCounts.get(item) + quantityRequested > item.lifetimeLimit) {
           throw new UserError(`This order exceeds the lifetime limit for ${item.itemName}`);
         }
-        if (!!item.monthlyLimit && pastMonthOrderItemCounts[item.uuid] + quantityRequested > item.monthlyLimit) {
+        if (!!item.monthlyLimit && pastMonthItemOrderCounts.get(item) + quantityRequested > item.monthlyLimit) {
           throw new UserError(`This order exceeds the monthly limit for ${item.itemName}`);
         }
       }
 
-      // checks that enough units of requested items are in stock
+      // checks that enough units of requested item options are in stock
       for (let i = 0; i < originalOrder.length; i += 1) {
-        const item = items.get(originalOrder[i].item);
-        const quantityRequested = originalOrder[i].quantity;
-        if (item.quantity < quantityRequested) {
-          throw new UserError(`There aren't enough units of ${item.itemName} in stock`);
+        const optionAndQuantity = originalOrder[i];
+        const option = itemOptions.get(optionAndQuantity.option);
+        const quantityRequested = optionAndQuantity.quantity;
+        if (option.quantity < quantityRequested) {
+          throw new UserError(`There aren't enough units of ${option.item.itemName} in stock`);
         }
       }
 
       // checks that the user has enough credits to place order
-      const totalCost = originalOrder.reduce((sum, i) => {
-        const item = items.get(i.item);
-        const quantityRequested = i.quantity;
-        return sum + (item.getPrice() * quantityRequested);
+      const totalCost = originalOrder.reduce((sum, o) => {
+        const option = itemOptions.get(o.option);
+        const quantityRequested = o.quantity;
+        return sum + (option.getPrice() * quantityRequested);
       }, 0);
-      await user.reload();
       if (user.credits < totalCost) throw new UserError('You don\'t have enough credits');
 
       // if all checks pass, the order is placed
       const createdOrder = await merchOrderRepository.createMerchOrder(OrderModel.create({
         user,
         totalCost,
-        items: flatten(originalOrder.map((oi) => {
-          const item = items.get(oi.item);
-          const quantityRequested = oi.quantity;
-          return Array(quantityRequested).fill({
-            item,
-            salePriceAtPurchase: item.getPrice(),
-            discountPercentageAtPurchase: item.discountPercentage,
-          });
+        items: flatten(originalOrder.map((optionAndQuantity) => {
+          const option = itemOptions.get(optionAndQuantity.option);
+          const quantityRequested = optionAndQuantity.quantity;
+          return Array(quantityRequested).fill(OrderItemModel.create({
+            option,
+            salePriceAtPurchase: option.getPrice(),
+            discountPercentageAtPurchase: option.discountPercentage,
+          }));
         })),
       }));
 
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity(user, ActivityType.ORDER_MERCHANDISE, 0, `Order ${createdOrder.uuid}`);
 
-      await Promise.all(originalOrder.map((oi) => {
-        const item = items.get(oi.item);
-        return merchItemRepository.upsertMerchItem(item, { quantity: item.quantity - oi.quantity });
+      await Promise.all(originalOrder.map(async (optionAndQuantity) => {
+        const option = itemOptions.get(optionAndQuantity.option);
+        const updatedQuantity = option.quantity - optionAndQuantity.quantity;
+        return merchItemOptionRepository.upsertMerchItemOption(option, { quantity: updatedQuantity });
       }));
 
       const userRepository = Repositories.user(txn);
       userRepository.upsertUser(user, { credits: user.credits - totalCost });
 
-      return [createdOrder, items];
+      return [createdOrder, itemOptions];
     });
 
     const orderConfirmation = {
       items: originalOrder.map((oi) => {
-        const item = merchItems.get(oi.item);
+        const option = merchItemOptions.get(oi.option);
+        const { item } = option;
         return {
           ...item,
           quantityRequested: oi.quantity,
-          salePrice: item.getPrice(),
-          total: oi.quantity * item.getPrice(),
+          salePrice: option.getPrice(),
+          total: oi.quantity * option.getPrice(),
         };
       }),
       totalCost: order.totalCost,
@@ -292,16 +309,29 @@ export default class MerchStoreService {
     });
   }
 
-  private static countOrderItems(items: MerchandiseModel[], orders: OrderModel[]): Map<string, number> {
-    const counts = new Map();
-    for (let i = 0; i < items.length; i += 1) {
-      counts.set(items[i].uuid, 0);
+  private static countItemOrders(itemOptions: MerchandiseItemOptionModel[], orders: OrderModel[]):
+  Map<MerchandiseItemModel, number> {
+    const counts = new Map<MerchandiseItemModel, number>();
+    for (let i = 0; i < itemOptions.length; i += 1) {
+      counts.set(itemOptions[i].item, 0);
     }
-    const orderedItems = flatten(orders.map((o) => o.items));
-    for (let i = 0; i < orderedItems.length; i += 1) {
-      const oi = orderedItems[i].item.uuid;
-      if (counts.has(oi)) counts.set(oi, counts.get(oi) + 1);
+    const orderedItemOptions = flatten(orders.map((o) => o.items));
+    for (let i = 0; i < orderedItemOptions.length; i += 1) {
+      const { item } = orderedItemOptions[i].option;
+      if (counts.has(item)) counts.set(item, counts.get(item) + 1);
     }
     return counts;
+  }
+
+  private static countItemRequestedQuantities(order: MerchItemOptionAndQuantity[],
+    itemOptions: Map<string, MerchandiseItemOptionModel>): Map<MerchandiseItemModel, number> {
+    const requestedQuantitiesByMerchItem = new Map<MerchandiseItemModel, number>();
+    for (let i = 0; i < order.length; i += 1) {
+      const { item } = itemOptions.get(order[i].option);
+      const quantityRequested = order[i].quantity;
+      if (!requestedQuantitiesByMerchItem.has(item)) requestedQuantitiesByMerchItem.set(item, 0);
+      requestedQuantitiesByMerchItem.set(item, requestedQuantitiesByMerchItem.get(item) + quantityRequested);
+    }
+    return requestedQuantitiesByMerchItem;
   }
 }

@@ -11,7 +11,6 @@ export class EventModel extends BaseEntity {
   id: number;
 
   @PrimaryGeneratedColumn('uuid')
-  @Index({ unique: true })
   uuid: Uuid;
 
   @Column({ default: 'ACM' })

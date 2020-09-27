@@ -1,24 +1,33 @@
 import { EntityRepository } from 'typeorm';
-import { Uuid } from '../types';
+import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
-import { MerchandiseModel } from '../models/MerchandiseItemModel';
+import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
+import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(MerchandiseCollectionModel)
 export class MerchCollectionRepository extends BaseRepository<MerchandiseCollectionModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchandiseCollectionModel> {
-    return this.repository.findOne(uuid, { relations: ['items'] });
+    return this.repository.createQueryBuilder('collection')
+      .leftJoinAndSelect('collection.items', 'items')
+      .leftJoinAndSelect('items.options', 'options')
+      .where({ uuid })
+      .getOne();
   }
 
   public async getAllCollections(): Promise<MerchandiseCollectionModel[]> {
-    return this.repository.find({ relations: ['items'] });
+    return this.repository.createQueryBuilder('collection')
+      .leftJoinAndSelect('collection.items', 'items')
+      .leftJoinAndSelect('items.options', 'options')
+      .getMany();
   }
 
   public async getAllActiveCollections(): Promise<MerchandiseCollectionModel[]> {
-    return this.repository.find({
-      where: { archived: false },
-      relations: ['items'],
-    });
+    return this.repository.createQueryBuilder('collection')
+      .leftJoinAndSelect('collection.items', 'items')
+      .leftJoinAndSelect('items.options', 'options')
+      .where({ archived: false })
+      .getMany();
   }
 
   public async upsertMerchCollection(collection: MerchandiseCollectionModel,
@@ -32,31 +41,51 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
   }
 }
 
-@EntityRepository(MerchandiseModel)
-export class MerchItemRepository extends BaseRepository<MerchandiseModel> {
-  public async findByUuid(uuid: Uuid): Promise<MerchandiseModel> {
-    return this.repository.findOne(uuid);
+@EntityRepository(MerchandiseItemModel)
+export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
+  public async findByUuid(uuid: Uuid): Promise<MerchandiseItemModel> {
+    return this.repository.findOne(uuid, { relations: ['collection', 'options'] });
   }
 
-  public async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchandiseModel>> {
-    const items = await this.repository.findByIds(uuids);
-    return new Map(items.map((item) => [item.uuid, item]));
-  }
-
-  public async upsertMerchItem(item: MerchandiseModel, changes?: Partial<MerchandiseModel>): Promise<MerchandiseModel> {
-    if (changes) item = MerchandiseModel.merge(item, changes);
+  public async upsertMerchItem(item: MerchandiseItemModel, changes?: Partial<MerchandiseItemModel>):
+  Promise<MerchandiseItemModel> {
+    if (changes) item = MerchandiseItemModel.merge(item, changes);
     return this.repository.save(item);
   }
 
-  public async updateMerchItemsInCollection(collection: Uuid, discountPercentage: number): Promise<void> {
-    await this.repository.createQueryBuilder()
-      .update()
-      .set({ discountPercentage })
-      .where({ collection })
-      .execute();
+  public async deleteMerchItem(item: MerchandiseItemModel) {
+    await this.repository.remove(item);
+  }
+}
+
+@EntityRepository(MerchandiseItemOptionModel)
+export class MerchItemOptionRepository extends BaseRepository<MerchandiseItemOptionModel> {
+  public async findByUuid(uuid: Uuid): Promise<MerchandiseItemOptionModel> {
+    return this.repository.findOne(uuid);
   }
 
-  public async deleteMerchItem(item: MerchandiseModel) {
-    await this.repository.remove(item);
+  public async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchandiseItemOptionModel>> {
+    const options = await this.repository.findByIds(uuids, { relations: ['item'] });
+    return new Map(options.map((o) => [o.uuid, o]));
+  }
+
+  public async upsertMerchItemOption(option: MerchandiseItemOptionModel,
+    changes?: Partial<MerchandiseItemOptionModel>): Promise<MerchandiseItemOptionModel> {
+    if (changes) option = MerchandiseItemOptionModel.merge(option, changes);
+    return this.repository.save(option);
+  }
+
+  public async updateMerchItemOptionsInCollection(collection: string, discountPercentage: number): Promise<void> {
+    const qb = this.repository.createQueryBuilder();
+    await qb
+      .update()
+      .set({ discountPercentage })
+      .where(`item IN ${qb.subQuery()
+        .select('merch.uuid')
+        .from(MerchandiseItemModel, 'merch')
+        .where('merch.collection = :collection')
+        .getQuery()}`)
+      .setParameter('collection', collection)
+      .execute();
   }
 }

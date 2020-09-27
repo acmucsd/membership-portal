@@ -7,12 +7,14 @@ import {
   EditMerchItemRequest as IEditMerchItemRequest,
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
-  MerchItemAndQuantity as IMerchItemAndQuantity,
+  MerchItemOptionAndQuantity as IMerchItemOptionAndQuantity,
   OrderItemFulfillmentUpdate as IOrderItemFulfillmentUpdate,
   MerchCollection as IMerchCollection,
   MerchCollectionEdit as IMerchCollectionEdit,
   MerchItem as IMerchItem,
   MerchItemEdit as IMerchItemEdit,
+  MerchItemOption as IMerchItemOption,
+  MerchItemOptionEdit as IMerchItemOptionEdit,
 } from '../../types';
 
 export class MerchCollection implements IMerchCollection {
@@ -43,6 +45,36 @@ export class MerchCollectionEdit implements IMerchCollectionEdit {
   discountPercentage?: number;
 }
 
+export class MerchItemOption implements IMerchItemOption {
+  @IsDefined()
+  @Min(0)
+  quantity: number;
+
+  @IsDefined()
+  @Min(0)
+  price: number;
+
+  @Min(0)
+  @Max(100)
+  discountPercentage?: number;
+}
+
+export class MerchItemOptionEdit implements IMerchItemOptionEdit {
+  @IsDefined()
+  @IsUUID()
+  uuid: string;
+
+  @Min(0)
+  quantity?: number;
+
+  @Min(0)
+  price?: number;
+
+  @Min(0)
+  @Max(100)
+  discountPercentage?: number;
+}
+
 export class MerchItem implements IMerchItem {
   @IsDefined()
   @IsNotEmpty()
@@ -50,10 +82,6 @@ export class MerchItem implements IMerchItem {
 
   @IsDefined()
   collection: string;
-
-  @IsDefined()
-  @Min(0)
-  price: number;
 
   @IsDefined()
   @IsNotEmpty()
@@ -65,15 +93,16 @@ export class MerchItem implements IMerchItem {
   @Min(0)
   quantity?: number;
 
-  @Min(0)
-  @Max(100)
-  discountPercentage?: number;
-
   @Allow()
   hidden?: boolean;
 
   @Allow()
   metadata?: object;
+
+  @Type(() => MerchItemOption)
+  @ValidateNested()
+  @IsDefined()
+  options: MerchItemOption[];
 }
 
 export class MerchItemEdit implements IMerchItemEdit {
@@ -83,33 +112,27 @@ export class MerchItemEdit implements IMerchItemEdit {
   @Allow()
   collection?: string;
 
-  @Min(0)
-  price?: number;
-
   @IsNotEmpty()
   description?: string;
 
   @Allow()
   picture?: string;
 
-  @Min(0)
-  quantity?: number;
-
-  @Min(0)
-  @Max(100)
-  discountPercentage?: number;
-
   @Allow()
   hidden?: boolean;
 
   @Allow()
   metadata?: object;
+
+  @Type(() => MerchItemOptionEdit)
+  @ValidateNested()
+  options?: MerchItemOptionEdit[];
 }
 
-export class MerchItemAndQuantity implements IMerchItemAndQuantity {
+export class MerchItemOptionAndQuantity implements IMerchItemOptionAndQuantity {
   @IsDefined()
   @IsUUID()
-  item: string;
+  option: string;
 
   @IsDefined()
   @Min(0)
@@ -157,10 +180,10 @@ export class EditMerchItemRequest implements IEditMerchItemRequest {
 }
 
 export class PlaceMerchOrderRequest implements IPlaceMerchOrderRequest {
-  @Type(() => MerchItemAndQuantity)
+  @Type(() => MerchItemOptionAndQuantity)
   @ValidateNested()
   @IsDefined()
-  order: MerchItemAndQuantity[];
+  order: MerchItemOptionAndQuantity[];
 }
 
 export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {

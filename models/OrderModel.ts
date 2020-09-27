@@ -20,7 +20,6 @@ export class OrderModel extends BaseEntity {
   id: number;
 
   @PrimaryGeneratedColumn('uuid')
-  @Index({ unique: true })
   uuid: Uuid;
 
   @ManyToOne((type) => UserModel, (user) => user.orders, { eager: true, nullable: false })

@@ -3,9 +3,10 @@ import { ActivityModel } from './ActivityModel';
 import { EventModel } from './EventModel';
 import { AttendanceModel } from './AttendanceModel';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
-import { MerchandiseModel } from './MerchandiseItemModel';
+import { MerchandiseItemModel } from './MerchandiseItemModel';
 import { OrderModel } from './OrderModel';
 import { OrderItemModel } from './OrderItemModel';
+import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
 
 export const models = [
   UserModel,
@@ -13,7 +14,8 @@ export const models = [
   EventModel,
   AttendanceModel,
   MerchandiseCollectionModel,
-  MerchandiseModel,
+  MerchandiseItemModel,
+  MerchandiseItemOptionModel,
   OrderModel,
   OrderItemModel,
 ];

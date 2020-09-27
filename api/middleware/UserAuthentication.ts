@@ -1,4 +1,4 @@
-import { ExpressMiddlewareInterface } from 'routing-controllers';
+import { ExpressMiddlewareInterface, ForbiddenError } from 'routing-controllers';
 import * as express from 'express';
 import { Inject } from 'typedi';
 import UserAuthService from '../../services/UserAuthService';
@@ -11,6 +11,7 @@ export class UserAuthentication implements ExpressMiddlewareInterface {
 
   async use(request: express.Request, response: express.Response, next?: express.NextFunction) {
     const authHeader = request.get('Authorization');
+    if (!authHeader) throw new ForbiddenError('Missing auth token');
     request.user = await this.userAuthService.checkAuthToken(authHeader);
     log.info('user authentication (middleware)', authActionMetadata(request.trace, request.user));
     return next();

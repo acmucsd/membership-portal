@@ -1,19 +1,17 @@
 import {
   Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn, OneToMany,
 } from 'typeorm';
-import { pick } from 'underscore';
 import { Uuid, PublicMerchItem } from '../types';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
-import { OrderItemModel } from './OrderItemModel';
+import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
 
-@Entity('Merchandise')
-export class MerchandiseModel extends BaseEntity {
+@Entity('MerchandiseItems')
+export class MerchandiseItemModel extends BaseEntity {
   @Column()
   @Generated('increment')
   id: number;
 
   @PrimaryGeneratedColumn('uuid')
-  @Index({ unique: true })
   uuid: Uuid;
 
   @Column('text')
@@ -21,7 +19,7 @@ export class MerchandiseModel extends BaseEntity {
 
   @ManyToOne((type) => MerchandiseCollectionModel,
     (col) => col.items,
-    { nullable: false, eager: true, onDelete: 'CASCADE' })
+    { nullable: false, onDelete: 'CASCADE' })
   @Index('merchandise_collections_index')
   @JoinColumn({ name: 'collection' })
   collection: MerchandiseCollectionModel;
@@ -29,17 +27,8 @@ export class MerchandiseModel extends BaseEntity {
   @Column({ nullable: true })
   picture: string;
 
-  @Column()
-  price: number;
-
-  @Column({ default: 0 })
-  quantity: number;
-
   @Column('text')
   description: string;
-
-  @Column({ default: 0 })
-  discountPercentage: number;
 
   @Column({ nullable: true })
   monthlyLimit: number;
@@ -47,11 +36,11 @@ export class MerchandiseModel extends BaseEntity {
   @Column({ nullable: true })
   lifetimeLimit: number;
 
-  @Column({ default: 0 })
-  numSold: number;
-
   @Column({ default: false })
   hidden: boolean;
+
+  @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })
+  options: MerchandiseItemOptionModel[];
 
   @Column({
     type: 'text',
@@ -67,25 +56,17 @@ export class MerchandiseModel extends BaseEntity {
   })
   metadata: object;
 
-  @OneToMany((type) => OrderItemModel, (orderItem) => orderItem.item)
-  orders: OrderItemModel;
-
-  public getPrice(): number {
-    return Math.round(this.price * (1 - (this.discountPercentage / 100)));
-  }
-
   public getPublicMerchItem(): PublicMerchItem {
-    return pick(this, [
-      'uuid',
-      'itemName',
-      'collection',
-      'picture',
-      'price',
-      'quantity',
-      'description',
-      'discountPercentage',
-      'monthlyLimit',
-      'lifetimeLimit',
-    ]);
+    const baseMerchItem: PublicMerchItem = {
+      uuid: this.uuid,
+      itemName: this.itemName,
+      picture: this.picture,
+      description: this.description,
+      options: this.options.map((o) => o.getPublicMerchItemOption()),
+      monthlyLimit: this.monthlyLimit,
+      lifetimeLimit: this.lifetimeLimit,
+    };
+    if (this.collection) baseMerchItem.collection = this.collection.getPublicMerchCollection();
+    return baseMerchItem;
   }
 }

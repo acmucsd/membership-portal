@@ -2,15 +2,17 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 import { UserAccessType, UserState } from '../types';
 import { UserModel } from '../models/UserModel';
 
+// hash for 'password'
+const hash = '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG';
 const users = [
   {
     uuid: '2bf4c870-80d3-4fe8-885c-85cc1925faf9',
     email: 's3bansal@ucsd.edu',
-    accessType: UserAccessType.STANDARD,
+    accessType: UserAccessType.ADMIN,
     state: UserState.ACTIVE,
     firstName: 'Sumeet',
     lastName: 'Bansal',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
+    hash,
     points: 125,
     graduationYear: 2020,
     major: 'Computer Science',
@@ -21,7 +23,7 @@ const users = [
     state: UserState.ACTIVE,
     firstName: 'Stanley',
     lastName: 'Lee',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
+    hash,
     points: 55,
     graduationYear: 2022,
     major: 'Data Science',
@@ -32,7 +34,7 @@ const users = [
     state: UserState.PENDING,
     firstName: 'Stone',
     lastName: 'Tao',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
+    hash,
     points: 425,
     graduationYear: 2021,
     major: 'Computer Science',
@@ -43,7 +45,7 @@ const users = [
     state: UserState.ACTIVE,
     firstName: 'Paul',
     lastName: 'Pan',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
+    hash,
     points: 0,
     graduationYear: 2020,
     major: 'Mathematics - Computer Science',
@@ -54,7 +56,7 @@ const users = [
     state: UserState.ACTIVE,
     firstName: 'Andrea',
     lastName: 'Sudharta',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
+    hash,
     points: 160,
     graduationYear: 2022,
     major: 'Computer Engineering',
@@ -65,7 +67,7 @@ const users = [
     state: UserState.ACTIVE,
     firstName: 'Shravan',
     lastName: 'Hariharan',
-    hash: '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG',
+    hash,
     points: 750,
     graduationYear: 2023,
     major: 'Computer Science',

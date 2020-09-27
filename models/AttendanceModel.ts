@@ -11,7 +11,6 @@ export class AttendanceModel extends BaseEntity {
   id: number;
 
   @PrimaryGeneratedColumn('uuid')
-  @Index({ unique: true })
   uuid: Uuid;
 
   @ManyToOne((type) => UserModel, (user) => user.attendances, { nullable: false })

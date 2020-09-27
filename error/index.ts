@@ -12,6 +12,7 @@ export function handleError(error: Error,
   const status = error instanceof HttpError ? error.httpCode : 500;
   const errorResponse: CustomErrorResponse = {
     error: {
+      ...error, // in case a library throws its own error (e.g. class-validator)
       name,
       message,
       status,

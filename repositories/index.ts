@@ -3,7 +3,7 @@ import { UserRepository } from './UserRepository';
 import { AttendanceRepository } from './AttendanceRepository';
 import { EventRepository } from './EventRepository';
 import { MerchOrderRepository, OrderItemRepository } from './MerchOrderRepository';
-import { MerchCollectionRepository, MerchItemRepository } from './MerchStoreRepository';
+import { MerchCollectionRepository, MerchItemRepository, MerchItemOptionRepository } from './MerchStoreRepository';
 import { ActivityRepository } from './ActivityRepository';
 
 export default class Repositories {
@@ -33,6 +33,10 @@ export default class Repositories {
 
   public static merchStoreItem(transactionalEntityManager: EntityManager): MerchItemRepository {
     return transactionalEntityManager.getCustomRepository(MerchItemRepository);
+  }
+
+  public static merchStoreItemOption(transactionalEntityManager: EntityManager): MerchItemOptionRepository {
+    return transactionalEntityManager.getCustomRepository(MerchItemOptionRepository);
   }
 
   public static user(transactionalEntityManager: EntityManager): UserRepository {

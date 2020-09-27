@@ -70,6 +70,7 @@ The first iteration of the membership portal is a JavaScript app written in 2019
 + `POST /user/picture/:uuid`: the UUID parameter is optional
 + `GET /attendance/:uuid?`: the `attendance` field in the response body has been renamed `attendances`
 + `POST /attendance/attend`: no longer reachable, requests should be made to `/attendance`
++ merch store has been completely reworked
 
 #### To Upgrade
 1. Update the app to the latest release of the first iteration ([0.14.2](https://github.com/acmucsd/membership-portal/releases/tag/v0.14.2)).

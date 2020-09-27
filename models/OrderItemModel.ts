@@ -1,7 +1,7 @@
-import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Uuid, PublicOrderItem } from '../types';
 import { OrderModel } from './OrderModel';
-import { MerchandiseModel } from './MerchandiseItemModel';
+import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
 
 @Entity('OrderItems')
 export class OrderItemModel extends BaseEntity {
@@ -10,16 +10,15 @@ export class OrderItemModel extends BaseEntity {
   id: number;
 
   @PrimaryGeneratedColumn('uuid')
-  @Index({ unique: true })
   uuid: Uuid;
 
   @ManyToOne((type) => OrderModel, (order) => order.items, { nullable: false })
   @JoinColumn({ name: 'order' })
   order: OrderModel;
 
-  @ManyToOne((type) => MerchandiseModel, (item) => item.orders, { eager: true, nullable: false })
-  @JoinColumn({ name: 'item' })
-  item: MerchandiseModel;
+  @ManyToOne((type) => MerchandiseItemOptionModel, (option) => option.orders, { eager: true, nullable: false })
+  @JoinColumn({ name: 'option' })
+  option: MerchandiseItemOptionModel;
 
   @Column()
   salePriceAtPurchase: number;
@@ -39,7 +38,7 @@ export class OrderItemModel extends BaseEntity {
   public getPublicOrderItem(): PublicOrderItem {
     return {
       uuid: this.uuid,
-      item: this.item.getPublicMerchItem(),
+      option: this.option.getPublicMerchItemOption(),
       salePriceAtPurchase: this.salePriceAtPurchase,
       discountPercentageAtPurchase: this.discountPercentageAtPurchase,
       fulfilled: this.fulfilled,

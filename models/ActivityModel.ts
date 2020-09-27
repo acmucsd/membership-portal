@@ -10,7 +10,6 @@ export class ActivityModel extends BaseEntity {
   id: number;
 
   @PrimaryGeneratedColumn('uuid')
-  @Index({ unique: true })
   uuid: Uuid;
 
   @ManyToOne((type) => UserModel, (user) => user.activities, { nullable: false })

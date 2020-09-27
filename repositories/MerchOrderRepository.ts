@@ -42,14 +42,18 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
 
   public async hasCollectionBeenOrderedFrom(collection: Uuid): Promise<boolean> {
     const count = await this.repository.createQueryBuilder('item')
-      .innerJoinAndSelect('item.item', 'merch')
+      .innerJoinAndSelect('item.option', 'option')
+      .innerJoin('option.item', 'merch')
       .where('merch.collection = :collection', { collection })
       .getCount();
     return count > 0;
   }
 
   public async hasItemBeenOrdered(item: Uuid): Promise<boolean> {
-    const count = await this.repository.count({ where: { item } });
+    const count = await this.repository.createQueryBuilder('oi')
+      .innerJoinAndSelect('oi.option', 'option')
+      .where('option.item = :item', { item })
+      .getCount();
     return count > 0;
   }
 }

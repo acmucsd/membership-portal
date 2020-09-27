@@ -1,5 +1,5 @@
 import { EntityRepository } from 'typeorm';
-import { Uuid } from 'types';
+import { Uuid } from '../types';
 import { AttendanceModel } from '../models/AttendanceModel';
 import { UserModel } from '../models/UserModel';
 import { EventModel } from '../models/EventModel';
