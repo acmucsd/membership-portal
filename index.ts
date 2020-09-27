@@ -48,27 +48,3 @@ const app = createExpressServer({
 });
 
 app.listen(Config.port);
-
-/**
-
-TODOS:
-- paging
-  - max page size
-  - note all paging endpoints max out at 100
-  - move offset/limit defaults to services
-  - add back paging for leaderboard, event searches
-- make merch store names consistent
-- make sure all cascading deletes set up on ManyToOne cols, not nullable fkeys
-- migrate db
-  - run 'UPDATE "Activities" SET public = false WHERE public IS NULL' before migration
-- API response types
-- publishing types
-
-maybe TODOs:
-- remove soft deleting events?
-- remove numSold from MerchItem
-- FindEventOptions/EventSearchOptions, add more filters
-- no new/confirm pass
-- look into subqueries for ActivityRepo
-- include payloads in returned errors (see NotFound in MerchStoreService::placeOrder
- */
