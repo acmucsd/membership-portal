@@ -31,7 +31,7 @@ createConnection({
 
 const app = createExpressServer({
   cors: true,
-  routePrefix: '/api/v1',
+  routePrefix: '/api/v2',
   controllers,
   middlewares,
   defaults: {
