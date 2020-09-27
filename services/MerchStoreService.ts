@@ -194,10 +194,8 @@ export default class MerchStoreService {
       const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersForUser(user);
       const oneMonthAgo = new Date(moment().subtract('months', 1).unix());
       const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
-      const lifetimeItemOrderCounts = MerchStoreService
-        .countItemOrders(Array.from(itemOptions.values()), lifetimePurchaseHistory);
-      const pastMonthItemOrderCounts = MerchStoreService
-        .countItemOrders(Array.from(itemOptions.values()), pastMonthPurchaseHistory);
+      const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, lifetimePurchaseHistory);
+      const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, pastMonthPurchaseHistory);
       // aggregate requested quantities by item
       const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
         .countItemRequestedQuantities(originalOrder, itemOptions)
@@ -309,15 +307,16 @@ export default class MerchStoreService {
     });
   }
 
-  private static countItemOrders(itemOptions: MerchandiseItemOptionModel[], orders: OrderModel[]):
+  private static countItemOrders(itemOptions: Map<string, MerchandiseItemOptionModel>, orders: OrderModel[]):
   Map<MerchandiseItemModel, number> {
     const counts = new Map<MerchandiseItemModel, number>();
-    for (let i = 0; i < itemOptions.length; i += 1) {
-      counts.set(itemOptions[i].item, 0);
+    const options = Array.from(itemOptions.values());
+    for (let i = 0; i < options.length; i += 1) {
+      counts.set(options[i].item, 0);
     }
     const orderedItemOptions = flatten(orders.map((o) => o.items));
     for (let i = 0; i < orderedItemOptions.length; i += 1) {
-      const { item } = orderedItemOptions[i].option;
+      const { item } = itemOptions.get(orderedItemOptions[i].option.uuid);
       if (counts.has(item)) counts.set(item, counts.get(item) + 1);
     }
     return counts;
