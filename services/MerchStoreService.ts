@@ -122,7 +122,7 @@ export default class MerchStoreService {
       const { options, collection: updatedCollection, ...changes } = itemEdit;
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-      await Promise.all(options.map(async (optionUpdate) => {
+      const updatedOptions = await Promise.all(options.map(async (optionUpdate) => {
         const option = await merchItemOptionRepository.findByUuid(optionUpdate.uuid);
         if (!option) throw new NotFoundError('Item option not found');
         // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
@@ -132,13 +132,15 @@ export default class MerchStoreService {
         return merchItemOptionRepository.upsertMerchItemOption(option, optionUpdate);
       }));
 
+      const updatedOptionsIds = new Set(updatedOptions.map((option) => option.id));
+      item.options = [...updatedOptions, ...item.options.filter((option) => !updatedOptionsIds.has(option.id))];
+
       if (updatedCollection) {
         const merchCollectionRepository = Repositories.merchStoreCollection(txn);
         const collection = await merchCollectionRepository.findByUuid(updatedCollection);
         if (!collection) throw new NotFoundError('Collection not found');
       }
 
-      item.reload();
       await merchItemRepository.upsertMerchItem(item, changes);
       return merchItemRepository.findByUuid(uuid);
     });
