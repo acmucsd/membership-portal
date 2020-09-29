@@ -3,7 +3,6 @@ import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 't
 export class MergeOldSchema1598743920351 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     /* Change primary keys of all tables from id to uuid */
-    /* Need to manually drop old ones since pkey names are different */
     await queryRunner.query('ALTER TABLE "Users" DROP CONSTRAINT "Users_pkey"');
     await queryRunner.query('ALTER TABLE "Events" DROP CONSTRAINT "Events_pkey"');
     await queryRunner.query('ALTER TABLE "Attendances" DROP CONSTRAINT "Attendances_pkey"');
@@ -42,6 +41,7 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN "pointsEarned" SET NOT NULL');
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN timestamp SET NOT NULL');
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN public SET DEFAULT false');
+
     /* Change all null publics to false before setting null constraint */
     await queryRunner.query('UPDATE "Activities" SET public = false WHERE public IS NULL');
     await queryRunner.query('ALTER TABLE "Activities" ALTER COLUMN public SET NOT NULL');
