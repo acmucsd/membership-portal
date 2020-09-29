@@ -246,6 +246,7 @@ export interface PublicMerchItemOption {
   uuid: Uuid;
   price: number;
   discountPercentage: number;
+  metadata: object;
 }
 
 export interface PublicOrderItem {

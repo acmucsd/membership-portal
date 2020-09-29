@@ -42,20 +42,6 @@ export class MerchandiseItemModel extends BaseEntity {
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })
   options: MerchandiseItemOptionModel[];
 
-  @Column({
-    type: 'text',
-    nullable: true,
-    transformer: {
-      to(value: object): string {
-        return JSON.stringify(value);
-      },
-      from(value: string): object {
-        return value ? JSON.parse(value) : null;
-      },
-    },
-  })
-  metadata: object;
-
   public getPublicMerchItem(): PublicMerchItem {
     const baseMerchItem: PublicMerchItem = {
       uuid: this.uuid,

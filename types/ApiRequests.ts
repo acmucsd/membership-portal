@@ -146,13 +146,15 @@ export interface CommonMerchItemProperties {
   description: string;
   picture?: string;
   hidden?: boolean;
-  metadata?: object;
+  monthlyLimit?: number;
+  lifetimeLimit?: number;
 }
 
 export interface MerchItemOption {
   quantity: number;
   price: number;
   discountPercentage?: number;
+  metadata?: object;
 }
 
 export interface MerchItem extends CommonMerchItemProperties {

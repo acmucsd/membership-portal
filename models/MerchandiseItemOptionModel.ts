@@ -54,6 +54,7 @@ export class MerchandiseItemOptionModel extends BaseEntity {
       uuid: this.uuid,
       price: this.price,
       discountPercentage: this.discountPercentage,
+      metadata: this.metadata,
     };
   }
 }

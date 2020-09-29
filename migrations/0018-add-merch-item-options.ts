@@ -78,6 +78,10 @@ export class AddItemOptionsTable1600648017504 implements MigrationInterface {
         name: 'discountPercentage',
         type: 'integer',
       }),
+      new TableColumn({
+        name: 'metadata',
+        type: 'text',
+      }),
     ]);
   }
 
@@ -106,6 +110,11 @@ export class AddItemOptionsTable1600648017504 implements MigrationInterface {
       new TableColumn({
         name: 'discountPercentage',
         type: 'integer',
+        isNullable: true,
+      }),
+      new TableColumn({
+        name: 'metadata',
+        type: 'text',
         isNullable: true,
       }),
     ]);

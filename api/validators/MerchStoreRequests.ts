@@ -57,6 +57,9 @@ export class MerchItemOption implements IMerchItemOption {
   @Min(0)
   @Max(100)
   discountPercentage?: number;
+
+  @Allow()
+  metadata?: object;
 }
 
 export class MerchItemOptionEdit implements IMerchItemOptionEdit {
@@ -73,6 +76,9 @@ export class MerchItemOptionEdit implements IMerchItemOptionEdit {
   @Min(0)
   @Max(100)
   discountPercentage?: number;
+
+  @Allow()
+  metadata?: object;
 }
 
 export class MerchItem implements IMerchItem {
@@ -93,11 +99,14 @@ export class MerchItem implements IMerchItem {
   @Min(0)
   quantity?: number;
 
-  @Allow()
-  hidden?: boolean;
+  @Min(0)
+  monthlyLimit?: number;
+
+  @Min(0)
+  lifetimeLimit?: number;
 
   @Allow()
-  metadata?: object;
+  hidden?: boolean;
 
   @Type(() => MerchItemOption)
   @ValidateNested()
@@ -120,9 +129,6 @@ export class MerchItemEdit implements IMerchItemEdit {
 
   @Allow()
   hidden?: boolean;
-
-  @Allow()
-  metadata?: object;
 
   @Type(() => MerchItemOptionEdit)
   @ValidateNested()
