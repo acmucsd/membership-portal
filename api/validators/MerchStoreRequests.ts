@@ -5,6 +5,7 @@ import {
   EditMerchCollectionRequest as IEditMerchCollectionRequest,
   CreateMerchItemRequest as ICreateMerchItemRequest,
   EditMerchItemRequest as IEditMerchItemRequest,
+  CreateMerchItemOptionRequest as ICreateMerchItemOptionRequest,
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
   MerchItemOptionAndQuantity as IMerchItemOptionAndQuantity,
@@ -183,6 +184,13 @@ export class EditMerchItemRequest implements IEditMerchItemRequest {
   @ValidateNested()
   @IsDefined()
   merchandise: MerchItemEdit;
+}
+
+export class CreateMerchItemOptionRequest implements ICreateMerchItemOptionRequest {
+  @Type(() => MerchItemOption)
+  @ValidateNested()
+  @IsDefined()
+  option: MerchItemOption;
 }
 
 export class PlaceMerchOrderRequest implements IPlaceMerchOrderRequest {

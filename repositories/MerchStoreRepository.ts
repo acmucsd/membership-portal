@@ -88,4 +88,8 @@ export class MerchItemOptionRepository extends BaseRepository<MerchandiseItemOpt
       .setParameter('collection', collection)
       .execute();
   }
+
+  public async deleteMerchItemOption(option: MerchandiseItemOptionModel): Promise<void> {
+    await this.repository.remove(option);
+  }
 }

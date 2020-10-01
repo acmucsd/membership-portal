@@ -12,161 +12,167 @@ export interface CustomErrorResponse {
   }
 }
 
-export interface APIResponse {
+export interface ApiResponse {
   error: CustomErrorResponse;
 }
 
 // ADMIN
 
-export interface CreateMilestoneResponse extends APIResponse {}
+export interface CreateMilestoneResponse extends ApiResponse {}
 
-export interface CreateBonusResponse extends APIResponse {
+export interface CreateBonusResponse extends ApiResponse {
   emails: string[];
 }
 
-export interface UploadBannerResponse extends APIResponse {
+export interface UploadBannerResponse extends ApiResponse {
   banner: string;
 }
 
 // ATTENDANCE
 
-export interface GetAttendancesForEventResponse extends APIResponse {
+export interface GetAttendancesForEventResponse extends ApiResponse {
   attendances: PublicAttendance[];
 }
 
-export interface GetAttendancesForUserResponse extends APIResponse {
+export interface GetAttendancesForUserResponse extends ApiResponse {
   attendances: PublicAttendance[];
 }
 
-export interface AttendEventResponse extends APIResponse {}
+export interface AttendEventResponse extends ApiResponse {}
 
 // AUTH
 
-export interface RegistrationResponse extends APIResponse {
+export interface RegistrationResponse extends ApiResponse {
   user: PrivateProfile;
 }
 
-export interface LoginResponse extends APIResponse {
+export interface LoginResponse extends ApiResponse {
   token: string;
 }
 
-export interface ResendEmailVerificationResponse extends APIResponse {}
+export interface ResendEmailVerificationResponse extends ApiResponse {}
 
-export interface VerifyEmailResponse extends APIResponse {}
+export interface VerifyEmailResponse extends ApiResponse {}
 
-export interface SendPasswordResetEmailResponse extends APIResponse {}
+export interface SendPasswordResetEmailResponse extends ApiResponse {}
 
-export interface ResetPasswordResponse extends APIResponse {}
+export interface ResetPasswordResponse extends ApiResponse {}
 
-export interface VerifyAuthTokenResponse extends APIResponse {
+export interface VerifyAuthTokenResponse extends ApiResponse {
   authenticated: boolean;
 }
 
 // EVENT
 
-export interface GetPastEventsResponse extends APIResponse {
+export interface GetPastEventsResponse extends ApiResponse {
   events: PublicEvent[];
 }
 
-export interface GetFutureEventsResponse extends APIResponse {
+export interface GetFutureEventsResponse extends ApiResponse {
   events: PublicEvent[];
 }
 
-export interface UpdateEventCoverResponse extends APIResponse {
+export interface UpdateEventCoverResponse extends ApiResponse {
   event: PublicEvent;
 }
 
-export interface GetOneEventResponse extends APIResponse {
+export interface GetOneEventResponse extends ApiResponse {
   event: PublicEvent;
 }
 
-export interface PatchEventResponse extends APIResponse {
+export interface PatchEventResponse extends ApiResponse {
   event: PublicEvent;
 }
 
-export interface DeleteEventResponse extends APIResponse {}
+export interface DeleteEventResponse extends ApiResponse {}
 
-export interface GetAllEventsResponse extends APIResponse {
+export interface GetAllEventsResponse extends ApiResponse {
   events: PublicEvent[];
 }
 
-export interface CreateEventResponse extends APIResponse {
+export interface CreateEventResponse extends ApiResponse {
   event: PublicEvent;
 }
 
 // LEADERBOARD
 
-export interface GetLeaderboardResponse extends APIResponse {
+export interface GetLeaderboardResponse extends ApiResponse {
   leaderboard: PublicProfile[];
 }
 
 // MERCH STORE
 
-export interface GetOneMerchCollectionResponse extends APIResponse {
+export interface GetOneMerchCollectionResponse extends ApiResponse {
   collection: PublicMerchCollection;
 }
 
-export interface GetAllMerchCollectionsResponse extends APIResponse {
+export interface GetAllMerchCollectionsResponse extends ApiResponse {
   collections: PublicMerchCollection[];
 }
 
-export interface CreateMerchCollectionResponse extends APIResponse {
+export interface CreateMerchCollectionResponse extends ApiResponse {
   collection: PublicMerchCollection;
 }
 
-export interface EditMerchCollectionResponse extends APIResponse {
+export interface EditMerchCollectionResponse extends ApiResponse {
   collection: PublicMerchCollection;
 }
 
-export interface DeleteMerchCollectionResponse extends APIResponse {}
+export interface DeleteMerchCollectionResponse extends ApiResponse {}
 
-export interface GetOneMerchItemResponse extends APIResponse {
+export interface GetOneMerchItemResponse extends ApiResponse {
   item: PublicMerchItem;
 }
 
-export interface CreateMerchItemResponse extends APIResponse {
+export interface CreateMerchItemResponse extends ApiResponse {
   item: PublicMerchItem;
 }
 
-export interface EditMerchItemResponse extends APIResponse {
+export interface EditMerchItemResponse extends ApiResponse {
   item: PublicMerchItem;
 }
 
-export interface DeleteMerchItemResponse extends APIResponse {}
+export interface DeleteMerchItemResponse extends ApiResponse {}
 
-export interface GetOneMerchOrderResponse extends APIResponse {
+export interface CreateMerchItemOptionResponse extends ApiResponse {
+  option: PublicMerchItemOption;
+}
+
+export interface DeleteMerchItemOptionResponse extends ApiResponse {}
+
+export interface GetOneMerchOrderResponse extends ApiResponse {
   order: PublicOrder;
 }
 
-export interface GetAllMerchOrdersResponse extends APIResponse {
+export interface GetAllMerchOrdersResponse extends ApiResponse {
   orders: PublicOrder[];
 }
 
-export interface PlaceMerchOrderResponse extends APIResponse {
+export interface PlaceMerchOrderResponse extends ApiResponse {
   order: PublicOrder;
 }
 
-export interface EditMerchOrderResponse extends APIResponse {}
+export interface EditMerchOrderResponse extends ApiResponse {}
 
 // USER
 
-export interface GetUserActivityStreamResponse extends APIResponse {
+export interface GetUserActivityStreamResponse extends ApiResponse {
   activity: PublicActivity[];
 }
 
-export interface UpdateProfilePictureResponse extends APIResponse {
+export interface UpdateProfilePictureResponse extends ApiResponse {
   user: PrivateProfile;
 }
 
-export interface GetUserResponse extends APIResponse {
+export interface GetUserResponse extends ApiResponse {
   user: PrivateProfile | PublicProfile;
 }
 
-export interface GetCurrentUserResponse extends APIResponse {
+export interface GetCurrentUserResponse extends ApiResponse {
   user: PrivateProfile;
 }
 
-export interface PatchUserResponse extends APIResponse {
+export interface PatchUserResponse extends ApiResponse {
   user: PrivateProfile;
 }
 

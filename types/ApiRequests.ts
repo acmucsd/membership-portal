@@ -122,6 +122,10 @@ export interface EditMerchItemRequest {
   merchandise: MerchItemEdit;
 }
 
+export interface CreateMerchItemOptionRequest {
+  option: MerchItemOption;
+}
+
 export interface PlaceMerchOrderRequest {
   order: MerchItemOptionAndQuantity[];
 }

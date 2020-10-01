@@ -4,7 +4,8 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment';
-import { MerchandiseItemOptionModel } from 'models/MerchandiseItemOptionModel';
+import { MerchItemOption } from 'api/validators/MerchStoreRequests';
+import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,
   PublicMerchCollection,
@@ -17,6 +18,7 @@ import {
   MerchItem,
   MerchItemOptionAndQuantity,
   MerchItemEdit,
+  PublicMerchItemOption,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
@@ -154,6 +156,28 @@ export default class MerchStoreService {
       const hasBeenOrdered = await Repositories.merchOrderItem(txn).hasItemBeenOrdered(uuid);
       if (hasBeenOrdered) throw new UserError('This item has been ordered already');
       return merchItemRepository.deleteMerchItem(item);
+    });
+  }
+
+  public async createItemOption(item: Uuid, option: MerchItemOption): Promise<PublicMerchItemOption> {
+    return this.entityManager.transaction(async (txn) => {
+      const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
+      if (!merchItem) throw new NotFoundError('Item not found');
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const createdOption = MerchandiseItemOptionModel.create({ ...option, item: merchItem });
+      await merchItemOptionRepository.upsertMerchItemOption(createdOption);
+      return merchItemOptionRepository.findByUuid(createdOption.uuid);
+    });
+  }
+
+  public async deleteItemOption(uuid: Uuid): Promise<void> {
+    await this.entityManager.transaction(async (txn) => {
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const option = await merchItemOptionRepository.findByUuid(uuid);
+      if (!option) throw new NotFoundError();
+      const hasBeenOrdered = await Repositories.merchOrderItem(txn).hasOptionBeenOrdered(uuid);
+      if (hasBeenOrdered) throw new UserError('This item option has been ordered already');
+      return merchItemOptionRepository.deleteMerchItemOption(option);
     });
   }
 

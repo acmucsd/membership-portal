@@ -29,6 +29,8 @@ import {
   GetAllMerchOrdersResponse,
   PlaceMerchOrderResponse,
   EditMerchOrderResponse,
+  CreateMerchItemOptionResponse,
+  DeleteMerchItemOptionResponse,
 } from '../../types';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
@@ -40,6 +42,7 @@ import {
   EditMerchItemRequest,
   PlaceMerchOrderRequest,
   FulfillMerchOrderRequest,
+  CreateMerchItemOptionRequest,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
 
@@ -119,6 +122,23 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<DeleteMerchItemResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     await this.merchStoreService.deleteItem(uuid);
+    return { error: null };
+  }
+
+  @Post('/option/:uuid')
+  async createMerchItemOption(@Param('uuid') uuid: Uuid,
+    @Body() createItemOptionRequest: CreateMerchItemOptionRequest, @AuthenticatedUser() user: UserModel):
+    Promise<CreateMerchItemOptionResponse> {
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    const option = await this.merchStoreService.createItemOption(uuid, createItemOptionRequest.option);
+    return { error: null, option };
+  }
+
+  @Delete('/option/:uuid')
+  async deleteMerchItemOption(@Param('uuid') uuid: Uuid, @AuthenticatedUser() user: UserModel):
+  Promise<DeleteMerchItemOptionResponse> {
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    await this.merchStoreService.deleteItemOption(uuid);
     return { error: null };
   }
 

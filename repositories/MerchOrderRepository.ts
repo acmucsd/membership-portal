@@ -56,4 +56,9 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
       .getCount();
     return count > 0;
   }
+
+  public async hasOptionBeenOrdered(option: Uuid): Promise<boolean> {
+    const count = await this.repository.count({ where: { option } });
+    return count > 0;
+  }
 }
