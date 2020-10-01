@@ -2,6 +2,8 @@ import { ActivityType } from './Enums';
 
 // REQUEST TYPES
 
+export type Uuid = string;
+
 export interface CustomErrorResponse {
   error: {
     name: string;
@@ -29,6 +31,13 @@ export interface UploadBannerResponse extends ApiResponse {
 }
 
 // ATTENDANCE
+
+export interface PublicAttendance {
+  user: PublicProfile;
+  event: PublicEvent;
+  timestamp: Date;
+  asStaff: boolean;
+}
 
 export interface GetAttendancesForEventResponse extends ApiResponse {
   attendances: PublicAttendance[];
@@ -63,6 +72,24 @@ export interface VerifyAuthTokenResponse extends ApiResponse {
 }
 
 // EVENT
+
+export interface PublicEvent {
+  uuid: Uuid;
+  organization: string;
+  committee: string;
+  thumbnail: string;
+  cover: string;
+  title: string;
+  description: string;
+  location: string;
+  eventLink: string;
+  start: Date;
+  end: Date;
+  attendanceCode?: string;
+  pointValue: number;
+  requiresStaff: boolean;
+  staffPointBonus: number;
+}
 
 export interface GetPastEventsResponse extends ApiResponse {
   events: PublicEvent[];
@@ -101,6 +128,49 @@ export interface GetLeaderboardResponse extends ApiResponse {
 }
 
 // MERCH STORE
+
+export interface PublicMerchCollection {
+  uuid: Uuid;
+  title: string;
+  description: string;
+  items: PublicMerchItem[];
+}
+
+export interface PublicMerchItem {
+  uuid: Uuid;
+  itemName: string;
+  collection?: PublicMerchCollection;
+  picture: string;
+  description: string;
+  monthlyLimit: number;
+  lifetimeLimit: number;
+  options: PublicMerchItemOption[];
+}
+
+export interface PublicMerchItemOption {
+  uuid: Uuid;
+  price: number;
+  discountPercentage: number;
+  metadata: object;
+}
+
+export interface PublicOrderItem {
+  uuid: Uuid;
+  option: PublicMerchItemOption;
+  salePriceAtPurchase: number;
+  discountPercentageAtPurchase: number;
+  fulfilled: boolean;
+  fulfilledAt?: Date;
+  notes?: string;
+}
+
+export interface PublicOrder {
+  uuid: Uuid;
+  user: Uuid;
+  totalCost: number;
+  orderedAt: Date;
+  items: PublicOrderItem[];
+}
 
 export interface GetOneMerchCollectionResponse extends ApiResponse {
   collection: PublicMerchCollection;
@@ -156,53 +226,11 @@ export interface EditMerchOrderResponse extends ApiResponse {}
 
 // USER
 
-export interface GetUserActivityStreamResponse extends ApiResponse {
-  activity: PublicActivity[];
-}
-
-export interface UpdateProfilePictureResponse extends ApiResponse {
-  user: PrivateProfile;
-}
-
-export interface GetUserResponse extends ApiResponse {
-  user: PrivateProfile | PublicProfile;
-}
-
-export interface GetCurrentUserResponse extends ApiResponse {
-  user: PrivateProfile;
-}
-
-export interface PatchUserResponse extends ApiResponse {
-  user: PrivateProfile;
-}
-
-// RAW TYPES
-
-export type Uuid = string;
-
-export interface PublicAttendance {
-  user: PublicProfile;
-  event: PublicEvent;
+export interface PublicActivity {
+  type: ActivityType,
+  description: string,
+  pointsEarned: number,
   timestamp: Date;
-  asStaff: boolean;
-}
-
-export interface PublicEvent {
-  uuid: Uuid;
-  organization: string;
-  committee: string;
-  thumbnail: string;
-  cover: string;
-  title: string;
-  description: string;
-  location: string;
-  eventLink: string;
-  start: Date;
-  end: Date;
-  attendanceCode?: string;
-  pointValue: number;
-  requiresStaff: boolean;
-  staffPointBonus: number;
 }
 
 export interface PublicProfile {
@@ -223,52 +251,22 @@ export interface PrivateProfile extends PublicProfile {
   credits: number,
 }
 
-export interface PublicActivity {
-  type: ActivityType,
-  description: string,
-  pointsEarned: number,
-  timestamp: Date;
+export interface GetUserActivityStreamResponse extends ApiResponse {
+  activity: PublicActivity[];
 }
 
-export interface PublicMerchCollection {
-  uuid: Uuid;
-  title: string;
-  description: string;
-  items: PublicMerchItem[];
+export interface UpdateProfilePictureResponse extends ApiResponse {
+  user: PrivateProfile;
 }
 
-export interface PublicMerchItem {
-  uuid: Uuid;
-  itemName: string;
-  collection?: PublicMerchCollection;
-  picture: string;
-  description: string;
-  monthlyLimit: number;
-  lifetimeLimit: number;
-  options: PublicMerchItemOption[];
+export interface GetUserResponse extends ApiResponse {
+  user: PrivateProfile | PublicProfile;
 }
 
-export interface PublicMerchItemOption {
-  uuid: Uuid;
-  price: number;
-  discountPercentage: number;
-  metadata: object;
+export interface GetCurrentUserResponse extends ApiResponse {
+  user: PrivateProfile;
 }
 
-export interface PublicOrderItem {
-  uuid: Uuid;
-  option: PublicMerchItemOption;
-  salePriceAtPurchase: number;
-  discountPercentageAtPurchase: number;
-  fulfilled: boolean;
-  fulfilledAt?: Date;
-  notes?: string;
-}
-
-export interface PublicOrder {
-  uuid: Uuid;
-  user: Uuid;
-  totalCost: number;
-  orderedAt: Date;
-  items: PublicOrderItem[];
+export interface PatchUserResponse extends ApiResponse {
+  user: PrivateProfile;
 }
