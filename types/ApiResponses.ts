@@ -8,7 +8,7 @@ export interface CustomErrorResponse {
   error: {
     name: string;
     message: string;
-    status: number;
+    httpCode: number;
     stack?: string;
     errors?: any;
   }

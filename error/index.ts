@@ -9,19 +9,19 @@ export function handleError(error: Error,
   response: express.Response,
   next: express.NextFunction) {
   const { name, message, stack } = error;
-  const status = error instanceof HttpError ? error.httpCode : 500;
+  const httpCode = error instanceof HttpError ? error.httpCode : 500;
   const errorResponse: CustomErrorResponse = {
     error: {
       ...error, // in case a library throws its own error (e.g. class-validator)
       name,
       message,
-      status,
+      httpCode,
     },
   };
   if (Config.isDevelopment) {
     errorResponse.error.stack = stack;
   }
-  log.warn('%s [request %s]: %s [%d]: %s \n%s\n', new Date(), request.trace, name, status, message, stack);
-  response.status(status).json(errorResponse);
+  log.warn('%s [request %s]: %s [%d]: %s \n%s\n', new Date(), request.trace, name, httpCode, message, stack);
+  response.status(httpCode).json(errorResponse);
   next();
 }
