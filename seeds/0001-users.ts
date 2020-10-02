@@ -6,6 +6,18 @@ import { UserModel } from '../models/UserModel';
 const hash = '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG';
 const users = [
   {
+    uuid: 'eaa65706-77be-44ff-a9a6-cf8ab60694b1',
+    email: 'acm@ucsd.edu',
+    accessType: UserAccessType.ADMIN,
+    state: UserState.ACTIVE,
+    firstName: 'ACM',
+    lastName: 'Admin',
+    hash,
+    points: 1000,
+    graduationYear: 2022,
+    major: 'Computer Science',
+  },
+  {
     uuid: '2bf4c870-80d3-4fe8-885c-85cc1925faf9',
     email: 's3bansal@ucsd.edu',
     accessType: UserAccessType.ADMIN,
