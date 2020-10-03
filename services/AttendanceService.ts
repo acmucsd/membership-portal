@@ -42,7 +42,11 @@ export default class AttendanceService {
       const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
       const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
       const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(user, ActivityType.ATTEND_EVENT_AS_STAFF, pointsEarned);
+      await activityRepository.logActivity(
+        user,
+        attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
+        pointsEarned,
+      );
       const userRepository = Repositories.user(txn);
       await userRepository.addPoints(user, pointsEarned);
 
