@@ -1,9 +1,8 @@
 {
   "name": "@acmucsd/membership-portal",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "REST API for ACM UCSD's membership portal.",
   "main": "index.d.ts",
-  "types": "types/index.d.ts",
   "files": [
     "index.d.ts",
     "types/*.d.ts"
