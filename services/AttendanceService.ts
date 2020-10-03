@@ -32,7 +32,7 @@ export default class AttendanceService {
     return this.entityManager.transaction(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const event = await eventRepository.findByAttendanceCode(attendanceCode);
-      if (!event) throw new NotFoundError('Oh no! That code didn\'nt work.');
+      if (!event) throw new NotFoundError('Oh no! That code didn\'t work.');
       if (!event.isOngoing()) throw new UserError('You can only enter the attendance code during the event!');
 
       const attendanceRepository = Repositories.attendance(txn);
