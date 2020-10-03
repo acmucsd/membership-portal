@@ -1,4 +1,5 @@
 import { EntityRepository } from 'typeorm';
+import * as moment from 'moment';
 import { ActivityType, Uuid } from '../types';
 import { UserModel } from '../models/UserModel';
 import { ActivityModel } from '../models/ActivityModel';
@@ -52,6 +53,14 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
       where: { user, public: true },
       order: { timestamp: 'ASC' },
     });
+  }
+
+  public async getEarliestTimestamp(): Promise<number> {
+    const earliestPointsRecord = await this.repository.createQueryBuilder()
+      .select('MIN("timestamp")', 'timestamp')
+      .where('public = true AND "pointsEarned" > 0')
+      .getRawOne();
+    return moment(earliestPointsRecord.timestamp).unix();
   }
 
   private static isPublicActivityType(type: ActivityType): boolean {

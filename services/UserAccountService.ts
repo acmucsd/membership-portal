@@ -2,6 +2,7 @@ import { BadRequestError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
+import * as moment from 'moment';
 import Repositories from '../repositories';
 import {
   Uuid,
@@ -70,10 +71,28 @@ export default class UserAccountService {
     return user;
   }
 
-  public async getLeaderboard(): Promise<PublicProfile[]> {
+  public async getLeaderboard(from?: number, to?: number): Promise<PublicProfile[]> {
     const users = await this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      return userRepository.getLeaderboard();
+      // if bounds are in the possible range, round to the nearest day, else null
+      // where possible range is from earliest recorded points to current day
+      const earliest = await Repositories.activity(txn).getEarliestTimestamp();
+      if (from) from = from > earliest ? moment(from).startOf('day').valueOf() : null;
+      if (to) to = to <= moment().startOf('day').unix() ? moment(to).endOf('day').valueOf() : null;
+      const leaderboardRepository = Repositories.leaderboard(txn);
+
+      // if unbounded, i.e. all-time
+      if (!from && !to) {
+        return leaderboardRepository.getLeaderboard();
+      }
+
+      // if only left bounded, i.e. since some time
+      if (from && !to) {
+        return leaderboardRepository.getLeaderboardSince(from);
+      }
+
+      // if right bounded, i.e. until some time
+      if (!from) from = earliest;
+      return leaderboardRepository.getLeaderboardUntil(from, to);
     });
     return users.map((u) => u.getPublicProfile());
   }

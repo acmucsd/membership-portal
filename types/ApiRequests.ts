@@ -48,6 +48,13 @@ export interface PatchUserRequest {
   user: UserPatches;
 }
 
+// LEADERBOARD
+
+export interface SlidingLeaderboardQueryParams {
+  from?: number;
+  to?: number;
+}
+
 // ADMIN
 
 export interface Milestone {

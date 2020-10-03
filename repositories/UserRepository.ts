@@ -1,8 +1,8 @@
-import { EntityRepository, Not, In, Raw } from 'typeorm';
+import { EntityRepository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { UserModel } from '../models/UserModel';
-import { Uuid, UserState, UserAccessType } from '../types';
+import { Uuid, UserState } from '../types';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(UserModel)
@@ -51,31 +51,23 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.save(user);
   }
 
-  public async getLeaderboard(offset = 0, limit = 1000): Promise<UserModel[]> {
-    return this.repository.find({
-      skip: offset,
-      take: limit,
-      where: {
-        accessType: Not(UserAccessType.ADMIN),
-        state: Raw((state) => `NOT ${state} = '${UserState.BLOCKED}' AND NOT ${state} = '${UserState.PENDING}'`),
-      },
-      order: { points: 'DESC' },
-    });
-  }
-
   public static async generateHash(pass: string): Promise<string> {
     return bcrypt.hash(pass, this.SALT_ROUNDS);
   }
 
   public async addPoints(user: UserModel, points: number) {
-    return this.repository.increment(user, 'points', points);
+    user = this.repository.merge(user, { points, credits: points * 100 });
+    return this.repository.save(user);
   }
 
   public async addPointsToMany(users: UserModel[], points: number) {
     const uuids = users.map((user) => user.uuid);
     return this.repository.createQueryBuilder()
       .update()
-      .set({ points: () => `points + ${points}` })
+      .set({
+        points: () => `points + ${points}`,
+        credits: () => `credits + ${points * 100}`,
+      })
       .where('uuid IN (:...uuids) ', { uuids })
       .execute();
   }
@@ -83,7 +75,10 @@ export class UserRepository extends BaseRepository<UserModel> {
   public async addPointsToAll(points: number) {
     return this.repository.createQueryBuilder()
       .update()
-      .set({ points: () => `points + ${points}` })
+      .set({
+        points: () => `points + ${points}`,
+        credits: () => `credits + ${points * 100}`,
+      })
       .execute();
   }
 }
