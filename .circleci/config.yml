@@ -1,9 +1,33 @@
 version: 2
 
 jobs:
+  build:
+    docker:
+      - image: circleci/node:12.18.3
+    steps:
+      - checkout
+      - run:
+          command: npm ci
+      - run:
+          command: npm run build
   lint:
     docker:
-      - image: circleci/node:10.16.2
+      - image: circleci/node:12.18.3
+    steps:
+      - checkout
+      - restore_cache:
+          key: package-cache-{{ checksum "package-lock.json" }}
+      - run:
+          command: npm install
+      - save_cache:
+          key: package-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - run:
+          command: npm run lint
+  test:
+    docker:
+      - image: circleci/node:12.18.3
         environment:
           RDS_DB: membership_portal
           RDS_USER: acmucsd_ci
@@ -12,30 +36,30 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: package-cache-{{checksum "package.json"}}
+          key: package-cache-{{ checksum "package-lock.json" }}
       - run:
           command: npm install
       - save_cache:
-          key: package-cache-{{checksum "package.json"}}
-          paths:
-            - node_modules
-      - run:
-          command: npm run lint
-  test:
-    docker:
-      - image: circleci/node:10.16.2
-    steps:
-      - checkout
-      - restore_cache:
-          key: package-cache-{{checksum "package.json"}}
-      - run:
-          command: npm install
-      - save_cache:
-          key: package-cache-{{checksum "package.json"}}
+          key: package-cache-{{ checksum "package-lock.json" }}
           paths:
             - node_modules
       - run:
           command: npm run test
+  publish:
+    docker:
+      - image: circleci/node:12.18.3
+    steps:
+      - checkout
+      - restore_cache:
+          key: package-cache-{{ checksum "package-lock.json" }}
+      - run:
+          command: npm install
+      - save_cache:
+          key: package-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - run:
+          command: npm run update-package
   deploy:
     machine:
       enabled: true
@@ -48,10 +72,20 @@ workflows:
   version: 2
   test_and_deploy:
     jobs:
+      - build
       - lint
       - test
+      - publish:
+          requires:
+            - build
+            - lint
+            - test
+          filters:
+            branches:
+              only: master
       - deploy:
           requires:
+            - build
             - lint
             - test
           filters:

@@ -1,8 +1,16 @@
-node_modules/
-npm-debug.log
-coverage/
-.idea/
-.DS_Store
+# config
 .env
+
+# IDE
+.idea/
+
+# build
+build/
+node_modules/
 yarn.lock
 
+# stdout
+logs/
+
+# misc
+.DS_Store

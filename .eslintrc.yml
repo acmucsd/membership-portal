@@ -1,15 +1,29 @@
 extends:
   - "eslint:recommended"
-  - "airbnb-base"
+  - "airbnb-typescript/base"
+parserOptions:
+  project: './tsconfig.json'
 env:
   browser: true
   node: true
   jest: true
 rules:
+  "@typescript-eslint/no-unused-vars":
+    - "error"
+    - argsIgnorePattern: "type"
+  class-methods-use-this:
+    - "warn"
+    - exceptMethods:
+      - "up"
+      - "down"
+      - "validate"
+      - "defaultMessage"
   consistent-return: off
   func-names: "off"
   global-require: "off"
-  max-classes-per-file: "warn"
+  import/no-cycle: "off"
+  import/prefer-default-export: "off"
+  max-classes-per-file: "off"
   max-len:
     - "error"
     - code: 120
@@ -18,9 +32,7 @@ rules:
     - allow:
         - "^"
   no-param-reassign: "off"
-  no-unused-vars:
-    - "error"
-    - argsIgnorePattern: "next|transaction|Sequelize"
+  no-unused-vars: "off"
   object-curly-newline:
     - "error"
     - consistent: true
