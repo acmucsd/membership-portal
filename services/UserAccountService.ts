@@ -71,7 +71,7 @@ export default class UserAccountService {
     return user;
   }
 
-  public async getLeaderboard(from?: number, to?: number): Promise<PublicProfile[]> {
+  public async getLeaderboard(from?: number, to?: number, offset = 0, limit = 100): Promise<PublicProfile[]> {
     const users = await this.entityManager.transaction(async (txn) => {
       // if bounds are in the possible range, round to the nearest day, else null
       // where possible range is from earliest recorded points to current day
@@ -82,17 +82,17 @@ export default class UserAccountService {
 
       // if unbounded, i.e. all-time
       if (!from && !to) {
-        return leaderboardRepository.getLeaderboard();
+        return leaderboardRepository.getLeaderboard(offset, limit);
       }
 
       // if only left bounded, i.e. since some time
       if (from && !to) {
-        return leaderboardRepository.getLeaderboardSince(from);
+        return leaderboardRepository.getLeaderboardSince(from, offset, limit);
       }
 
       // if right bounded, i.e. until some time
       if (!from) from = earliest;
-      return leaderboardRepository.getLeaderboardUntil(from, to);
+      return leaderboardRepository.getLeaderboardUntil(from, to, offset, limit);
     });
     return users.map((u) => u.getPublicProfile());
   }

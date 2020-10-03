@@ -12,8 +12,9 @@ export class LeaderboardController {
   private userAccountService: UserAccountService;
 
   @Get()
-  async getLeaderboard(@QueryParams() timeframe: SlidingLeaderboardQueryParams): Promise<GetLeaderboardResponse> {
-    const leaderboard = await this.userAccountService.getLeaderboard(timeframe.from, timeframe.to);
+  async getLeaderboard(@QueryParams() filters: SlidingLeaderboardQueryParams): Promise<GetLeaderboardResponse> {
+    const { from, to, offset, limit } = filters;
+    const leaderboard = await this.userAccountService.getLeaderboard(from, to, offset, limit);
     return { error: null, leaderboard };
   }
 }
