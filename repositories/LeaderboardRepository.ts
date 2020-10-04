@@ -36,7 +36,8 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
       )
       .setParameter('from', new Date(from))
       .where(`NOT "accessType" = '${UserAccessType.ADMIN}'`)
-      .andWhere(`NOT state = '${UserState.BLOCKED}' AND NOT state = '${UserState.PENDING}'`)
+      .andWhere(`NOT state = '${UserState.BLOCKED}'`)
+      .andWhere(`NOT state = '${UserState.PENDING}'`)
       .orderBy('points', 'DESC')
       .getRawAndEntities();
     const userPoints = new Map(users.raw.map((u) => [u.usr_uuid, Number(u.points)]));
@@ -61,8 +62,9 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
       )
       .setParameter('from', new Date(from))
       .setParameter('to', new Date(to))
-    //   .where(`NOT "accessType" = '${UserAccessType.ADMIN}'`)
-      .andWhere(`NOT state = '${UserState.BLOCKED}' AND NOT state = '${UserState.PENDING}'`)
+      .where(`NOT "accessType" = '${UserAccessType.ADMIN}'`)
+      .andWhere(`NOT state = '${UserState.BLOCKED}'`)
+      .andWhere(`NOT state = '${UserState.PENDING}'`)
       .orderBy('points', 'DESC')
       .getRawAndEntities();
     const userPoints = new Map(users.raw.map((u) => [u.usr_uuid, Number(u.points)]));
