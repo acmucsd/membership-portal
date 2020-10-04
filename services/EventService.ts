@@ -3,7 +3,7 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { EventModel } from '../models/EventModel';
-import { Uuid, PublicEvent, Event } from '../types';
+import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
 import Repositories from '../repositories';
 import { UserError } from '../utils/Errors';
 
@@ -22,26 +22,26 @@ export default class EventService {
     return eventCreated.getPublicEvent();
   }
 
-  public async getAllEvents(canSeeAttendanceCode = false, offset = 0, limit = 0): Promise<PublicEvent[]> {
+  public async getAllEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
     const events = await this.entityManager.transaction(async (txn) => {
       const eventRepository = Repositories.event(txn);
-      return eventRepository.getAllEvents(offset, limit);
+      return eventRepository.getAllEvents(options);
     });
     return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
   }
 
-  public async getPastEvents(canSeeAttendanceCode = false, offset = 0, limit = 0): Promise<PublicEvent[]> {
+  public async getPastEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
     const events = await this.entityManager.transaction(async (txn) => {
       const eventRepository = Repositories.event(txn);
-      return eventRepository.getPastEvents(offset, limit);
+      return eventRepository.getPastEvents(options);
     });
     return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
   }
 
-  public async getFutureEvents(canSeeAttendanceCode = false, offset = 0, limit = 0): Promise<PublicEvent[]> {
+  public async getFutureEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
     const events = await this.entityManager.transaction(async (txn) => {
       const eventRepository = Repositories.event(txn);
-      return eventRepository.getFutureEvents(offset, limit);
+      return eventRepository.getFutureEvents(options);
     });
     return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
   }
