@@ -59,8 +59,9 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
     const earliestPointsRecord = await this.repository.createQueryBuilder()
       .select('MIN("timestamp")', 'timestamp')
       .where('public = true AND "pointsEarned" > 0')
+      .cache('earliest_recorded_points', moment.duration(1, 'day').asMilliseconds())
       .getRawOne();
-    return moment(earliestPointsRecord.timestamp).unix();
+    return moment(earliestPointsRecord.timestamp).valueOf();
   }
 
   private static isPublicActivityType(type: ActivityType): boolean {

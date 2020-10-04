@@ -1,4 +1,5 @@
 import { EntityRepository, Not, Raw } from 'typeorm';
+import * as moment from 'moment';
 import { ActivityModel } from '../models/ActivityModel';
 import { UserModel } from '../models/UserModel';
 import { UserAccessType, UserState } from '../types';
@@ -66,6 +67,7 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
       .andWhere(`NOT state = '${UserState.BLOCKED}'`)
       .andWhere(`NOT state = '${UserState.PENDING}'`)
       .orderBy('points', 'DESC')
+      .cache(moment.duration(1, 'hour').asMilliseconds())
       .getRawAndEntities();
     const userPoints = new Map(users.raw.map((u) => [u.usr_uuid, Number(u.points)]));
     return users.entities.map((u) => this.repository.merge(u, { points: userPoints.get(u.uuid) }));
