@@ -1,5 +1,5 @@
-import { EntityRepository, LessThan, MoreThanOrEqual } from 'typeorm';
-import { Uuid } from '../types';
+import { EntityRepository, SelectQueryBuilder } from 'typeorm';
+import { EventSearchOptions, Uuid } from '../types';
 import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
 
@@ -10,39 +10,22 @@ export class EventRepository extends BaseRepository<EventModel> {
     return this.repository.save(event);
   }
 
-  public async getAllEvents(offset: number, limit: number): Promise<EventModel[]> {
-    return this.repository.find({
-      skip: offset,
-      take: limit,
-      order: { start: 'ASC' },
-    });
+  public async getAllEvents(options: EventSearchOptions): Promise<EventModel[]> {
+    return this.getBaseQuery(options).getMany();
   }
 
-  public async getPastEvents(offset = 0, limit = 0): Promise<EventModel[]> {
-    return this.repository.find({
-      skip: offset,
-      take: limit,
-      where: { end: LessThan(new Date()) },
-      order: { start: 'ASC' },
-    });
+  public async getPastEvents(options: EventSearchOptions): Promise<EventModel[]> {
+    return this.getBaseQuery(options)
+      .andWhere('"end" < :now')
+      .setParameter('now', new Date())
+      .getMany();
   }
 
-  public async getFutureEvents(offset = 0, limit = 0): Promise<EventModel[]> {
-    return this.repository.find({
-      skip: offset,
-      take: limit,
-      where: { end: MoreThanOrEqual(new Date()) },
-      order: { start: 'ASC' },
-    });
-  }
-
-  public async getEventsByCommittee(committee: string, offset = 0, limit = 100): Promise<EventModel[]> {
-    return this.repository.find({
-      skip: offset,
-      take: limit,
-      where: { committee },
-      order: { start: 'ASC' },
-    });
+  public async getFutureEvents(options: EventSearchOptions): Promise<EventModel[]> {
+    return this.getBaseQuery(options)
+      .andWhere('"end" >= :now')
+      .setParameter('now', new Date())
+      .getMany();
   }
 
   public async findByUuid(uuid: Uuid): Promise<EventModel> {
@@ -60,5 +43,18 @@ export class EventRepository extends BaseRepository<EventModel> {
   public async isUnusedAttendanceCode(attendanceCode: string): Promise<boolean> {
     const count = await this.repository.count({ attendanceCode });
     return count === 0;
+  }
+
+  private getBaseQuery(options: EventSearchOptions): SelectQueryBuilder<EventModel> {
+    let query = this.repository.createQueryBuilder()
+      .skip(options.offset)
+      .take(options.limit)
+      .orderBy('start', 'ASC');
+    if (options.committee) {
+      query = query
+        .where('committee = :committee')
+        .setParameter('committee', options.committee);
+    }
+    return query;
   }
 }

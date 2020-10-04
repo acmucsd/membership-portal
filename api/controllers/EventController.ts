@@ -35,7 +35,7 @@ export class EventController {
   async getPastEvents(@QueryParams() options: EventSearchOptions,
     @AuthenticatedUser() user: UserModel): Promise<GetPastEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    const events = await this.eventService.getPastEvents(canSeeAttendanceCode, options.offset, options.limit);
+    const events = await this.eventService.getPastEvents(canSeeAttendanceCode, options);
     return { error: null, events };
   }
 
@@ -44,7 +44,7 @@ export class EventController {
   async getFutureEvents(@QueryParams() options: EventSearchOptions,
     @AuthenticatedUser() user: UserModel): Promise<GetFutureEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    const events = await this.eventService.getFutureEvents(canSeeAttendanceCode, options.offset, options.limit);
+    const events = await this.eventService.getFutureEvents(canSeeAttendanceCode, options);
     return { error: null, events };
   }
 
@@ -92,7 +92,7 @@ export class EventController {
   @Get()
   async getAllEvents(@QueryParams() options: EventSearchOptions, @AuthenticatedUser() user: UserModel) {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    const events = await this.eventService.getAllEvents(canSeeAttendanceCode, options.offset, options.limit);
+    const events = await this.eventService.getAllEvents(canSeeAttendanceCode, options);
     return { error: null, events };
   }
 

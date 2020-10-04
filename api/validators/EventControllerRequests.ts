@@ -84,6 +84,9 @@ export class EventPatches extends OptionalEventProperties implements IEvent {
 
 export class EventSearchOptions implements IEventSearchOptions {
   @Allow()
+  committee?: string;
+
+  @Allow()
   offset?: number;
 
   @Allow()

@@ -104,6 +104,12 @@ export interface AttendEventRequest {
   asStaff?: boolean;
 }
 
+export interface EventSearchOptions {
+  offset?: number;
+  limit?: number;
+  committee?: string;
+}
+
 // MERCH STORE
 
 export interface CreateMerchCollectionRequest {
