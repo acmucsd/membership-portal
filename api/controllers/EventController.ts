@@ -34,7 +34,6 @@ export class EventController {
   @Get('/past')
   async getPastEvents(@QueryParams() options: EventSearchOptions,
     @AuthenticatedUser() user: UserModel): Promise<GetPastEventsResponse> {
-      console.log(options);
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const events = await this.eventService.getPastEvents(canSeeAttendanceCode, options);
     return { error: null, events };
