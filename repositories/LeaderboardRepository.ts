@@ -41,7 +41,6 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
       .andWhere(`NOT state = '${UserState.BLOCKED}'`)
       .andWhere(`NOT state = '${UserState.PENDING}'`)
       .orderBy('points', 'DESC')
-      .cache(LeaderboardRepository.cacheDuration())
       .getRawAndEntities();
     const userPoints = new Map(users.raw.map((u) => [u.usr_uuid, Number(u.points)]));
     return users.entities.map((u) => this.repository.merge(u, { points: userPoints.get(u.uuid) }));
@@ -70,13 +69,9 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
       .andWhere(`NOT state = '${UserState.BLOCKED}'`)
       .andWhere(`NOT state = '${UserState.PENDING}'`)
       .orderBy('points', 'DESC')
-      .cache(LeaderboardRepository.cacheDuration())
+      .cache(moment.duration(1, 'hour').asMilliseconds())
       .getRawAndEntities();
     const userPoints = new Map(users.raw.map((u) => [u.usr_uuid, Number(u.points)]));
     return users.entities.map((u) => this.repository.merge(u, { points: userPoints.get(u.uuid) }));
-  }
-
-  private static cacheDuration() {
-    return moment.duration(1, 'hour').asMilliseconds();
   }
 }
