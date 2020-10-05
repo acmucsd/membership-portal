@@ -45,7 +45,7 @@ export default class EmailService {
         subject: 'ACM UCSD Membership Portal Email Verification',
         html: ejs.render(EmailService.emailVerificationTemplate, {
           firstName,
-          link: `${Config.client}/emailVerification/${code}`,
+          link: `${Config.client}/verifyEmail/${code}`,
         }),
       };
       await this.sendEmail(data);
