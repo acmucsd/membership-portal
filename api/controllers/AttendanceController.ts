@@ -31,7 +31,7 @@ export class AttendanceController {
   @Post()
   async attendEvent(@Body() body: AttendEventRequest,
     @AuthenticatedUser() user: UserModel): Promise<AttendEventResponse> {
-    await this.attendanceService.attendEvent(user, body.attendanceCode, body.asStaff);
-    return { error: null };
+    const { event } = await this.attendanceService.attendEvent(user, body.attendanceCode, body.asStaff);
+    return { error: null, event };
   }
 }
