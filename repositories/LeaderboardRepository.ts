@@ -1,4 +1,5 @@
 import { EntityRepository, Not, Raw } from 'typeorm';
+import * as moment from 'moment';
 import { ActivityModel } from '../models/ActivityModel';
 import { UserModel } from '../models/UserModel';
 import { UserAccessType, UserState } from '../types';
@@ -29,6 +30,7 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
           .from(ActivityModel, 'activity')
           .where('"timestamp" >= :from')
           .groupBy('"user"')
+          .orderBy('points', 'DESC')
           .skip(offset)
           .take(limit),
         'totals',
@@ -39,7 +41,7 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
       .andWhere(`NOT state = '${UserState.BLOCKED}'`)
       .andWhere(`NOT state = '${UserState.PENDING}'`)
       .orderBy('points', 'DESC')
-      // .cache(`sliding_leaderboard_from_${from}`, moment.duration(1, 'hour').asMilliseconds())
+      .cache(LeaderboardRepository.cacheDuration())
       .getRawAndEntities();
     const userPoints = new Map(users.raw.map((u) => [u.usr_uuid, Number(u.points)]));
     return users.entities.map((u) => this.repository.merge(u, { points: userPoints.get(u.uuid) }));
@@ -56,6 +58,7 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
           .from(ActivityModel, 'activity')
           .where('"timestamp" >= :from AND "timestamp" <= :to')
           .groupBy('"user"')
+          .orderBy('points', 'DESC')
           .skip(offset)
           .take(limit),
         'totals',
@@ -67,9 +70,13 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
       .andWhere(`NOT state = '${UserState.BLOCKED}'`)
       .andWhere(`NOT state = '${UserState.PENDING}'`)
       .orderBy('points', 'DESC')
-      // .cache(`sliding_leaderboard_from_${from}_to_${to}`, moment.duration(1, 'hour').asMilliseconds())
+      .cache(LeaderboardRepository.cacheDuration())
       .getRawAndEntities();
     const userPoints = new Map(users.raw.map((u) => [u.usr_uuid, Number(u.points)]));
     return users.entities.map((u) => this.repository.merge(u, { points: userPoints.get(u.uuid) }));
+  }
+
+  private static cacheDuration() {
+    return moment.duration(1, 'hour').asMilliseconds();
   }
 }
