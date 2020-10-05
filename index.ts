@@ -7,6 +7,7 @@ import { Container } from 'typedi';
 import { models as entities } from './models';
 
 import { Config } from './config';
+import { InMemoryDatabaseCache } from './utils/InMemoryDatabaseCache';
 import { logger as log } from './utils/Logger';
 import { controllers } from './api/controllers';
 import { middlewares } from './api/middleware';
@@ -23,6 +24,11 @@ createConnection({
   database: Config.database.name,
   entities,
   logging: Config.isDevelopment,
+  cache: {
+    provider(_connection) {
+      return new InMemoryDatabaseCache();
+    },
+  },
 }).then(() => {
   log.info('created connection');
 }).catch((error) => {

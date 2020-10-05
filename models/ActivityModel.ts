@@ -4,6 +4,7 @@ import { ActivityType, PublicActivity, Uuid } from '../types';
 import { UserModel } from './UserModel';
 
 @Entity('Activities')
+@Index('sliding_leaderboard_index', ['timestamp', 'pointsEarned'], { where: '"pointsEarned" > 0' })
 export class ActivityModel extends BaseEntity {
   @Column()
   @Generated('increment')

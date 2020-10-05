@@ -10,14 +10,8 @@ env:
 rules:
   "@typescript-eslint/no-unused-vars":
     - "error"
-    - argsIgnorePattern: "type"
-  class-methods-use-this:
-    - "warn"
-    - exceptMethods:
-      - "up"
-      - "down"
-      - "validate"
-      - "defaultMessage"
+    - argsIgnorePattern: "type|_*"
+  class-methods-use-this: "off"
   consistent-return: off
   func-names: "off"
   global-require: "off"

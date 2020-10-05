@@ -2,6 +2,7 @@ import { BadRequestError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
+import * as moment from 'moment';
 import Repositories from '../repositories';
 import {
   Uuid,
@@ -70,10 +71,34 @@ export default class UserAccountService {
     return user;
   }
 
-  public async getLeaderboard(): Promise<PublicProfile[]> {
+  public async getLeaderboard(from?: number, to?: number, offset = 0, limit = 100): Promise<PublicProfile[]> {
+    // convert timestamps from seconds to milliseconds
+    if (from) from *= 1000;
+    if (to) to *= 1000;
+
     const users = await this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      return userRepository.getLeaderboard();
+      // if each bound is in the possible range, round it to the nearest day, else null
+      // where the possible range is from the earliest recorded points to the current day
+      const earliest = await Repositories.activity(txn).getEarliestTimestamp();
+      // if left bound is after the earliest recorded points, round to the start of the day
+      if (from) from = from > earliest ? moment(from).startOf('day').valueOf() : null;
+      // if right bound is before the current day, round to the end of the day
+      if (to) to = to <= moment().startOf('day').valueOf() ? moment(to).endOf('day').valueOf() : null;
+      const leaderboardRepository = Repositories.leaderboard(txn);
+
+      // if unbounded, i.e. all-time
+      if (!from && !to) {
+        return leaderboardRepository.getLeaderboard(offset, limit);
+      }
+
+      // if only left bounded, i.e. since some time
+      if (from && !to) {
+        return leaderboardRepository.getLeaderboardSince(from, offset, limit);
+      }
+
+      // if right bounded, i.e. until some time
+      if (!from) from = moment(earliest).startOf('day').valueOf();
+      return leaderboardRepository.getLeaderboardUntil(from, to, offset, limit);
     });
     return users.map((u) => u.getPublicProfile());
   }

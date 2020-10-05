@@ -1,5 +1,10 @@
 // REQUEST TYPES
 
+export interface Pagination {
+  offset?: number;
+  limit?: number;
+}
+
 // AUTH
 
 export interface LoginRequest {
@@ -46,6 +51,13 @@ export interface UserPatches {
 
 export interface PatchUserRequest {
   user: UserPatches;
+}
+
+// LEADERBOARD
+
+export interface SlidingLeaderboardQueryParams extends Pagination {
+  from?: number;
+  to?: number;
 }
 
 // ADMIN
