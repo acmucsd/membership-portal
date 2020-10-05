@@ -72,15 +72,17 @@ export default class UserAccountService {
   }
 
   public async getLeaderboard(from?: number, to?: number, offset = 0, limit = 100): Promise<PublicProfile[]> {
-    // convert timestamps to milliseconds
+    // convert timestamps from seconds to milliseconds
     if (from) from *= 1000;
     if (to) to *= 1000;
 
     const users = await this.entityManager.transaction(async (txn) => {
-      // if bounds are in the possible range, round to the nearest day, else null
-      // where possible range is from earliest recorded points to current day
+      // if each bound is in the possible range, round it to the nearest day, else null
+      // where the possible range is from the earliest recorded points to the current day
       const earliest = await Repositories.activity(txn).getEarliestTimestamp();
+      // if left bound is after the earliest recorded points, round to the start of the day
       if (from) from = from > earliest ? moment(from).startOf('day').valueOf() : null;
+      // if right bound is before the current day, round to the end of the day
       if (to) to = to <= moment().startOf('day').valueOf() ? moment(to).endOf('day').valueOf() : null;
       const leaderboardRepository = Repositories.leaderboard(txn);
 
