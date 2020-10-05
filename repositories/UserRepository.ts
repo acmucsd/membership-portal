@@ -56,7 +56,7 @@ export class UserRepository extends BaseRepository<UserModel> {
   }
 
   public async addPoints(user: UserModel, points: number) {
-    user = this.repository.merge(user, { points, credits: points * 100 });
+    user = this.repository.merge(user, { points: points + user.points, credits: points * 100 });
     return this.repository.save(user);
   }
 
