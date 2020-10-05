@@ -47,7 +47,9 @@ export interface GetAttendancesForUserResponse extends ApiResponse {
   attendances: PublicAttendance[];
 }
 
-export interface AttendEventResponse extends ApiResponse {}
+export interface AttendEventResponse extends ApiResponse {
+  event: PublicEvent;
+}
 
 // AUTH
 
