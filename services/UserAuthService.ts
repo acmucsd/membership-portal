@@ -49,13 +49,13 @@ export default class UserAuthService {
 
   public async login(email: string, pass: string): Promise<string> {
     const authenticatedUser = await this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      const user = await userRepository.findByEmail(email.toLowerCase());
+      const user = await Repositories
+        .user(txn)
+        .findByEmail(email.toLowerCase());
       if (!user) throw new NotFoundError('There is no account associated with that email');
       if (user.isBlocked()) throw new ForbiddenError('Your account has been blocked');
       if (!(await user.verifyPass(pass))) throw new ForbiddenError('Incorrect password');
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(user, ActivityType.ACCOUNT_LOGIN);
+      await Repositories.activity(txn).logActivity(user, ActivityType.ACCOUNT_LOGIN);
       return user;
     });
     const token: AuthToken = {
@@ -67,13 +67,13 @@ export default class UserAuthService {
 
   public async checkCredentials(email: string, pass: string): Promise<UserModel> {
     const authenticatedUser = await this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      const user = await userRepository.findByEmail(email.toLowerCase());
+      const user = await Repositories
+        .user(txn)
+        .findByEmail(email.toLowerCase());
       if (!user) throw new NotFoundError('There is no account associated with that email');
       const passwordMatched = await user.verifyPass(pass);
       if (!passwordMatched) throw new ForbiddenError('Incorrect password');
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(user, ActivityType.ACCOUNT_LOGIN);
+      await Repositories.activity(txn).logActivity(user, ActivityType.ACCOUNT_LOGIN);
       return user;
     });
     if (authenticatedUser.isBlocked()) throw new ForbiddenError('Your account has been blocked');
@@ -106,8 +106,9 @@ export default class UserAuthService {
         state: UserState.PASSWORD_RESET,
         accessCode: UserAuthService.generateAccessCode(),
       });
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(user, ActivityType.ACCOUNT_RESET_PASS_REQUEST);
+      await Repositories
+        .activity(txn)
+        .logActivity(user, ActivityType.ACCOUNT_RESET_PASS_REQUEST);
       return user;
     });
   }
@@ -124,8 +125,9 @@ export default class UserAuthService {
         state: UserState.ACTIVE,
       });
 
-      const activityRepository = Repositories.activity(txn);
-      activityRepository.logActivity(user, ActivityType.ACCOUNT_RESET_PASS);
+      await Repositories
+        .activity(txn)
+        .logActivity(user, ActivityType.ACCOUNT_RESET_PASS);
       return user;
     });
   }

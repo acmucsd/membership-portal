@@ -21,18 +21,10 @@ export default class UserAccountService {
   @InjectManager()
   private entityManager: EntityManager;
 
-  public async findAll(): Promise<UserModel[]> {
-    return this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      return userRepository.findAll();
-    });
-  }
-
   public async findByUuid(uuid: Uuid): Promise<UserModel> {
-    const user = await this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      return userRepository.findByUuid(uuid);
-    });
+    const user = await this.entityManager.transaction(async (txn) => Repositories
+      .user(txn)
+      .findByUuid(uuid));
     if (!user) throw new NotFoundError();
     return user;
   }
@@ -88,35 +80,31 @@ export default class UserAccountService {
       changes.hash = await UserRepository.generateHash(newPassword);
     }
     return this.entityManager.transaction(async (txn) => {
-      const activityRepository = Repositories.activity(txn);
       const updatedFields = Object.keys(userPatches).join(', ');
-      await activityRepository.logActivity(user, ActivityType.ACCOUNT_UPDATE_INFO, 0, updatedFields);
-      const userRepository = Repositories.user(txn);
-      return userRepository.upsertUser(user, changes);
+      await Repositories
+        .activity(txn)
+        .logActivity(user, ActivityType.ACCOUNT_UPDATE_INFO, 0, updatedFields);
+      return Repositories.user(txn).upsertUser(user, changes);
     });
   }
 
   public async updateProfilePicture(user: UserModel, profilePicture: string): Promise<UserModel> {
-    return this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      return userRepository.upsertUser(user, { profilePicture });
-    });
+    return this.entityManager.transaction(async (txn) => Repositories
+      .user(txn)
+      .upsertUser(user, { profilePicture }));
   }
 
   public async getUserActivityStream(user: Uuid): Promise<PublicActivity[]> {
-    const stream = await this.entityManager.transaction(async (txn) => {
-      const activityRepository = Repositories.activity(txn);
-      return activityRepository.getUserActivityStream(user);
-    });
+    const stream = await this.entityManager.transaction(async (txn) => Repositories
+      .activity(txn)
+      .getUserActivityStream(user));
     return stream.map((activity) => activity.getPublicActivity());
   }
 
   public async createMilestone(milestone: Milestone): Promise<void> {
     return this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      await userRepository.addPointsToAll(milestone.points);
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logMilestone(milestone.name, milestone.points);
+      await Repositories.user(txn).addPointsToAll(milestone.points);
+      await Repositories.activity(txn).logMilestone(milestone.name, milestone.points);
     });
   }
 

@@ -38,10 +38,9 @@ export default class MerchStoreService {
   private entityManager: EntityManager;
 
   public async findCollectionByUuid(uuid: Uuid, canSeeSeeHiddenItems = false): Promise<PublicMerchCollection> {
-    const collection = await this.entityManager.transaction(async (txn) => {
-      const merchCollectionRepository = Repositories.merchStoreCollection(txn);
-      return merchCollectionRepository.findByUuid(uuid);
-    });
+    const collection = await this.entityManager.transaction(async (txn) => Repositories
+      .merchStoreCollection(txn)
+      .findByUuid(uuid));
     if (!collection) throw new NotFoundError('Collection not found');
     if (collection.archived && !canSeeSeeHiddenItems) throw new ForbiddenError();
     return canSeeSeeHiddenItems ? collection : collection.getPublicMerchCollection();
@@ -51,8 +50,7 @@ export default class MerchStoreService {
     return this.entityManager.transaction(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       if (canSeeInactiveCollections) {
-        const collections = await merchCollectionRepository.getAllCollections();
-        return collections;
+        return merchCollectionRepository.getAllCollections();
       }
       const collections = await merchCollectionRepository.getAllActiveCollections();
       return collections.map((c) => c.getPublicMerchCollection());
@@ -60,11 +58,9 @@ export default class MerchStoreService {
   }
 
   public async createCollection(collection: MerchCollection): Promise<PublicMerchCollection> {
-    return this.entityManager.transaction(async (txn) => {
-      const merchCollectionRepository = Repositories.merchStoreCollection(txn);
-      const collectionCreated = MerchandiseCollectionModel.create(collection);
-      return merchCollectionRepository.upsertMerchCollection(collectionCreated);
-    });
+    return this.entityManager.transaction(async (txn) => Repositories
+      .merchStoreCollection(txn)
+      .upsertMerchCollection(MerchandiseCollectionModel.create(collection)));
   }
 
   public async editCollection(uuid: Uuid, changes: MerchCollectionEdit): Promise<PublicMerchCollection> {
@@ -75,8 +71,9 @@ export default class MerchStoreService {
       let updatedCollection = await merchCollectionRepository.upsertMerchCollection(currentCollection, changes);
       if (changes.discountPercentage) {
         const { discountPercentage } = changes;
-        const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-        await merchItemOptionRepository.updateMerchItemOptionsInCollection(uuid, discountPercentage);
+        await Repositories
+          .merchStoreItemOption(txn)
+          .updateMerchItemOptionsInCollection(uuid, discountPercentage);
         updatedCollection = await merchCollectionRepository.findByUuid(uuid);
       }
       return updatedCollection;
@@ -88,26 +85,25 @@ export default class MerchStoreService {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       const collection = await merchCollectionRepository.findByUuid(uuid);
       if (!collection) throw new NotFoundError('Collection not found');
-      const orderItemRepository = Repositories.merchOrderItem(txn);
-      const hasBeenOrderedFrom = await orderItemRepository.hasCollectionBeenOrderedFrom(uuid);
+      const hasBeenOrderedFrom = await Repositories
+        .merchOrderItem(txn)
+        .hasCollectionBeenOrderedFrom(uuid);
       if (hasBeenOrderedFrom) throw new UserError('This collection has been ordered from');
       return merchCollectionRepository.deleteMerchCollection(collection);
     });
   }
 
   public async findItemByUuid(uuid: Uuid): Promise<PublicMerchItem> {
-    const item = await this.entityManager.transaction(async (txn) => {
-      const merchItemRepository = Repositories.merchStoreItem(txn);
-      return merchItemRepository.findByUuid(uuid);
-    });
+    const item = await this.entityManager.transaction(async (txn) => Repositories
+      .merchStoreItem(txn)
+      .findByUuid(uuid));
     if (!item) throw new NotFoundError('Item not found');
     return item.getPublicMerchItem();
   }
 
   public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
     return this.entityManager.transaction(async (txn) => {
-      const merchCollectionRepository = Repositories.merchStoreCollection(txn);
-      const collection = await merchCollectionRepository.findByUuid(item.collection);
+      const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
       if (!collection) throw new NotFoundError('Collection not found');
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const merchItem = MerchandiseItemModel.create({ ...item, collection });
@@ -138,8 +134,9 @@ export default class MerchStoreService {
       item.options = [...updatedOptions, ...item.options.filter((option) => !updatedOptionsIds.has(option.id))];
 
       if (updatedCollection) {
-        const merchCollectionRepository = Repositories.merchStoreCollection(txn);
-        const collection = await merchCollectionRepository.findByUuid(updatedCollection);
+        const collection = await Repositories
+          .merchStoreCollection(txn)
+          .findByUuid(updatedCollection);
         if (!collection) throw new NotFoundError('Collection not found');
       }
 
@@ -182,10 +179,9 @@ export default class MerchStoreService {
   }
 
   public async findOrderByUuid(uuid: Uuid): Promise<PublicOrder> {
-    const order = await this.entityManager.transaction(async (txn) => {
-      const merchOrderRepository = Repositories.merchOrder(txn);
-      return merchOrderRepository.findByUuid(uuid);
-    });
+    const order = await this.entityManager.transaction(async (txn) => Repositories
+      .merchOrder(txn)
+      .findByUuid(uuid));
     if (!order) throw new NotFoundError();
     return order.getPublicOrder();
   }
