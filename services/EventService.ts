@@ -4,16 +4,19 @@ import { NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { EventModel } from '../models/EventModel';
 import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
-import Repositories from '../repositories';
+import Repositories, { TransactionsManager } from '../repositories';
 import { UserError } from '../utils/Errors';
 
 @Service()
 export default class EventService {
-  @InjectManager()
-  private entityManager: EntityManager;
+  private transactions: TransactionsManager;
+
+  constructor(@InjectManager() entityManager: EntityManager) {
+    this.transactions = new TransactionsManager(entityManager);
+  }
 
   public async create(event: Event) {
-    const eventCreated = await this.entityManager.transaction(async (txn) => {
+    const eventCreated = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const isUnusedAttendanceCode = eventRepository.isUnusedAttendanceCode(event.attendanceCode);
       if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
@@ -23,28 +26,28 @@ export default class EventService {
   }
 
   public async getAllEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
-    const events = await this.entityManager.transaction(async (txn) => Repositories
+    const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getAllEvents(options));
     return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
   }
 
   public async getPastEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
-    const events = await this.entityManager.transaction(async (txn) => Repositories
+    const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getPastEvents(options));
     return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
   }
 
   public async getFutureEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
-    const events = await this.entityManager.transaction(async (txn) => Repositories
+    const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getFutureEvents(options));
     return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
   }
 
   public async findByUuid(uuid: Uuid, canSeeAttendanceCode = false): Promise<PublicEvent> {
-    const event = await this.entityManager.transaction(async (txn) => Repositories
+    const event = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .findByUuid(uuid));
     if (!event) throw new NotFoundError('Event not found');
@@ -52,7 +55,7 @@ export default class EventService {
   }
 
   public async updateByUuid(uuid: Uuid, changes: Partial<EventModel>): Promise<PublicEvent> {
-    const updatedEvent = await this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    const updatedEvent = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const currentEvent = await eventRepository.findByUuid(uuid);
       if (!currentEvent) throw new NotFoundError();
@@ -62,7 +65,7 @@ export default class EventService {
   }
 
   public async deleteByUuid(uuid: Uuid): Promise<void> {
-    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const event = await eventRepository.findByUuid(uuid);
       if (!event) throw new NotFoundError();

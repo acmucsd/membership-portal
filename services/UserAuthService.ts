@@ -8,7 +8,7 @@ import { UserRepository } from '../repositories/UserRepository';
 import { Uuid, ActivityType, UserState, UserRegistration } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
-import Repositories from '../repositories';
+import Repositories, { TransactionsManager } from '../repositories';
 
 interface AuthToken {
   uuid: Uuid;
@@ -17,11 +17,14 @@ interface AuthToken {
 
 @Service()
 export default class UserAuthService {
-  @InjectManager()
-  private entityManager: EntityManager;
+  private transactions: TransactionsManager;
+
+  constructor(@InjectManager() entityManager: EntityManager) {
+    this.transactions = new TransactionsManager(entityManager);
+  }
 
   public async registerUser(registration: UserRegistration): Promise<UserModel> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       const emailAlreadyUsed = !!(await userRepository.findByEmail(registration.email));
       if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
@@ -39,16 +42,15 @@ export default class UserAuthService {
   public async checkAuthToken(authHeader: string): Promise<UserModel> {
     const token = jwt.verify(UserAuthService.parseAuthHeader(authHeader), Config.auth.secret);
     if (!UserAuthService.isAuthToken(token)) throw new BadRequestError('Invalid auth token');
-    const user = await this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      return userRepository.findByUuid(token.uuid);
-    });
+    const user = await this.transactions.readOnly(async (txn) => Repositories
+      .user(txn)
+      .findByUuid(token.uuid));
     if (!user) throw new NotFoundError();
     return user;
   }
 
   public async login(email: string, pass: string): Promise<string> {
-    const authenticatedUser = await this.entityManager.transaction(async (txn) => {
+    const authenticatedUser = await this.transactions.readWrite(async (txn) => {
       const user = await Repositories
         .user(txn)
         .findByEmail(email.toLowerCase());
@@ -66,7 +68,7 @@ export default class UserAuthService {
   }
 
   public async checkCredentials(email: string, pass: string): Promise<UserModel> {
-    const authenticatedUser = await this.entityManager.transaction(async (txn) => {
+    const authenticatedUser = await this.transactions.readWrite(async (txn) => {
       const user = await Repositories
         .user(txn)
         .findByEmail(email.toLowerCase());
@@ -89,7 +91,7 @@ export default class UserAuthService {
   }
 
   public async setAccessCode(email: string): Promise<UserModel> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       const user = await userRepository.findByEmail(email);
       if (!user) throw new NotFoundError();
@@ -98,7 +100,7 @@ export default class UserAuthService {
   }
 
   public async putAccountInPasswordResetMode(email: string): Promise<UserModel> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       let user = await userRepository.findByEmail(email);
       if (!user) throw new NotFoundError();
@@ -114,7 +116,7 @@ export default class UserAuthService {
   }
 
   public async resetPassword(accessCode: string, newPassword: string): Promise<UserModel> {
-    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       const user = await userRepository.findByAccessCode(accessCode);
       if (!user) throw new BadRequestError('Invalid access code');

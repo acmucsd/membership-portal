@@ -23,7 +23,7 @@ import {
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
-import Repositories from '../repositories';
+import Repositories, { TransactionsManager } from '../repositories';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
@@ -32,13 +32,16 @@ import { OrderItemModel } from '../models/OrderItemModel';
 @Service()
 export default class MerchStoreService {
   @Inject()
-  emailService: EmailService;
+  private emailService: EmailService;
 
-  @InjectManager()
-  private entityManager: EntityManager;
+  private transactions: TransactionsManager;
+
+  constructor(@InjectManager() entityManager: EntityManager) {
+    this.transactions = new TransactionsManager(entityManager);
+  }
 
   public async findCollectionByUuid(uuid: Uuid, canSeeSeeHiddenItems = false): Promise<PublicMerchCollection> {
-    const collection = await this.entityManager.transaction(async (txn) => Repositories
+    const collection = await this.transactions.readOnly(async (txn) => Repositories
       .merchStoreCollection(txn)
       .findByUuid(uuid));
     if (!collection) throw new NotFoundError('Collection not found');
@@ -47,7 +50,7 @@ export default class MerchStoreService {
   }
 
   public async getAllCollections(canSeeInactiveCollections = false): Promise<PublicMerchCollection[]> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.transactions.readOnly(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       if (canSeeInactiveCollections) {
         return merchCollectionRepository.getAllCollections();
@@ -58,13 +61,13 @@ export default class MerchStoreService {
   }
 
   public async createCollection(collection: MerchCollection): Promise<PublicMerchCollection> {
-    return this.entityManager.transaction(async (txn) => Repositories
+    return this.transactions.readWrite(async (txn) => Repositories
       .merchStoreCollection(txn)
       .upsertMerchCollection(MerchandiseCollectionModel.create(collection)));
   }
 
   public async editCollection(uuid: Uuid, changes: MerchCollectionEdit): Promise<PublicMerchCollection> {
-    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       const currentCollection = await merchCollectionRepository.findByUuid(uuid);
       if (!currentCollection) throw new NotFoundError('Collection not found');
@@ -81,7 +84,7 @@ export default class MerchStoreService {
   }
 
   public async deleteCollection(uuid: Uuid): Promise<void> {
-    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       const collection = await merchCollectionRepository.findByUuid(uuid);
       if (!collection) throw new NotFoundError('Collection not found');
@@ -94,7 +97,7 @@ export default class MerchStoreService {
   }
 
   public async findItemByUuid(uuid: Uuid): Promise<PublicMerchItem> {
-    const item = await this.entityManager.transaction(async (txn) => Repositories
+    const item = await this.transactions.readOnly(async (txn) => Repositories
       .merchStoreItem(txn)
       .findByUuid(uuid));
     if (!item) throw new NotFoundError('Item not found');
@@ -102,7 +105,7 @@ export default class MerchStoreService {
   }
 
   public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
       if (!collection) throw new NotFoundError('Collection not found');
       const merchItemRepository = Repositories.merchStoreItem(txn);
@@ -113,7 +116,7 @@ export default class MerchStoreService {
   }
 
   public async editItem(uuid: Uuid, itemEdit: MerchItemEdit): Promise<MerchandiseItemModel> {
-    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
@@ -146,7 +149,7 @@ export default class MerchStoreService {
   }
 
   public async deleteItem(uuid: Uuid): Promise<void> {
-    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
@@ -157,7 +160,7 @@ export default class MerchStoreService {
   }
 
   public async createItemOption(item: Uuid, option: MerchItemOption): Promise<PublicMerchItemOption> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Item not found');
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
@@ -168,7 +171,7 @@ export default class MerchStoreService {
   }
 
   public async deleteItemOption(uuid: Uuid): Promise<void> {
-    await this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    await this.transactions.readWrite(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const option = await merchItemOptionRepository.findByUuid(uuid);
       if (!option) throw new NotFoundError();
@@ -179,7 +182,7 @@ export default class MerchStoreService {
   }
 
   public async findOrderByUuid(uuid: Uuid): Promise<PublicOrder> {
-    const order = await this.entityManager.transaction(async (txn) => Repositories
+    const order = await this.transactions.readOnly(async (txn) => Repositories
       .merchOrder(txn)
       .findByUuid(uuid));
     if (!order) throw new NotFoundError();
@@ -187,7 +190,7 @@ export default class MerchStoreService {
   }
 
   public async getAllOrders(user: UserModel, canSeeAllOrders = false): Promise<PublicOrder[]> {
-    const orders = await this.entityManager.transaction(async (txn) => {
+    const orders = await this.transactions.readOnly(async (txn) => {
       const merchOrderRepository = Repositories.merchOrder(txn);
       if (canSeeAllOrders) {
         return merchOrderRepository.getAllOrdersForAllUsers();
@@ -198,7 +201,7 @@ export default class MerchStoreService {
   }
 
   public async placeOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<PublicOrder> {
-    const [order, merchItemOptions] = await this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
       await user.reload();
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
@@ -305,7 +308,7 @@ export default class MerchStoreService {
       oi.fulfilled = Boolean(oi.fulfilled);
       updates.set(oi.uuid, oi);
     }
-    await this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    await this.transactions.readWrite(async (txn) => {
       const orderItemRepository = Repositories.merchOrderItem(txn);
       const orderItems = await orderItemRepository.batchFindByUuid(Array.from(fulfillmentUpdates.map((oi) => oi.uuid)));
       if (orderItems.size !== fulfillmentUpdates.length) {
