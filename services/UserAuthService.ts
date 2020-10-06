@@ -1,13 +1,14 @@
 import { Service } from 'typedi';
 import { ForbiddenError, NotFoundError, BadRequestError } from 'routing-controllers';
+import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import { UserRepository } from '../repositories/UserRepository';
-import { Uuid, ActivityType, UserState } from '../types';
+import { Uuid, ActivityType, UserState, UserRegistration } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
-import Repositories from '../repositories';
+import Repositories, { TransactionsManager } from '../repositories';
 
 interface AuthToken {
   uuid: Uuid;
@@ -16,29 +17,47 @@ interface AuthToken {
 
 @Service()
 export default class UserAuthService {
-  @InjectManager()
-  private entityManager: EntityManager;
+  private transactions: TransactionsManager;
+
+  constructor(@InjectManager() entityManager: EntityManager) {
+    this.transactions = new TransactionsManager(entityManager);
+  }
+
+  public async registerUser(registration: UserRegistration): Promise<UserModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const userRepository = Repositories.user(txn);
+      const emailAlreadyUsed = !!(await userRepository.findByEmail(registration.email));
+      if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
+      const user = await userRepository.upsertUser(UserModel.create({
+        ...registration,
+        hash: await UserRepository.generateHash(registration.password),
+        accessCode: UserAuthService.generateAccessCode(),
+      }));
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity(user, ActivityType.ACCOUNT_CREATE);
+      return user;
+    });
+  }
 
   public async checkAuthToken(authHeader: string): Promise<UserModel> {
     const token = jwt.verify(UserAuthService.parseAuthHeader(authHeader), Config.auth.secret);
     if (!UserAuthService.isAuthToken(token)) throw new BadRequestError('Invalid auth token');
-    const user = await this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      return userRepository.findByUuid(token.uuid);
-    });
+    const user = await this.transactions.readOnly(async (txn) => Repositories
+      .user(txn)
+      .findByUuid(token.uuid));
     if (!user) throw new NotFoundError();
     return user;
   }
 
   public async login(email: string, pass: string): Promise<string> {
-    const authenticatedUser = await this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      const user = await userRepository.findByEmail(email.toLowerCase());
+    const authenticatedUser = await this.transactions.readWrite(async (txn) => {
+      const user = await Repositories
+        .user(txn)
+        .findByEmail(email.toLowerCase());
       if (!user) throw new NotFoundError('There is no account associated with that email');
       if (user.isBlocked()) throw new ForbiddenError('Your account has been blocked');
       if (!(await user.verifyPass(pass))) throw new ForbiddenError('Incorrect password');
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(user, ActivityType.ACCOUNT_LOGIN);
+      await Repositories.activity(txn).logActivity(user, ActivityType.ACCOUNT_LOGIN);
       return user;
     });
     const token: AuthToken = {
@@ -49,14 +68,14 @@ export default class UserAuthService {
   }
 
   public async checkCredentials(email: string, pass: string): Promise<UserModel> {
-    const authenticatedUser = await this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      const user = await userRepository.findByEmail(email.toLowerCase());
+    const authenticatedUser = await this.transactions.readWrite(async (txn) => {
+      const user = await Repositories
+        .user(txn)
+        .findByEmail(email.toLowerCase());
       if (!user) throw new NotFoundError('There is no account associated with that email');
       const passwordMatched = await user.verifyPass(pass);
       if (!passwordMatched) throw new ForbiddenError('Incorrect password');
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(user, ActivityType.ACCOUNT_LOGIN);
+      await Repositories.activity(txn).logActivity(user, ActivityType.ACCOUNT_LOGIN);
       return user;
     });
     if (authenticatedUser.isBlocked()) throw new ForbiddenError('Your account has been blocked');
@@ -71,24 +90,33 @@ export default class UserAuthService {
     return jwt.sign(token, Config.auth.secret, { expiresIn: Config.auth.tokenLifespan });
   }
 
-  public async changeAccessCode(user: UserModel): Promise<void> {
-    return this.entityManager.transaction(async (txn) => {
+  public async setAccessCode(email: string): Promise<UserModel> {
+    return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
-      await userRepository.changeAccessCode(user);
+      const user = await userRepository.findByEmail(email);
+      if (!user) throw new NotFoundError();
+      return userRepository.upsertUser(user, { accessCode: UserAuthService.generateAccessCode() });
     });
   }
 
-  public async setAccountStateToPasswordReset(user: UserModel): Promise<void> {
-    return this.entityManager.transaction(async (txn) => {
+  public async putAccountInPasswordResetMode(email: string): Promise<UserModel> {
+    return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
-      await userRepository.setStateToPasswordReset(user);
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(user, ActivityType.ACCOUNT_RESET_PASS_REQUEST);
+      let user = await userRepository.findByEmail(email);
+      if (!user) throw new NotFoundError();
+      user = await userRepository.upsertUser(user, {
+        state: UserState.PASSWORD_RESET,
+        accessCode: UserAuthService.generateAccessCode(),
+      });
+      await Repositories
+        .activity(txn)
+        .logActivity(user, ActivityType.ACCOUNT_RESET_PASS_REQUEST);
+      return user;
     });
   }
 
   public async resetPassword(accessCode: string, newPassword: string): Promise<UserModel> {
-    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       const user = await userRepository.findByAccessCode(accessCode);
       if (!user) throw new BadRequestError('Invalid access code');
@@ -99,8 +127,9 @@ export default class UserAuthService {
         state: UserState.ACTIVE,
       });
 
-      const activityRepository = Repositories.activity(txn);
-      activityRepository.logActivity(user, ActivityType.ACCOUNT_RESET_PASS);
+      await Repositories
+        .activity(txn)
+        .logActivity(user, ActivityType.ACCOUNT_RESET_PASS);
       return user;
     });
   }
@@ -118,5 +147,9 @@ export default class UserAuthService {
 
   private static isAuthToken(token: string | object): token is AuthToken {
     return typeof token === 'object' && 'uuid' in token;
+  }
+
+  private static generateAccessCode(): string {
+    return crypto.randomBytes(16).toString('hex');
   }
 }

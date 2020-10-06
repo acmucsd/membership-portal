@@ -11,18 +11,18 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async getAllEvents(options: EventSearchOptions): Promise<EventModel[]> {
-    return this.getBaseQuery(options).getMany();
+    return this.getBaseEventSearchQuery(options).getMany();
   }
 
   public async getPastEvents(options: EventSearchOptions): Promise<EventModel[]> {
-    return this.getBaseQuery(options)
+    return this.getBaseEventSearchQuery(options)
       .andWhere('"end" < :now')
       .setParameter('now', new Date())
       .getMany();
   }
 
   public async getFutureEvents(options: EventSearchOptions): Promise<EventModel[]> {
-    return this.getBaseQuery(options)
+    return this.getBaseEventSearchQuery(options)
       .andWhere('"end" >= :now')
       .setParameter('now', new Date())
       .getMany();
@@ -45,7 +45,7 @@ export class EventRepository extends BaseRepository<EventModel> {
     return count === 0;
   }
 
-  private getBaseQuery(options: EventSearchOptions): SelectQueryBuilder<EventModel> {
+  private getBaseEventSearchQuery(options: EventSearchOptions): SelectQueryBuilder<EventModel> {
     let query = this.repository.createQueryBuilder()
       .skip(options.offset)
       .take(options.limit)

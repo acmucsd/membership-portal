@@ -7,19 +7,16 @@ import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(ActivityModel)
 export class ActivityRepository extends BaseRepository<ActivityModel> {
-  private static publicActivityTypes = [
+  private static publicActivities = new Set([
     ActivityType.ACCOUNT_CREATE,
     ActivityType.ATTEND_EVENT,
     ActivityType.ATTEND_EVENT_AS_STAFF,
     ActivityType.BONUS_POINTS,
     ActivityType.MILESTONE,
-  ];
+  ]);
 
   public async logActivity(
-    user: UserModel,
-    type: ActivityType,
-    pointsEarned?: number,
-    description?: string,
+    user: UserModel, type: ActivityType, pointsEarned?: number, description?: string,
   ): Promise<ActivityModel> {
     const activity = {
       user,
@@ -32,7 +29,7 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
   }
 
   public async logMilestone(description: string, pointsEarned: number): Promise<void> {
-    return this.manager.query(
+    return this.repository.query(
       'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "public") '
       + `SELECT uuid, '${ActivityType.MILESTONE}', '${description}', '${pointsEarned}', 'true' `
       + 'FROM "Users"',
@@ -41,7 +38,7 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
 
   public async logBonus(users: UserModel[], description: string, pointsEarned: number): Promise<void> {
     const uuids = users.map((user) => `'${user.uuid}'`);
-    return this.manager.query(
+    return this.repository.query(
       'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "public") '
       + `SELECT uuid, '${ActivityType.BONUS_POINTS}', '${description}', '${pointsEarned}', 'true' `
       + `FROM "Users" WHERE uuid IN (${uuids})`,
@@ -65,6 +62,6 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
   }
 
   private static isPublicActivityType(type: ActivityType): boolean {
-    return ActivityRepository.publicActivityTypes.includes(type);
+    return ActivityRepository.publicActivities.has(type);
   }
 }

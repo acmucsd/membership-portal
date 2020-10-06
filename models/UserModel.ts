@@ -8,7 +8,7 @@ import { OrderModel } from './OrderModel';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
-  @Column()
+  @Column({ select: false })
   @Generated('increment')
   id: number;
 
@@ -80,21 +80,12 @@ export class UserModel extends BaseEntity {
   @OneToMany((type) => OrderModel, (order) => order.user, { cascade: true })
   orders: OrderModel[];
 
-  public isBlocked(): boolean {
-    return this.state === UserState.BLOCKED;
-  }
-
   public async verifyPass(pass: string): Promise<boolean> {
     return bcrypt.compare(pass, this.hash);
   }
 
-  public markAsVerified(): Promise<UserModel> {
-    this.state = UserState.ACTIVE;
-    return this.save();
-  }
-
-  public hasEnoughCredits(credits: number): boolean {
-    return this.credits >= credits;
+  public isBlocked(): boolean {
+    return this.state === UserState.BLOCKED;
   }
 
   public isAdmin(): boolean {

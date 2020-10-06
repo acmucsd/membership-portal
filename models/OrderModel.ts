@@ -15,7 +15,7 @@ import { OrderItemModel } from './OrderItemModel';
 
 @Entity('Orders')
 export class OrderModel extends BaseEntity {
-  @Column()
+  @Column({ select: false })
   @Generated('increment')
   id: number;
 

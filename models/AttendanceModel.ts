@@ -6,7 +6,7 @@ import { EventModel } from './EventModel';
 
 @Entity('Attendances')
 export class AttendanceModel extends BaseEntity {
-  @Column()
+  @Column({ select: false })
   @Generated('increment')
   id: number;
 
