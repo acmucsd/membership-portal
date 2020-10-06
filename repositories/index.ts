@@ -48,3 +48,19 @@ export default class Repositories {
     return transactionalEntityManager.getCustomRepository(UserRepository);
   }
 }
+
+export class TransactionManager {
+  private entityManager: EntityManager;
+
+  constructor(entityManager: EntityManager) {
+    this.entityManager = entityManager;
+  }
+
+  public readOnly<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
+    return this.entityManager.transaction('REPEATABLE READ', fn);
+  }
+
+  public readWrite<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
+    return this.entityManager.transaction('SERIALIZABLE', fn);
+  }
+}
