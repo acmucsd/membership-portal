@@ -4,7 +4,7 @@ import { MerchandiseItemModel } from './MerchandiseItemModel';
 
 @Entity('MerchandiseCollections')
 export class MerchandiseCollectionModel extends BaseEntity {
-  @Column()
+  @Column({ select: false })
   @Generated('increment')
   id: number;
 

@@ -8,7 +8,7 @@ import { OrderModel } from './OrderModel';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
-  @Column()
+  @Column({ select: false })
   @Generated('increment')
   id: number;
 
