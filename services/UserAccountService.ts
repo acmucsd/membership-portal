@@ -11,7 +11,7 @@ import {
   PublicActivity,
   Milestone,
   UserPatches,
-  UserRegistration,
+  UserState,
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
@@ -20,22 +20,6 @@ import { UserModel } from '../models/UserModel';
 export default class UserAccountService {
   @InjectManager()
   private entityManager: EntityManager;
-
-  public async registerUser(registration: UserRegistration): Promise<UserModel> {
-    return this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      const emailAlreadyUsed = !!(await userRepository.findByEmail(registration.email));
-      if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
-      const user = await userRepository.upsertUser(UserModel.create({
-        ...registration,
-        hash: await UserRepository.generateHash(registration.password),
-        accessCode: UserRepository.generateAccessCode(),
-      }));
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(user, ActivityType.ACCOUNT_CREATE);
-      return user;
-    });
-  }
 
   public async findAll(): Promise<UserModel[]> {
     return this.entityManager.transaction(async (txn) => {
@@ -53,22 +37,13 @@ export default class UserAccountService {
     return user;
   }
 
-  public async findByEmail(email: string): Promise<UserModel> {
-    const user = await this.entityManager.transaction(async (txn) => {
+  public async verifyEmail(accessCode: string): Promise<void> {
+    await this.entityManager.transaction(async (txn) => {
       const userRepository = Repositories.user(txn);
-      return userRepository.findByEmail(email);
+      const user = await userRepository.findByAccessCode(accessCode);
+      if (!user) throw new NotFoundError();
+      userRepository.upsertUser(user, { state: UserState.ACTIVE });
     });
-    if (!user) throw new NotFoundError();
-    return user;
-  }
-
-  public async findByAccessCode(accessCode: string): Promise<UserModel> {
-    const user = await this.entityManager.transaction(async (txn) => {
-      const userRepository = Repositories.user(txn);
-      return userRepository.findByAccessCode(accessCode);
-    });
-    if (!user) throw new NotFoundError();
-    return user;
   }
 
   public async getLeaderboard(from?: number, to?: number, offset = 0, limit = 100): Promise<PublicProfile[]> {

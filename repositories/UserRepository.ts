@@ -1,8 +1,7 @@
 import { EntityRepository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
 import { UserModel } from '../models/UserModel';
-import { Uuid, UserState } from '../types';
+import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(UserModel)
@@ -34,21 +33,6 @@ export class UserRepository extends BaseRepository<UserModel> {
 
   public async findByAccessCode(accessCode: string): Promise<UserModel> {
     return this.repository.findOne({ accessCode });
-  }
-
-  public static generateAccessCode(): string {
-    return crypto.randomBytes(16).toString('hex');
-  }
-
-  public async changeAccessCode(user: UserModel): Promise<UserModel> {
-    user.accessCode = UserRepository.generateAccessCode();
-    return this.repository.save(user);
-  }
-
-  public async setStateToPasswordReset(user: UserModel): Promise<UserModel> {
-    user.accessCode = UserRepository.generateAccessCode();
-    user.state = UserState.PASSWORD_RESET;
-    return this.repository.save(user);
   }
 
   public static async generateHash(pass: string): Promise<string> {

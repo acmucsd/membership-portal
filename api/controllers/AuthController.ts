@@ -34,7 +34,8 @@ export class AuthController {
   @Post('/registration')
   async register(@Body() registrationRequest: RegistrationRequest,
     @RequestTrace() trace: string): Promise<RegistrationResponse> {
-    const user = await this.userAccountService.registerUser(registrationRequest.user);
+    registrationRequest.user.email = registrationRequest.user.email.toLowerCase();
+    const user = await this.userAuthService.registerUser(registrationRequest.user);
     this.emailService.sendEmailVerification(user.email, user.firstName, user.accessCode);
     log.info('user authentication (registration)', authActionMetadata(trace, user));
     return { error: null, user: user.getFullUserProfile() };
@@ -42,7 +43,7 @@ export class AuthController {
 
   @Post('/login')
   async login(@Body() loginRequest: LoginRequest, @RequestTrace() trace: string): Promise<LoginResponse> {
-    const user = await this.userAuthService.checkCredentials(loginRequest.email, loginRequest.password);
+    const user = await this.userAuthService.checkCredentials(loginRequest.email.toLowerCase(), loginRequest.password);
     const token = UserAuthService.generateAuthToken(user);
     log.info('user authentication (login)', authActionMetadata(trace, user));
     return { error: null, token };
@@ -50,24 +51,21 @@ export class AuthController {
 
   @Get('/emailVerification/:email')
   async resendEmailVerification(@Param('email') email: string): Promise<ResendEmailVerificationResponse> {
-    const user = await this.userAccountService.findByEmail(email);
-    await this.userAuthService.changeAccessCode(user);
+    const user = await this.userAuthService.changeAccessCode(email.toLowerCase());
     await this.emailService.sendEmailVerification(user.email, user.firstName, user.accessCode);
     return { error: null };
   }
 
   @Post('/emailVerification/:accessCode')
   async verifyEmail(@Param('accessCode') accessCode: string): Promise<VerifyEmailResponse> {
-    const user = await this.userAccountService.findByAccessCode(accessCode);
-    await user.markAsVerified();
+    await this.userAccountService.verifyEmail(accessCode);
     return { error: null };
   }
 
   @Get('/passwordReset/:email')
   async sendPasswordResetEmail(@Param('email') email: string,
     @RequestTrace() trace: string): Promise<SendPasswordResetEmailResponse> {
-    const user = await this.userAccountService.findByEmail(email);
-    await this.userAuthService.setAccountStateToPasswordReset(user);
+    const user = await this.userAuthService.putAccountInPasswordResetMode(email.toLowerCase());
     await this.emailService.sendPasswordReset(user.email, user.firstName, user.accessCode);
     log.info('user authentication (password reset - email)', authActionMetadata(trace, user));
     return { error: null };

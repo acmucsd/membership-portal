@@ -37,7 +37,7 @@ export class AdminController {
     @AuthenticatedUser() user: UserModel): Promise<CreateBonusResponse> {
     if (!PermissionsService.canGrantPointBonuses(user)) throw new ForbiddenError();
     const { bonus } = createBonusRequest;
-    const emails = bonus.users;
+    const emails = bonus.users.map((e) => e.toLowerCase());
     await this.userAccountService.grantBonusPoints(emails, bonus.description, bonus.points);
     return { error: null, emails };
   }
