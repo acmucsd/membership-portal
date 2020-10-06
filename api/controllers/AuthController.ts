@@ -51,7 +51,7 @@ export class AuthController {
 
   @Get('/emailVerification/:email')
   async resendEmailVerification(@Param('email') email: string): Promise<ResendEmailVerificationResponse> {
-    const user = await this.userAuthService.changeAccessCode(email.toLowerCase());
+    const user = await this.userAuthService.setAccessCode(email.toLowerCase());
     await this.emailService.sendEmailVerification(user.email, user.firstName, user.accessCode);
     return { error: null };
   }
