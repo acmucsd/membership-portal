@@ -52,7 +52,7 @@ export default class EventService {
   }
 
   public async updateByUuid(uuid: Uuid, changes: Partial<EventModel>): Promise<PublicEvent> {
-    const updatedEvent = await this.entityManager.transaction(async (txn) => {
+    const updatedEvent = await this.entityManager.transaction('SERIALIZABLE', async (txn) => {
       const eventRepository = Repositories.event(txn);
       const currentEvent = await eventRepository.findByUuid(uuid);
       if (!currentEvent) throw new NotFoundError();
@@ -62,7 +62,7 @@ export default class EventService {
   }
 
   public async deleteByUuid(uuid: Uuid): Promise<void> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
       const eventRepository = Repositories.event(txn);
       const event = await eventRepository.findByUuid(uuid);
       if (!event) throw new NotFoundError();

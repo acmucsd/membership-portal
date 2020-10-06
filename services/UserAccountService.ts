@@ -102,14 +102,14 @@ export default class UserAccountService {
   }
 
   public async createMilestone(milestone: Milestone): Promise<void> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
       await Repositories.user(txn).addPointsToAll(milestone.points);
       await Repositories.activity(txn).logMilestone(milestone.name, milestone.points);
     });
   }
 
   public async grantBonusPoints(emails: string[], description: string, points: number) {
-    return this.entityManager.transaction(async (txn) => {
+    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
       const userRepository = Repositories.user(txn);
       const users = await userRepository.findByEmails(emails);
       if (users.length !== emails.length) {

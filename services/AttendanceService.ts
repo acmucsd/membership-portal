@@ -27,7 +27,7 @@ export default class AttendanceService {
   }
 
   public async attendEvent(user: UserModel, attendanceCode: string, asStaff = false): Promise<PublicAttendance> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
       const event = await Repositories.event(txn).findByAttendanceCode(attendanceCode);
       if (!event) throw new NotFoundError('Oh no! That code didn\'t work.');
       if (!event.isOngoing()) throw new UserError('You can only enter the attendance code during the event!');

@@ -64,7 +64,7 @@ export default class MerchStoreService {
   }
 
   public async editCollection(uuid: Uuid, changes: MerchCollectionEdit): Promise<PublicMerchCollection> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       const currentCollection = await merchCollectionRepository.findByUuid(uuid);
       if (!currentCollection) throw new NotFoundError('Collection not found');
@@ -81,7 +81,7 @@ export default class MerchStoreService {
   }
 
   public async deleteCollection(uuid: Uuid): Promise<void> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       const collection = await merchCollectionRepository.findByUuid(uuid);
       if (!collection) throw new NotFoundError('Collection not found');
@@ -113,7 +113,7 @@ export default class MerchStoreService {
   }
 
   public async editItem(uuid: Uuid, itemEdit: MerchItemEdit): Promise<MerchandiseItemModel> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
@@ -146,7 +146,7 @@ export default class MerchStoreService {
   }
 
   public async deleteItem(uuid: Uuid): Promise<void> {
-    return this.entityManager.transaction(async (txn) => {
+    return this.entityManager.transaction('SERIALIZABLE', async (txn) => {
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
@@ -168,7 +168,7 @@ export default class MerchStoreService {
   }
 
   public async deleteItemOption(uuid: Uuid): Promise<void> {
-    await this.entityManager.transaction(async (txn) => {
+    await this.entityManager.transaction('SERIALIZABLE', async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const option = await merchItemOptionRepository.findByUuid(uuid);
       if (!option) throw new NotFoundError();
