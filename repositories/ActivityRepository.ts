@@ -7,19 +7,16 @@ import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(ActivityModel)
 export class ActivityRepository extends BaseRepository<ActivityModel> {
-  private static publicActivities = [
+  private static publicActivities = new Set([
     ActivityType.ACCOUNT_CREATE,
     ActivityType.ATTEND_EVENT,
     ActivityType.ATTEND_EVENT_AS_STAFF,
     ActivityType.BONUS_POINTS,
     ActivityType.MILESTONE,
-  ];
+  ]);
 
   public async logActivity(
-    user: UserModel,
-    type: ActivityType,
-    pointsEarned?: number,
-    description?: string,
+    user: UserModel, type: ActivityType, pointsEarned?: number, description?: string,
   ): Promise<ActivityModel> {
     const activity = {
       user,
@@ -65,6 +62,6 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
   }
 
   private static isPublicActivityType(type: ActivityType): boolean {
-    return ActivityRepository.publicActivities.includes(type);
+    return ActivityRepository.publicActivities.has(type);
   }
 }
