@@ -20,6 +20,6 @@ export class RequestLogger implements ExpressMiddlewareInterface {
 @Middleware({ type: 'before' })
 export class MetricsRecorder implements ExpressMiddlewareInterface {
   async use(request: express.Request, response: express.Response, next?: express.NextFunction) {
-    metrics.increment('api_usage', 1, [`route:${request.method}_${request.url.split('/').join('.')}`]);
+    metrics.increment('api_usage', 1, [`route:${request.url.split('/').join(':')}`, `method:${request.method}`]);
   }
 }
