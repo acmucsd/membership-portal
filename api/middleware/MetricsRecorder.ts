@@ -5,6 +5,10 @@ import * as metrics from 'datadog-metrics';
 @Middleware({ type: 'before' })
 export class MetricsRecorder implements ExpressMiddlewareInterface {
   async use(request: express.Request, response: express.Response, next?: express.NextFunction) {
-    metrics.increment('api_usage', 1, [`route:${request.url.split('/').join(':')}`, `method:${request.method}`]);
+    metrics.increment('testing_api_usage', 1, [
+      `route${request.url.split('/').join(':')}`,
+      `method:${request.method}`,
+    ]);
+    return next();
   }
 }
