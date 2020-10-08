@@ -68,4 +68,8 @@ export const Config = {
     user: process.env.SENDGRID_USER,
     apiKey: process.env.SENDGRID_API_KEY,
   },
+
+  metrics: {
+    apiKey: process.env.DATADOG_API_KEY,
+  },
 };
