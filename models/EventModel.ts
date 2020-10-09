@@ -2,6 +2,7 @@ import { BaseEntity, Column, Entity, Generated, Index, PrimaryGeneratedColumn, O
 import { pick } from 'underscore';
 import { PublicEvent, Uuid } from '../types';
 import { AttendanceModel } from './AttendanceModel';
+import { EventFeedbackModel } from './EventFeedbackModel';
 
 @Entity('Events')
 @Index('event_start_end_index', ['start', 'end'])
@@ -63,7 +64,10 @@ export class EventModel extends BaseEntity {
   @OneToMany((type) => AttendanceModel, (attendance) => attendance.event, { cascade: true })
   attendances: AttendanceModel[];
 
-  public getPublicEvent(canSeeAttendanceCode = false): PublicEvent {
+  @OneToMany((type) => EventFeedbackModel, (eventFeedback) => eventFeedback.event, { cascade: true })
+  feedback: EventFeedbackModel[];
+
+  public getPublicEvent(canSeeAttendanceCode = false, canSeeFeedback = false): PublicEvent {
     const publicEvent: PublicEvent = pick(this, [
       'uuid',
       'organization',
@@ -81,6 +85,10 @@ export class EventModel extends BaseEntity {
       'staffPointBonus',
     ]);
     if (canSeeAttendanceCode) publicEvent.attendanceCode = this.attendanceCode;
+    if (canSeeFeedback) {
+      publicEvent.feedback = this.feedback.map((feedback) => feedback.getPublicEventFeedback());
+    }
+
     return publicEvent;
   }
 

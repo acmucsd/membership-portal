@@ -74,6 +74,11 @@ export interface VerifyAuthTokenResponse extends ApiResponse {
 }
 
 // EVENT
+export interface PublicEventFeedback {
+  uuid: Uuid,
+  user: Uuid,
+  feedback: string;
+}
 
 export interface PublicEvent {
   uuid: Uuid;
@@ -91,6 +96,7 @@ export interface PublicEvent {
   pointValue: number;
   requiresStaff: boolean;
   staffPointBonus: number;
+  feedback?: PublicEventFeedback[];
 }
 
 export interface GetPastEventsResponse extends ApiResponse {
@@ -121,6 +127,10 @@ export interface GetAllEventsResponse extends ApiResponse {
 
 export interface CreateEventResponse extends ApiResponse {
   event: PublicEvent;
+}
+
+export interface AddEventFeedbackResponse extends ApiResponse {
+  eventFeedback: PublicEventFeedback[];
 }
 
 // LEADERBOARD

@@ -2,8 +2,9 @@ import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
+import { UserModel } from 'models/UserModel';
 import { EventModel } from '../models/EventModel';
-import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
+import { Uuid, PublicEvent, Event, EventSearchOptions, PublicEventFeedback } from '../types';
 import Repositories, { TransactionsManager } from '../repositories';
 import { UserError } from '../utils/Errors';
 
@@ -25,40 +26,43 @@ export default class EventService {
     return eventCreated.getPublicEvent();
   }
 
-  public async getAllEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
+  public async getAllEvents(canSeeAttendanceCode = false, canSeeFeedback = false,
+    options: EventSearchOptions): Promise<PublicEvent[]> {
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getAllEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
+    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode, canSeeFeedback));
   }
 
-  public async getPastEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
+  public async getPastEvents(canSeeAttendanceCode = false, canSeeFeedback = false,
+    options: EventSearchOptions): Promise<PublicEvent[]> {
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getPastEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
+    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode, canSeeFeedback));
   }
 
-  public async getFutureEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
+  public async getFutureEvents(canSeeAttendanceCode = false, canSeeFeedback = false,
+    options: EventSearchOptions): Promise<PublicEvent[]> {
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getFutureEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
+    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode, canSeeFeedback));
   }
 
-  public async findByUuid(uuid: Uuid, canSeeAttendanceCode = false): Promise<PublicEvent> {
+  public async findByUuid(uuid: Uuid, canSeeAttendanceCode = false, canSeeFeedback = false): Promise<PublicEvent> {
     const event = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .findByUuid(uuid));
     if (!event) throw new NotFoundError('Event not found');
-    return event.getPublicEvent(canSeeAttendanceCode);
+    return event.getPublicEvent(canSeeAttendanceCode, canSeeFeedback);
   }
 
   public async updateByUuid(uuid: Uuid, changes: Partial<EventModel>): Promise<PublicEvent> {
     const updatedEvent = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const currentEvent = await eventRepository.findByUuid(uuid);
-      if (!currentEvent) throw new NotFoundError();
+      if (!currentEvent) throw new NotFoundError('Event not found');
       return eventRepository.upsertEvent(currentEvent, changes);
     });
     return updatedEvent.getPublicEvent(true);
@@ -68,8 +72,18 @@ export default class EventService {
     return this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const event = await eventRepository.findByUuid(uuid);
-      if (!event) throw new NotFoundError();
+      if (!event) throw new NotFoundError('Event not found');
       await eventRepository.deleteEvent(event);
     });
+  }
+
+  public async addEventFeedback(uuid: Uuid, feedback: string[], user: UserModel): Promise<PublicEventFeedback[]> {
+    const eventFeedback = await this.transactions.readWrite(async (txn) => {
+      const eventRepository = Repositories.event(txn);
+      const event = await eventRepository.findByUuid(uuid);
+      if (!event) throw new NotFoundError('Event not found');
+      return Repositories.eventFeedback(txn).addEventFeedback(feedback, event, user);
+    });
+    return eventFeedback.map((fb) => fb.getPublicEventFeedback());
   }
 }

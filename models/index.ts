@@ -7,11 +7,13 @@ import { MerchandiseItemModel } from './MerchandiseItemModel';
 import { OrderModel } from './OrderModel';
 import { OrderItemModel } from './OrderItemModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
+import { EventFeedbackModel } from './EventFeedbackModel';
 
 export const models = [
   UserModel,
   ActivityModel,
   EventModel,
+  EventFeedbackModel,
   AttendanceModel,
   MerchandiseCollectionModel,
   MerchandiseItemModel,

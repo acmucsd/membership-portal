@@ -116,6 +116,10 @@ export interface AttendEventRequest {
   asStaff?: boolean;
 }
 
+export interface AddEventFeedbackRequest {
+  feedback: string[];
+}
+
 export interface EventSearchOptions {
   offset?: number;
   limit?: number;

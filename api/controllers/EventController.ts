@@ -19,6 +19,8 @@ import {
   UpdateEventCoverResponse,
   GetFutureEventsResponse,
   GetPastEventsResponse,
+  AddEventFeedbackRequest,
+  AddEventFeedbackResponse,
 } from '../../types';
 import { EventSearchOptions, PatchEventRequest, CreateEventRequest } from '../validators/EventControllerRequests';
 
@@ -35,7 +37,8 @@ export class EventController {
   async getPastEvents(@QueryParams() options: EventSearchOptions,
     @AuthenticatedUser() user: UserModel): Promise<GetPastEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    const events = await this.eventService.getPastEvents(canSeeAttendanceCode, options);
+    const canSeeFeedback = !!user && PermissionsService.canSeeFeedback(user);
+    const events = await this.eventService.getPastEvents(canSeeAttendanceCode, canSeeFeedback, options);
     return { error: null, events };
   }
 
@@ -44,7 +47,8 @@ export class EventController {
   async getFutureEvents(@QueryParams() options: EventSearchOptions,
     @AuthenticatedUser() user: UserModel): Promise<GetFutureEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    const events = await this.eventService.getFutureEvents(canSeeAttendanceCode, options);
+    const canSeeFeedback = !!user && PermissionsService.canSeeFeedback(user);
+    const events = await this.eventService.getFutureEvents(canSeeAttendanceCode, canSeeFeedback, options);
     return { error: null, events };
   }
 
@@ -65,7 +69,8 @@ export class EventController {
   async getOneEvent(@Param('uuid') uuid: Uuid,
     @AuthenticatedUser() user: UserModel): Promise<GetOneEventResponse> {
     const canSeeAttendanceCode = PermissionsService.canEditEvents(user);
-    const event = await this.eventService.findByUuid(uuid, canSeeAttendanceCode);
+    const canSeeFeedback = PermissionsService.canSeeFeedback(user);
+    const event = await this.eventService.findByUuid(uuid, canSeeAttendanceCode, canSeeFeedback);
     return { error: null, event };
   }
 
@@ -92,7 +97,8 @@ export class EventController {
   @Get()
   async getAllEvents(@QueryParams() options: EventSearchOptions, @AuthenticatedUser() user: UserModel) {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    const events = await this.eventService.getAllEvents(canSeeAttendanceCode, options);
+    const canSeeFeedback = !!user && PermissionsService.canSeeFeedback(user);
+    const events = await this.eventService.getAllEvents(canSeeAttendanceCode, canSeeFeedback, options);
     return { error: null, events };
   }
 
@@ -103,5 +109,13 @@ export class EventController {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
     const event = await this.eventService.create(createEventRequest.event);
     return { error: null, event };
+  }
+
+  @UseBefore(UserAuthentication)
+  @Post('/feedback/:uuid')
+  async addEventFeedback(@Param('uuid') uuid: Uuid, @Body() addEventFeedbackRequest: AddEventFeedbackRequest,
+    @AuthenticatedUser() user: UserModel): Promise<AddEventFeedbackResponse> {
+    const eventFeedback = await this.eventService.addEventFeedback(uuid, addEventFeedbackRequest.feedback, user);
+    return { error: null, eventFeedback };
   }
 }

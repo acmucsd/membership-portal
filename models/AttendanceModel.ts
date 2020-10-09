@@ -36,7 +36,14 @@ export class AttendanceModel extends BaseEntity {
       'timestamp',
       'asStaff',
     ]);
-    const publicAttendance: PublicAttendance = { ...rawAttendance };
+
+    const publicAttendance: PublicAttendance = {
+      ...rawAttendance,
+      event: {
+        ...rawAttendance.event,
+        feedback: rawAttendance.event.feedback.map((feedback) => feedback.getPublicEventFeedback()),
+      },
+    };
     if (rawAttendance.user) publicAttendance.user = rawAttendance.user.getPublicProfile();
     if (rawAttendance.event) publicAttendance.event = rawAttendance.event.getPublicEvent();
     return publicAttendance;
