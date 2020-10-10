@@ -70,11 +70,7 @@ export class EventRepository extends BaseRepository<EventModel> {
 @EntityRepository(EventFeedbackModel)
 export class EventFeedbackRepository extends BaseRepository<EventFeedbackModel> {
   public async addEventFeedback(feedback: string[], event: EventModel, user: UserModel): Promise<EventFeedbackModel[]> {
-    const eventFeedback = feedback.map((fb) => EventFeedbackModel.create({
-      user,
-      event,
-      feedback: fb,
-    }));
+    const eventFeedback = feedback.map((comment) => EventFeedbackModel.create({ user, event, comment }));
     return this.repository.save(eventFeedback);
   }
 }

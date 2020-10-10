@@ -115,7 +115,7 @@ export class EventController {
   @Post('/feedback/:uuid')
   async addEventFeedback(@Param('uuid') uuid: Uuid, @Body() addEventFeedbackRequest: AddEventFeedbackRequest,
     @AuthenticatedUser() user: UserModel): Promise<AddEventFeedbackResponse> {
-    const eventFeedback = await this.eventService.addEventFeedback(uuid, addEventFeedbackRequest.feedback, user);
-    return { error: null, eventFeedback };
+    const feedback = await this.eventService.addEventFeedback(uuid, addEventFeedbackRequest.feedback, user);
+    return { error: null, feedback };
   }
 }

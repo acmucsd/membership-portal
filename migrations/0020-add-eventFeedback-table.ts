@@ -26,7 +26,7 @@ export class AddEventFeedbackTable1602120071159 implements MigrationInterface {
           type: 'uuid',
         },
         {
-          name: 'feedback',
+          name: 'comment',
           type: 'varchar(255)',
         },
       ],

@@ -77,7 +77,7 @@ export interface VerifyAuthTokenResponse extends ApiResponse {
 export interface PublicEventFeedback {
   uuid: Uuid,
   user: Uuid,
-  feedback: string;
+  comment: string;
 }
 
 export interface PublicEvent {
@@ -130,7 +130,7 @@ export interface CreateEventResponse extends ApiResponse {
 }
 
 export interface AddEventFeedbackResponse extends ApiResponse {
-  eventFeedback: PublicEventFeedback[];
+  feedback: PublicEventFeedback[];
 }
 
 // LEADERBOARD

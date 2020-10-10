@@ -23,13 +23,13 @@ export class EventFeedbackModel extends BaseEntity {
   user: UserModel;
 
   @Column()
-  feedback: string;
+  comment: string;
 
   public getPublicEventFeedback(): PublicEventFeedback {
     return {
       uuid: this.uuid,
       user: this.user.uuid,
-      feedback: this.feedback,
+      comment: this.comment,
     };
   }
 }
