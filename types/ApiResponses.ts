@@ -263,6 +263,15 @@ export interface PrivateProfile extends PublicProfile {
   credits: number,
 }
 
+export interface PublicUserFeedback {
+  uuid: Uuid,
+  user: Uuid,
+  title: string;
+  description: string;
+  timestamp: Date;
+  responseReceived: boolean;
+}
+
 export interface GetUserActivityStreamResponse extends ApiResponse {
   activity: PublicActivity[];
 }
@@ -281,4 +290,12 @@ export interface GetCurrentUserResponse extends ApiResponse {
 
 export interface PatchUserResponse extends ApiResponse {
   user: PrivateProfile;
+}
+
+export interface GetUserFeedbackResponse extends ApiResponse {
+  feedback: PublicUserFeedback[];
+}
+
+export interface AddUserFeedbackResponse extends ApiResponse {
+  feedback: PublicUserFeedback;
 }

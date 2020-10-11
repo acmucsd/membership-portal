@@ -36,6 +36,11 @@ export interface RegistrationRequest {
 
 // USER
 
+export interface UserFeedback {
+  title: string;
+  description: string;
+}
+
 export interface PasswordUpdate extends PasswordChange {
   password: string;
 }
@@ -51,6 +56,10 @@ export interface UserPatches {
 
 export interface PatchUserRequest {
   user: UserPatches;
+}
+
+export interface AddUserFeedbackRequest {
+  feedback: UserFeedback;
 }
 
 // LEADERBOARD

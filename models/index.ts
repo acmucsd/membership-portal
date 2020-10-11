@@ -8,9 +8,11 @@ import { OrderModel } from './OrderModel';
 import { OrderItemModel } from './OrderItemModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
 import { EventFeedbackModel } from './EventFeedbackModel';
+import { UserFeedbackModel } from './UserFeedbackModel';
 
 export const models = [
   UserModel,
+  UserFeedbackModel,
   ActivityModel,
   EventModel,
   EventFeedbackModel,

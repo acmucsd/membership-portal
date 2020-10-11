@@ -1,5 +1,5 @@
 import { EntityManager } from 'typeorm';
-import { UserRepository } from './UserRepository';
+import { UserFeedbackRepository, UserRepository } from './UserRepository';
 import { AttendanceRepository } from './AttendanceRepository';
 import { EventRepository, EventFeedbackRepository } from './EventRepository';
 import { MerchOrderRepository, OrderItemRepository } from './MerchOrderRepository';
@@ -50,6 +50,10 @@ export default class Repositories {
 
   public static user(transactionalEntityManager: EntityManager): UserRepository {
     return transactionalEntityManager.getCustomRepository(UserRepository);
+  }
+
+  public static userFeedback(transactionalEntityManager: EntityManager): UserFeedbackRepository {
+    return transactionalEntityManager.getCustomRepository(UserFeedbackRepository);
   }
 }
 

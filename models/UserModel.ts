@@ -6,6 +6,7 @@ import { ActivityModel } from './ActivityModel';
 import { AttendanceModel } from './AttendanceModel';
 import { OrderModel } from './OrderModel';
 import { EventFeedbackModel } from './EventFeedbackModel';
+import { UserFeedbackModel } from './UserFeedbackModel';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
@@ -83,6 +84,9 @@ export class UserModel extends BaseEntity {
 
   @OneToMany((type) => EventFeedbackModel, (eventFeedback) => eventFeedback.user, { cascade: true })
   eventFeedback: EventFeedbackModel;
+
+  @OneToMany((type) => UserFeedbackModel, (userFeedback) => userFeedback.user, { cascade: true })
+  userFeedback: UserFeedbackModel;
 
   public async verifyPass(pass: string): Promise<boolean> {
     return bcrypt.compare(pass, this.hash);
