@@ -1,10 +1,11 @@
-import { Allow, IsNotEmpty, IsDateString, IsDefined, ValidateNested } from 'class-validator';
+import { Allow, IsNotEmpty, IsDateString, IsDefined, ValidateNested, ArrayNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   EventSearchOptions as IEventSearchOptions,
   OptionalEventProperties as IOptionalEventProperties,
   CreateEventRequest as ICreateEventRequest,
   PatchEventRequest as IPatchEventRequest,
+  AddEventFeedbackRequest as IAddEventFeedbackRequest,
   Event as IEvent,
 } from '../../types';
 
@@ -105,4 +106,10 @@ export class PatchEventRequest implements IPatchEventRequest {
   @ValidateNested()
   @IsDefined()
   event: EventPatches;
+}
+
+export class AddEventFeedbackRequest implements IAddEventFeedbackRequest {
+  @IsDefined()
+  @ArrayNotEmpty()
+  feedback: string[];
 }

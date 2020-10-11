@@ -26,36 +26,37 @@ export default class EventService {
     return eventCreated.getPublicEvent();
   }
 
-  public async getAllEvents(canSeeAttendanceCode = false, canSeeFeedback = false,
+  public async getAllEvents(canSeeAttendanceCode = false, canSeeEventFeedback = false,
     options: EventSearchOptions): Promise<PublicEvent[]> {
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getAllEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode, canSeeFeedback));
+    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode, canSeeEventFeedback));
   }
 
-  public async getPastEvents(canSeeAttendanceCode = false, canSeeFeedback = false,
+  public async getPastEvents(canSeeAttendanceCode = false, canSeeEventFeedback = false,
     options: EventSearchOptions): Promise<PublicEvent[]> {
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getPastEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode, canSeeFeedback));
+    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode, canSeeEventFeedback));
   }
 
-  public async getFutureEvents(canSeeAttendanceCode = false, canSeeFeedback = false,
+  public async getFutureEvents(canSeeAttendanceCode = false, canSeeEventFeedback = false,
     options: EventSearchOptions): Promise<PublicEvent[]> {
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getFutureEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode, canSeeFeedback));
+    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode, canSeeEventFeedback));
   }
 
-  public async findByUuid(uuid: Uuid, canSeeAttendanceCode = false, canSeeFeedback = false): Promise<PublicEvent> {
+  public async findByUuid(uuid: Uuid, canSeeAttendanceCode = false,
+    canSeeEventFeedback = false): Promise<PublicEvent> {
     const event = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .findByUuid(uuid));
     if (!event) throw new NotFoundError('Event not found');
-    return event.getPublicEvent(canSeeAttendanceCode, canSeeFeedback);
+    return event.getPublicEvent(canSeeAttendanceCode, canSeeEventFeedback);
   }
 
   public async updateByUuid(uuid: Uuid, changes: Partial<EventModel>): Promise<PublicEvent> {
