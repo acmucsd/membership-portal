@@ -13,7 +13,7 @@ export class UserFeedbackModel extends BaseEntity {
 
   @ManyToOne((type) => UserModel, (user) => user.userFeedback, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user' })
-  @Index('event_feedback_user_index')
+  @Index('user_feedback_by_user_index')
   user: UserModel;
 
   @Column()
@@ -26,7 +26,7 @@ export class UserFeedbackModel extends BaseEntity {
   timestamp: Date;
 
   @Column({ default: false })
-  responseReceived: boolean;
+  acknowledged: boolean;
 
   public getPublicUserFeedback(): PublicUserFeedback {
     return {
@@ -35,7 +35,7 @@ export class UserFeedbackModel extends BaseEntity {
       title: this.title,
       description: this.description,
       timestamp: this.timestamp,
-      responseReceived: this.responseReceived,
+      acknowledged: this.acknowledged,
     };
   }
 }

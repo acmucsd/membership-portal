@@ -269,7 +269,7 @@ export interface PublicUserFeedback {
   title: string;
   description: string;
   timestamp: Date;
-  responseReceived: boolean;
+  acknowledged: boolean;
 }
 
 export interface GetUserActivityStreamResponse extends ApiResponse {

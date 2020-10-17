@@ -8,6 +8,7 @@ import {
   AddEventFeedbackRequest as IAddEventFeedbackRequest,
   Event as IEvent,
 } from '../../types';
+import { IsValidEventFeedback } from '../decorators/Validators';
 
 export class OptionalEventProperties implements IOptionalEventProperties {
   @IsNotEmpty()
@@ -111,5 +112,6 @@ export class PatchEventRequest implements IPatchEventRequest {
 export class AddEventFeedbackRequest implements IAddEventFeedbackRequest {
   @IsDefined()
   @ArrayNotEmpty()
+  @IsValidEventFeedback()
   feedback: string[];
 }

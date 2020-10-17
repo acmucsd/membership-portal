@@ -35,7 +35,7 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async findByAttendanceCode(attendanceCode: string): Promise<EventModel> {
-    return this.getBaseFindEventQuery().where({ attendanceCode }).getOne();
+    return this.repository.findOne({ attendanceCode });
   }
 
   public async deleteEvent(event: EventModel): Promise<EventModel> {
@@ -69,8 +69,12 @@ export class EventRepository extends BaseRepository<EventModel> {
 
 @EntityRepository(EventFeedbackModel)
 export class EventFeedbackRepository extends BaseRepository<EventFeedbackModel> {
-  public async addEventFeedback(feedback: string[], event: EventModel, user: UserModel): Promise<EventFeedbackModel[]> {
-    const eventFeedback = feedback.map((comment) => EventFeedbackModel.create({ user, event, comment }));
+  public async getFeedbackByUser(user: UserModel) {
+    return this.repository.find({ user });
+  }
+
+  public async addEventFeedback(comments: string[], event: EventModel, user: UserModel): Promise<EventFeedbackModel> {
+    const eventFeedback = EventFeedbackModel.create({ user, event, comments });
     return this.repository.save(eventFeedback);
   }
 }

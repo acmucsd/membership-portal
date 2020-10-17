@@ -36,14 +36,14 @@ export class AddUserFeedbackTable1602394486221 implements MigrationInterface {
           default: 'CURRENT_TIMESTAMP(6)',
         },
         {
-          name: 'responseReceived',
+          name: 'acknowledged',
           type: 'boolean',
           default: 'false',
         },
       ],
       indices: [
         {
-          name: 'user_feedback_user_index',
+          name: 'user_feedback_by_user_index',
           columnNames: ['user'],
         },
       ],

@@ -26,17 +26,17 @@ export class AddEventFeedbackTable1602120071159 implements MigrationInterface {
           type: 'uuid',
         },
         {
-          name: 'comment',
-          type: 'varchar(255)',
+          name: 'comments',
+          type: 'text',
         },
       ],
       indices: [
         new TableIndex({
-          name: 'event_feedback_event_index',
+          name: 'event_feedback_by_event_index',
           columnNames: ['event'],
         }),
         new TableIndex({
-          name: 'event_feedback_user_index',
+          name: 'event_feedback_by_user_index',
           columnNames: ['user'],
         }),
       ],

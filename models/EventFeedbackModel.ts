@@ -14,22 +14,32 @@ export class EventFeedbackModel extends BaseEntity {
 
   @ManyToOne((type) => EventModel, (event) => event.feedback, { nullable: false })
   @JoinColumn({ name: 'event' })
-  @Index('event_feedback_event_index')
+  @Index('event_feedback_by_event_index')
   event: EventModel;
 
   @ManyToOne((type) => UserModel, (user) => user.eventFeedback, { nullable: false })
   @JoinColumn({ name: 'user' })
-  @Index('event_feedback_user_index')
+  @Index('event_feedback_by_user_index')
   user: UserModel;
 
-  @Column()
-  comment: string;
+  @Column({
+    type: 'text',
+    transformer: {
+      to(value: string[]) {
+        return JSON.stringify(value);
+      },
+      from(value: string) {
+        return JSON.parse(value);
+      },
+    },
+  })
+  comments: string[];
 
-  public getPublicEventFeedback(): PublicEventFeedback {
-    return {
+  public getPublicEventFeedback(): PublicEventFeedback[] {
+    return this.comments.map((comment) => ({
       uuid: this.uuid,
       user: this.user.uuid,
-      comment: this.comment,
-    };
+      comment,
+    }));
   }
 }

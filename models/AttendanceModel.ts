@@ -39,10 +39,7 @@ export class AttendanceModel extends BaseEntity {
 
     const publicAttendance: PublicAttendance = {
       ...rawAttendance,
-      event: {
-        ...rawAttendance.event,
-        feedback: rawAttendance.event.feedback.map((feedback) => feedback.getPublicEventFeedback()),
-      },
+      event: rawAttendance.event ? rawAttendance.event.getPublicEvent() : null,
     };
     if (rawAttendance.user) publicAttendance.user = rawAttendance.user.getPublicProfile();
     if (rawAttendance.event) publicAttendance.event = rawAttendance.event.getPublicEvent();

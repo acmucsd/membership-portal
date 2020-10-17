@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, Generated, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { pick } from 'underscore';
+import { flatten, pick } from 'underscore';
 import { PublicEvent, Uuid } from '../types';
 import { AttendanceModel } from './AttendanceModel';
 import { EventFeedbackModel } from './EventFeedbackModel';
@@ -86,7 +86,7 @@ export class EventModel extends BaseEntity {
     ]);
     if (canSeeAttendanceCode) publicEvent.attendanceCode = this.attendanceCode;
     if (canSeeFeedback) {
-      publicEvent.feedback = this.feedback.map((feedback) => feedback.getPublicEventFeedback());
+      publicEvent.feedback = flatten(this.feedback.map((feedback) => feedback.getPublicEventFeedback()));
     }
 
     return publicEvent;
