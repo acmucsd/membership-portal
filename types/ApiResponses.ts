@@ -26,7 +26,6 @@ export interface CreateBonusResponse extends ApiResponse {
   emails: string[];
 }
 
-
 // ATTENDANCE
 
 export interface PublicAttendance {

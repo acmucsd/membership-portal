@@ -1,10 +1,8 @@
-import { JsonController, Post, UploadedFile, UseBefore, ForbiddenError, Body } from 'routing-controllers';
+import { JsonController, Post, UseBefore, ForbiddenError, Body } from 'routing-controllers';
 import { Inject } from 'typedi';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { CreateBonusRequest, CreateMilestoneRequest } from '../validators/AdminControllerRequests';
 import {
-  File,
-  MediaType,
   CreateMilestoneResponse,
   CreateBonusResponse,
 } from '../../types';
