@@ -7,7 +7,6 @@ import {
   MediaType,
   CreateMilestoneResponse,
   CreateBonusResponse,
-  UploadBannerResponse,
 } from '../../types';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import UserAccountService from '../../services/UserAccountService';
@@ -40,13 +39,5 @@ export class AdminController {
     const emails = bonus.users.map((e) => e.toLowerCase());
     await this.userAccountService.grantBonusPoints(emails, bonus.description, bonus.points);
     return { error: null, emails };
-  }
-
-  @Post('/banner')
-  async uploadBanner(@UploadedFile(
-    'image', { options: StorageService.getFileOptions(MediaType.BANNER) },
-  ) file: File): Promise<UploadBannerResponse> {
-    const banner = await this.storageService.upload(file, MediaType.BANNER, 'banner');
-    return { error: null, banner };
   }
 }

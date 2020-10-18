@@ -51,7 +51,7 @@ export class EventController {
   @UseBefore(UserAuthentication)
   @Post('/picture/:uuid')
   async updateEventCover(@UploadedFile('image',
-    { options: StorageService.getFileOptions(MediaType.BANNER) }) file: File,
+    { options: StorageService.getFileOptions(MediaType.EVENT_COVER) }) file: File,
     @Param('uuid') uuid: Uuid,
     @AuthenticatedUser() user: UserModel): Promise<UpdateEventCoverResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();

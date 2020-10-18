@@ -15,7 +15,6 @@ export enum UserState {
 export enum MediaType {
   EVENT_COVER = 'EVENT_COVER',
   PROFILE_PICTURE = 'PROFILE_PICTURE',
-  BANNER = 'BANNER',
 }
 
 export enum ActivityType {

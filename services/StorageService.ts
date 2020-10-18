@@ -61,13 +61,6 @@ export default class StorageService {
           uploadPath: Config.file.PROFILE_PICTURE_UPLOAD_PATH,
         };
       }
-      case MediaType.BANNER: {
-        return {
-          type: MediaType.BANNER,
-          maxFileSize: Config.file.MAX_BANNER_FILE_SIZE,
-          uploadPath: Config.file.BANNER_UPLOAD_PATH,
-        };
-      }
       default: {
         throw new InternalServerError('Invalid media type for file');
       }
