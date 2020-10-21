@@ -1,5 +1,5 @@
 import {
-  Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, Index,
+  Entity, BaseEntity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, Index,
 } from 'typeorm';
 import { Uuid, PublicMerchItemOption } from '../types';
 import { OrderItemModel } from './OrderItemModel';
@@ -7,10 +7,6 @@ import { MerchandiseItemModel } from './MerchandiseItemModel';
 
 @Entity('MerchandiseItemOptions')
 export class MerchandiseItemOptionModel extends BaseEntity {
-  @Column({ select: false })
-  @Generated('increment')
-  id: number;
-
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
