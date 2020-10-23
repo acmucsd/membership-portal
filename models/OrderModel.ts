@@ -2,6 +2,7 @@ import {
   Entity,
   BaseEntity,
   Column,
+  Generated,
   PrimaryGeneratedColumn,
   Index,
   OneToMany,
@@ -14,6 +15,10 @@ import { OrderItemModel } from './OrderItemModel';
 
 @Entity('Orders')
 export class OrderModel extends BaseEntity {
+  @Column({ select: false })
+  @Generated('increment')
+  id: number;
+
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

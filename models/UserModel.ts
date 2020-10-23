@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { BaseEntity, Column, Entity, Generated, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { pick } from 'underscore';
 import * as bcrypt from 'bcrypt';
 import { PrivateProfile, PublicProfile, Uuid, UserAccessType, UserState } from '../types';
@@ -8,6 +8,10 @@ import { OrderModel } from './OrderModel';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
+  @Column({ select: false })
+  @Generated('increment')
+  id: number;
+
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
