@@ -38,15 +38,17 @@ export class ReplaceEnumsWithStrings1602914093929 implements MigrationInterface 
     await this.changeType(queryRunner, table, column, tableColumnOptions, dfault);
   }
 
-  private async changeType(queryRunner: QueryRunner, table: string, column: string, options: TableColumnOptions, dfault?: string) {
+  private async changeType(queryRunner: QueryRunner, table: string, column: string, options: TableColumnOptions,
+    dfault?: string) {
     const tempColumnName = options.name;
     const enumName = `enum_${table}_${column}`;
     await queryRunner.addColumn(table, new TableColumn(options));
     // cast the strings to their enum equivalents
     await queryRunner.query(`UPDATE "${table}" SET "${tempColumnName}" = "${column}"::"${enumName}"`);
-    await queryRunner.query(`ALTER TABLE "${table}" ALTER COLUMN "${tempColumnName}" SET NOT NULL`);
+    const alterColumn = `ALTER TABLE "${table}" ALTER COLUMN "${tempColumnName}"`;
+    await queryRunner.query(`${alterColumn} SET NOT NULL`);
     if (dfault) {
-      await queryRunner.query(`ALTER TABLE "${table}" ALTER COLUMN "${tempColumnName}" SET DEFAULT '${dfault}'::"${enumName}"`);
+      await queryRunner.query(`${alterColumn} SET DEFAULT '${dfault}'::"${enumName}"`);
     }
     await queryRunner.dropColumn(table, column);
     // manually rename the column because of an unnecessary query in QueryRunner::renameColumn that errors
