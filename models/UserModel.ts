@@ -31,18 +31,10 @@ export class UserModel extends BaseEntity {
   @Column({ nullable: true })
   profilePicture: string;
 
-  @Column({
-    type: 'enum',
-    enum: UserAccessType,
-    default: UserAccessType.STANDARD,
-  })
+  @Column('varchar', { default: UserAccessType.STANDARD })
   accessType: UserAccessType;
 
-  @Column({
-    type: 'enum',
-    enum: UserState,
-    default: UserState.PENDING,
-  })
+  @Column('varchar', { default: UserState.PENDING })
   state: UserState;
 
   @Column({ nullable: true })

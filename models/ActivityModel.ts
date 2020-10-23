@@ -18,10 +18,7 @@ export class ActivityModel extends BaseEntity {
   @Index('public_activities_by_user_index', { where: 'public IS true' })
   user: UserModel;
 
-  @Column({
-    type: 'enum',
-    enum: ActivityType,
-  })
+  @Column('varchar')
   type: ActivityType;
 
   @Column('text', { nullable: true })
