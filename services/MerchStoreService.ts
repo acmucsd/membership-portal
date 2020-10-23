@@ -133,8 +133,8 @@ export default class MerchStoreService {
         return merchItemOptionRepository.upsertMerchItemOption(option, optionUpdate);
       }));
 
-      const updatedOptionsIds = new Set(updatedOptions.map((option) => option.id));
-      item.options = [...updatedOptions, ...item.options.filter((option) => !updatedOptionsIds.has(option.id))];
+      const updatedOptionsIds = new Set(updatedOptions.map((option) => option.uuid));
+      item.options = [...updatedOptions, ...item.options.filter((option) => !updatedOptionsIds.has(option.uuid))];
 
       if (updatedCollection) {
         const collection = await Repositories
