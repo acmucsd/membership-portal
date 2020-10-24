@@ -4,8 +4,6 @@ import { v4 as uuid } from 'uuid';
 import { EventModel } from '../../models/EventModel';
 
 export class EventFactory {
-  private static readonly PASSWORD_HASH = '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG';
-
   private static readonly ORGS = [
     'ACM',
     'Cyber',
