@@ -4,6 +4,8 @@ import { AttendanceModel } from '../models/AttendanceModel';
 import { EventModel } from '../models/EventModel';
 import { UserModel } from '../models/UserModel';
 import { DatabaseConnection, UserFactory, EventFactory, PortalState } from './data';
+import { MerchFactory } from './data/MerchFactory';
+import { OrderModel } from '../models/OrderModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -33,11 +35,22 @@ describe('sample test', () => {
     const conn = await DatabaseConnection.get();
     const [user1, user2] = UserFactory.create(2);
     const [event] = EventFactory.with({ attendanceCode: 'attend-me' });
+    const [affordableOption] = MerchFactory.optionsWith({
+      price: (event.pointValue * 100) - 10,
+      discountPercentage: 0,
+    });
+    const merch = MerchFactory.collectionsWith({
+      items: MerchFactory.itemsWith({
+        options: [affordableOption],
+      }),
+    });
     const state = new PortalState()
       .createUsers([user1])
       .createEvents([event])
+      .createMerch(merch)
       .attendEvents([user1], [event], false)
-      .createUsers([user2]);
+      .createUsers([user2])
+      .orderMerch(user1, [{ option: affordableOption, quantity: 1 }]);
     await state.write(conn);
 
     const persistedUser = await conn.manager.findOne(UserModel, user2.uuid);
@@ -51,12 +64,20 @@ describe('sample test', () => {
     expect(attendance.event).toStrictEqual(event);
 
     const activities = await conn.manager.find(ActivityModel);
-    expect(activities).toHaveLength(3);
+    expect(activities).toHaveLength(4);
     const activityTypes = activities.map((a) => a.type);
     expect(activityTypes).toStrictEqual([
       ActivityType.ACCOUNT_CREATE,
       ActivityType.ATTEND_EVENT,
       ActivityType.ACCOUNT_CREATE,
+      ActivityType.ORDER_MERCHANDISE,
     ]);
+
+    const [order] = await conn.manager.find(OrderModel, { relations: ['user', 'items'] });
+    expect(order.user.uuid).toStrictEqual(user1.uuid);
+    expect(order.totalCost).toStrictEqual(affordableOption.price);
+    expect(order.items).toHaveLength(1);
+    expect(order.items[0].option).toStrictEqual(affordableOption);
+    expect(user1.credits).toStrictEqual(10);
   });
 });

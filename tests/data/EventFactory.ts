@@ -22,7 +22,7 @@ export class EventFactory {
     return substitutes.map((sub) => EventModel.merge(EventFactory.fake(), sub));
   }
 
-  private static fake(): EventModel {
+  public static fake(): EventModel {
     const [start, end] = EventFactory.randomTime();
     return EventModel.create({
       uuid: uuid(),
@@ -57,6 +57,6 @@ export class EventFactory {
   }
 
   private static randomPointValue(): number {
-    return Math.floor(Math.random() * 15);
+    return Math.floor(Math.random() * 15) + 5;
   }
 }

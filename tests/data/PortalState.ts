@@ -42,6 +42,7 @@ export class PortalState {
       this.attendances = await txn.save(this.attendances);
       this.activities = await txn.save(this.activities);
       this.merch = await txn.save(this.merch);
+      this.orders = await txn.save(this.orders);
     });
   }
 

@@ -5,6 +5,7 @@ import { UserAccessType, UserState } from '../../types';
 import { UserModel } from '../../models/UserModel';
 
 export class UserFactory {
+  // hash of the string "password"
   private static readonly PASSWORD_HASH = '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG';
 
   private static readonly MAJORS = [
@@ -26,7 +27,7 @@ export class UserFactory {
     return substitutes.map((sub) => UserModel.merge(UserFactory.fake(), sub));
   }
 
-  private static fake(): UserModel {
+  public static fake(): UserModel {
     return UserModel.create({
       uuid: uuid(),
       email: faker.internet.email(),
