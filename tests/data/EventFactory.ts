@@ -1,5 +1,6 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
+import { v4 as uuid } from 'uuid';
 import { EventModel } from '../../models/EventModel';
 
 export class EventFactory {
@@ -24,6 +25,7 @@ export class EventFactory {
   private static fake(): EventModel {
     const [start, end] = EventFactory.randomTime();
     return EventModel.create({
+      uuid: uuid(),
       organization: EventFactory.randomOrg(),
       title: faker.random.hexaDecimal(10),
       description: faker.lorem.sentences(2),

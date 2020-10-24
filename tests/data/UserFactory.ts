@@ -1,5 +1,6 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
+import { v4 as uuid } from 'uuid';
 import { UserAccessType, UserState } from '../../types';
 import { UserModel } from '../../models/UserModel';
 
@@ -27,6 +28,7 @@ export class UserFactory {
 
   private static fake(): UserModel {
     return UserModel.create({
+      uuid: uuid(),
       email: faker.internet.email(),
       firstName: faker.name.firstName(),
       lastName: faker.name.lastName(),
@@ -35,6 +37,8 @@ export class UserFactory {
       state: UserState.ACTIVE,
       graduationYear: UserFactory.randomGraduationYear(),
       major: UserFactory.randomMajor(),
+      points: 0,
+      credits: 0,
     });
   }
 

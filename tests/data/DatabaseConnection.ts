@@ -1,12 +1,11 @@
 import { Connection, createConnection } from 'typeorm';
-import Repositories from '../repositories';
-import { Config } from '../config';
-import { models as entities } from '../models';
+import { Config } from '../../config';
+import { models as entities } from '../../models';
 
-export default class DatabaseConnection {
+export class DatabaseConnection {
   private static conn: Connection = null;
 
-  public static async connect(): Promise<DatabaseConnection> {
+  public static async connect(): Promise<Connection> {
     if (!DatabaseConnection.conn) {
       DatabaseConnection.conn = await createConnection({
         type: 'postgres',
@@ -18,16 +17,16 @@ export default class DatabaseConnection {
         entities,
       });
     }
-    return new DatabaseConnection();
-  }
-
-  public static async get(): Promise<Connection> {
-    DatabaseConnection.connect();
     return DatabaseConnection.conn;
   }
 
+  public static async get(): Promise<Connection> {
+    return DatabaseConnection.connect();
+  }
+
   public static async clear(): Promise<void> {
-    await DatabaseConnection.conn.transaction(async (txn) => {
+    const conn = await DatabaseConnection.get();
+    await conn.transaction(async (txn) => {
       const tableNames = [
         'Activities',
         'OrderItems',
@@ -44,6 +43,7 @@ export default class DatabaseConnection {
   }
 
   public static async close(): Promise<void> {
+    if (!DatabaseConnection.conn) return;
     await DatabaseConnection.conn.close();
   }
 }
