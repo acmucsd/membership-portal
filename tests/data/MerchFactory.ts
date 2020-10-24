@@ -19,7 +19,7 @@ export class MerchFactory {
 
   public static collectionsWith(...substitutes: Partial<MerchandiseCollectionModel>[]): MerchandiseCollectionModel[] {
     return substitutes.map((sub) => {
-      const merged = MerchandiseCollectionModel.merge(MerchFactory.fakeCollection(), sub)
+      const merged = MerchandiseCollectionModel.merge(MerchFactory.fakeCollection(), sub);
       if (sub.items) merged.items = sub.items;
       return merged;
     });
