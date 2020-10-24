@@ -24,8 +24,7 @@ export class PortalState {
 
   orders: OrderModel[] = [];
 
-  public from(state?: PortalState): PortalState {
-    if (!state) return this;
+  public from(state: PortalState): PortalState {
     // deep clones all around for immutable PortalStates
     this.users = rfdc()(state.users);
     this.events = rfdc()(state.events);
@@ -33,6 +32,7 @@ export class PortalState {
     this.activities = rfdc()(state.activities);
     this.merch = rfdc()(state.merch);
     this.orders = rfdc()(state.orders);
+    return this;
   }
 
   public async write(conn: Connection): Promise<void> {
