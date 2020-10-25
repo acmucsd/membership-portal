@@ -1,9 +1,9 @@
 import { BaseEntity, Column, Entity, Generated, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { PublicUserFeedback, Uuid } from 'types';
+import { PublicFeedback, Uuid } from '../types';
 import { UserModel } from './UserModel';
 
-@Entity('UserFeedback')
-export class UserFeedbackModel extends BaseEntity {
+@Entity('Feedback')
+export class FeedbackModel extends BaseEntity {
   @Column({ select: false })
   @Generated('increment')
   id: number;
@@ -11,7 +11,7 @@ export class UserFeedbackModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
-  @ManyToOne((type) => UserModel, (user) => user.userFeedback, { onDelete: 'CASCADE' })
+  @ManyToOne((type) => UserModel, (user) => user.Feedback, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user' })
   @Index('user_feedback_by_user_index')
   user: UserModel;
@@ -28,7 +28,7 @@ export class UserFeedbackModel extends BaseEntity {
   @Column({ default: false })
   acknowledged: boolean;
 
-  public getPublicUserFeedback(): PublicUserFeedback {
+  public getPublicFeedback(): PublicFeedback {
     return {
       uuid: this.uuid,
       user: this.user.uuid,

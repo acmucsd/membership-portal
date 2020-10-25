@@ -1,9 +1,9 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class AddUserFeedbackTable1602394486221 implements MigrationInterface {
+export class AddFeedbackTable1602394486221 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(new Table({
-      name: 'UserFeedback',
+      name: 'Feedback',
       columns: [
         {
           name: 'id',
@@ -43,7 +43,7 @@ export class AddUserFeedbackTable1602394486221 implements MigrationInterface {
       ],
       indices: [
         {
-          name: 'user_feedback_by_user_index',
+          name: 'feedback_by_user_index',
           columnNames: ['user'],
         },
       ],
@@ -59,6 +59,6 @@ export class AddUserFeedbackTable1602394486221 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('UserFeedback');
+    await queryRunner.dropTable('Feedback');
   }
 }

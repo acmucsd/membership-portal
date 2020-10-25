@@ -5,8 +5,7 @@ import { PrivateProfile, PublicProfile, Uuid, UserAccessType, UserState } from '
 import { ActivityModel } from './ActivityModel';
 import { AttendanceModel } from './AttendanceModel';
 import { OrderModel } from './OrderModel';
-import { EventFeedbackModel } from './EventFeedbackModel';
-import { UserFeedbackModel } from './UserFeedbackModel';
+import { FeedbackModel } from './FeedbackModel';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
@@ -74,11 +73,8 @@ export class UserModel extends BaseEntity {
   @OneToMany((type) => OrderModel, (order) => order.user, { cascade: true })
   orders: OrderModel[];
 
-  @OneToMany((type) => EventFeedbackModel, (eventFeedback) => eventFeedback.user, { cascade: true })
-  eventFeedback: EventFeedbackModel;
-
-  @OneToMany((type) => UserFeedbackModel, (userFeedback) => userFeedback.user, { cascade: true })
-  userFeedback: UserFeedbackModel;
+  @OneToMany((type) => FeedbackModel, (feedback) => feedback.user, { cascade: true })
+  Feedback: FeedbackModel;
 
   public async verifyPass(pass: string): Promise<boolean> {
     return bcrypt.compare(pass, this.hash);

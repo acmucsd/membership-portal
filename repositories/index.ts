@@ -1,7 +1,8 @@
 import { EntityManager } from 'typeorm';
-import { UserFeedbackRepository, UserRepository } from './UserRepository';
+import { UserRepository } from './UserRepository';
+import { FeedbackRepository } from './FeedbackRepository';
 import { AttendanceRepository } from './AttendanceRepository';
-import { EventRepository, EventFeedbackRepository } from './EventRepository';
+import { EventRepository } from './EventRepository';
 import { MerchOrderRepository, OrderItemRepository } from './MerchOrderRepository';
 import { MerchCollectionRepository, MerchItemRepository, MerchItemOptionRepository } from './MerchStoreRepository';
 import { ActivityRepository } from './ActivityRepository';
@@ -18,10 +19,6 @@ export default class Repositories {
 
   public static event(transactionalEntityManager: EntityManager): EventRepository {
     return transactionalEntityManager.getCustomRepository(EventRepository);
-  }
-
-  public static eventFeedback(transactionalEntityManager: EntityManager): EventFeedbackRepository {
-    return transactionalEntityManager.getCustomRepository(EventFeedbackRepository);
   }
 
   public static leaderboard(transactionalEntityManager: EntityManager): LeaderboardRepository {
@@ -52,8 +49,8 @@ export default class Repositories {
     return transactionalEntityManager.getCustomRepository(UserRepository);
   }
 
-  public static userFeedback(transactionalEntityManager: EntityManager): UserFeedbackRepository {
-    return transactionalEntityManager.getCustomRepository(UserFeedbackRepository);
+  public static feedback(transactionalEntityManager: EntityManager): FeedbackRepository {
+    return transactionalEntityManager.getCustomRepository(FeedbackRepository);
   }
 }
 

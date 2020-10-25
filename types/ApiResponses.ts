@@ -37,6 +37,7 @@ export interface PublicAttendance {
   event: PublicEvent;
   timestamp: Date;
   asStaff: boolean;
+  feedback: string[];
 }
 
 export interface GetAttendancesForEventResponse extends ApiResponse {
@@ -96,7 +97,6 @@ export interface PublicEvent {
   pointValue: number;
   requiresStaff: boolean;
   staffPointBonus: number;
-  feedback?: PublicEventFeedback[];
 }
 
 export interface GetPastEventsResponse extends ApiResponse {
@@ -263,7 +263,7 @@ export interface PrivateProfile extends PublicProfile {
   credits: number,
 }
 
-export interface PublicUserFeedback {
+export interface PublicFeedback {
   uuid: Uuid,
   user: Uuid,
   title: string;
@@ -292,10 +292,10 @@ export interface PatchUserResponse extends ApiResponse {
   user: PrivateProfile;
 }
 
-export interface GetUserFeedbackResponse extends ApiResponse {
-  feedback: PublicUserFeedback[];
+export interface GetFeedbackResponse extends ApiResponse {
+  feedback: PublicFeedback[];
 }
 
-export interface AddUserFeedbackResponse extends ApiResponse {
-  feedback: PublicUserFeedback;
+export interface AddFeedbackResponse extends ApiResponse {
+  feedback: PublicFeedback;
 }

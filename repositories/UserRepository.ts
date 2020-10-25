@@ -3,7 +3,6 @@ import * as bcrypt from 'bcrypt';
 import { UserModel } from '../models/UserModel';
 import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
-import { UserFeedbackModel } from '../models/UserFeedbackModel';
 
 @EntityRepository(UserModel)
 export class UserRepository extends BaseRepository<UserModel> {
@@ -66,27 +65,5 @@ export class UserRepository extends BaseRepository<UserModel> {
         credits: () => `credits + ${points * 100}`,
       })
       .execute();
-  }
-}
-
-@EntityRepository(UserFeedbackModel)
-export class UserFeedbackRepository extends BaseRepository<UserFeedbackModel> {
-  public async getUserFeedback(): Promise<UserFeedbackModel[]> {
-    return this.getBaseFindQuery().getMany();
-  }
-
-  public async getCurrentUserFeedback(user: UserModel): Promise<UserFeedbackModel[]> {
-    return this.getBaseFindQuery().where({ user }).getMany();
-  }
-
-  public async upsertUserFeedback(feedback: UserFeedbackModel,
-    changes?: Partial<UserFeedbackModel>): Promise<UserFeedbackModel> {
-    if (changes) UserFeedbackModel.merge(feedback, changes);
-    return this.repository.save(feedback);
-  }
-
-  private getBaseFindQuery() {
-    return this.repository.createQueryBuilder('feedback')
-      .leftJoinAndSelect('feedback.user', 'user');
   }
 }

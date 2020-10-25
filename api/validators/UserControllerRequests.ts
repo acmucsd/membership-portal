@@ -5,8 +5,6 @@ import {
   PasswordUpdate as IPasswordUpdate,
   PatchUserRequest as IPatchUserRequest,
   UserPatches as IUserPatches,
-  AddUserFeedbackRequest as IAddUserFeedbackRequest,
-  UserFeedback as IUserFeedback,
 } from '../../types';
 import { PasswordChange } from './AuthControllerRequests';
 
@@ -35,23 +33,6 @@ export class UserPatches implements IUserPatches {
   @ValidateNested()
   @HasMatchingPasswords()
   passwordChange?: PasswordUpdate;
-}
-
-export class UserFeedback implements IUserFeedback {
-  @IsDefined()
-  @IsNotEmpty()
-  title: string;
-
-  @IsDefined()
-  @IsNotEmpty()
-  description: string;
-}
-
-export class AddUserFeedbackRequest implements IAddUserFeedbackRequest {
-  @Type(() => UserFeedback)
-  @ValidateNested()
-  @IsDefined()
-  feedback: UserFeedback;
 }
 
 export class PatchUserRequest implements IPatchUserRequest {

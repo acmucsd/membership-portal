@@ -29,18 +29,30 @@ export class AttendanceModel extends BaseEntity {
   @Column({ default: false })
   asStaff: boolean;
 
+  @Column({
+    type: 'text',
+    transformer: {
+      to(value: string[]) {
+        return JSON.stringify(value);
+      },
+      from(value: string) {
+        return JSON.parse(value);
+      },
+    },
+    nullable: true,
+  })
+  feedback: string[];
+
   public getPublicAttendance(): PublicAttendance {
     const rawAttendance = pick(this, [
       'user',
       'event',
       'timestamp',
       'asStaff',
+      'feedback',
     ]);
 
-    const publicAttendance: PublicAttendance = {
-      ...rawAttendance,
-      event: rawAttendance.event ? rawAttendance.event.getPublicEvent() : null,
-    };
+    const publicAttendance: PublicAttendance = { ...rawAttendance };
     if (rawAttendance.user) publicAttendance.user = rawAttendance.user.getPublicProfile();
     if (rawAttendance.event) publicAttendance.event = rawAttendance.event.getPublicEvent();
     return publicAttendance;

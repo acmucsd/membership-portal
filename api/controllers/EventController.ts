@@ -19,13 +19,11 @@ import {
   UpdateEventCoverResponse,
   GetFutureEventsResponse,
   GetPastEventsResponse,
-  AddEventFeedbackResponse,
 } from '../../types';
 import {
   EventSearchOptions,
   PatchEventRequest,
   CreateEventRequest,
-  AddEventFeedbackRequest,
 } from '../validators/EventControllerRequests';
 
 @JsonController('/event')
@@ -41,8 +39,7 @@ export class EventController {
   async getPastEvents(@QueryParams() options: EventSearchOptions,
     @AuthenticatedUser() user: UserModel): Promise<GetPastEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    const canSeeEventFeedback = !!user && PermissionsService.canEditEvents(user);
-    const events = await this.eventService.getPastEvents(canSeeAttendanceCode, canSeeEventFeedback, options);
+    const events = await this.eventService.getPastEvents(canSeeAttendanceCode, options);
     return { error: null, events };
   }
 
@@ -51,8 +48,7 @@ export class EventController {
   async getFutureEvents(@QueryParams() options: EventSearchOptions,
     @AuthenticatedUser() user: UserModel): Promise<GetFutureEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    const canSeeEventFeedback = !!user && PermissionsService.canEditEvents(user);
-    const events = await this.eventService.getFutureEvents(canSeeAttendanceCode, canSeeEventFeedback, options);
+    const events = await this.eventService.getFutureEvents(canSeeAttendanceCode, options);
     return { error: null, events };
   }
 
@@ -69,20 +65,11 @@ export class EventController {
   }
 
   @UseBefore(UserAuthentication)
-  @Post('/:uuid/feedback')
-  async addEventFeedback(@Param('uuid') uuid: Uuid, @Body() addEventFeedbackRequest: AddEventFeedbackRequest,
-    @AuthenticatedUser() user: UserModel): Promise<AddEventFeedbackResponse> {
-    const feedback = await this.eventService.addEventFeedback(uuid, addEventFeedbackRequest.feedback, user);
-    return { error: null, feedback };
-  }
-
-  @UseBefore(UserAuthentication)
   @Get('/:uuid')
   async getOneEvent(@Param('uuid') uuid: Uuid,
     @AuthenticatedUser() user: UserModel): Promise<GetOneEventResponse> {
     const canSeeAttendanceCode = PermissionsService.canEditEvents(user);
-    const canSeeEventFeedback = PermissionsService.canEditEvents(user);
-    const event = await this.eventService.findByUuid(uuid, canSeeAttendanceCode, canSeeEventFeedback);
+    const event = await this.eventService.findByUuid(uuid, canSeeAttendanceCode);
     return { error: null, event };
   }
 
@@ -109,8 +96,7 @@ export class EventController {
   @Get()
   async getAllEvents(@QueryParams() options: EventSearchOptions, @AuthenticatedUser() user: UserModel) {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    const canSeeEventFeedback = !!user && PermissionsService.canEditEvents(user);
-    const events = await this.eventService.getAllEvents(canSeeAttendanceCode, canSeeEventFeedback, options);
+    const events = await this.eventService.getAllEvents(canSeeAttendanceCode, options);
     return { error: null, events };
   }
 

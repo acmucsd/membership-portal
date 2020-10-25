@@ -36,7 +36,7 @@ export interface RegistrationRequest {
 
 // USER
 
-export interface UserFeedback {
+export interface Feedback {
   title: string;
   description: string;
 }
@@ -54,12 +54,20 @@ export interface UserPatches {
   passwordChange?: PasswordUpdate;
 }
 
+export interface FeedbackPatches extends Partial<Feedback> {
+  acknowledged?: boolean;
+}
+
 export interface PatchUserRequest {
   user: UserPatches;
 }
 
-export interface AddUserFeedbackRequest {
-  feedback: UserFeedback;
+export interface AddFeedbackRequest {
+  feedback: Feedback;
+}
+
+export interface PatchFeedbackRequest {
+  feedback: FeedbackPatches;
 }
 
 // LEADERBOARD

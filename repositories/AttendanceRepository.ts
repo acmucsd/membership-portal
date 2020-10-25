@@ -37,4 +37,15 @@ export class AttendanceRepository extends BaseRepository<AttendanceModel> {
     };
     return this.repository.save(AttendanceModel.create(attendance));
   }
+
+  public async hasUserProvidedEventFeedback(user: UserModel, event: EventModel): Promise<boolean> {
+    const attendance = await this.repository.findOne({ user, event });
+    return !!attendance.feedback;
+  }
+
+  public async addEventFeedback(user: UserModel, event: EventModel, feedback: string[]): Promise<AttendanceModel> {
+    const attendance = await this.repository.findOne({ user, event });
+    attendance.feedback = feedback;
+    return this.repository.save(attendance);
+  }
 }

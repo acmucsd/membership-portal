@@ -3,7 +3,6 @@ import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
-import { UserFeedbackModel } from '../models/UserFeedbackModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -13,8 +12,6 @@ import {
   Milestone,
   UserPatches,
   UserState,
-  PublicUserFeedback,
-  UserFeedback,
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
@@ -125,22 +122,5 @@ export default class UserAccountService {
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logBonus(users, description, points);
     });
-  }
-
-  public async getUserFeedback(canSeeAllUserFeedback = false, user: UserModel): Promise<PublicUserFeedback[]> {
-    const userFeedback = await this.transactions.readOnly(async (txn) => {
-      const userFeedbackRepository = Repositories.userFeedback(txn);
-      if (canSeeAllUserFeedback) return userFeedbackRepository.getUserFeedback();
-      return userFeedbackRepository.getCurrentUserFeedback(user);
-    });
-    return userFeedback.map((feedback) => feedback.getPublicUserFeedback());
-  }
-
-  public async addUserFeedback(user: UserModel, feedback: UserFeedback): Promise<PublicUserFeedback> {
-    const userFeedbackObject = UserFeedbackModel.create({ ...feedback, user });
-    const userFeedback = await this.transactions.readWrite(async (txn) => Repositories
-      .userFeedback(txn)
-      .upsertUserFeedback(userFeedbackObject));
-    return userFeedback.getPublicUserFeedback();
   }
 }

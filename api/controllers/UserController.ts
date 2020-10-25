@@ -2,7 +2,6 @@ import {
   JsonController, Param, Get, Post, Patch, NotFoundError, UseBefore, UploadedFile, Body,
 } from 'routing-controllers';
 import { Inject } from 'typedi';
-import PermissionsService from '../../services/PermissionsService';
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
 import StorageService from '../../services/StorageService';
@@ -17,10 +16,8 @@ import {
   GetUserResponse,
   GetCurrentUserResponse,
   PatchUserResponse,
-  GetUserFeedbackResponse,
-  AddUserFeedbackResponse,
 } from '../../types';
-import { AddUserFeedbackRequest, PatchUserRequest } from '../validators/UserControllerRequests';
+import { PatchUserRequest } from '../validators/UserControllerRequests';
 
 @UseBefore(UserAuthentication)
 @JsonController('/user')
@@ -35,20 +32,6 @@ export class UserController {
   async getUserActivityStream(@AuthenticatedUser() user: UserModel): Promise<GetUserActivityStreamResponse> {
     const stream = await this.userAccountService.getUserActivityStream(user.uuid);
     return { error: null, activity: stream };
-  }
-
-  @Get('/feedback')
-  async getUserFeedback(@AuthenticatedUser() user: UserModel): Promise<GetUserFeedbackResponse> {
-    const canSeeAllUserFeedback = PermissionsService.canSeeAllUserFeedback(user);
-    const feedback = await this.userAccountService.getUserFeedback(canSeeAllUserFeedback, user);
-    return { error: null, feedback };
-  }
-
-  @Post('/feedback')
-  async addUserFeedback(@Body() addUserFeedbackRequest: AddUserFeedbackRequest,
-    @AuthenticatedUser() user: UserModel): Promise<AddUserFeedbackResponse> {
-    const feedback = await this.userAccountService.addUserFeedback(user, addUserFeedbackRequest.feedback);
-    return { error: null, feedback };
   }
 
   @Post('/picture')
