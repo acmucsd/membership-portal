@@ -1,6 +1,8 @@
 import { Type } from 'class-transformer';
 import { Allow, IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsValidEventFeedback } from '../decorators/Validators';
 import {
+  AddEventFeedbackRequest as IAddEventFeedbackRequest,
   AddFeedbackRequest as IAddFeedbackRequest,
   Feedback as IFeedback,
   FeedbackPatches as IFeedbackPatches,
@@ -25,6 +27,12 @@ export class FeedbackPatches implements IFeedbackPatches {
 
   @Allow()
   acknowledged?: boolean;
+}
+
+export class AddEventFeedbackRequest implements IAddEventFeedbackRequest {
+  @IsDefined()
+  @IsValidEventFeedback()
+  feedback: string[];
 }
 
 export class AddFeedbackRequest implements IAddFeedbackRequest {

@@ -5,9 +5,13 @@ import { UserModel } from '../../models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
 import FeedbackService from '../../services/FeedbackService';
-import { GetFeedbackResponse, AddFeedbackResponse, AddEventFeedbackRequest, Uuid } from '../../types';
+import { GetFeedbackResponse, AddFeedbackResponse, Uuid } from '../../types';
 import { UserAuthentication } from '../middleware/UserAuthentication';
-import { AddFeedbackRequest, PatchFeedbackRequest } from '../validators/FeedbackControllerRequests';
+import {
+  AddEventFeedbackRequest,
+  AddFeedbackRequest,
+  PatchFeedbackRequest,
+} from '../validators/FeedbackControllerRequests';
 
 @UseBefore(UserAuthentication)
 @JsonController('/feedback')
