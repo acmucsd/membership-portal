@@ -69,8 +69,9 @@ export class MerchFactory {
   }
 
   private static randomDiscountPercentage(): number {
-    const values = [0, 0, 0, 15, 25, 35];
-    const i = Math.floor(Math.random() * values.length);
-    return values[i];
+    // bias to no discount
+    const discountPercentages = [0, 0, 0, 15, 25, 35];
+    const i = Math.floor(Math.random() * discountPercentages.length);
+    return discountPercentages[i];
   }
 }

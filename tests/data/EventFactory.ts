@@ -8,6 +8,7 @@ export class EventFactory {
     'ACM',
     'Cyber',
     'Hack',
+    'AI',
     'Innovate',
     'Design',
   ];
