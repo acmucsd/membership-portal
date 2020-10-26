@@ -2,6 +2,7 @@ import * as faker from 'faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { EventModel } from '../../models/EventModel';
+import FactoryUtils from './FactoryUtils';
 
 export class EventFactory {
   private static readonly ORGS = [
@@ -14,7 +15,7 @@ export class EventFactory {
   ];
 
   public static create(n: number): EventModel[] {
-    return Array(n).fill(null).map(() => EventFactory.fake());
+    return FactoryUtils.create(n, EventFactory.fake);
   }
 
   public static with(...substitutes: Partial<EventModel>[]): EventModel[] {
@@ -25,7 +26,7 @@ export class EventFactory {
     const [start, end] = EventFactory.randomTime();
     return EventModel.create({
       uuid: uuid(),
-      organization: EventFactory.randomOrg(),
+      organization: FactoryUtils.pickRandomValue(EventFactory.ORGS),
       title: faker.random.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       location: faker.random.hexaDecimal(10),
@@ -33,29 +34,25 @@ export class EventFactory {
       end,
       attendanceCode: faker.random.hexaDecimal(10),
       pointValue: EventFactory.randomPointValue(),
-      requiresStaff: Boolean(Math.round(Math.random())),
+      requiresStaff: FactoryUtils.getRandomBoolean(),
       staffPointBonus: EventFactory.randomPointValue(),
     });
   }
 
   private static randomTime(): [Date, Date] {
     // between last and next week
-    const days = Math.floor(Math.random() * 14) - 7;
+    const days = FactoryUtils.getRandomNumber(14, -7);
     // between 8 AM and 6 PM
-    const hour = Math.floor(Math.random() * 10) + 8;
+    const hour = FactoryUtils.getRandomNumber(10, 9);
     // between 0.5 and 2.5 hours long, rounded to the half hour
-    const duration = (Math.floor(Math.random() * 120) % 30) + 30;
+    const duration = FactoryUtils.getRandomNumber(5, 30, 30);
     const start = moment().subtract(days, 'days').hour(hour);
     const end = moment(start.valueOf()).add(duration, 'minutes');
     return [new Date(start.valueOf()), new Date(end.valueOf())];
   }
 
-  private static randomOrg(): string {
-    const i = Math.floor(Math.random() * EventFactory.ORGS.length);
-    return EventFactory.ORGS[i];
-  }
-
   private static randomPointValue(): number {
-    return Math.floor(Math.random() * 15) + 5;
+    // some multiple of 5, min 5 and max 20
+    return FactoryUtils.getRandomNumber(3, 5, 5);
   }
 }

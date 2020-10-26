@@ -3,18 +3,19 @@ import { v4 as uuid } from 'uuid';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
+import FactoryUtils from './FactoryUtils';
 
 export class MerchFactory {
   public static createCollections(n: number): MerchandiseCollectionModel[] {
-    return Array(n).fill(null).map(() => MerchFactory.fakeCollection());
+    return FactoryUtils.create(n, MerchFactory.fakeCollection);
   }
 
   public static createItems(n: number): MerchandiseItemModel[] {
-    return Array(n).fill(null).map(() => MerchFactory.fakeItem());
+    return FactoryUtils.create(n, MerchFactory.fakeItem);
   }
 
   public static createOptions(n: number): MerchandiseItemOptionModel[] {
-    return Array(n).fill(null).map(() => MerchFactory.fakeOption());
+    return FactoryUtils.create(n, MerchFactory.fakeOption);
   }
 
   public static collectionsWith(...substitutes: Partial<MerchandiseCollectionModel>[]): MerchandiseCollectionModel[] {
@@ -42,7 +43,7 @@ export class MerchFactory {
       uuid: uuid(),
       title: faker.random.hexaDecimal(10),
       description: faker.lorem.sentences(2),
-      items: MerchFactory.createItems(Math.floor(Math.random() * 5) + 1),
+      items: MerchFactory.createItems(FactoryUtils.getRandomNumber(5, 1)),
     });
   }
 
@@ -51,27 +52,27 @@ export class MerchFactory {
       uuid: uuid(),
       itemName: faker.random.hexaDecimal(10),
       description: faker.lorem.sentences(2),
-      options: MerchFactory.createOptions(Math.floor(Math.random() * 5) + 1),
+      options: MerchFactory.createOptions(FactoryUtils.getRandomNumber(5, 1)),
     });
   }
 
   public static fakeOption(): MerchandiseItemOptionModel {
     return MerchandiseItemOptionModel.create({
       uuid: uuid(),
-      quantity: Math.floor(Math.random() * 25),
+      quantity: FactoryUtils.getRandomNumber(25),
       price: MerchFactory.randomPrice(),
       discountPercentage: MerchFactory.randomDiscountPercentage(),
     });
   }
 
   private static randomPrice(): number {
-    return 250 + (Math.floor(Math.random() * 1_000) * 50);
+    // some multiple of 50, min 250 and max 50_000
+    return FactoryUtils.getRandomNumber(996, 250, 50);
   }
 
   private static randomDiscountPercentage(): number {
     // bias to no discount
     const discountPercentages = [0, 0, 0, 15, 25, 35];
-    const i = Math.floor(Math.random() * discountPercentages.length);
-    return discountPercentages[i];
+    return FactoryUtils.pickRandomValue(discountPercentages);
   }
 }

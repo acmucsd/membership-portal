@@ -3,6 +3,7 @@ import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { UserAccessType, UserState } from '../../types';
 import { UserModel } from '../../models/UserModel';
+import FactoryUtils from './FactoryUtils';
 
 export class UserFactory {
   // hash of the string "password"
@@ -20,7 +21,7 @@ export class UserFactory {
   ];
 
   public static create(n: number): UserModel[] {
-    return Array(n).fill(null).map(() => UserFactory.fake());
+    return FactoryUtils.create(n, UserFactory.fake);
   }
 
   public static with(...substitutes: Partial<UserModel>[]): UserModel[] {
@@ -36,20 +37,10 @@ export class UserFactory {
       hash: UserFactory.PASSWORD_HASH,
       accessType: UserAccessType.STANDARD,
       state: UserState.ACTIVE,
-      graduationYear: UserFactory.randomGraduationYear(),
-      major: UserFactory.randomMajor(),
+      graduationYear: FactoryUtils.getRandomNumber(6, moment().year()),
+      major: FactoryUtils.pickRandomValue(UserFactory.MAJORS),
       points: 0,
       credits: 0,
     });
-  }
-
-  private static randomGraduationYear(): number {
-    const offset = Math.floor(Math.random() * 6);
-    return moment().year() + offset;
-  }
-
-  private static randomMajor(): string {
-    const i = Math.floor(Math.random() * UserFactory.MAJORS.length);
-    return UserFactory.MAJORS[i];
   }
 }
