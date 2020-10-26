@@ -1,4 +1,4 @@
-import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { pick } from 'underscore';
 import { PublicAttendance, Uuid } from '../types';
 import { UserModel } from './UserModel';
@@ -6,10 +6,6 @@ import { EventModel } from './EventModel';
 
 @Entity('Attendances')
 export class AttendanceModel extends BaseEntity {
-  @Column({ select: false })
-  @Generated('increment')
-  id: number;
-
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
