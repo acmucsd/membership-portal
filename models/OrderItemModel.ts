@@ -1,14 +1,10 @@
-import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Uuid, PublicOrderItem } from '../types';
 import { OrderModel } from './OrderModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
 
 @Entity('OrderItems')
 export class OrderItemModel extends BaseEntity {
-  @Column({ select: false })
-  @Generated('increment')
-  id: number;
-
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

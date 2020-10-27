@@ -29,10 +29,15 @@ jobs:
     docker:
       - image: circleci/node:12.18.3
         environment:
-          RDS_DB: membership_portal
+          RDS_HOST: localhost
+          RDS_DATABASE: membership_portal
           RDS_USER: acmucsd_ci
           RDS_PASSWORD: password
       - image: circleci/postgres:11.5
+        environment:
+          POSTGRES_DB: membership_portal
+          POSTGRES_USER: acmucsd_ci
+          POSTGRES_PASSWORD: password
     steps:
       - checkout
       - restore_cache:
@@ -43,6 +48,8 @@ jobs:
           key: package-cache-{{ checksum "package-lock.json" }}
           paths:
             - node_modules
+      - run:
+          command: npm run db:migrate
       - run:
           command: npm run test
   deploy:

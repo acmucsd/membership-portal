@@ -1,13 +1,9 @@
-import { Entity, BaseEntity, Column, Generated, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Uuid, PublicMerchCollection } from '../types';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
 
 @Entity('MerchandiseCollections')
 export class MerchandiseCollectionModel extends BaseEntity {
-  @Column({ select: false })
-  @Generated('increment')
-  id: number;
-
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
