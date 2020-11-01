@@ -1,3 +1,5 @@
+import { FeedbackType } from './Enums';
+
 // REQUEST TYPES
 
 export interface Pagination {
@@ -39,6 +41,7 @@ export interface RegistrationRequest {
 export interface Feedback {
   title: string;
   description: string;
+  type: FeedbackType;
 }
 
 export interface PasswordUpdate extends PasswordChange {
@@ -54,20 +57,12 @@ export interface UserPatches {
   passwordChange?: PasswordUpdate;
 }
 
-export interface FeedbackPatches extends Partial<Feedback> {
-  acknowledged?: boolean;
-}
-
 export interface PatchUserRequest {
   user: UserPatches;
 }
 
-export interface AddFeedbackRequest {
+export interface SubmitFeedbackRequest {
   feedback: Feedback;
-}
-
-export interface PatchFeedbackRequest {
-  feedback: FeedbackPatches;
 }
 
 // LEADERBOARD
@@ -133,7 +128,7 @@ export interface AttendEventRequest {
   asStaff?: boolean;
 }
 
-export interface AddEventFeedbackRequest {
+export interface SubmitEventFeedbackRequest {
   feedback: string[];
 }
 

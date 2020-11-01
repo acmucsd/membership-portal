@@ -1,4 +1,4 @@
-import { ActivityType } from './Enums';
+import { ActivityType, FeedbackType } from './Enums';
 
 // REQUEST TYPES
 
@@ -74,13 +74,6 @@ export interface VerifyAuthTokenResponse extends ApiResponse {
   authenticated: boolean;
 }
 
-// EVENT
-export interface PublicEventFeedback {
-  uuid: Uuid,
-  user: Uuid,
-  comment: string;
-}
-
 export interface PublicEvent {
   uuid: Uuid;
   organization: string;
@@ -127,10 +120,6 @@ export interface GetAllEventsResponse extends ApiResponse {
 
 export interface CreateEventResponse extends ApiResponse {
   event: PublicEvent;
-}
-
-export interface AddEventFeedbackResponse extends ApiResponse {
-  feedback: PublicEventFeedback[];
 }
 
 // LEADERBOARD
@@ -265,11 +254,12 @@ export interface PrivateProfile extends PublicProfile {
 
 export interface PublicFeedback {
   uuid: Uuid,
-  user: Uuid,
+  user: PublicProfile,
   title: string;
   description: string;
   timestamp: Date;
   acknowledged: boolean;
+  type: FeedbackType;
 }
 
 export interface GetUserActivityStreamResponse extends ApiResponse {
@@ -296,6 +286,6 @@ export interface GetFeedbackResponse extends ApiResponse {
   feedback: PublicFeedback[];
 }
 
-export interface AddFeedbackResponse extends ApiResponse {
+export interface SubmitFeedbackResponse extends ApiResponse {
   feedback: PublicFeedback;
 }

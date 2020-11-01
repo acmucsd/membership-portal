@@ -56,26 +56,28 @@ export default class AttendanceService {
     });
   }
 
-  public async addEventFeedback(feedback: string[], uuid: Uuid, user: UserModel): Promise<PublicAttendance> {
+  public async submitEventFeedback(feedback: string[], eventUuid: Uuid, user: UserModel): Promise<PublicAttendance> {
     return this.transactions.readWrite(async (txn) => {
       const attendanceRepository = Repositories.attendance(txn);
-      const event = await Repositories.event(txn).findByUuid(uuid);
+
+      const event = await Repositories.event(txn).findByUuid(eventUuid);
       if (!event) throw new NotFoundError('Event not found');
-      const hasAttended = await attendanceRepository.hasUserAttendedEvent(user, event);
-      if (!hasAttended) throw new UserError('You cannot provide feedback for an event you didn\'t attend');
-      const hasProvidedFeedback = await attendanceRepository.hasUserProvidedEventFeedback(user, event);
-      if (hasProvidedFeedback) throw new UserError('You cannot submit feedback for this event more than once');
-      const eventStart = moment(event.start).valueOf();
+
+      const attendance = await attendanceRepository.getUserAttendanceForEvent(user, event);
+      if (!attendance) throw new UserError('You must attend this event before submiting feedback');
+      if (attendance.feedback) throw new UserError('You cannot submit feedback for this event more than once');
+
       const twoDaysPastEventEnd = moment(event.end).add(2, 'days').valueOf();
-      if (moment.now() < eventStart) throw new UserError('You cannot submit feedback until the event has started');
       if (moment.now() > twoDaysPastEventEnd) {
-        throw new UserError('You cannot submit feedback past 2 days of the event ending');
+        throw new UserError('You must submit feedback within 2 days of the event ending');
       }
-      const attendance = await attendanceRepository.addEventFeedback(user, event, feedback);
+
+      const attendanceWithFeedback = await attendanceRepository.submitEventFeedback(attendance, feedback);
       const pointsEarned = Config.pointReward.EVENT_FEEDBACK_POINT_REWARD;
       await Repositories.activity(txn).logActivity(user, ActivityType.SUBMIT_EVENT_FEEDBACK, pointsEarned);
       await Repositories.user(txn).addPoints(user, pointsEarned);
-      return attendance.getPublicAttendance();
+
+      return attendanceWithFeedback.getPublicAttendance();
     });
   }
 }

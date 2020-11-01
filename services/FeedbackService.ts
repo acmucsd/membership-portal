@@ -26,10 +26,11 @@ export default class FeedbackService {
     return feedback.map((fb) => fb.getPublicFeedback());
   }
 
-  public async addFeedback(user: UserModel, feedback: Feedback): Promise<PublicFeedback> {
+  public async submitFeedback(user: UserModel, feedback: Feedback): Promise<PublicFeedback> {
     const feedbackObject = FeedbackModel.create({ ...feedback, user });
     const addedFeedback = await this.transactions.readWrite(async (txn) => {
       const feedbackRepository = Repositories.feedback(txn);
+
       const latestFeedback = await feedbackRepository.getLatestFeedback(user);
       if (latestFeedback) {
         const oneWeekAfterFeedback = moment(latestFeedback.timestamp).add(1, 'week');
@@ -38,22 +39,28 @@ export default class FeedbackService {
           throw new UserError(`You must wait ${daysLeft} days to submit more feedback`);
         }
       }
+
       const fb = await feedbackRepository.upsertFeedback(feedbackObject);
-      const pointsEarned = Config.pointReward.FEEDBACK_POINT_REWARD;
-      await Repositories.activity(txn).logActivity(user, ActivityType.SUBMIT_FEEDBACK, pointsEarned);
-      await Repositories.user(txn).addPoints(user, pointsEarned);
       return fb;
     });
     return addedFeedback.getPublicFeedback();
   }
 
-  public async updateFeedback(uuid: Uuid, changes: Partial<Feedback>) {
-    const updatedFeedback = await this.transactions.readWrite(async (txn) => {
+  public async acknowledgeFeedback(uuid: Uuid) {
+    const acknowledgedFeedback = await this.transactions.readWrite(async (txn) => {
       const feedbackRepository = Repositories.feedback(txn);
-      const feedback = await feedbackRepository.getOneFeedback(uuid);
+      const feedback = await feedbackRepository.findByUuid(uuid);
       if (!feedback) throw new UserError('Feedback not found');
-      return feedbackRepository.upsertFeedback(feedback, changes);
+      if (feedback.acknowledged) throw new UserError('This feedback has already been acknowledged');
+
+      const { user } = feedback;
+      const pointsEarned = Config.pointReward.FEEDBACK_POINT_REWARD;
+      await Repositories.activity(txn).logActivity(user, ActivityType.SUBMIT_FEEDBACK, pointsEarned);
+      await Repositories.user(txn).addPoints(user, pointsEarned);
+
+      feedback.acknowledged = true;
+      return feedbackRepository.upsertFeedback(feedback);
     });
-    return updatedFeedback.getPublicFeedback();
+    return acknowledgedFeedback.getPublicFeedback();
   }
 }

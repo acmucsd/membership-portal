@@ -33,3 +33,15 @@ export enum ActivityType {
   SUBMIT_EVENT_FEEDBACK = 'SUBMIT_EVENT_FEEDBACK',
   SUBMIT_FEEDBACK = 'SUBMIT_FEEDBACK',
 }
+
+export enum FeedbackType {
+  GENERAL = 'GENERAL',
+  MERCH_STORE = 'MERCH_STORE',
+  EVENTS = 'EVENTS',
+  BIT_BYTE = 'BIT_BYTE',
+  AI = 'AI',
+  CYBER = 'CYBER',
+  DESIGN = 'DESIGN',
+  HACK = 'HACK',
+  INNOVATE = 'INNOVATE',
+}

@@ -5,12 +5,11 @@ import { UserModel } from '../../models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
 import FeedbackService from '../../services/FeedbackService';
-import { GetFeedbackResponse, AddFeedbackResponse, Uuid } from '../../types';
+import { GetFeedbackResponse, SubmitFeedbackResponse, Uuid } from '../../types';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
-  AddEventFeedbackRequest,
-  AddFeedbackRequest,
-  PatchFeedbackRequest,
+  SubmitEventFeedbackRequest,
+  SubmitFeedbackRequest,
 } from '../validators/FeedbackControllerRequests';
 
 @UseBefore(UserAuthentication)
@@ -23,9 +22,9 @@ export class FeedbackController {
   private feedbackService: FeedbackService;
 
   @Post('/event/:uuid')
-  async addEventFeedback(@Param('uuid') uuid: Uuid, @Body() addEventFeedbackRequest: AddEventFeedbackRequest,
+  async submitEventFeedback(@Param('uuid') uuid: Uuid, @Body() submitEventFeedbackRequest: SubmitEventFeedbackRequest,
     @AuthenticatedUser() user: UserModel) {
-    await this.attendanceService.addEventFeedback(addEventFeedbackRequest.feedback, uuid, user);
+    await this.attendanceService.submitEventFeedback(submitEventFeedbackRequest.feedback, uuid, user);
     return { error: null };
   }
 
@@ -37,18 +36,17 @@ export class FeedbackController {
   }
 
   @Post()
-  async addFeedback(@Body() addFeedbackRequest: AddFeedbackRequest,
-    @AuthenticatedUser() user: UserModel): Promise<AddFeedbackResponse> {
-    const feedback = await this.feedbackService.addFeedback(user, addFeedbackRequest.feedback);
+  async submitFeedback(@Body() submitFeedbackRequest: SubmitFeedbackRequest,
+    @AuthenticatedUser() user: UserModel): Promise<SubmitFeedbackResponse> {
+    const feedback = await this.feedbackService.submitFeedback(user, submitFeedbackRequest.feedback);
     return { error: null, feedback };
   }
 
   @Patch('/:uuid')
-  async updateFeedback(@Param('uuid') uuid: Uuid, @Body() patchFeedbackRequest: PatchFeedbackRequest,
-    @AuthenticatedUser() user: UserModel): Promise<AddFeedbackResponse> {
-    const canAcknowledgeFeedback = PermissionsService.canSeeFeedback(user);
-    if (patchFeedbackRequest.feedback.acknowledged !== null && !canAcknowledgeFeedback) throw new ForbiddenError();
-    const feedback = await this.feedbackService.updateFeedback(uuid, patchFeedbackRequest.feedback);
+  async acknowledgeFeedback(@Param('uuid') uuid: Uuid,
+    @AuthenticatedUser() user: UserModel): Promise<SubmitFeedbackResponse> {
+    if (!PermissionsService.canSeeFeedback(user)) throw new ForbiddenError();
+    const feedback = await this.feedbackService.acknowledgeFeedback(uuid);
     return { error: null, feedback };
   }
 }

@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class AddFeedbackTable1603825929793 implements MigrationInterface {
+export class SubmitFeedbackTable1603825929793 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(new Table({
       name: 'Feedback',
@@ -28,7 +28,6 @@ export class AddFeedbackTable1603825929793 implements MigrationInterface {
         {
           name: 'description',
           type: 'text',
-          isNullable: true,
         },
         {
           name: 'timestamp',
@@ -39,6 +38,10 @@ export class AddFeedbackTable1603825929793 implements MigrationInterface {
           name: 'acknowledged',
           type: 'boolean',
           default: 'false',
+        },
+        {
+          name: 'type',
+          type: 'varchar',
         },
       ],
       indices: [

@@ -70,7 +70,7 @@ export class UserModel extends BaseEntity {
   orders: OrderModel[];
 
   @OneToMany((type) => FeedbackModel, (feedback) => feedback.user, { cascade: true })
-  Feedback: FeedbackModel;
+  feedback: FeedbackModel;
 
   public async verifyPass(pass: string): Promise<boolean> {
     return bcrypt.compare(pass, this.hash);

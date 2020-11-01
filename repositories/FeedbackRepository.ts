@@ -10,7 +10,7 @@ export class FeedbackRepository extends BaseRepository<FeedbackModel> {
     return this.getBaseFindQuery().getMany();
   }
 
-  public async getOneFeedback(uuid: Uuid): Promise<FeedbackModel> {
+  public async findByUuid(uuid: Uuid): Promise<FeedbackModel> {
     return this.getBaseFindQuery().where({ uuid }).getOne();
   }
 

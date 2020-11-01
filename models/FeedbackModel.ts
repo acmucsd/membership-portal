@@ -1,25 +1,21 @@
-import { BaseEntity, Column, Entity, Generated, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { PublicFeedback, Uuid } from '../types';
+import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { FeedbackType, PublicFeedback, Uuid } from '../types';
 import { UserModel } from './UserModel';
 
 @Entity('Feedback')
 export class FeedbackModel extends BaseEntity {
-  @Column({ select: false })
-  @Generated('increment')
-  id: number;
-
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
-  @ManyToOne((type) => UserModel, (user) => user.Feedback, { onDelete: 'CASCADE' })
+  @ManyToOne((type) => UserModel, (user) => user.feedback, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user' })
   @Index('user_feedback_by_user_index')
   user: UserModel;
 
-  @Column()
+  @Column('varchar')
   title: string;
 
-  @Column('text', { nullable: true })
+  @Column('text')
   description: string;
 
   @Column('timestamptz', { default: 'CURRENT_TIMESTAMP(6)' })
@@ -28,14 +24,18 @@ export class FeedbackModel extends BaseEntity {
   @Column({ default: false })
   acknowledged: boolean;
 
+  @Column('varchar')
+  type: FeedbackType;
+
   public getPublicFeedback(): PublicFeedback {
     return {
       uuid: this.uuid,
-      user: this.user.uuid,
+      user: this.user.getPublicProfile(),
       title: this.title,
       description: this.description,
       timestamp: this.timestamp,
       acknowledged: this.acknowledged,
+      type: this.type,
     };
   }
 }
