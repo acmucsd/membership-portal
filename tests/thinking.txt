@@ -1,0 +1,70 @@
+What do we want out of seeds?
+
+Mimic real interactions for testing purposes, e.g. attendances and activities
+
+Create users (different roles)
+Create events (different hosts, committees, some request staff others don’t)
+Have those users check in as staff and members
+Make them order stuff
+Admin grant bonuses to users for missing event + bit/byte program participant
+
+We define some small system from which anything is testable at reasonable scale, and all events are created relative to the current time, so it can easily be reset every hour for testing
+
+2 admin
+3 staff
+4 members
+
+Already happened
+1. Some admins create their accounts
+2. Some staff create their accounts
+3. Admins create some past, ongoing, and future events
+4. Members create their accounts
+5. some members and staff checked into past events
+6. Admin grant bonus points for some user who forgot to check in
+7. admin grant bonus points for some user who did some bit-byte thing
+8. Some members and staff checked into ongoing events
+9. Some members and staff order merch
+
+Can still happen in the process of testing:
+1. users can still check in as members and/or staff
+2. Users can still place orders (i.e. have enough credits)
+
+users
+- some can order merch and cannot
+
+Events
+- Different hosts: general, hack, and cyber
+- Some can be checked into as staff and some cannot
+
+Committees: general, hack, and cyber
+
+admin - admin
+Staff - Stanley (all) and Shravan (hack)
+Members - Sumeet, Andrea, Paul, Stone, Steven
+
+Events:
+- Workshops (staffed) - all
+- Socials (unstaffed) - general, cyber
+- Industry (staffed) - general
+
+PAST
+- Cyber: Intro to CTFs
+- Hack: Intro to Rust
+- ACM Eats: Taco Stand
+- Cyber: Log Analysis
+- Startup Intern Panel
+- ACM Builds Mini Terrariums
+
+ONGOING
+- Side Projects Summer Showcase
+- Pool and Ping Pong
+
+FUTURE
+- Cyber Watches: Mr. Robot
+- Hack x DS3: Kubernetes, Spark, and Computing at Scale
+- Hack: Contributing to Open Source
+
+Shravan goes to all Hack events as staff.
+
+specify workload in ctor as list of events
+for each event, 
