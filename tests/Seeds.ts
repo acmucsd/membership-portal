@@ -1,0 +1,278 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import * as moment from 'moment';
+import { UserAccessType } from '../types';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
+
+function roundToHalfHour(date: moment.Moment): Date {
+  const HALF_HOUR_IN_MILLISECONDS = moment.duration(30, 'minutes').asMilliseconds();
+  return new Date(Math.round(date.valueOf() / HALF_HOUR_IN_MILLISECONDS) * HALF_HOUR_IN_MILLISECONDS);
+}
+
+/**
+ * Our goal is to define some small system from which most actions are testable,
+ * e.g. checking into events (past/future, already-attended, ongoing), ordering
+ * merch (out of stock, insufficient credits, lifetime limit, successful), getting
+ * a decent-sized sliding leaderboard.
+ *
+ * Users: an admin, a couple committees (Hack, AI) and their accompanying
+ * staff, and a handful of members.
+ *
+ * Events: some staffed committee workshops, unstaffed general/committe socials,
+ * and staffed industry events, in the past, present, and future.
+ *
+ * There're also some "edge cases" here and there inspired by real data, e.g.
+ * admins granting bonus points to members that forgot/were unable to check-in.
+ */
+async function seed(): Promise<void> {
+  const conn = await DatabaseConnection.get();
+  await DatabaseConnection.clear();
+
+  const ADMIN = UserFactory.fake({
+    email: 'acm@ucsd.edu',
+    accessType: UserAccessType.ADMIN,
+    firstName: 'ACM',
+    lastName: 'Admin',
+  });
+
+  const STAFF_GENERAL = UserFactory.fake({
+    email: 'stl005@ucsd.edu',
+    accessType: UserAccessType.STAFF,
+    firstName: 'Stanley',
+    lastName: 'Lee',
+    graduationYear: 2022,
+    major: 'Data Science',
+  });
+  const STAFF_HACK = UserFactory.fake({
+    email: 'smhariha@ucsd.edu',
+    accessType: UserAccessType.STAFF,
+    firstName: 'Shravan',
+    lastName: 'Hariharan',
+    graduationYear: 2023,
+    major: 'Computer Science',
+  });
+  const STAFF_AI = UserFactory.fake({
+    email: 'stao@ucsd.edu',
+    accessType: UserAccessType.STAFF,
+    firstName: 'Stone',
+    lastName: 'Tao',
+    graduationYear: 2021,
+    major: 'Computer Science',
+  });
+
+  const MEMBER_FRESHMAN = UserFactory.fake();
+  const MEMBER_SOPHOMORE = UserFactory.fake({
+    email: 'jpan@ucsd.edu',
+    accessType: UserAccessType.STANDARD,
+    firstName: 'Paul',
+    lastName: 'Pan',
+    graduationYear: 2020,
+    major: 'Mathematics - Computer Science',
+  });
+  const MEMBER_JUNIOR = UserFactory.fake({
+    email: 'asudhart@ucsd.edu',
+    accessType: UserAccessType.STANDARD,
+    firstName: 'Andrea',
+    lastName: 'Sudharta',
+    graduationYear: 2022,
+    major: 'Computer Engineering',
+  });
+  const MEMBER_SENIOR = UserFactory.fake({
+    email: 's3bansal@ucsd.edu',
+    accessType: UserAccessType.STANDARD,
+    firstName: 'Sumeet',
+    lastName: 'Bansal',
+    graduationYear: 2020,
+  });
+
+  const unstaffed = { requiresStaff: false, staffPointBonus: 0 };
+  const staffed = { requiresStaff: true };
+  const general = { commitee: 'ACM' };
+  const hack = { committee: 'Hack' };
+  const ai = { committee: 'AI' };
+
+  const daysAgo = (n: number) => ({
+    start: roundToHalfHour(moment().subtract(n, 'days').hour(11)),
+    end: roundToHalfHour(moment().subtract(n, 'days').hour(13)),
+  });
+
+  const PAST_AI_WORKSHOP_1 = EventFactory.fake({
+    title: 'AI: Intro to Neural Nets',
+    description: `Artificial neural networks (ANNs), usually simply called
+    neural networks (NNs), are computing systems vaguely inspired by the
+    biological neural networks that constitute animal brains. An ANN is based
+    on a collection of connected units or nodes called artificial neurons,
+    which loosely model the neurons in a biological brain.`,
+    ...ai,
+    location: 'Qualcomm Room',
+    ...daysAgo(6),
+    attendanceCode: 'galaxybrain',
+    ...staffed,
+  });
+  const PAST_HACK_WORKSHOP = EventFactory.fake({
+    title: 'Hack: Intro to Rust',
+    description: `Rust is a multi-paradigm programming language focused on
+    performance and safety, especially safe concurrency. Rust is syntactically
+    similar to C++, but can guarantee memory safety by using a borrow checker
+    to validate references. Unlike other safe programming languages, Rust does
+    not use garbage collection. Rust has been named the "most loved programming
+    language" in the Stack Overflow Developer Survey every year since 2016.`,
+    ...hack,
+    location: 'Qualcomm Room',
+    ...daysAgo(5),
+    attendanceCode: 'ferris',
+    ...staffed,
+  });
+  const PAST_ACM_SOCIAL_1 = EventFactory.fake({
+    title: 'ACM Eats: Taco Stand',
+    description: `Nopal (from the Nahuatl word nohpalli [noʔˈpalːi] for the pads
+    of the plant) is a common name in Spanish for Opuntia cacti (commonly referred
+    to in English as prickly pear), as well as for its pads. There are approx
+    one hundred and fourteen known species endemic to Mexico, where the plant is
+    a common ingredient in numerous Mexican cuisine dishes.`,
+    ...general,
+    location: 'Taco Stand',
+    ...daysAgo(4),
+    attendanceCode: 'tac0',
+    ...unstaffed,
+  });
+  const PAST_AI_WORKSHOP_2 = EventFactory.fake({
+    title: 'AI: Federated Learning Workshop',
+    description: `Federated learning (also known as collaborative learning)
+    is a machine learning technique that trains an algorithm across multiple
+    decentralized edge devices or servers holding local data samples, without
+    exchanging them. This approach enables multiple actors to build a common,
+    robust machine learning model without sharing data, thus allowing to address
+    critical issues such as data privacy, data security, data access rights and
+    access to heterogeneous data.`,
+    ...ai,
+    location: 'Qualcomm Room',
+    ...daysAgo(3),
+    attendanceCode: '4ggregate',
+    ...staffed,
+  });
+  const PAST_ACM_PANEL = EventFactory.fake({
+    title: 'Startup Intern Panel',
+    description: `The unicorn is a legendary creature that has been described
+    since antiquity as a beast with a single large, pointed, spiraling horn
+    projecting from its forehead. The unicorn was depicted in ancient seals of
+    the Indus Valley Civilization and was mentioned by the ancient Greeks in
+    accounts of natural history by various writers, including Ctesias, Strabo,
+    Pliny the Younger, Aelian and Cosmas Indicopleustes.`,
+    ...general,
+    location: 'PC East Ballroom',
+    ...daysAgo(2),
+    attendanceCode: 'sfsummer',
+    ...unstaffed,
+  });
+  const PAST_ACM_SOCIAL_2 = EventFactory.fake({
+    title: 'ACM Builds Mini Terrariums',
+    description: `Monterey Bay Aquarium is a nonprofit public aquarium in
+    Monterey, California. Known for its regional focus on the marine habitats
+    of Monterey Bay, it was the first to exhibit a living kelp forest when it
+    opened in October 1984. Its biologists have pioneered the animal husbandry
+    of jellyfish and it was the first to successfully care for and display a
+    great white shark. The organization's research and conservation efforts
+    also focus on sea otters, various birds, and tunas.`,
+    ...general,
+    location: 'Qualcomm Room',
+    ...daysAgo(1),
+    attendanceCode: 'm0ssy',
+    ...staffed,
+  });
+
+  const ONGOING_ACM_SOCIAL_1 = EventFactory.fake({
+    title: 'ACM Watches: Planet Earth',
+    description: `Sir David Frederick Attenborough (/ˈætənbərə/; born 8 May 1926)
+    is an English broadcaster and natural historian. He is best known for writing
+    and presenting, in conjunction with the BBC Natural History Unit, the nine
+    natural history documentary series forming the Life collection that together
+    constitute a comprehensive survey of animal and plant life on Earth.`,
+    ...general,
+    location: 'WLH 2001',
+    start: roundToHalfHour(moment().subtract(90, 'minutes')),
+    end: roundToHalfHour(moment().add(30, 'minutes')),
+    attendanceCode: '1ife',
+    ...unstaffed,
+  });
+  const ONGOING_ACM_SOCIAL_2 = EventFactory.fake({
+    title: 'ACM Pickup Tournament',
+    description: `The original American Basketball Association (ABA) was a men's
+    professional basketball league, from 1967 to 1976. The ABA distinguished itself
+    from the NBA with a more wide-open, flashy style of offensive play. According
+    to one of the owners, its goal was to force a merger with the more established
+    league. Potential investors were told that they could get an ABA team for half
+    of what it cost to get an NBA expansion team at the time.`,
+    ...general,
+    location: 'RIMAC',
+    start: roundToHalfHour(moment().subtract(30, 'minutes')),
+    end: roundToHalfHour(moment().add(90, 'minutes')),
+    attendanceCode: 'k0be',
+    ...unstaffed,
+  });
+
+  const FUTURE_AI_SOCIAL = EventFactory.fake({
+    title: 'AI Plays: Chess IRL',
+    description: `The Najdorf Variation (/ˈnaɪdɔːrf/ NY-dorf) of the Sicilian
+    Defence is one of the most respected and deeply studied of all chess
+    openings. Modern Chess Openings calls it the "Cadillac" or "Rolls Royce"
+    of chess openings. The opening is named after the Polish-Argentine
+    grandmaster Miguel Najdorf. Many players have lived by the Najdorf
+    (notably Bobby Fischer and Garry Kasparov, although Kasparov would often
+    transpose into a Scheveningen).`,
+    ...ai,
+    location: 'Qualcomm Room',
+    ...daysAgo(-1),
+    attendanceCode: 'd33pblue',
+    ...unstaffed,
+  });
+  const FUTURE_HACK_WORKSHOP_1 = EventFactory.fake({
+    title: 'Hack x DS3: Computing at Scale',
+    description: `Apache Flink is an open-source, unified stream-processing and
+    batch-processing framework developed by the Apache Software Foundation. The
+    core of Apache Flink is a distributed streaming data-flow engine written in
+    Java and Scala. Flink executes arbitrary dataflow programs in a data-parallel
+    and pipelined (hence task parallel) manner. Flink's pipelined runtime system
+    enables the execution of bulk/batch and stream processing programs. Furthermore,
+    Flink's runtime supports the execution of iterative algorithms natively.`,
+    ...hack,
+    location: 'Qualcomm Room',
+    ...daysAgo(-2),
+    attendanceCode: 'sp4rk',
+    ...staffed,
+  });
+  const FUTURE_HACK_WORKSHOP_2 = EventFactory.fake({
+    title: 'Hack: Contributing to Open Source',
+    description: `Git is a distributed version-control system for tracking changes
+    in source code during software development. It is designed for coordinating
+    work among programmers, but it can be used to track changes in any set of files.
+    Its goals include speed, data integrity, and support for distributed, non-linear
+    workflows.`,
+    ...hack,
+    location: 'Qualcomm Room',
+    ...daysAgo(-3),
+    attendanceCode: 'f0rk',
+    ...staffed,
+  });
+
+  new PortalState()
+    .createUsers([
+      ADMIN,
+      STAFF_AI,
+      STAFF_GENERAL,
+      STAFF_HACK,
+      MEMBER_FRESHMAN,
+      MEMBER_SOPHOMORE,
+      MEMBER_JUNIOR,
+      MEMBER_SENIOR,
+    ])
+    .createEvents([
+      PAST_AI_WORKSHOP_1,
+      PAST_HACK_WORKSHOP,
+      PAST_ACM_SOCIAL_1,
+      PAST_AI_WORKSHOP_2,
+      PAST_ACM_PANEL,
+      PAST_ACM_SOCIAL_2,
+    ])
+    .createMerch([])
+    .attendEvents()
+}

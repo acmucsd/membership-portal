@@ -28,8 +28,8 @@ export class UserFactory {
     return substitutes.map((sub) => UserModel.merge(UserFactory.fake(), sub));
   }
 
-  public static fake(): UserModel {
-    return UserModel.create({
+  public static fake(substitute?: Partial<UserModel>): UserModel {
+    const fake = UserModel.create({
       uuid: uuid(),
       email: faker.internet.email(),
       firstName: faker.name.firstName(),
@@ -42,5 +42,6 @@ export class UserFactory {
       points: 0,
       credits: 0,
     });
+    return UserModel.merge(fake, substitute);
   }
 }
