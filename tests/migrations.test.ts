@@ -1,5 +1,5 @@
-import * as ts from 'typescript';
 import * as fs from 'fs';
+import * as ts from 'typescript';
 
 describe('order of migrations', () => {
   const dirname = './migrations/';
