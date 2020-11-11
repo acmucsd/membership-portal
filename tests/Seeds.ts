@@ -8,6 +8,10 @@ function roundToHalfHour(date: moment.Moment): Date {
   return new Date(Math.round(date.valueOf() / HALF_HOUR_IN_MILLISECONDS) * HALF_HOUR_IN_MILLISECONDS);
 }
 
+function getGraduationYear(n: number) {
+  return moment().years() + n;
+}
+
 /**
  * Our goal is to define some small system from which most actions are testable,
  * e.g. checking into events (past/future, already-attended, ongoing), ordering
@@ -39,49 +43,46 @@ async function seed(): Promise<void> {
     accessType: UserAccessType.STAFF,
     firstName: 'Stanley',
     lastName: 'Lee',
-    graduationYear: 2022,
-    major: 'Data Science',
   });
   const STAFF_HACK = UserFactory.fake({
     email: 'smhariha@ucsd.edu',
     accessType: UserAccessType.STAFF,
     firstName: 'Shravan',
     lastName: 'Hariharan',
-    graduationYear: 2023,
-    major: 'Computer Science',
   });
   const STAFF_AI = UserFactory.fake({
     email: 'stao@ucsd.edu',
     accessType: UserAccessType.STAFF,
     firstName: 'Stone',
     lastName: 'Tao',
-    graduationYear: 2021,
-    major: 'Computer Science',
   });
 
-  const MEMBER_FRESHMAN = UserFactory.fake();
+  const MEMBER_FRESHMAN = UserFactory.fake({
+    email: 'ssteiner@ucsd.edu',
+    accessType: UserAccessType.STANDARD,
+    firstName: 'Steven',
+    lastName: 'Steiner',
+    graduationYear: getGraduationYear(4),
+  });
   const MEMBER_SOPHOMORE = UserFactory.fake({
     email: 'jpan@ucsd.edu',
     accessType: UserAccessType.STANDARD,
     firstName: 'Paul',
     lastName: 'Pan',
-    graduationYear: 2020,
-    major: 'Mathematics - Computer Science',
+    graduationYear: getGraduationYear(3),
   });
   const MEMBER_JUNIOR = UserFactory.fake({
     email: 'asudhart@ucsd.edu',
     accessType: UserAccessType.STANDARD,
     firstName: 'Andrea',
     lastName: 'Sudharta',
-    graduationYear: 2022,
-    major: 'Computer Engineering',
+    graduationYear: getGraduationYear(2),
   });
   const MEMBER_SENIOR = UserFactory.fake({
     email: 's3bansal@ucsd.edu',
     accessType: UserAccessType.STANDARD,
     firstName: 'Sumeet',
-    lastName: 'Bansal',
-    graduationYear: 2020,
+    graduationYear: getGraduationYear(0),
   });
 
   const unstaffed = { requiresStaff: false, staffPointBonus: 0 };
@@ -274,5 +275,44 @@ async function seed(): Promise<void> {
       PAST_ACM_SOCIAL_2,
     ])
     .createMerch([])
-    .attendEvents()
+    .attendEvents([
+      STAFF_AI,
+      STAFF_GENERAL,
+      MEMBER_FRESHMAN,
+      MEMBER_SOPHOMORE,
+      MEMBER_JUNIOR,
+      MEMBER_SENIOR
+    ], [PAST_AI_WORKSHOP_1], true)
+    .attendEvents([
+      STAFF_HACK,
+      STAFF_AI,
+      MEMBER_SOPHOMORE,
+      MEMBER_JUNIOR,
+      MEMBER_SENIOR
+    ], [PAST_HACK_WORKSHOP], true)
+    .attendEvents([
+      STAFF_GENERAL,
+      STAFF_HACK,
+      MEMBER_FRESHMAN,
+      MEMBER_SOPHOMORE,
+    ], [PAST_ACM_SOCIAL_1], false)
+    .attendEvents([
+      STAFF_AI,
+      STAFF_HACK,
+      MEMBER_SOPHOMORE,
+      MEMBER_SENIOR,
+    ], [PAST_AI_WORKSHOP_2], true)
+    .attendEvents([
+      STAFF_GENERAL,
+      MEMBER_FRESHMAN,
+      MEMBER_SOPHOMORE,
+      MEMBER_JUNIOR,
+    ], [PAST_ACM_PANEL], true)
+    .attendEvents([
+      STAFF_GENERAL,
+      STAFF_AI,
+      MEMBER_FRESHMAN,
+      MEMBER_JUNIOR,
+      MEMBER_SENIOR,
+    ], [PAST_ACM_SOCIAL_2], true);
 }
