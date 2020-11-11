@@ -50,5 +50,8 @@ Modifying the schema requires not only direct edits to the data models (found in
 #### Testing
 "Software engineering is the integral of coding over time"; to build a reliable system over several years, we rely on tests to verify that we've implemented changes correctly without breaking anything unexpected in the process, that we throw errors when appropriate, and that we've handled forgettable edge cases. This is currently a bit of a work in progress, but it's something to keep in mind as you're developing&mdash;the use cases to be tested&mdash;and once we've established some examples and work towards testing the entire system, we'll expect you to write tests for your own PRs.
 
+#### Tooling
+Our tooling is meant to simplify the development process, keep our codebase in good health, and run the portal in production with as little manual intervention as possible. Our CI/CD pipeline ties everything together, verifying that PRs meet some criteria before allowing them to merge and then deploying our updated app to its production environment and publishing it to the npm registry as needed. All PRs must be linted TypeScript code with no failing tests. See the ["Useful Commands"](https://github.com/acmucsd/membership-portal#useful-commands) section of the README for the npm scripts to compile the code, lint the code, and run the tests.
+
 #### Other Considerations
 This project's been built with a few development principles in mind: we care about correctness, readability, and ease of maintenance. Performance isn't a major concern and we don't heavily optimize, given that this is a fairly simple app that can be comfortably run at decent scale, but we do care about it broadly, e.g. in establishing useful database indexes and efficient access patterns.
