@@ -1,5 +1,5 @@
 ## membership-portal-api &nbsp; [![CircleCI](https://circleci.com/gh/acmucsd/membership-portal/tree/master.svg?style=svg)](https://circleci.com/gh/acmucsd/membership-portal/tree/master)
-REST API for the UC San Diego ACM chapter's membership portal.
+REST API for the UC San Diego ACM chapter's membership portal. This is an open-source project, for members by members, and we welcome any contributions! If you're interested in contributing or using the API for your own project, check out our guide [here](https://github.com/acmucsd/membership-portal/blob/master/.github/CONTRIBUTING.md).
 
 ### Build Instructions
 Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commit the `yarn.lock`.
@@ -51,9 +51,6 @@ CLIENT=localhost:8000
 + `docker exec -it rds.acmucsd.local psql -U [RDS_USER] -d [RDS_DATABASE]` to access Postgres (`RDS_XYZ` from `.env`).
 
 Take a look at [`package.json`](https://github.com/acmucsd/membership-portal/blob/master/package.json) for the actual commands.
-
-### Database Migrations
-To write database migrations, take a look at the [TypeORM documentation](https://github.com/typeorm/typeorm/blob/master/docs/migrations.md) and [previous migrations](https://github.com/acmucsd/membership-portal/tree/master/migrations). Everything's already configured via [`ormconfig.ts`](https://github.com/acmucsd/membership-portal/blob/master/ormconfig.ts) so executing `npm run db:migrate` should work. Migrations on the production database automatically run upon deployment using Heroku's [`release` phase](https://devcenter.heroku.com/articles/release-phase) (configured in the [Procfile](https://github.com/acmucsd/membership-portal/blob/master/Procfile#L1)).
 
 ### Upgrading to Latest Version
 The first iteration of the membership portal is a JavaScript app written in 2019. The second and latest iteration, written 2020, is a TypeScript app built with better reliability and error handling, stronger concurrency guarantees, and a smoother development experience in mind, and includes a number of breaking changes at the API and database levels. For a more concrete list of improvements, see [acmucsd/membership-portal#115](https://github.com/acmucsd/membership-portal/pull/115).
