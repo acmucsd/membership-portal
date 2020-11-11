@@ -41,6 +41,7 @@ CLIENT=localhost:8000
 + `docker-compose up -d` to configure and run any required services
 + `npm install` to install the necessary dependencies
 + `npm run dev` to run the Node app with [Nodemon](https://nodemon.io/) and [ts-node](https://github.com/TypeStrong/ts-node)
++ `npm run build` to compile the code to JavaScript
 + `npm run lint` to lint the Node app with [ESLint](https://eslint.org/) (without `--fix`)
 + `npm run lint:fix` to fix the simple linter issues automatically
 + `npm run test` to run the test suite with [Jest](https://jestjs.io/)
