@@ -1,11 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
-import { IsValidFeedbackType } from '../decorators/Validators';
+import { IsDefined, IsNotEmpty, Length, ValidateNested } from 'class-validator';
+import { IsValidFeedbackType, IsValidFeedbackStatus } from '../decorators/Validators';
 import {
   SubmitEventFeedbackRequest as ISubmitEventFeedbackRequest,
   SubmitFeedbackRequest as ISubmitFeedbackRequest,
+  UpdateFeedbackStatusRequest as IUpdateFeedbackStatusRequest,
   Feedback as IFeedback,
   FeedbackType,
+  FeedbackStatus,
 } from '../../types';
 
 export class Feedback implements IFeedback {
@@ -14,6 +16,7 @@ export class Feedback implements IFeedback {
   title: string;
 
   @IsDefined()
+  @Length(100)
   description: string;
 
   @IsDefined()
@@ -31,4 +34,10 @@ export class SubmitFeedbackRequest implements ISubmitFeedbackRequest {
   @ValidateNested()
   @IsDefined()
   feedback: Feedback;
+}
+
+export class UpdateFeedbackStatusRequest implements IUpdateFeedbackStatusRequest {
+  @IsDefined()
+  @IsValidFeedbackStatus()
+  status: FeedbackStatus;
 }

@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { FeedbackType, PublicFeedback, Uuid } from '../types';
+import { FeedbackStatus, FeedbackType, PublicFeedback, Uuid } from '../types';
 import { UserModel } from './UserModel';
 
 @Entity('Feedback')
@@ -12,7 +12,7 @@ export class FeedbackModel extends BaseEntity {
   @Index('user_feedback_by_user_index')
   user: UserModel;
 
-  @Column('varchar')
+  @Column('varchar', { length: 255 })
   title: string;
 
   @Column('text')
@@ -21,8 +21,8 @@ export class FeedbackModel extends BaseEntity {
   @Column('timestamptz', { default: 'CURRENT_TIMESTAMP(6)' })
   timestamp: Date;
 
-  @Column({ default: false })
-  acknowledged: boolean;
+  @Column('varchar', { default: FeedbackStatus.SUBMITTED })
+  status: FeedbackStatus;
 
   @Column('varchar')
   type: FeedbackType;
@@ -34,7 +34,7 @@ export class FeedbackModel extends BaseEntity {
       title: this.title,
       description: this.description,
       timestamp: this.timestamp,
-      acknowledged: this.acknowledged,
+      status: this.status,
       type: this.type,
     };
   }

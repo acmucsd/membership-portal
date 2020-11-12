@@ -1,4 +1,4 @@
-import { FeedbackType } from './Enums';
+import { FeedbackStatus, FeedbackType } from './Enums';
 
 // REQUEST TYPES
 
@@ -63,6 +63,10 @@ export interface PatchUserRequest {
 
 export interface SubmitFeedbackRequest {
   feedback: Feedback;
+}
+
+export interface UpdateFeedbackStatusRequest {
+  status: FeedbackStatus;
 }
 
 // LEADERBOARD

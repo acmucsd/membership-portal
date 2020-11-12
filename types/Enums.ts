@@ -37,11 +37,16 @@ export enum ActivityType {
 export enum FeedbackType {
   GENERAL = 'GENERAL',
   MERCH_STORE = 'MERCH_STORE',
-  EVENTS = 'EVENTS',
   BIT_BYTE = 'BIT_BYTE',
   AI = 'AI',
   CYBER = 'CYBER',
   DESIGN = 'DESIGN',
   HACK = 'HACK',
   INNOVATE = 'INNOVATE',
+}
+
+export enum FeedbackStatus {
+  SUBMITTED = 'SUBMITTED',
+  ACKNOWLEDGED = 'ACKNOWLEDGED',
+  IGNORED = 'IGNORED',
 }

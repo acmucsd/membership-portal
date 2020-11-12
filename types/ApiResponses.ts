@@ -1,4 +1,4 @@
-import { ActivityType, FeedbackType } from './Enums';
+import { ActivityType, FeedbackStatus, FeedbackType } from './Enums';
 
 // REQUEST TYPES
 
@@ -258,7 +258,7 @@ export interface PublicFeedback {
   title: string;
   description: string;
   timestamp: Date;
-  acknowledged: boolean;
+  status: FeedbackStatus;
   type: FeedbackType;
 }
 
@@ -287,5 +287,9 @@ export interface GetFeedbackResponse extends ApiResponse {
 }
 
 export interface SubmitFeedbackResponse extends ApiResponse {
+  feedback: PublicFeedback;
+}
+
+export interface UpdateFeedbackStatusResponse extends ApiResponse {
   feedback: PublicFeedback;
 }

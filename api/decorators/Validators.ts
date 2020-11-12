@@ -1,7 +1,7 @@
 import {
   ValidatorConstraintInterface, registerDecorator, ValidationOptions, ValidatorConstraint,
 } from 'class-validator';
-import { PasswordChange, FeedbackType } from '../../types';
+import { PasswordChange, FeedbackType, FeedbackStatus } from '../../types';
 
 function templatedValidationDecorator(
   validator: ValidatorConstraintInterface | Function, validationOptions?: ValidationOptions,
@@ -110,7 +110,7 @@ export function IsValidEventFeedback(validationOptions?: ValidationOptions) {
 }
 
 @ValidatorConstraint()
-class FeedbackValidator implements ValidatorConstraintInterface {
+class FeedbackTypeValidator implements ValidatorConstraintInterface {
   validate(feedbackType: FeedbackType): boolean {
     return Object.values(FeedbackType).includes(feedbackType);
   }
@@ -121,5 +121,20 @@ class FeedbackValidator implements ValidatorConstraintInterface {
 }
 
 export function IsValidFeedbackType(validationOptions?: ValidationOptions) {
-  return templatedValidationDecorator(FeedbackValidator, validationOptions);
+  return templatedValidationDecorator(FeedbackTypeValidator, validationOptions);
+}
+
+@ValidatorConstraint()
+class FeedbackStatusValidator implements ValidatorConstraintInterface {
+  validate(feedbackStatus: FeedbackStatus): boolean {
+    return Object.values(FeedbackStatus).includes(feedbackStatus) && feedbackStatus !== FeedbackStatus.SUBMITTED;
+  }
+
+  defaultMessage(): string {
+    return 'Invalid feedback status';
+  }
+}
+
+export function IsValidFeedbackStatus(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(FeedbackStatusValidator, validationOptions);
 }

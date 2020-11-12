@@ -6,7 +6,7 @@ import { Uuid } from '../types';
 
 @EntityRepository(FeedbackModel)
 export class FeedbackRepository extends BaseRepository<FeedbackModel> {
-  public async getFeedback(): Promise<FeedbackModel[]> {
+  public async getAllFeedback(): Promise<FeedbackModel[]> {
     return this.getBaseFindQuery().getMany();
   }
 
@@ -14,14 +14,7 @@ export class FeedbackRepository extends BaseRepository<FeedbackModel> {
     return this.getBaseFindQuery().where({ uuid }).getOne();
   }
 
-  public async getLatestFeedback(user: UserModel): Promise<FeedbackModel> {
-    return this.getBaseFindQuery()
-      .where({ user })
-      .orderBy('timestamp', 'DESC')
-      .getOne();
-  }
-
-  public async getFeedbackByUser(user: UserModel): Promise<FeedbackModel[]> {
+  public async getAllFeedbackForUser(user: UserModel): Promise<FeedbackModel[]> {
     return this.getBaseFindQuery().where({ user }).getMany();
   }
 
@@ -33,6 +26,7 @@ export class FeedbackRepository extends BaseRepository<FeedbackModel> {
 
   private getBaseFindQuery() {
     return this.repository.createQueryBuilder('feedback')
-      .leftJoinAndSelect('feedback.user', 'user');
+      .leftJoinAndSelect('feedback.user', 'user')
+      .orderBy('timestamp', 'DESC');
   }
 }

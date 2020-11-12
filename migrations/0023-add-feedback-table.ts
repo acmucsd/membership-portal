@@ -35,9 +35,9 @@ export class SubmitFeedbackTable1603825929793 implements MigrationInterface {
           default: 'CURRENT_TIMESTAMP(6)',
         },
         {
-          name: 'acknowledged',
-          type: 'boolean',
-          default: 'false',
+          name: 'status',
+          type: 'varchar(255)',
+          default: '\'SUBMITTED\'',
         },
         {
           name: 'type',

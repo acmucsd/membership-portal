@@ -2,35 +2,24 @@ import { Body, ForbiddenError, Get, JsonController, Param, Patch, Post, UseBefor
 import { Inject } from 'typedi';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
-import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
 import FeedbackService from '../../services/FeedbackService';
-import { GetFeedbackResponse, SubmitFeedbackResponse, Uuid } from '../../types';
+import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse, Uuid } from '../../types';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
-  SubmitEventFeedbackRequest,
   SubmitFeedbackRequest,
+  UpdateFeedbackStatusRequest,
 } from '../validators/FeedbackControllerRequests';
 
 @UseBefore(UserAuthentication)
 @JsonController('/feedback')
 export class FeedbackController {
   @Inject()
-  private attendanceService: AttendanceService;
-
-  @Inject()
   private feedbackService: FeedbackService;
-
-  @Post('/event/:uuid')
-  async submitEventFeedback(@Param('uuid') uuid: Uuid, @Body() submitEventFeedbackRequest: SubmitEventFeedbackRequest,
-    @AuthenticatedUser() user: UserModel) {
-    await this.attendanceService.submitEventFeedback(submitEventFeedbackRequest.feedback, uuid, user);
-    return { error: null };
-  }
 
   @Get()
   async getFeedback(@AuthenticatedUser() user: UserModel): Promise<GetFeedbackResponse> {
-    const canSeeAllFeedback = PermissionsService.canSeeFeedback(user);
+    const canSeeAllFeedback = PermissionsService.canAcknowledgeFeedback(user);
     const feedback = await this.feedbackService.getFeedback(canSeeAllFeedback, user);
     return { error: null, feedback };
   }
@@ -43,10 +32,11 @@ export class FeedbackController {
   }
 
   @Patch('/:uuid')
-  async acknowledgeFeedback(@Param('uuid') uuid: Uuid,
-    @AuthenticatedUser() user: UserModel): Promise<SubmitFeedbackResponse> {
-    if (!PermissionsService.canSeeFeedback(user)) throw new ForbiddenError();
-    const feedback = await this.feedbackService.acknowledgeFeedback(uuid);
+  async updateFeedbackStatus(@Param('uuid') uuid: Uuid,
+    @Body() updateFeedbackStatusRequest: UpdateFeedbackStatusRequest,
+    @AuthenticatedUser() user: UserModel): Promise<UpdateFeedbackStatusResponse> {
+    if (!PermissionsService.canAcknowledgeFeedback(user)) throw new ForbiddenError();
+    const feedback = await this.feedbackService.updateFeedbackStatus(uuid, updateFeedbackStatusRequest.status);
     return { error: null, feedback };
   }
 }
