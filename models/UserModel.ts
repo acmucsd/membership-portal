@@ -16,32 +16,32 @@ export class UserModel extends BaseEntity {
   @Index({ unique: true })
   email: string;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   firstName: string;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   lastName: string;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   hash: string;
 
-  @Column({ nullable: true })
+  @Column('varchar', { length: 255, nullable: true })
   profilePicture: string;
 
-  @Column('varchar', { default: UserAccessType.STANDARD })
+  @Column('varchar', { length: 255, default: UserAccessType.STANDARD })
   accessType: UserAccessType;
 
-  @Column('varchar', { default: UserState.PENDING })
+  @Column('varchar', { length: 255, default: UserState.PENDING })
   state: UserState;
 
-  @Column({ nullable: true })
+  @Column('varchar', { length: 255, nullable: true })
   @Index({ unique: true })
   accessCode: string;
 
-  @Column()
+  @Column('integer')
   graduationYear: number;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   major: string;
 
   @Column({
@@ -50,11 +50,11 @@ export class UserModel extends BaseEntity {
   })
   bio: string;
 
-  @Column({ default: 0 })
+  @Column('integer', { default: 0 })
   @Index('leaderboard_index')
   points: number;
 
-  @Column({ default: 0 })
+  @Column('integer', { default: 0 })
   credits: number;
 
   @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)' })

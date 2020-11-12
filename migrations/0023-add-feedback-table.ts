@@ -41,7 +41,7 @@ export class SubmitFeedbackTable1603825929793 implements MigrationInterface {
         },
         {
           name: 'type',
-          type: 'varchar',
+          type: 'varchar(255)',
         },
       ],
       indices: [

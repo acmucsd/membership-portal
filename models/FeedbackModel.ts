@@ -21,10 +21,10 @@ export class FeedbackModel extends BaseEntity {
   @Column('timestamptz', { default: 'CURRENT_TIMESTAMP(6)' })
   timestamp: Date;
 
-  @Column('varchar', { default: FeedbackStatus.SUBMITTED })
+  @Column('varchar', { length: 255, default: FeedbackStatus.SUBMITTED })
   status: FeedbackStatus;
 
-  @Column('varchar')
+  @Column('varchar', { length: 255 })
   type: FeedbackType;
 
   public getPublicFeedback(): PublicFeedback {

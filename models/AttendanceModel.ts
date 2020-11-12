@@ -22,7 +22,7 @@ export class AttendanceModel extends BaseEntity {
   @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)' })
   timestamp: Date;
 
-  @Column({ default: false })
+  @Column('boolean', { default: false })
   asStaff: boolean;
 
   @Column({

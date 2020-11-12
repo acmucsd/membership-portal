@@ -7,13 +7,13 @@ export class MerchandiseCollectionModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   title: string;
 
   @Column('text')
   description: string;
 
-  @Column({ default: false })
+  @Column('boolean', { default: false })
   archived: boolean;
 
   @OneToMany((type) => MerchandiseItemModel, (item) => item.collection, { cascade: true })
