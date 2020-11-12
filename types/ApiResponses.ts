@@ -74,6 +74,8 @@ export interface VerifyAuthTokenResponse extends ApiResponse {
   authenticated: boolean;
 }
 
+// EVENT
+
 export interface PublicEvent {
   uuid: Uuid;
   organization: string;

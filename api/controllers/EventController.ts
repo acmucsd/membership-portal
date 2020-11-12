@@ -73,6 +73,7 @@ export class EventController {
   @Post('/:uuid/feedback')
   async submitEventFeedback(@Param('uuid') uuid: Uuid, @Body() submitEventFeedbackRequest: SubmitEventFeedbackRequest,
     @AuthenticatedUser() user: UserModel) {
+    if (!PermissionsService.canSubmitFeedback(user)) throw new ForbiddenError();
     await this.attendanceService.submitEventFeedback(submitEventFeedbackRequest.feedback, uuid, user);
     return { error: null };
   }

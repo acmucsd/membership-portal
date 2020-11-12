@@ -44,7 +44,7 @@ export default class FeedbackService {
       const { user } = feedback;
       if (status === FeedbackStatus.ACKNOWLEDGED) {
         const pointsEarned = Config.pointReward.FEEDBACK_POINT_REWARD;
-        await Repositories.activity(txn).logActivity(user, ActivityType.SUBMIT_FEEDBACK, pointsEarned);
+        await Repositories.activity(txn).logActivity(user, ActivityType.ACKNOWLEDGE_FEEDBACK, pointsEarned);
         await Repositories.user(txn).addPoints(user, pointsEarned);
       }
 

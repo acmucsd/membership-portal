@@ -9,7 +9,7 @@ export class FeedbackModel extends BaseEntity {
 
   @ManyToOne((type) => UserModel, (user) => user.feedback, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user' })
-  @Index('user_feedback_by_user_index')
+  @Index('feedback_by_user_index')
   user: UserModel;
 
   @Column('varchar', { length: 255 })

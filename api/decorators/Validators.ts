@@ -116,7 +116,7 @@ class FeedbackTypeValidator implements ValidatorConstraintInterface {
   }
 
   defaultMessage(): string {
-    return 'Invalid feedback type';
+    return `Feedback type must be one of ${Object.values(FeedbackType)}`;
   }
 }
 
@@ -131,7 +131,7 @@ class FeedbackStatusValidator implements ValidatorConstraintInterface {
   }
 
   defaultMessage(): string {
-    return 'Invalid feedback status';
+    return 'Feedback status must be one of [\'IGNORED\', \'ACKNOWLEDGED\']';
   }
 }
 
