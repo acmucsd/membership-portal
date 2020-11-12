@@ -37,8 +37,8 @@ export default class FeedbackService {
       const feedbackRepository = Repositories.feedback(txn);
       const feedback = await feedbackRepository.findByUuid(uuid);
       if (!feedback) throw new UserError('Feedback not found');
-      if (feedback.status !== FeedbackStatus.SUBMITTED) { 
-        throw new UserError('This feedback has already been responded to'); 
+      if (feedback.status !== FeedbackStatus.SUBMITTED) {
+        throw new UserError('This feedback has already been responded to');
       }
 
       const { user } = feedback;
