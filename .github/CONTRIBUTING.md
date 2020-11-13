@@ -1,6 +1,17 @@
 # Contributing
 The membership portal is an open-source project, made for members by members, and we welcome any contributions! This project is maintained by ACM UCSD's development team.
 
++ [Getting Started](#getting-started)
++ [Project Structure](#project-structure)
+  + [API Specification](#api-specification)
+  + [API Implementation](#api-implementation)
+    + [Endpoints](#endpoints)
+    + [Services](#services)
+    + [Database](#database)
+  + [Testing](#testing)
+  + [Tooling](#tooling)
+  + [Other Considerations](#other-considerations)
+
 ## Getting Started
 Issues in our projects are kind of like conversations; when we find a problem or propose an idea, we open an issue and discuss in the comments.  **You can look through our open issues [here](https://github.com/acmucsd/membership-portal/issues)**; if you see something you're interested in working on, feel free to leave a comment with any questions you might have, and one of our maintainers will follow up with you. **You can also message `@Development` on the ACM UCSD Discord** and ask about our current priorities.
 
