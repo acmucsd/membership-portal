@@ -16,7 +16,7 @@ There're a lot of moving parts in this codebase and making simple changes can be
 ### API Specification
 You can find our API specification [here](https://documenter.getpostman.com/view/12949536/TVRedVwQ). It'll tell you about all the endpoints our API exposes and what each does. All the types in our specification, e.g. requests, responses, user profiles, merch orders, are defined in the `types` folder, and if you're adding a route or modifying an existing one, you'll first need to edit these types and update our documentation. Message us for Postman credentials.
 
-## API Implementation
+### API Implementation
 At a high level, our API is implemented in three layers: the endpoints layer, the services layer, and the data layer. The endpoints layer calls the services layer and the servies layer calls the data layer.
 
 #### Endpoints
