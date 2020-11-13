@@ -1,5 +1,5 @@
 ## membership-portal-api &nbsp; [![CircleCI](https://circleci.com/gh/acmucsd/membership-portal/tree/master.svg?style=svg)](https://circleci.com/gh/acmucsd/membership-portal/tree/master)
-REST API for the UC San Diego ACM chapter's membership portal. This is an open-source project, made for members by members, and we welcome any contributions! If you're interested in contributing or using the API for your own project, check out our guide [here](https://github.com/acmucsd/membership-portal/blob/master/.github/CONTRIBUTING.md).
+REST API for the UC San Diego ACM chapter's membership portal. This is an open-source project, made for members by members, and we welcome any contributions! If you're interested in using the API for your own project and/or contributing, check out our guide [here](https://github.com/acmucsd/membership-portal/blob/master/.github/CONTRIBUTING.md).
 
 ### Build Instructions
 Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commit the `yarn.lock`.
