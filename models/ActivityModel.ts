@@ -1,6 +1,6 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { pick } from 'underscore';
-import { ActivityType, PublicActivity, Uuid } from '../types';
+import { ActivityScope, ActivityType, PublicActivity, Uuid } from '../types';
 import { UserModel } from './UserModel';
 
 @Entity('Activities')
@@ -26,8 +26,8 @@ export class ActivityModel extends BaseEntity {
   @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)' })
   timestamp: Date;
 
-  @Column('boolean')
-  public: boolean;
+  @Column('varchar')
+  scope: ActivityScope;
 
   public getPublicActivity(): PublicActivity {
     return pick(this, [
