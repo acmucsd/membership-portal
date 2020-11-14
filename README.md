@@ -16,7 +16,7 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 10. Start the Node app: `npm run dev`.
 
 #### Installing Postgres
-MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/), run the installer, and add the Postgres bin to the PATH environment variable.
+Even though our actual Postgres instance runs in a Docker container, we need to install Postgres to install the official `pg` Node package. MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/), run the installer, and add the Postgres bin to the PATH environment variable.
 
 #### Windows Build Instructions
 1. Run the Windows Powershell as administrator.
