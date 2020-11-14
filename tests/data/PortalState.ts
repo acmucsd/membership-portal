@@ -7,7 +7,7 @@ import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionMo
 import { OrderModel } from '../../models/OrderModel';
 import { UserModel } from '../../models/UserModel';
 import { ActivityModel } from '../../models/ActivityModel';
-import { ActivityType } from '../../types';
+import { ActivityScope, ActivityType } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { OrderItemModel } from '../../models/OrderItemModel';
 
@@ -53,7 +53,7 @@ export class PortalState {
       this.activities.push(ActivityModel.create({
         user,
         type: ActivityType.ACCOUNT_CREATE,
-        public: true,
+        scope: ActivityScope.PUBLIC,
       }));
     }
     return this;
@@ -88,7 +88,7 @@ export class PortalState {
           user,
           type: asStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
           timestamp,
-          public: true,
+          scope: ActivityScope.PUBLIC,
         }));
       }
     }
