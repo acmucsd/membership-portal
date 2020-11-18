@@ -21,7 +21,7 @@ export function handleError(error: Error,
   if (Config.isDevelopment) {
     errorResponse.error.stack = stack;
   }
-  log.warn('%s [request %s]: %s [%d]: %s \n%s\n', new Date(), request.trace, name, httpCode, message, stack);
+  log.warn('%s [request %s]: %s [%d]: %s \n%s\n', new Date(), request.trace, name, httpCode, message, stack, { error });
   response.status(httpCode).json(errorResponse);
   next();
 }
