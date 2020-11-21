@@ -64,7 +64,7 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
   public async getEarliestTimestamp(): Promise<number> {
     const earliestPointsRecord = await this.repository.createQueryBuilder()
       .select('MIN("timestamp")', 'timestamp')
-      .where('public = true AND "pointsEarned" > 0')
+      .where('scope = \'PUBLIC\' AND "pointsEarned" > 0')
       .cache('earliest_recorded_points', moment.duration(1, 'day').asMilliseconds())
       .getRawOne();
     return moment(earliestPointsRecord.timestamp).valueOf();
