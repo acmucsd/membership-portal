@@ -9,29 +9,29 @@ export class EventModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
-  @Column({ default: 'ACM' })
+  @Column('varchar', { length: 255, default: 'ACM' })
   organization: string;
 
-  @Column({ default: 'ACM' })
+  @Column('varchar', { length: 255, default: 'ACM' })
   @Index()
   committee: string;
 
-  @Column({ nullable: true })
+  @Column('varchar', { length: 255, nullable: true })
   thumbnail: string;
 
-  @Column({ nullable: true })
+  @Column('varchar', { length: 255, nullable: true })
   cover: string;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   title: string;
 
-  @Column()
+  @Column('text')
   description: string;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   location: string;
 
-  @Column({ nullable: true })
+  @Column('varchar', { length: 255, nullable: true })
   eventLink: string;
 
   @Column('timestamptz')
@@ -40,20 +40,20 @@ export class EventModel extends BaseEntity {
   @Column('timestamptz')
   end: Date;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   @Index({ unique: true })
   attendanceCode: string;
 
-  @Column()
+  @Column('integer')
   pointValue: number;
 
-  @Column({ default: false })
+  @Column('boolean', { default: false })
   deleted: boolean;
 
-  @Column({ default: false })
+  @Column('boolean', { default: false })
   requiresStaff: boolean;
 
-  @Column({ default: 0 })
+  @Column('integer', { default: 0 })
   staffPointBonus: number;
 
   @OneToMany((type) => AttendanceModel, (attendance) => attendance.event, { cascade: true })

@@ -1,19 +1,28 @@
 import { EntityRepository } from 'typeorm';
 import * as moment from 'moment';
-import { ActivityType, Uuid } from '../types';
+import { ActivityScope, ActivityType, Uuid } from '../types';
 import { UserModel } from '../models/UserModel';
 import { ActivityModel } from '../models/ActivityModel';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(ActivityModel)
 export class ActivityRepository extends BaseRepository<ActivityModel> {
-  private static publicActivities = new Set([
-    ActivityType.ACCOUNT_CREATE,
-    ActivityType.ATTEND_EVENT,
-    ActivityType.ATTEND_EVENT_AS_STAFF,
-    ActivityType.BONUS_POINTS,
-    ActivityType.MILESTONE,
-  ]);
+  private static activityScopes = {
+    [ActivityType.ACCOUNT_CREATE]: ActivityScope.PUBLIC,
+    [ActivityType.ATTEND_EVENT]: ActivityScope.PUBLIC,
+    [ActivityType.ATTEND_EVENT_AS_STAFF]: ActivityScope.PUBLIC,
+    [ActivityType.BONUS_POINTS]: ActivityScope.PUBLIC,
+    [ActivityType.MILESTONE]: ActivityScope.PUBLIC,
+    [ActivityType.FEEDBACK_ACKNOWLEDGED]: ActivityScope.PRIVATE,
+    [ActivityType.ORDER_MERCHANDISE]: ActivityScope.PRIVATE,
+    [ActivityType.SUBMIT_EVENT_FEEDBACK]: ActivityScope.PRIVATE,
+    [ActivityType.SUBMIT_FEEDBACK]: ActivityScope.PRIVATE,
+    [ActivityType.ACCOUNT_ACTIVATE]: ActivityScope.HIDDEN,
+    [ActivityType.ACCOUNT_LOGIN]: ActivityScope.HIDDEN,
+    [ActivityType.ACCOUNT_RESET_PASS]: ActivityScope.HIDDEN,
+    [ActivityType.ACCOUNT_RESET_PASS_REQUEST]: ActivityScope.HIDDEN,
+    [ActivityType.ACCOUNT_UPDATE_INFO]: ActivityScope.HIDDEN,
+  };
 
   public async logActivity(
     user: UserModel, type: ActivityType, pointsEarned?: number, description?: string,
@@ -23,7 +32,7 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
       type,
       description,
       pointsEarned,
-      public: ActivityRepository.isPublicActivityType(type),
+      scope: ActivityRepository.activityScopes[type],
     };
     return this.repository.save(ActivityModel.create(activity));
   }
@@ -59,9 +68,5 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
       .cache('earliest_recorded_points', moment.duration(1, 'day').asMilliseconds())
       .getRawOne();
     return moment(earliestPointsRecord.timestamp).valueOf();
-  }
-
-  private static isPublicActivityType(type: ActivityType): boolean {
-    return ActivityRepository.publicActivities.has(type);
   }
 }

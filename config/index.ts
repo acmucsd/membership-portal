@@ -72,4 +72,9 @@ export const Config = {
   metrics: {
     apiKey: process.env.DATADOG_API_KEY,
   },
+
+  pointReward: {
+    FEEDBACK_POINT_REWARD: Number(process.env.FEEDBACK_POINT_REWARD),
+    EVENT_FEEDBACK_POINT_REWARD: Number(process.env.EVENT_FEEDBACK_POINT_REWARD),
+  },
 };

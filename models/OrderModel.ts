@@ -22,7 +22,7 @@ export class OrderModel extends BaseEntity {
   @Index('orders_per_user_index')
   user: UserModel;
 
-  @Column()
+  @Column('integer')
   totalCost: number;
 
   @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)' })

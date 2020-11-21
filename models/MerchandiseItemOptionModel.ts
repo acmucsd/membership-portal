@@ -15,13 +15,13 @@ export class MerchandiseItemOptionModel extends BaseEntity {
   @JoinColumn({ name: 'item' })
   item: MerchandiseItemModel;
 
-  @Column({ default: 0 })
+  @Column('integer', { default: 0 })
   quantity: number;
 
-  @Column()
+  @Column('integer')
   price: number;
 
-  @Column({ default: 0 })
+  @Column('integer', { default: 0 })
   discountPercentage: number;
 
   @Column({
