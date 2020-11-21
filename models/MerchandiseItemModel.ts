@@ -20,19 +20,19 @@ export class MerchandiseItemModel extends BaseEntity {
   @JoinColumn({ name: 'collection' })
   collection: MerchandiseCollectionModel;
 
-  @Column({ nullable: true })
+  @Column('varchar', { length: 255, nullable: true })
   picture: string;
 
   @Column('text')
   description: string;
 
-  @Column({ nullable: true })
+  @Column('integer', { nullable: true })
   monthlyLimit: number;
 
-  @Column({ nullable: true })
+  @Column('integer', { nullable: true })
   lifetimeLimit: number;
 
-  @Column({ default: false })
+  @Column('boolean', { default: false })
   hidden: boolean;
 
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })

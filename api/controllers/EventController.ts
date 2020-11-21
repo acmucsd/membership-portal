@@ -8,6 +8,7 @@ import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
 import StorageService from '../../services/StorageService';
+import AttendanceService from '../../services/AttendanceService';
 import {
   Uuid,
   MediaType,
@@ -20,7 +21,12 @@ import {
   GetFutureEventsResponse,
   GetPastEventsResponse,
 } from '../../types';
-import { EventSearchOptions, PatchEventRequest, CreateEventRequest } from '../validators/EventControllerRequests';
+import {
+  EventSearchOptions,
+  PatchEventRequest,
+  CreateEventRequest,
+  SubmitEventFeedbackRequest,
+} from '../validators/EventControllerRequests';
 
 @JsonController('/event')
 export class EventController {
@@ -29,6 +35,9 @@ export class EventController {
 
   @Inject()
   storageService: StorageService;
+
+  @Inject()
+  attendanceService: AttendanceService;
 
   @UseBefore(OptionalUserAuthentication)
   @Get('/past')
@@ -58,6 +67,15 @@ export class EventController {
     const cover = await this.storageService.upload(file, MediaType.EVENT_COVER, uuid);
     const event = await this.eventService.updateByUuid(uuid, { cover });
     return { error: null, event };
+  }
+
+  @UseBefore(UserAuthentication)
+  @Post('/:uuid/feedback')
+  async submitEventFeedback(@Param('uuid') uuid: Uuid, @Body() submitEventFeedbackRequest: SubmitEventFeedbackRequest,
+    @AuthenticatedUser() user: UserModel) {
+    if (!PermissionsService.canSubmitFeedback(user)) throw new ForbiddenError();
+    await this.attendanceService.submitEventFeedback(submitEventFeedbackRequest.feedback, uuid, user);
+    return { error: null };
   }
 
   @UseBefore(UserAuthentication)

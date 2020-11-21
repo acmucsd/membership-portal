@@ -1,3 +1,5 @@
+import { FeedbackStatus, FeedbackType } from './Enums';
+
 // REQUEST TYPES
 
 export interface Pagination {
@@ -36,6 +38,12 @@ export interface RegistrationRequest {
 
 // USER
 
+export interface Feedback {
+  title: string;
+  description: string;
+  type: FeedbackType;
+}
+
 export interface PasswordUpdate extends PasswordChange {
   password: string;
 }
@@ -51,6 +59,14 @@ export interface UserPatches {
 
 export interface PatchUserRequest {
   user: UserPatches;
+}
+
+export interface SubmitFeedbackRequest {
+  feedback: Feedback;
+}
+
+export interface UpdateFeedbackStatusRequest {
+  status: FeedbackStatus;
 }
 
 // LEADERBOARD
@@ -114,6 +130,10 @@ export interface PatchEventRequest {
 export interface AttendEventRequest {
   attendanceCode: string;
   asStaff?: boolean;
+}
+
+export interface SubmitEventFeedbackRequest {
+  feedback: string[];
 }
 
 export interface EventSearchOptions {

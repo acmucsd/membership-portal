@@ -16,13 +16,13 @@ export class OrderItemModel extends BaseEntity {
   @JoinColumn({ name: 'option' })
   option: MerchandiseItemOptionModel;
 
-  @Column()
+  @Column('integer')
   salePriceAtPurchase: number;
 
-  @Column()
+  @Column('integer')
   discountPercentageAtPurchase: number;
 
-  @Column({ default: false })
+  @Column('boolean', { default: false })
   fulfilled: boolean;
 
   @Column('timestamptz', { nullable: true })

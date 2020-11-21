@@ -12,6 +12,14 @@ export default class PermissionsService {
     return user.isAdmin();
   }
 
+  public static canSubmitFeedback(user: UserModel): boolean {
+    return user.state === UserState.ACTIVE;
+  }
+
+  public static canRespondToFeedback(user: UserModel): boolean {
+    return user.isAdmin();
+  }
+
   public static canCreateMilestones(user: UserModel): boolean {
     return user.isAdmin();
   }

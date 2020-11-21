@@ -1,4 +1,4 @@
-import { ActivityType } from './Enums';
+import { ActivityType, FeedbackStatus, FeedbackType } from './Enums';
 
 // REQUEST TYPES
 
@@ -37,6 +37,7 @@ export interface PublicAttendance {
   event: PublicEvent;
   timestamp: Date;
   asStaff: boolean;
+  feedback: string[];
 }
 
 export interface GetAttendancesForEventResponse extends ApiResponse {
@@ -253,6 +254,16 @@ export interface PrivateProfile extends PublicProfile {
   credits: number,
 }
 
+export interface PublicFeedback {
+  uuid: Uuid,
+  user: PublicProfile,
+  title: string;
+  description: string;
+  timestamp: Date;
+  status: FeedbackStatus;
+  type: FeedbackType;
+}
+
 export interface GetUserActivityStreamResponse extends ApiResponse {
   activity: PublicActivity[];
 }
@@ -271,4 +282,16 @@ export interface GetCurrentUserResponse extends ApiResponse {
 
 export interface PatchUserResponse extends ApiResponse {
   user: PrivateProfile;
+}
+
+export interface GetFeedbackResponse extends ApiResponse {
+  feedback: PublicFeedback[];
+}
+
+export interface SubmitFeedbackResponse extends ApiResponse {
+  feedback: PublicFeedback;
+}
+
+export interface UpdateFeedbackStatusResponse extends ApiResponse {
+  feedback: PublicFeedback;
 }
