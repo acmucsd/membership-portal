@@ -20,7 +20,7 @@ export class FeedbackRepository extends BaseRepository<FeedbackModel> {
 
   public async upsertFeedback(feedback: FeedbackModel,
     changes?: Partial<FeedbackModel>): Promise<FeedbackModel> {
-    if (changes) FeedbackModel.merge(feedback, changes);
+    if (changes) feedback = FeedbackModel.merge(feedback, changes);
     return this.repository.save(feedback);
   }
 

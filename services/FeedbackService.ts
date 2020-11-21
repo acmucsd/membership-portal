@@ -1,6 +1,7 @@
 import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 import { InjectManager } from 'typeorm-typedi-extensions';
+import { NotFoundError } from 'routing-controllers';
 import { FeedbackModel } from '../models/FeedbackModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
@@ -37,7 +38,7 @@ export default class FeedbackService {
     const acknowledgedFeedback = await this.transactions.readWrite(async (txn) => {
       const feedbackRepository = Repositories.feedback(txn);
       const feedback = await feedbackRepository.findByUuid(uuid);
-      if (!feedback) throw new UserError('Feedback not found');
+      if (!feedback) throw new NotFoundError('Feedback not found');
       if (feedback.status !== FeedbackStatus.SUBMITTED) {
         throw new UserError('This feedback has already been responded to');
       }
