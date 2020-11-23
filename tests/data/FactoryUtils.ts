@@ -8,8 +8,9 @@ export default class FactoryUtils {
     return values[i];
   }
 
-  public static getRandomNumber(range: number, minimum = 0, scale = 1): number {
-    return (Math.floor(Math.random() * range) % scale) + minimum;
+  public static getRandomNumber(min: number, max: number, scale = 1): number {
+    const range = Math.floor(Math.random() * (max - min + 1)) + min;
+    return Math.floor(range / scale) * scale;
   }
 
   public static getRandomBoolean(): boolean {
