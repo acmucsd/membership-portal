@@ -7,9 +7,10 @@ import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionMo
 import { OrderModel } from '../../models/OrderModel';
 import { UserModel } from '../../models/UserModel';
 import { ActivityModel } from '../../models/ActivityModel';
-import { ActivityScope, ActivityType } from '../../types';
+import { ActivityScope, ActivityType, Feedback } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { OrderItemModel } from '../../models/OrderItemModel';
+import { FeedbackModel } from '../../models/FeedbackModel';
 
 export class PortalState {
   users: UserModel[] = [];
@@ -24,6 +25,8 @@ export class PortalState {
 
   orders: OrderModel[] = [];
 
+  feedback: FeedbackModel[] = [];
+
   public from(state: PortalState): PortalState {
     // deep clones all around for immutable PortalStates
     this.users = rfdc()(state.users);
@@ -32,6 +35,7 @@ export class PortalState {
     this.activities = rfdc()(state.activities);
     this.merch = rfdc()(state.merch);
     this.orders = rfdc()(state.orders);
+    this.feedback = rfdc()(state.feedback);
     return this;
   }
 
@@ -43,6 +47,7 @@ export class PortalState {
       this.activities = await txn.save(this.activities);
       this.merch = await txn.save(this.merch);
       this.orders = await txn.save(this.orders);
+      this.feedback = await txn.save(this.feedback);
     });
   }
 
@@ -116,6 +121,18 @@ export class PortalState {
     }));
     return this;
   }
+
+  public submitFeedback(user: UserModel, feedback: Feedback[]): PortalState {
+    for(let f = 0; f < feedback.length; f++) {
+      const fb = feedback[f];
+      this.feedback.push(FeedbackModel.create({ ...fb, user }));
+      this.activities.push(ActivityModel.create({
+        user,
+        type: ActivityType.SUBMIT_FEEDBACK,
+      }));
+    }
+    return this;
+  } 
 
   private getDateDuring(event: EventModel) {
     const { start, end } = event;
