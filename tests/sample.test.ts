@@ -1,11 +1,11 @@
-import { ActivityType } from '.';
+import { ActivityType } from '../types';
 import { ActivityModel } from '../models/ActivityModel';
 import { AttendanceModel } from '../models/AttendanceModel';
 import { EventModel } from '../models/EventModel';
 import { UserModel } from '../models/UserModel';
-import { DatabaseConnection, UserFactory, EventFactory, MerchFactory, PortalState } from '../tests/data';
+import { DatabaseConnection, UserFactory, EventFactory, MerchFactory, PortalState } from './data';
 import { OrderModel } from '../models/OrderModel';
-import { FeedbackFactory } from '../tests/data/FeedbackFactory';
+import { FeedbackFactory } from './data/FeedbackFactory';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
