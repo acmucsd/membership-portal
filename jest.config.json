@@ -9,5 +9,6 @@
 		"js",
 		"json",
 		"node"
-	]
+	],
+	"setupFilesAfterEnv": ["<rootDir>/tests/index.ts"]
 }

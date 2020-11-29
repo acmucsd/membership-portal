@@ -1,5 +1,5 @@
 import { Body, ForbiddenError, Get, JsonController, Param, Patch, Post, UseBefore } from 'routing-controllers';
-import Container, { Inject } from 'typedi';
+import { Inject } from 'typedi';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';

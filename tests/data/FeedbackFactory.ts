@@ -1,8 +1,5 @@
 import * as faker from 'faker';
-import { UserModel } from '../../models/UserModel';
 import { Feedback, FeedbackType } from '../../types';
-import { v4 as uuid } from 'uuid';
-import { FeedbackModel } from "../../models/FeedbackModel";
 import FactoryUtils from './FactoryUtils';
 
 export class FeedbackFactory {
@@ -19,11 +16,11 @@ export class FeedbackFactory {
       title: faker.random.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       type: FeedbackFactory.randomFeedbackType(),
-    }
+    };
   }
 
   private static randomFeedbackType(): FeedbackType {
-    const randomIndex = FactoryUtils.getRandomNumber(0, Object.keys(FeedbackType).length - 1); 
+    const randomIndex = FactoryUtils.getRandomNumber(0, Object.keys(FeedbackType).length - 1);
     return Object.values(FeedbackType)[randomIndex];
   }
 }

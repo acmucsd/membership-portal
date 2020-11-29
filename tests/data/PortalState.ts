@@ -123,7 +123,7 @@ export class PortalState {
   }
 
   public submitFeedback(user: UserModel, feedback: Feedback[]): PortalState {
-    for(let f = 0; f < feedback.length; f++) {
+    for (let f = 0; f < feedback.length; f += 1) {
       const fb = feedback[f];
       this.feedback.push(FeedbackModel.create({ ...fb, user }));
       this.activities.push(ActivityModel.create({
@@ -132,7 +132,7 @@ export class PortalState {
       }));
     }
     return this;
-  } 
+  }
 
   private getDateDuring(event: EventModel) {
     const { start, end } = event;
