@@ -4,13 +4,13 @@ export default class FactoryUtils {
   }
 
   public static pickRandomValue<T>(values: T[]): T {
-    const i = Math.floor(Math.random() * values.length);
+    const i = FactoryUtils.getRandomNumber(0, values.length - 1);
     return values[i];
   }
 
   public static getRandomNumber(min: number, max: number, scale = 1): number {
-    const range = Math.floor(Math.random() * (max - min + 1)) + min;
-    return Math.floor(range / scale) * scale;
+    const value = Math.floor(Math.random() * (max - min + 1)) + min;
+    return Math.floor(value / scale) * scale;
   }
 
   public static getRandomBoolean(): boolean {

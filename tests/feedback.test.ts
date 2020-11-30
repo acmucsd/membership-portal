@@ -30,7 +30,7 @@ describe('GET /feedback', () => {
 
     await state.write(conn);
 
-    const feedbackController = ControllerFactory.feedback();
+    const feedbackController = ControllerFactory.feedback(conn);
     const response1 = await feedbackController.getFeedback(user1);
     const response2 = await feedbackController.getFeedback(user2);
     const submittedFeedback1 = response1.feedback;

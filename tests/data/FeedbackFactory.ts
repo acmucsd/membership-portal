@@ -8,7 +8,7 @@ export class FeedbackFactory {
   }
 
   public static with(...substitutes: Partial<Feedback>[]): Feedback[] {
-    return substitutes.map((sub) => ({ ...FeedbackFactory.fake(), sub }));
+    return substitutes.map((sub) => ({ ...FeedbackFactory.fake(), ...sub }));
   }
 
   public static fake(): Feedback {
@@ -20,7 +20,6 @@ export class FeedbackFactory {
   }
 
   private static randomFeedbackType(): FeedbackType {
-    const randomIndex = FactoryUtils.getRandomNumber(0, Object.keys(FeedbackType).length - 1);
-    return Object.values(FeedbackType)[randomIndex];
+    return FactoryUtils.pickRandomValue(Object.values(FeedbackType));
   }
 }
