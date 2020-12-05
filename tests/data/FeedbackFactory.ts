@@ -14,7 +14,7 @@ export class FeedbackFactory {
   public static fake(): Feedback {
     return {
       title: faker.random.hexaDecimal(10),
-      description: faker.lorem.sentences(2),
+      description: faker.lorem.words(100),
       type: FeedbackFactory.randomFeedbackType(),
     };
   }
