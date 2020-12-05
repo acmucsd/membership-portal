@@ -1,6 +1,9 @@
-import { DatabaseConnection, PortalState, UserFactory } from './data';
+import { DatabaseConnection, UserFactory } from './data';
 import { FeedbackFactory } from './data/FeedbackFactory';
-import { ControllerFactory } from './controllers';
+import { FeedbackControllerMock } from './controllers';
+import { ActivityScope, ActivityType, FeedbackStatus, UserAccessType } from '../types';
+import { ActivityModel } from '../models/ActivityModel';
+import { FeedbackModel } from '../models/FeedbackModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -15,43 +18,71 @@ afterAll(async () => {
   await DatabaseConnection.close();
 });
 
-describe('GET /feedback', () => {
-  test('returns feedback for current user if user is not an admin', async () => {
+describe('feedback submission', () => {
+  test('returns proper feedback response on successful submission', async () => {
+    const [user] = UserFactory.create(1);
+    const [feedback] = FeedbackFactory.create(1);
+
+    await FeedbackControllerMock.mockUsers([user]);
+    const submittedFeedback = await FeedbackControllerMock.submitFeedback(feedback, user);
+
+    expect(submittedFeedback.user).toStrictEqual(user.getPublicProfile());
+    expect(submittedFeedback.status).toStrictEqual(FeedbackStatus.SUBMITTED);
+    expect(submittedFeedback).toMatchObject(feedback);
+  });
+
+  test('returns error response when submission description is too short', async () => {
+
+  });
+
+  test('persists submission data and activity in database on successful submission', async () => {
+    const [user] = UserFactory.create(1);
+    const [feedback] = FeedbackFactory.create(1);
+
+    await FeedbackControllerMock.mockUsers([user]);
+    const submittedFeedback = await FeedbackControllerMock.submitFeedback(feedback, user);
+
     const conn = await DatabaseConnection.get();
+    const [persistedFeedback] = await conn.manager.find(FeedbackModel, { relations: ['user'] });
+    const activity = await conn.manager.find(ActivityModel, { relations: ['user'] });
+    const feedbackActivity = activity[1];
 
+    expect(submittedFeedback).toStrictEqual(persistedFeedback.getPublicFeedback());
+    expect(feedbackActivity.type).toEqual(ActivityType.SUBMIT_FEEDBACK);
+    expect(feedbackActivity.scope).toEqual(ActivityScope.PRIVATE);
+    expect(feedbackActivity.user).toStrictEqual(user);
+  });
+
+  test('is visible from all users if user is admin, otherwise from only current user', async () => {
     const [user1, user2] = UserFactory.create(2);
-    const feedback1 = FeedbackFactory.create(2);
-    const feedback2 = FeedbackFactory.create(2);
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [feedback1, feedback2] = FeedbackFactory.create(2);
 
-    const state = new PortalState()
-      .createUsers([user1, user2])
-      .submitFeedback(user1, feedback1)
-      .submitFeedback(user2, feedback2);
+    await FeedbackControllerMock.mockUsers([user1, user2, admin]);
+    await FeedbackControllerMock.submitFeedback(feedback1, user1);
+    await FeedbackControllerMock.submitFeedback(feedback2, user2);
 
-    await state.write(conn);
+    const submittedFeedback1 = await FeedbackControllerMock.getFeedback(user1);
+    const submittedFeedback2 = await FeedbackControllerMock.getFeedback(user2);
+    const allSubmittedFeedback = await FeedbackControllerMock.getFeedback(admin);
 
-    const feedbackController = ControllerFactory.feedback(conn);
-    const response1 = await feedbackController.getFeedback(user1);
-    const response2 = await feedbackController.getFeedback(user2);
-    const submittedFeedback1 = response1.feedback;
-    const submittedFeedback2 = response2.feedback;
-
-    expect(submittedFeedback1).toHaveLength(feedback1.length);
-    expect(submittedFeedback2).toHaveLength(feedback2.length);
-
-    expect(submittedFeedback1).toMatchArrayContents(feedback1, 'title');
-    expect(submittedFeedback2).toMatchArrayContents(feedback2, 'title');
+    expect(submittedFeedback1).toHaveLength(1);
+    expect(submittedFeedback2).toHaveLength(1);
+    expect(submittedFeedback1[0]).toMatchObject(feedback1);
+    expect(submittedFeedback2[0]).toMatchObject(feedback2);
+    expect(allSubmittedFeedback).toHaveLength(2);
+    expect(allSubmittedFeedback).toEqual(expect.arrayContaining([...submittedFeedback1, ...submittedFeedback2]));
   });
 
-  test('returns feedback for all users if user is an admin', async () => {
-    // TODO
+  test('can be acknowledged and rewarded points by admin', async () => {
+
   });
-});
 
-describe('POST /feedback', () => {
-  // TODO
-});
+  test('can be ignored and not rewarded anything by admin', async () => {
 
-describe('PATCH /feedback/:uuid', () => {
-  // TODO
+  });
+
+  test('cannot be ackowledged or ignored after previously being acknowledged or ignored', async () => {
+
+  });
 });
