@@ -1,4 +1,4 @@
-import { EntityRepository } from 'typeorm';
+import { EntityRepository, Raw } from 'typeorm';
 import * as moment from 'moment';
 import { ActivityScope, ActivityType, Uuid } from '../types';
 import { UserModel } from '../models/UserModel';
@@ -38,25 +38,30 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
   }
 
   public async logMilestone(description: string, pointsEarned: number): Promise<void> {
+    const scope = ActivityRepository.activityScopes[ActivityType.MILESTONE];
     return this.repository.query(
-      'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "public") '
-      + `SELECT uuid, '${ActivityType.MILESTONE}', '${description}', '${pointsEarned}', 'true' `
+      'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "scope") '
+      + `SELECT uuid, '${ActivityType.MILESTONE}', '${description}', '${pointsEarned}', '${scope}' `
       + 'FROM "Users"',
     );
   }
 
   public async logBonus(users: UserModel[], description: string, pointsEarned: number): Promise<void> {
+    const scope = ActivityRepository.activityScopes[ActivityType.MILESTONE];
     const uuids = users.map((user) => `'${user.uuid}'`);
     return this.repository.query(
-      'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "public") '
-      + `SELECT uuid, '${ActivityType.BONUS_POINTS}', '${description}', '${pointsEarned}', 'true' `
+      'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "scope") '
+      + `SELECT uuid, '${ActivityType.BONUS_POINTS}', '${description}', '${pointsEarned}', '${scope}' `
       + `FROM "Users" WHERE uuid IN (${uuids})`,
     );
   }
 
   public async getUserActivityStream(user: Uuid): Promise<ActivityModel[]> {
     return this.repository.find({
-      where: { user, public: true },
+      where: {
+        user,
+        scope: Raw((scope) => `${scope} = '${ActivityScope.PUBLIC}' OR ${scope} = '${ActivityScope.PRIVATE}'`),
+      },
       order: { timestamp: 'ASC' },
     });
   }
