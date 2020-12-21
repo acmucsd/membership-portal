@@ -1,3 +1,5 @@
+export * from './HttpEnums';
+
 export enum UserAccessType {
   RESTRICTED = 'RESTRICTED',
   STANDARD = 'STANDARD',

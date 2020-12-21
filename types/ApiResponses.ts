@@ -4,18 +4,16 @@ import { ActivityType, FeedbackStatus, FeedbackType } from './Enums';
 
 export type Uuid = string;
 
-export interface CustomErrorResponse {
-  error: {
-    name: string;
-    message: string;
-    httpCode: number;
-    stack?: string;
-    errors?: any;
-  }
+export interface CustomErrorBody {
+  name: string;
+  message: string;
+  httpCode: number;
+  stack?: string;
+  errors?: any;
 }
 
 export interface ApiResponse {
-  error: CustomErrorResponse;
+  error: CustomErrorBody;
 }
 
 // ADMIN
