@@ -47,7 +47,7 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
   }
 
   public async logBonus(users: UserModel[], description: string, pointsEarned: number): Promise<void> {
-    const scope = ActivityRepository.activityScopes[ActivityType.MILESTONE];
+    const scope = ActivityRepository.activityScopes[ActivityType.BONUS_POINTS];
     const uuids = users.map((user) => `'${user.uuid}'`);
     return this.repository.query(
       'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "scope") '
