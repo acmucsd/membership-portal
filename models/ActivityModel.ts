@@ -11,7 +11,7 @@ export class ActivityModel extends BaseEntity {
 
   @ManyToOne((type) => UserModel, (user) => user.activities, { nullable: false })
   @JoinColumn({ name: 'user' })
-  @Index('public_activities_by_user_index', { where: 'public IS true' })
+  @Index('public_activities_by_user_index', { where: 'scope = \'PUBLIC\'' })
   user: UserModel;
 
   @Column('varchar', { length: 255 })
