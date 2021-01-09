@@ -56,11 +56,21 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
     );
   }
 
-  public async getUserActivityStream(user: Uuid): Promise<ActivityModel[]> {
+  public async getCurrentUserActivityStream(user: Uuid): Promise<ActivityModel[]> {
     return this.repository.find({
       where: {
         user,
         scope: Raw((scope) => `${scope} = '${ActivityScope.PUBLIC}' OR ${scope} = '${ActivityScope.PRIVATE}'`),
+      },
+      order: { timestamp: 'ASC' },
+    });
+  }
+
+  public async getUserActivityStream(user: Uuid): Promise<ActivityModel[]> {
+    return this.repository.find({
+      where: {
+        user,
+        scope: ActivityScope.PUBLIC,
       },
       order: { timestamp: 'ASC' },
     });

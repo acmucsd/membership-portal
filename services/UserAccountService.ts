@@ -28,7 +28,7 @@ export default class UserAccountService {
     const user = await this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .findByUuid(uuid));
-    if (!user) throw new NotFoundError();
+    if (!user) throw new NotFoundError('User was not found');
     return user;
   }
 
@@ -95,6 +95,13 @@ export default class UserAccountService {
     return this.transactions.readWrite(async (txn) => Repositories
       .user(txn)
       .upsertUser(user, { profilePicture }));
+  }
+
+  public async getCurrentUserActivityStream(user: Uuid): Promise<PublicActivity[]> {
+    const stream = await this.transactions.readOnly(async (txn) => Repositories
+      .activity(txn)
+      .getCurrentUserActivityStream(user));
+    return stream.map((activity) => activity.getPublicActivity());
   }
 
   public async getUserActivityStream(user: Uuid): Promise<PublicActivity[]> {

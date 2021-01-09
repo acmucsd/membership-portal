@@ -268,6 +268,10 @@ export interface GetUserActivityStreamResponse extends ApiResponse {
   activity: PublicActivity[];
 }
 
+export interface GetCurrentUserActivityStreamResponse extends ApiResponse {
+  activity: PublicActivity[];
+}
+
 export interface UpdateProfilePictureResponse extends ApiResponse {
   user: PrivateProfile;
 }

@@ -1,5 +1,5 @@
 import {
-  JsonController, Param, Get, Post, Patch, NotFoundError, UseBefore, UploadedFile, Body,
+  JsonController, Param, Get, Post, Patch, UseBefore, UploadedFile, Body,
 } from 'routing-controllers';
 import { Inject } from 'typedi';
 import { UserModel } from '../../models/UserModel';
@@ -12,6 +12,7 @@ import {
   Uuid,
   File,
   GetUserActivityStreamResponse,
+  GetCurrentUserActivityStreamResponse,
   UpdateProfilePictureResponse,
   GetUserResponse,
   GetCurrentUserResponse,
@@ -28,10 +29,22 @@ export class UserController {
   @Inject()
   private storageService: StorageService;
 
+  @Get('/:uuid/activity/')
+  async getUserActivityStream(@Param('uuid') uuid: Uuid,
+    @AuthenticatedUser() currentUser: UserModel): Promise<GetUserActivityStreamResponse> {
+    if (uuid === currentUser.uuid) {
+      return this.getCurrentUserActivityStream(currentUser);
+    }
+    const user = await this.userAccountService.findByUuid(uuid);
+    const activityStream = await this.userAccountService.getUserActivityStream(user.uuid);
+    return { error: null, activity: activityStream };
+  }
+
   @Get('/activity')
-  async getUserActivityStream(@AuthenticatedUser() user: UserModel): Promise<GetUserActivityStreamResponse> {
-    const stream = await this.userAccountService.getUserActivityStream(user.uuid);
-    return { error: null, activity: stream };
+  async getCurrentUserActivityStream(@AuthenticatedUser() user: UserModel):
+  Promise<GetCurrentUserActivityStreamResponse> {
+    const activityStream = await this.userAccountService.getCurrentUserActivityStream(user.uuid);
+    return { error: null, activity: activityStream };
   }
 
   @Post('/picture')
@@ -49,9 +62,6 @@ export class UserController {
       return this.getCurrentUser(currentUser);
     }
     const user = await this.userAccountService.findByUuid(uuid);
-    if (!user) {
-      throw new NotFoundError('User was not found');
-    }
     return { error: null, user: user.getPublicProfile() };
   }
 
