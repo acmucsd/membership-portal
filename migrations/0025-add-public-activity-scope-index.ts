@@ -5,7 +5,7 @@ export class AddActivityScopeIndex1608574428247 implements MigrationInterface {
     await queryRunner.createIndex('Activities',
       new TableIndex({
         name: 'visible_activities_by_user_index',
-        columnNames: ['user'],
+        columnNames: ['user', 'scope'],
         where: 'scope = \'PUBLIC\' OR scope = \'PRIVATE\'',
       }));
   }
