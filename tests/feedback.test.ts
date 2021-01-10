@@ -119,7 +119,7 @@ describe('feedback submission', () => {
     expect(persistedUser.points).toEqual(user.points);
   });
 
-  test('cannot be ackowledged or ignored after Already being acknowledged or ignored', async () => {
+  test('cannot be ackowledged or ignored after already being acknowledged or ignored', async () => {
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback1, feedback2] = FeedbackFactory.create(2);
