@@ -33,6 +33,7 @@ export default class EventService {
   }
 
   public async getPastEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
+    options.reverse ??= false;
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getPastEvents(options));
