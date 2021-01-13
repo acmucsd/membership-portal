@@ -1,12 +1,14 @@
-import { Allow, IsNotEmpty, IsDateString, IsDefined, ValidateNested } from 'class-validator';
+import { Allow, IsNotEmpty, IsDateString, IsDefined, ValidateNested, ArrayNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   EventSearchOptions as IEventSearchOptions,
   OptionalEventProperties as IOptionalEventProperties,
   CreateEventRequest as ICreateEventRequest,
   PatchEventRequest as IPatchEventRequest,
+  SubmitEventFeedbackRequest as ISubmitEventFeedbackRequest,
   Event as IEvent,
 } from '../../types';
+import { IsValidEventFeedback } from '../decorators/Validators';
 
 export class OptionalEventProperties implements IOptionalEventProperties {
   @IsNotEmpty()
@@ -91,6 +93,9 @@ export class EventSearchOptions implements IEventSearchOptions {
 
   @Allow()
   limit?: number;
+
+  @Allow()
+  reverse?: boolean;
 }
 
 export class CreateEventRequest implements ICreateEventRequest {
@@ -105,4 +110,11 @@ export class PatchEventRequest implements IPatchEventRequest {
   @ValidateNested()
   @IsDefined()
   event: EventPatches;
+}
+
+export class SubmitEventFeedbackRequest implements ISubmitEventFeedbackRequest {
+  @IsDefined()
+  @ArrayNotEmpty()
+  @IsValidEventFeedback()
+  feedback: string[];
 }

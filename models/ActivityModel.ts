@@ -1,6 +1,6 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { pick } from 'underscore';
-import { ActivityType, PublicActivity, Uuid } from '../types';
+import { ActivityScope, ActivityType, PublicActivity, Uuid } from '../types';
 import { UserModel } from './UserModel';
 
 @Entity('Activities')
@@ -14,20 +14,20 @@ export class ActivityModel extends BaseEntity {
   @Index('public_activities_by_user_index', { where: 'public IS true' })
   user: UserModel;
 
-  @Column('varchar')
+  @Column('varchar', { length: 255 })
   type: ActivityType;
 
   @Column('text', { nullable: true })
   description: string;
 
-  @Column({ default: 0 })
+  @Column('integer', { default: 0 })
   pointsEarned: number;
 
   @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)' })
   timestamp: Date;
 
-  @Column()
-  public: boolean;
+  @Column('varchar')
+  scope: ActivityScope;
 
   public getPublicActivity(): PublicActivity {
     return pick(this, [

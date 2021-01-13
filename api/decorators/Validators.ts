@@ -1,7 +1,7 @@
 import {
-  ValidatorConstraint, ValidatorConstraintInterface, registerDecorator, ValidationOptions,
+  ValidatorConstraintInterface, registerDecorator, ValidationOptions, ValidatorConstraint,
 } from 'class-validator';
-import { PasswordChange } from '../../types';
+import { PasswordChange, FeedbackType, FeedbackStatus } from '../../types';
 
 function templatedValidationDecorator(
   validator: ValidatorConstraintInterface | Function, validationOptions?: ValidationOptions,
@@ -92,4 +92,49 @@ class MatchingPasswordsValidator implements ValidatorConstraintInterface {
 
 export function HasMatchingPasswords(validationOptions?: ValidationOptions) {
   return templatedValidationDecorator(MatchingPasswordsValidator, validationOptions);
+}
+
+@ValidatorConstraint()
+class EventFeedbackValidator implements ValidatorConstraintInterface {
+  validate(feedback: string[]): boolean {
+    return feedback.length <= 3;
+  }
+
+  defaultMessage(): string {
+    return 'No more than 3 event feedback comments can be submitted';
+  }
+}
+
+export function IsValidEventFeedback(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(EventFeedbackValidator, validationOptions);
+}
+
+@ValidatorConstraint()
+class FeedbackTypeValidator implements ValidatorConstraintInterface {
+  validate(feedbackType: FeedbackType): boolean {
+    return Object.values(FeedbackType).includes(feedbackType);
+  }
+
+  defaultMessage(): string {
+    return `Feedback type must be one of ${Object.values(FeedbackType)}`;
+  }
+}
+
+export function IsValidFeedbackType(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(FeedbackTypeValidator, validationOptions);
+}
+
+@ValidatorConstraint()
+class FeedbackStatusValidator implements ValidatorConstraintInterface {
+  validate(feedbackStatus: FeedbackStatus): boolean {
+    return Object.values(FeedbackStatus).includes(feedbackStatus) && feedbackStatus !== FeedbackStatus.SUBMITTED;
+  }
+
+  defaultMessage(): string {
+    return 'Feedback status must be one of [\'IGNORED\', \'ACKNOWLEDGED\']';
+  }
+}
+
+export function IsValidFeedbackStatus(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(FeedbackStatusValidator, validationOptions);
 }

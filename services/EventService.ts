@@ -33,6 +33,7 @@ export default class EventService {
   }
 
   public async getPastEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
+    options.reverse ??= true;
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getPastEvents(options));
@@ -58,7 +59,7 @@ export default class EventService {
     const updatedEvent = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const currentEvent = await eventRepository.findByUuid(uuid);
-      if (!currentEvent) throw new NotFoundError();
+      if (!currentEvent) throw new NotFoundError('Event not found');
       return eventRepository.upsertEvent(currentEvent, changes);
     });
     return updatedEvent.getPublicEvent(true);
@@ -68,7 +69,7 @@ export default class EventService {
     return this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const event = await eventRepository.findByUuid(uuid);
-      if (!event) throw new NotFoundError();
+      if (!event) throw new NotFoundError('Event not found');
       await eventRepository.deleteEvent(event);
     });
   }

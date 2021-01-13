@@ -1,19 +1,28 @@
-import { EntityRepository } from 'typeorm';
+import { EntityRepository, Raw } from 'typeorm';
 import * as moment from 'moment';
-import { ActivityType, Uuid } from '../types';
+import { ActivityScope, ActivityType, Uuid } from '../types';
 import { UserModel } from '../models/UserModel';
 import { ActivityModel } from '../models/ActivityModel';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(ActivityModel)
 export class ActivityRepository extends BaseRepository<ActivityModel> {
-  private static publicActivities = new Set([
-    ActivityType.ACCOUNT_CREATE,
-    ActivityType.ATTEND_EVENT,
-    ActivityType.ATTEND_EVENT_AS_STAFF,
-    ActivityType.BONUS_POINTS,
-    ActivityType.MILESTONE,
-  ]);
+  private static activityScopes = {
+    [ActivityType.ACCOUNT_CREATE]: ActivityScope.PUBLIC,
+    [ActivityType.ATTEND_EVENT]: ActivityScope.PUBLIC,
+    [ActivityType.ATTEND_EVENT_AS_STAFF]: ActivityScope.PUBLIC,
+    [ActivityType.BONUS_POINTS]: ActivityScope.PUBLIC,
+    [ActivityType.MILESTONE]: ActivityScope.PUBLIC,
+    [ActivityType.FEEDBACK_ACKNOWLEDGED]: ActivityScope.PRIVATE,
+    [ActivityType.ORDER_MERCHANDISE]: ActivityScope.PRIVATE,
+    [ActivityType.SUBMIT_EVENT_FEEDBACK]: ActivityScope.PRIVATE,
+    [ActivityType.SUBMIT_FEEDBACK]: ActivityScope.PRIVATE,
+    [ActivityType.ACCOUNT_ACTIVATE]: ActivityScope.HIDDEN,
+    [ActivityType.ACCOUNT_LOGIN]: ActivityScope.HIDDEN,
+    [ActivityType.ACCOUNT_RESET_PASS]: ActivityScope.HIDDEN,
+    [ActivityType.ACCOUNT_RESET_PASS_REQUEST]: ActivityScope.HIDDEN,
+    [ActivityType.ACCOUNT_UPDATE_INFO]: ActivityScope.HIDDEN,
+  };
 
   public async logActivity(
     user: UserModel, type: ActivityType, pointsEarned?: number, description?: string,
@@ -23,31 +32,36 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
       type,
       description,
       pointsEarned,
-      public: ActivityRepository.isPublicActivityType(type),
+      scope: ActivityRepository.activityScopes[type],
     };
     return this.repository.save(ActivityModel.create(activity));
   }
 
   public async logMilestone(description: string, pointsEarned: number): Promise<void> {
+    const scope = ActivityRepository.activityScopes[ActivityType.MILESTONE];
     return this.repository.query(
-      'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "public") '
-      + `SELECT uuid, '${ActivityType.MILESTONE}', '${description}', '${pointsEarned}', 'true' `
+      'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "scope") '
+      + `SELECT uuid, '${ActivityType.MILESTONE}', '${description}', '${pointsEarned}', '${scope}' `
       + 'FROM "Users"',
     );
   }
 
   public async logBonus(users: UserModel[], description: string, pointsEarned: number): Promise<void> {
+    const scope = ActivityRepository.activityScopes[ActivityType.BONUS_POINTS];
     const uuids = users.map((user) => `'${user.uuid}'`);
     return this.repository.query(
-      'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "public") '
-      + `SELECT uuid, '${ActivityType.BONUS_POINTS}', '${description}', '${pointsEarned}', 'true' `
+      'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "scope") '
+      + `SELECT uuid, '${ActivityType.BONUS_POINTS}', '${description}', '${pointsEarned}', '${scope}' `
       + `FROM "Users" WHERE uuid IN (${uuids})`,
     );
   }
 
   public async getUserActivityStream(user: Uuid): Promise<ActivityModel[]> {
     return this.repository.find({
-      where: { user, public: true },
+      where: {
+        user,
+        scope: Raw((scope) => `${scope} = '${ActivityScope.PUBLIC}' OR ${scope} = '${ActivityScope.PRIVATE}'`),
+      },
       order: { timestamp: 'ASC' },
     });
   }
@@ -55,13 +69,9 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
   public async getEarliestTimestamp(): Promise<number> {
     const earliestPointsRecord = await this.repository.createQueryBuilder()
       .select('MIN("timestamp")', 'timestamp')
-      .where('public = true AND "pointsEarned" > 0')
+      .where('scope = \'PUBLIC\' AND "pointsEarned" > 0')
       .cache('earliest_recorded_points', moment.duration(1, 'day').asMilliseconds())
       .getRawOne();
     return moment(earliestPointsRecord.timestamp).valueOf();
-  }
-
-  private static isPublicActivityType(type: ActivityType): boolean {
-    return ActivityRepository.publicActivities.has(type);
   }
 }

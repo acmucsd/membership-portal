@@ -37,4 +37,13 @@ export class AttendanceRepository extends BaseRepository<AttendanceModel> {
     };
     return this.repository.save(AttendanceModel.create(attendance));
   }
+
+  public async getUserAttendanceForEvent(user: UserModel, event: EventModel): Promise<AttendanceModel> {
+    return this.repository.findOne({ user, event });
+  }
+
+  public async submitEventFeedback(attendance: AttendanceModel, feedback: string[]): Promise<AttendanceModel> {
+    attendance.feedback = feedback;
+    return this.repository.save(attendance);
+  }
 }
