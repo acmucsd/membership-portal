@@ -93,6 +93,9 @@ export class EventSearchOptions implements IEventSearchOptions {
 
   @Allow()
   limit?: number;
+
+  @Allow()
+  reverse?: boolean;
 }
 
 export class CreateEventRequest implements ICreateEventRequest {
