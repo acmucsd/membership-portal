@@ -35,6 +35,14 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.findOne({ accessCode });
   }
 
+  public async getAllEmails(): Promise<string[]> {
+    const emailsRaw = await this.repository
+      .createQueryBuilder()
+      .select('email')
+      .getRawMany();
+    return emailsRaw.map((emailRaw) => emailRaw.email);
+  }
+
   public static async generateHash(pass: string): Promise<string> {
     return bcrypt.hash(pass, this.SALT_ROUNDS);
   }

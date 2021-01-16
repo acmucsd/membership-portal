@@ -123,4 +123,10 @@ export default class UserAccountService {
       await activityRepository.logBonus(users, description, points);
     });
   }
+
+  public async getAllEmails(): Promise<string[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .user(txn)
+      .getAllEmails());
+  }
 }
