@@ -97,18 +97,19 @@ export default class UserAccountService {
       .upsertUser(user, { profilePicture }));
   }
 
-  public async getCurrentUserActivityStream(user: Uuid): Promise<PublicActivity[]> {
+  public async getCurrentUserActivityStream(uuid: Uuid): Promise<PublicActivity[]> {
     const stream = await this.transactions.readOnly(async (txn) => Repositories
       .activity(txn)
-      .getCurrentUserActivityStream(user));
+      .getCurrentUserActivityStream(uuid));
     return stream.map((activity) => activity.getPublicActivity());
   }
 
-  public async getUserActivityStream(user: Uuid): Promise<PublicActivity[]> {
-    const stream = await this.transactions.readOnly(async (txn) => Repositories
-      .activity(txn)
-      .getUserActivityStream(user));
-    return stream.map((activity) => activity.getPublicActivity());
+  public async getUserActivityStream(uuid: Uuid): Promise<PublicActivity[]> {
+    const activityStream = await this.transactions.readOnly(async (txn) => {
+      const user = await this.findByUuid(uuid);
+      return Repositories.activity(txn).getUserActivityStream(user.uuid);
+    });
+    return activityStream.map((activity) => activity.getPublicActivity());
   }
 
   public async createMilestone(milestone: Milestone): Promise<void> {

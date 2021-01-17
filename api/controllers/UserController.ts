@@ -35,8 +35,7 @@ export class UserController {
     if (uuid === currentUser.uuid) {
       return this.getCurrentUserActivityStream(currentUser);
     }
-    const user = await this.userAccountService.findByUuid(uuid);
-    const activityStream = await this.userAccountService.getUserActivityStream(user.uuid);
+    const activityStream = await this.userAccountService.getUserActivityStream(uuid);
     return { error: null, activity: activityStream };
   }
 
