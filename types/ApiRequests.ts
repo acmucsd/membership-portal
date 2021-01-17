@@ -140,6 +140,7 @@ export interface EventSearchOptions {
   offset?: number;
   limit?: number;
   committee?: string;
+  reverse?: boolean;
 }
 
 // MERCH STORE
