@@ -1,5 +1,5 @@
 import {
-  JsonController, Param, Get, Post, Patch, NotFoundError, UseBefore, UploadedFile, Body, ForbiddenError,
+  JsonController, Param, Get, Post, Patch, NotFoundError, UseBefore, UploadedFile, Body,
 } from 'routing-controllers';
 import { Inject } from 'typedi';
 import { UserModel } from '../../models/UserModel';
@@ -16,10 +16,8 @@ import {
   GetUserResponse,
   GetCurrentUserResponse,
   PatchUserResponse,
-  GetAllEmailsResponse,
 } from '../../types';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
-import PermissionsService from '../../services/PermissionsService';
 
 @UseBefore(UserAuthentication)
 @JsonController('/user')
@@ -34,13 +32,6 @@ export class UserController {
   async getUserActivityStream(@AuthenticatedUser() user: UserModel): Promise<GetUserActivityStreamResponse> {
     const stream = await this.userAccountService.getUserActivityStream(user.uuid);
     return { error: null, activity: stream };
-  }
-
-  @Get('/email')
-  async getAllEmails(@AuthenticatedUser() user: UserModel): Promise<GetAllEmailsResponse> {
-    if (!PermissionsService.canSeeAllUserEmails(user)) throw new ForbiddenError();
-    const emails = await this.userAccountService.getAllEmails();
-    return { error: null, emails };
   }
 
   @Post('/picture')
