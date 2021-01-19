@@ -84,4 +84,9 @@ export class EventModel extends BaseEntity {
     const now = new Date();
     return now >= this.start && now <= this.end;
   }
+
+  public hasStarted(): boolean {
+    const now = new Date();
+    return now >= this.start;
+  }
 }
