@@ -1,4 +1,4 @@
-import { JsonController, Post, UploadedFile, UseBefore, ForbiddenError, Body } from 'routing-controllers';
+import { JsonController, Post, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
 import { Inject } from 'typedi';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { CreateBonusRequest, CreateMilestoneRequest } from '../validators/AdminControllerRequests';
@@ -8,6 +8,7 @@ import {
   CreateMilestoneResponse,
   CreateBonusResponse,
   UploadBannerResponse,
+  GetAllEmailsResponse,
 } from '../../types';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import UserAccountService from '../../services/UserAccountService';
@@ -23,6 +24,13 @@ export class AdminController {
 
   @Inject()
   private userAccountService: UserAccountService;
+
+  @Get('/email')
+  async getAllEmails(@AuthenticatedUser() user: UserModel): Promise<GetAllEmailsResponse> {
+    if (!PermissionsService.canSeeAllUserEmails(user)) throw new ForbiddenError();
+    const emails = await this.userAccountService.getAllEmails();
+    return { error: null, emails };
+  }
 
   @Post('/milestone')
   async createMilestone(@Body() createMilestoneRequest: CreateMilestoneRequest,
