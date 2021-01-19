@@ -5,13 +5,13 @@ import { UserModel } from './UserModel';
 
 @Entity('Activities')
 @Index('sliding_leaderboard_index', ['timestamp', 'pointsEarned'], { where: '"pointsEarned" > 0' })
+@Index('visible_activities_by_user_index', ['user', 'scope'], { where: 'scope = \'PUBLIC\' OR scope = \'PRIVATE\'' })
 export class ActivityModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
   @ManyToOne((type) => UserModel, (user) => user.activities, { nullable: false })
   @JoinColumn({ name: 'user' })
-  @Index('public_activities_by_user_index', { where: 'public IS true' })
   user: UserModel;
 
   @Column('varchar', { length: 255 })
