@@ -12,7 +12,6 @@ import {
   Uuid,
   File,
   GetUserActivityStreamResponse,
-  GetCurrentUserActivityStreamResponse,
   UpdateProfilePictureResponse,
   GetUserResponse,
   GetCurrentUserResponse,
@@ -41,7 +40,7 @@ export class UserController {
 
   @Get('/activity')
   async getCurrentUserActivityStream(@AuthenticatedUser() user: UserModel):
-  Promise<GetCurrentUserActivityStreamResponse> {
+  Promise<GetUserActivityStreamResponse> {
     const activityStream = await this.userAccountService.getCurrentUserActivityStream(user.uuid);
     return { error: null, activity: activityStream };
   }
