@@ -3,9 +3,11 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
-import { ActivityType, PublicAttendance, PublicEvent, Uuid } from '../types';
+import { ActivityType, PublicAttendance, Uuid } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
+import { EventModel } from '../models/EventModel';
+import { AttendanceModel } from '../models/AttendanceModel';
 import { UserError } from '../utils/Errors';
 import Repositories, { TransactionsManager } from '../repositories';
 
@@ -31,56 +33,50 @@ export default class AttendanceService {
     return attendances.map((attendance) => attendance.getPublicAttendance());
   }
 
-  public async attendEvent(user: UserModel, attendanceCode: string, asStaff = false): Promise<PublicEvent> {
+  public async attendEvent(user: UserModel, attendanceCode: string, asStaff = false): Promise<PublicAttendance> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByAttendanceCode(attendanceCode);
       if (!event) throw new NotFoundError('Oh no! That code didn\'t work.');
       if (!event.isOngoing()) throw new UserError('You can only enter the attendance code during the event!');
 
-      const attendanceRepository = Repositories.attendance(txn);
-      const hasAlreadyAttended = await attendanceRepository.hasUserAttendedEvent(user, event);
+      const hasAlreadyAttended = await Repositories.attendance(txn).hasUserAttendedEvent(user, event);
       if (hasAlreadyAttended) throw new UserError('You have already attended this event');
 
-      const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
-      const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(
-        user,
-        attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
-        pointsEarned,
-      );
-      await Repositories.user(txn).addPoints(user, pointsEarned);
-
-      await attendanceRepository.attendEvent(user, event, attendedAsStaff);
-      return event.getPublicEvent();
+      const attendance = await this.writeEventAttendance(user, event, asStaff, txn);
+      return attendance.getPublicAttendance();
     });
   }
 
-  public async attendEventRetroactively(userUuid: Uuid, eventUuid: Uuid): Promise<PublicEvent> {
-    return this.transactions.readWrite(async (txn) => {
-      const attendanceRepository = Repositories.attendance(txn);
+  private async writeEventAttendance(user: UserModel, event: EventModel, asStaff: boolean,
+    txn: EntityManager): Promise<AttendanceModel> {
+    const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
+    const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
 
+    await Repositories.activity(txn).logActivity(
+      user,
+      attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
+      pointsEarned,
+    );
+    await Repositories.user(txn).addPoints(user, pointsEarned);
+
+    const attendance = await Repositories.attendance(txn).attendEvent(user, event, attendedAsStaff);
+    return attendance;
+  }
+
+  public async submitAttendanceForUser(userUuid: Uuid, eventUuid: Uuid, asStaff = false): Promise<PublicAttendance> {
+    return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByUuid(eventUuid);
-      if (!event) throw new UserError('This event doesn\'t exist');
-      if (!event.hasStarted()) throw new UserError('This event hasn\'t started yet');
+      if (!event) throw new NotFoundError('This event doesn\'t exist');
 
       const user = await Repositories.user(txn).findByUuid(userUuid);
       if (!user) throw new NotFoundError('This user was not found');
 
+      const attendanceRepository = Repositories.attendance(txn);
       const hasAlreadyAttended = await attendanceRepository.hasUserAttendedEvent(user, event);
       if (hasAlreadyAttended) throw new UserError('This user has already attended this event');
 
-      const pointsEarned = event.pointValue;
-      const attendedAsStaff = false;
-      await Repositories.activity(txn).logActivity(
-        user,
-        ActivityType.ATTEND_EVENT,
-        pointsEarned,
-      );
-      await Repositories.user(txn).addPoints(user, pointsEarned);
-
-      await attendanceRepository.attendEvent(user, event, attendedAsStaff);
-      return event.getPublicEvent();
+      const attendance = await this.writeEventAttendance(user, event, asStaff, txn);
+      return attendance.getPublicAttendance();
     });
   }
 

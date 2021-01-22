@@ -71,7 +71,7 @@ export class AdminController {
   async submitAttendanceForUser(@Body() submitAttendanceForUserRequest: SubmitAttendanceForUserRequest,
     @AuthenticatedUser() user: UserModel): Promise<AttendEventResponse> {
     if (!PermissionsService.canSubmitAttendanceForUser(user)) throw new ForbiddenError();
-    const event = await this.attendanceService.attendEventRetroactively(
+    const { event } = await this.attendanceService.submitAttendanceForUser(
       submitAttendanceForUserRequest.user, submitAttendanceForUserRequest.event,
     );
     return { error: null, event };

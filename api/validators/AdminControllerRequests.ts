@@ -1,4 +1,4 @@
-import { ArrayNotEmpty, IsDefined, IsNotEmpty, IsPositive, IsUUID, ValidateNested } from 'class-validator';
+import { Allow, ArrayNotEmpty, IsDefined, IsNotEmpty, IsPositive, IsUUID, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   CreateBonusRequest as ICreateBonusRequest,
@@ -54,4 +54,7 @@ export class SubmitAttendanceForUserRequest implements ISubmitAttendanceForUserR
   @IsDefined()
   @IsUUID()
   event: string;
+
+  @Allow()
+  asStaff?: boolean;
 }
