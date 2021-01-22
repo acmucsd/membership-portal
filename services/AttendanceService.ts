@@ -59,8 +59,7 @@ export default class AttendanceService {
     );
     await Repositories.user(txn).addPoints(user, pointsEarned);
 
-    const attendance = await Repositories.attendance(txn).attendEvent(user, event, attendedAsStaff);
-    return attendance;
+    return Repositories.attendance(txn).attendEvent(user, event, attendedAsStaff);
   }
 
   public async submitAttendanceForUser(userUuid: Uuid, eventUuid: Uuid, asStaff = false): Promise<PublicAttendance> {
