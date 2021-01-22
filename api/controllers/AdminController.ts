@@ -69,11 +69,10 @@ export class AdminController {
 
   @Post('/attendance')
   async submitAttendanceForUser(@Body() submitAttendanceForUserRequest: SubmitAttendanceForUserRequest,
-    @AuthenticatedUser() user: UserModel): Promise<AttendEventResponse> {
-    if (!PermissionsService.canSubmitAttendanceForUser(user)) throw new ForbiddenError();
-    const { event } = await this.attendanceService.submitAttendanceForUser(
-      submitAttendanceForUserRequest.user, submitAttendanceForUserRequest.event,
-    );
+    @AuthenticatedUser() currentUser: UserModel): Promise<AttendEventResponse> {
+    if (!PermissionsService.canSubmitAttendanceForUsers(currentUser)) throw new ForbiddenError();
+    const { user, event: eventToAttend, asStaff } = submitAttendanceForUserRequest;
+    const { event } = await this.attendanceService.submitAttendanceForUser(user, eventToAttend, asStaff, currentUser);
     return { error: null, event };
   }
 }
