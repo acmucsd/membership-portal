@@ -28,6 +28,14 @@ export default class PermissionsService {
     return user.isAdmin();
   }
 
+  public static canSeeAllUserEmails(user: UserModel): boolean {
+    return user.isAdmin();
+  }
+
+  public static canSubmitAttendanceForUsers(user: UserModel): boolean {
+    return user.isAdmin();
+  }
+
   public static canEditMerchStore(user: UserModel): boolean {
     return user.isAdmin();
   }

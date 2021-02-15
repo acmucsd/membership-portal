@@ -1,5 +1,5 @@
 ## membership-portal-api &nbsp; [![CircleCI](https://circleci.com/gh/acmucsd/membership-portal/tree/master.svg?style=svg)](https://circleci.com/gh/acmucsd/membership-portal/tree/master)
-REST API for the UC San Diego ACM chapter's membership portal.
+REST API for the UC San Diego ACM chapter's membership portal. This is an open-source project, made for members by members, and we welcome any contributions! If you're interested in using the API for your own project and/or contributing, check out our guide [here](https://github.com/acmucsd/membership-portal/blob/master/.github/CONTRIBUTING.md).
 
 ### Build Instructions
 Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commit the `yarn.lock`.
@@ -16,7 +16,7 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 10. Start the Node app: `npm run dev`.
 
 #### Installing Postgres
-MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/), run the installer, and add the Postgres bin to the PATH environment variable.
+Even though our actual Postgres instance runs in a Docker container, we need to install Postgres to install the official `pg` Node package. MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/), run the installer, and add the Postgres bin to the PATH environment variable.
 
 #### Windows Build Instructions
 1. Run the Windows Powershell as administrator.
@@ -41,6 +41,7 @@ CLIENT=localhost:8000
 + `docker-compose up -d` to configure and run any required services
 + `npm install` to install the necessary dependencies
 + `npm run dev` to run the Node app with [Nodemon](https://nodemon.io/) and [ts-node](https://github.com/TypeStrong/ts-node)
++ `npm run build` to compile the code to JavaScript
 + `npm run lint` to lint the Node app with [ESLint](https://eslint.org/) (without `--fix`)
 + `npm run lint:fix` to fix the simple linter issues automatically
 + `npm run test` to run the test suite with [Jest](https://jestjs.io/)
@@ -51,9 +52,6 @@ CLIENT=localhost:8000
 + `docker exec -it rds.acmucsd.local psql -U [RDS_USER] -d [RDS_DATABASE]` to access Postgres (`RDS_XYZ` from `.env`).
 
 Take a look at [`package.json`](https://github.com/acmucsd/membership-portal/blob/master/package.json) for the actual commands.
-
-### Database Migrations
-To write database migrations, take a look at the [TypeORM documentation](https://github.com/typeorm/typeorm/blob/master/docs/migrations.md) and [previous migrations](https://github.com/acmucsd/membership-portal/tree/master/migrations). Everything's already configured via [`ormconfig.ts`](https://github.com/acmucsd/membership-portal/blob/master/ormconfig.ts) so executing `npm run db:migrate` should work. Migrations on the production database automatically run upon deployment using Heroku's [`release` phase](https://devcenter.heroku.com/articles/release-phase) (configured in the [Procfile](https://github.com/acmucsd/membership-portal/blob/master/Procfile#L1)).
 
 ### Upgrading to Latest Version
 The first iteration of the membership portal is a JavaScript app written in 2019. The second and latest iteration, written 2020, is a TypeScript app built with better reliability and error handling, stronger concurrency guarantees, and a smoother development experience in mind, and includes a number of breaking changes at the API and database levels. For a more concrete list of improvements, see [acmucsd/membership-portal#115](https://github.com/acmucsd/membership-portal/pull/115).

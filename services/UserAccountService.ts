@@ -28,7 +28,7 @@ export default class UserAccountService {
     const user = await this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .findByUuid(uuid));
-    if (!user) throw new NotFoundError();
+    if (!user) throw new NotFoundError('User was not found');
     return user;
   }
 
@@ -97,11 +97,19 @@ export default class UserAccountService {
       .upsertUser(user, { profilePicture }));
   }
 
-  public async getUserActivityStream(user: Uuid): Promise<PublicActivity[]> {
+  public async getCurrentUserActivityStream(uuid: Uuid): Promise<PublicActivity[]> {
     const stream = await this.transactions.readOnly(async (txn) => Repositories
       .activity(txn)
-      .getUserActivityStream(user));
+      .getCurrentUserActivityStream(uuid));
     return stream.map((activity) => activity.getPublicActivity());
+  }
+
+  public async getUserActivityStream(uuid: Uuid): Promise<PublicActivity[]> {
+    const activityStream = await this.transactions.readOnly(async (txn) => {
+      const user = await this.findByUuid(uuid);
+      return Repositories.activity(txn).getUserActivityStream(user.uuid);
+    });
+    return activityStream.map((activity) => activity.getPublicActivity());
   }
 
   public async createMilestone(milestone: Milestone): Promise<void> {
@@ -122,5 +130,11 @@ export default class UserAccountService {
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logBonus(users, description, points);
     });
+  }
+
+  public async getAllEmails(): Promise<string[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .user(txn)
+      .getAllEmails());
   }
 }

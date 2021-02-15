@@ -1,8 +1,9 @@
-import { ArrayNotEmpty, IsDefined, IsNotEmpty, IsPositive, ValidateNested } from 'class-validator';
+import { Allow, ArrayNotEmpty, IsDefined, IsNotEmpty, IsPositive, IsUUID, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   CreateBonusRequest as ICreateBonusRequest,
   CreateMilestoneRequest as ICreateMilestoneRequest,
+  SubmitAttendanceForUserRequest as ISubmitAttendanceForUserRequest,
   Milestone as IMilestone,
   Bonus as IBonus,
 } from '../../types';
@@ -43,4 +44,17 @@ export class CreateBonusRequest implements ICreateBonusRequest {
   @ValidateNested()
   @IsDefined()
   bonus: Bonus;
+}
+
+export class SubmitAttendanceForUserRequest implements ISubmitAttendanceForUserRequest {
+  @IsDefined()
+  @IsUUID()
+  user: string;
+
+  @IsDefined()
+  @IsUUID()
+  event: string;
+
+  @Allow()
+  asStaff?: boolean;
 }

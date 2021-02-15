@@ -1,4 +1,5 @@
 import { FeedbackStatus, FeedbackType } from './Enums';
+import { Uuid } from '.';
 
 // REQUEST TYPES
 
@@ -89,12 +90,17 @@ export interface CreateMilestoneRequest {
 
 export interface Bonus {
   description: string;
-  users: string[]
+  users: string[];
   points: number;
 }
 
 export interface CreateBonusRequest {
   bonus: Bonus;
+}
+
+export interface SubmitAttendanceForUserRequest {
+  user: Uuid;
+  event: Uuid;
 }
 
 // EVENT
@@ -140,6 +146,7 @@ export interface EventSearchOptions {
   offset?: number;
   limit?: number;
   committee?: string;
+  reverse?: boolean;
 }
 
 // MERCH STORE
