@@ -36,7 +36,7 @@ describe('feedback submission', () => {
       user: user.getPublicProfile(),
       status: FeedbackStatus.SUBMITTED,
       ...feedback,
-    })
+    });
   });
 
   test('is invalidated when submission description is too short', async () => {
@@ -60,7 +60,7 @@ describe('feedback submission', () => {
     const conn = await DatabaseConnection.get();
     const [persistedFeedback] = await conn.manager.find(FeedbackModel, { relations: ['user'] });
     const activity = await conn.manager.find(ActivityModel, { relations: ['user'] });
-    const feedbackSubmissionActivity = Object.assign({}, activity[1]);
+    const feedbackSubmissionActivity = { ...activity[1] };
 
     expect(submittedFeedback).toStrictEqual(persistedFeedback.getPublicFeedback());
     expect(feedbackSubmissionActivity).toStrictEqual({
@@ -100,7 +100,7 @@ describe('feedback submission', () => {
 
     expect(user1Feedback).toHaveLength(1);
     expect(user1Feedback[0]).toMatchObject(feedback1);
-  })
+  });
 
   test('admin can acknowledge and reward points for feedback', async () => {
     const [user] = UserFactory.create(1);
@@ -150,16 +150,16 @@ describe('feedback submission', () => {
     const errorMessage = 'This feedback has already been responded to';
 
     await expect(
-      FeedbackControllerMock.acknowledgeFeedback(feedbackToAcknowledge.uuid, admin)
+      FeedbackControllerMock.acknowledgeFeedback(feedbackToAcknowledge.uuid, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      FeedbackControllerMock.acknowledgeFeedback(feedbackToIgnore.uuid, admin)
+      FeedbackControllerMock.acknowledgeFeedback(feedbackToIgnore.uuid, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      FeedbackControllerMock.ignoreFeedback(feedbackToAcknowledge.uuid, admin)
+      FeedbackControllerMock.ignoreFeedback(feedbackToAcknowledge.uuid, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      FeedbackControllerMock.ignoreFeedback(feedbackToIgnore.uuid, admin)
+      FeedbackControllerMock.ignoreFeedback(feedbackToIgnore.uuid, admin),
     ).rejects.toThrow(errorMessage);
   });
 });
