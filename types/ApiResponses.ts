@@ -1,8 +1,6 @@
 import { ActivityType, FeedbackStatus, FeedbackType } from './Enums';
-
-// REQUEST TYPES
-
-export type Uuid = string;
+import { Uuid } from '.';
+// RESPONSE TYPES
 
 export interface CustomErrorBody {
   name: string;
@@ -26,6 +24,10 @@ export interface CreateBonusResponse extends ApiResponse {
 
 export interface UploadBannerResponse extends ApiResponse {
   banner: string;
+}
+
+export interface GetAllEmailsResponse extends ApiResponse {
+  emails: string[];
 }
 
 // ATTENDANCE

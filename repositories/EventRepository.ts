@@ -49,7 +49,7 @@ export class EventRepository extends BaseRepository<EventModel> {
     let query = this.repository.createQueryBuilder()
       .skip(options.offset)
       .take(options.limit)
-      .orderBy('start', 'ASC');
+      .orderBy('start', options.reverse ? 'DESC' : 'ASC');
     if (options.committee) {
       query = query
         .where('committee = :committee')

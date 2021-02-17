@@ -56,7 +56,7 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
     );
   }
 
-  public async getUserActivityStream(user: Uuid): Promise<ActivityModel[]> {
+  public async getCurrentUserActivityStream(user: Uuid): Promise<ActivityModel[]> {
     return this.repository.find({
       where: {
         user,
@@ -66,10 +66,20 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
     });
   }
 
+  public async getUserActivityStream(user: Uuid): Promise<ActivityModel[]> {
+    return this.repository.find({
+      where: {
+        user,
+        scope: ActivityScope.PUBLIC,
+      },
+      order: { timestamp: 'ASC' },
+    });
+  }
+
   public async getEarliestTimestamp(): Promise<number> {
     const earliestPointsRecord = await this.repository.createQueryBuilder()
       .select('MIN("timestamp")', 'timestamp')
-      .where('scope = \'PUBLIC\' AND "pointsEarned" > 0')
+      .where('"pointsEarned" > 0')
       .cache('earliest_recorded_points', moment.duration(1, 'day').asMilliseconds())
       .getRawOne();
     return moment(earliestPointsRecord.timestamp).valueOf();

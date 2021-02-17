@@ -52,13 +52,51 @@ jobs:
           command: npm run db:migrate
       - run:
           command: npm run test
+  image:
+    working_directory: /app
+    docker:
+      - image: docker:20.10.2
+    steps:
+      - checkout
+      - setup_remote_docker
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/app.tar
+      - run:
+          name: Load Docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/app.tar | true
+      - run:
+          name: Build application Docker image
+          command: |
+            docker build --cache-from=app -t app .
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/app.tar app
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/app.tar
+      - run:
+          name: Push application Docker image
+          command: |
+            echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
+            docker tag app "acmucsd/membership-portal-api:latest"
+            docker push "acmucsd/membership-portal-api:latest"
   deploy:
     machine:
       enabled: true
     steps:
       - checkout
       - run:
-          command: git push -f https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
+          command: |
+            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.app.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api --imageName acmucsd/membership-portal-api:latest
+            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.app.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:latest
 
 workflows:
   version: 2
@@ -67,11 +105,20 @@ workflows:
       - build
       - lint
       - test
+      - image:
+          requires:
+            - build
+            - lint
+            - test
+          filters:
+            branches:
+              only: master
       - deploy:
           requires:
             - build
             - lint
             - test
+            - image
           filters:
             branches:
               only: master
