@@ -31,9 +31,12 @@ describe('feedback submission', () => {
     await FeedbackControllerMock.mock([user]);
     const submittedFeedback = await FeedbackControllerMock.submitFeedback(feedback, user);
 
-    expect(submittedFeedback.user).toStrictEqual(user.getPublicProfile());
-    expect(submittedFeedback.status).toStrictEqual(FeedbackStatus.SUBMITTED);
-    expect(submittedFeedback).toMatchObject(feedback);
+    expect(submittedFeedback).toStrictEqual({
+      ...submittedFeedback,
+      user: user.getPublicProfile(),
+      status: FeedbackStatus.SUBMITTED,
+      ...feedback,
+    })
   });
 
   test('is invalidated when submission description is too short', async () => {
@@ -57,36 +60,49 @@ describe('feedback submission', () => {
     const conn = await DatabaseConnection.get();
     const [persistedFeedback] = await conn.manager.find(FeedbackModel, { relations: ['user'] });
     const activity = await conn.manager.find(ActivityModel, { relations: ['user'] });
-    const feedbackSubmissionActivity = activity[1];
+    const feedbackSubmissionActivity = Object.assign({}, activity[1]);
 
     expect(submittedFeedback).toStrictEqual(persistedFeedback.getPublicFeedback());
-    expect(feedbackSubmissionActivity.type).toEqual(ActivityType.SUBMIT_FEEDBACK);
-    expect(feedbackSubmissionActivity.scope).toEqual(ActivityScope.PRIVATE);
-    expect(feedbackSubmissionActivity.user).toStrictEqual(user);
+    expect(feedbackSubmissionActivity).toStrictEqual({
+      ...feedbackSubmissionActivity,
+      type: ActivityType.SUBMIT_FEEDBACK,
+      scope: ActivityScope.PRIVATE,
+      user,
+    });
   });
 
-  test('is visible from all users if user is admin, otherwise from only current user', async () => {
+  test('admins can view feedback from any user', async () => {
     const [user1, user2] = UserFactory.create(2);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
     await FeedbackControllerMock.mock([user1, user2, admin]);
+    const submittedFeedback1 = await FeedbackControllerMock.submitFeedback(feedback1, user1);
+    const submittedFeedback2 = await FeedbackControllerMock.submitFeedback(feedback2, user2);
+
+    const allSubmittedFeedback = await FeedbackControllerMock.getFeedback(admin);
+
+    expect(submittedFeedback1).toMatchObject(feedback1);
+    expect(submittedFeedback2).toMatchObject(feedback2);
+    expect(allSubmittedFeedback).toHaveLength(2);
+    expect(allSubmittedFeedback).toEqual(expect.arrayContaining([submittedFeedback1, submittedFeedback2]));
+  });
+
+  test('members can view only their own feedback', async () => {
+    const [user1, user2] = UserFactory.create(2);
+    const [feedback1, feedback2] = FeedbackFactory.create(2);
+
+    await FeedbackControllerMock.mock([user1, user2]);
     await FeedbackControllerMock.submitFeedback(feedback1, user1);
     await FeedbackControllerMock.submitFeedback(feedback2, user2);
 
-    const submittedFeedback1 = await FeedbackControllerMock.getFeedback(user1);
-    const submittedFeedback2 = await FeedbackControllerMock.getFeedback(user2);
-    const allSubmittedFeedback = await FeedbackControllerMock.getFeedback(admin);
+    const user1Feedback = await FeedbackControllerMock.getFeedback(user1);
 
-    expect(submittedFeedback1).toHaveLength(1);
-    expect(submittedFeedback2).toHaveLength(1);
-    expect(submittedFeedback1[0]).toMatchObject(feedback1);
-    expect(submittedFeedback2[0]).toMatchObject(feedback2);
-    expect(allSubmittedFeedback).toHaveLength(2);
-    expect(allSubmittedFeedback).toEqual(expect.arrayContaining([...submittedFeedback1, ...submittedFeedback2]));
-  });
+    expect(user1Feedback).toHaveLength(1);
+    expect(user1Feedback[0]).toMatchObject(feedback1);
+  })
 
-  test('can be acknowledged and rewarded points by admin', async () => {
+  test('admin can acknowledge and reward points for feedback', async () => {
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback] = FeedbackFactory.create(1);
@@ -103,7 +119,7 @@ describe('feedback submission', () => {
     expect(persistedUser.points).toEqual(user.points + feedbackPointReward);
   });
 
-  test('can be ignored and not rewarded anything by admin', async () => {
+  test('admin can ignore and not reward points for feedback', async () => {
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback] = FeedbackFactory.create(1);
@@ -119,29 +135,31 @@ describe('feedback submission', () => {
     expect(persistedUser.points).toEqual(user.points);
   });
 
-  test('cannot be ackowledged or ignored after already being acknowledged or ignored', async () => {
+  test('cannot be responded to after already being responded to', async () => {
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
     await FeedbackControllerMock.mock([user, admin]);
-    const submittedFeedback1 = await FeedbackControllerMock.submitFeedback(feedback1, user);
-    const submittedFeedback2 = await FeedbackControllerMock.submitFeedback(feedback2, user);
+    const feedbackToAcknowledge = await FeedbackControllerMock.submitFeedback(feedback1, user);
+    const feedbackToIgnore = await FeedbackControllerMock.submitFeedback(feedback2, user);
 
-    const uuid1 = submittedFeedback1.uuid;
-    const uuid2 = submittedFeedback2.uuid;
+    await FeedbackControllerMock.acknowledgeFeedback(feedbackToAcknowledge.uuid, admin);
+    await FeedbackControllerMock.ignoreFeedback(feedbackToIgnore.uuid, admin);
 
-    await FeedbackControllerMock.acknowledgeFeedback(uuid1, admin);
-    await FeedbackControllerMock.ignoreFeedback(uuid2, admin);
+    const errorMessage = 'This feedback has already been responded to';
 
-    const acknowledgeAcknowledgedFeedback = () => FeedbackControllerMock.acknowledgeFeedback(uuid1, admin);
-    const ignoreAckowledgedFeedback = () => FeedbackControllerMock.acknowledgeFeedback(uuid2, admin);
-    const acknowledgeIgnoredFeedback = () => FeedbackControllerMock.ignoreFeedback(uuid1, admin);
-    const ignoreIgnoredFeedback = () => FeedbackControllerMock.ignoreFeedback(uuid2, admin);
-
-    await expect(acknowledgeAcknowledgedFeedback()).rejects.toThrow('This feedback has already been responded to');
-    await expect(ignoreAckowledgedFeedback()).rejects.toThrow('This feedback has already been responded to');
-    await expect(acknowledgeIgnoredFeedback()).rejects.toThrow('This feedback has already been responded to');
-    await expect(ignoreIgnoredFeedback()).rejects.toThrow('This feedback has already been responded to');
+    await expect(
+      FeedbackControllerMock.acknowledgeFeedback(feedbackToAcknowledge.uuid, admin)
+    ).rejects.toThrow(errorMessage);
+    await expect(
+      FeedbackControllerMock.acknowledgeFeedback(feedbackToIgnore.uuid, admin)
+    ).rejects.toThrow(errorMessage);
+    await expect(
+      FeedbackControllerMock.ignoreFeedback(feedbackToAcknowledge.uuid, admin)
+    ).rejects.toThrow(errorMessage);
+    await expect(
+      FeedbackControllerMock.ignoreFeedback(feedbackToIgnore.uuid, admin)
+    ).rejects.toThrow(errorMessage);
   });
 });
