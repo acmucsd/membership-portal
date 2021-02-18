@@ -1,14 +1,14 @@
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { DatabaseConnection, UserFactory } from './data';
+import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { FeedbackFactory } from './data/FeedbackFactory';
-import { FeedbackControllerMock } from './controllers';
 import { ActivityScope, ActivityType, FeedbackStatus, UserAccessType } from '../types';
 import { ActivityModel } from '../models/ActivityModel';
 import { FeedbackModel } from '../models/FeedbackModel';
 import { Feedback } from '../api/validators/FeedbackControllerRequests';
 import { UserModel } from '../models/UserModel';
 import { Config } from '../config';
+import { ControllerFactory } from './controllers';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -24,15 +24,20 @@ afterAll(async () => {
 });
 
 describe('feedback submission', () => {
-  test('returns proper feedback response on successful submission', async () => {
+  test('properly persists on successful submission', async () => {
+    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [feedback] = FeedbackFactory.create(1);
 
-    await FeedbackControllerMock.mock([user]);
-    const submittedFeedback = await FeedbackControllerMock.submitFeedback(feedback, user);
+    const feedbackController = ControllerFactory.feedback(conn);
+    await new PortalState().createUsers([user]).write(conn);
 
-    expect(submittedFeedback).toStrictEqual({
-      ...submittedFeedback,
+    await ControllerFactory.feedback(conn).submitFeedback({ feedback }, user);
+    const submittedFeedbackResponse = await feedbackController.getFeedback(user);
+
+    expect(submittedFeedbackResponse.feedback).toHaveLength(1);
+    expect(submittedFeedbackResponse.feedback[0]).toStrictEqual({
+      ...submittedFeedbackResponse.feedback[0],
       user: user.getPublicProfile(),
       status: FeedbackStatus.SUBMITTED,
       ...feedback,
@@ -51,18 +56,18 @@ describe('feedback submission', () => {
   });
 
   test('persists submission data and activity in database on successful submission', async () => {
+    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [feedback] = FeedbackFactory.create(1);
 
-    await FeedbackControllerMock.mock([user]);
-    const submittedFeedback = await FeedbackControllerMock.submitFeedback(feedback, user);
+    await new PortalState().createUsers([user]).write(conn);
 
-    const conn = await DatabaseConnection.get();
+    const submittedFeedbackResponse = await ControllerFactory.feedback(conn).submitFeedback({ feedback }, user);
     const [persistedFeedback] = await conn.manager.find(FeedbackModel, { relations: ['user'] });
     const activity = await conn.manager.find(ActivityModel, { relations: ['user'] });
     const feedbackSubmissionActivity = { ...activity[1] };
 
-    expect(submittedFeedback).toStrictEqual(persistedFeedback.getPublicFeedback());
+    expect(submittedFeedbackResponse.feedback).toStrictEqual(persistedFeedback.getPublicFeedback());
     expect(feedbackSubmissionActivity).toStrictEqual({
       ...feedbackSubmissionActivity,
       type: ActivityType.SUBMIT_FEEDBACK,
@@ -72,94 +77,119 @@ describe('feedback submission', () => {
   });
 
   test('admins can view feedback from any user', async () => {
+    const conn = await DatabaseConnection.get();
     const [user1, user2] = UserFactory.create(2);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
-    await FeedbackControllerMock.mock([user1, user2, admin]);
-    const submittedFeedback1 = await FeedbackControllerMock.submitFeedback(feedback1, user1);
-    const submittedFeedback2 = await FeedbackControllerMock.submitFeedback(feedback2, user2);
+    const feedbackController = ControllerFactory.feedback(conn);
+    await new PortalState().createUsers([user1, user2, admin]).write(conn);
 
-    const allSubmittedFeedback = await FeedbackControllerMock.getFeedback(admin);
+    const submittedFeedback1Response = await feedbackController.submitFeedback({ feedback: feedback1 }, user1);
+    const submittedFeedback2Response = await feedbackController.submitFeedback({ feedback: feedback2 }, user2);
+    const allSubmittedFeedbackResponse = await feedbackController.getFeedback(admin);
 
-    expect(submittedFeedback1).toMatchObject(feedback1);
-    expect(submittedFeedback2).toMatchObject(feedback2);
-    expect(allSubmittedFeedback).toHaveLength(2);
-    expect(allSubmittedFeedback).toEqual(expect.arrayContaining([submittedFeedback1, submittedFeedback2]));
+    expect(submittedFeedback1Response.feedback).toMatchObject(feedback1);
+    expect(submittedFeedback2Response.feedback).toMatchObject(feedback2);
+    expect(allSubmittedFeedbackResponse.feedback).toHaveLength(2);
+    expect(allSubmittedFeedbackResponse.feedback).toEqual(
+      expect.arrayContaining([submittedFeedback1Response.feedback, submittedFeedback2Response.feedback]),
+    );
   });
 
   test('members can view only their own feedback', async () => {
+    const conn = await DatabaseConnection.get();
     const [user1, user2] = UserFactory.create(2);
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
-    await FeedbackControllerMock.mock([user1, user2]);
-    await FeedbackControllerMock.submitFeedback(feedback1, user1);
-    await FeedbackControllerMock.submitFeedback(feedback2, user2);
+    const feedbackController = ControllerFactory.feedback(conn);
+    await new PortalState().createUsers([user1, user2]).write(conn);
 
-    const user1Feedback = await FeedbackControllerMock.getFeedback(user1);
+    await feedbackController.submitFeedback({ feedback: feedback1 }, user1);
+    await feedbackController.submitFeedback({ feedback: feedback2 }, user2);
+    const user1Feedback = await feedbackController.getFeedback(user1);
 
-    expect(user1Feedback).toHaveLength(1);
-    expect(user1Feedback[0]).toMatchObject(feedback1);
+    expect(user1Feedback.feedback).toHaveLength(1);
+    expect(user1Feedback.feedback[0]).toMatchObject(feedback1);
   });
 
   test('admin can acknowledge and reward points for feedback', async () => {
+    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback] = FeedbackFactory.create(1);
+    const status = FeedbackStatus.ACKNOWLEDGED;
 
-    await FeedbackControllerMock.mock([user, admin]);
-    const submittedFeedback = await FeedbackControllerMock.submitFeedback(feedback, user);
-    const acknowledgedFeedback = await FeedbackControllerMock.acknowledgeFeedback(submittedFeedback.uuid, admin);
+    const feedbackController = ControllerFactory.feedback(conn);
+    await new PortalState().createUsers([user, admin]).write(conn);
 
-    const conn = await DatabaseConnection.get();
+    const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, user);
+    const { uuid } = submittedFeedbackResponse.feedback;
+    const acknowledgedFeedback = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
+
     const persistedUser = await conn.manager.findOne(UserModel, { where: { uuid: user.uuid } });
     const feedbackPointReward = Config.pointReward.FEEDBACK_POINT_REWARD;
 
-    expect(acknowledgedFeedback.status).toEqual(FeedbackStatus.ACKNOWLEDGED);
+    expect(acknowledgedFeedback.feedback.status).toEqual(FeedbackStatus.ACKNOWLEDGED);
     expect(persistedUser.points).toEqual(user.points + feedbackPointReward);
   });
 
   test('admin can ignore and not reward points for feedback', async () => {
+    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback] = FeedbackFactory.create(1);
+    const status = FeedbackStatus.IGNORED;
 
-    await FeedbackControllerMock.mock([user, admin]);
-    const submittedFeedback = await FeedbackControllerMock.submitFeedback(feedback, user);
-    const ignoredFeedback = await FeedbackControllerMock.ignoreFeedback(submittedFeedback.uuid, admin);
+    const feedbackController = ControllerFactory.feedback(conn);
+    await new PortalState().createUsers([user, admin]).write(conn);
 
-    const conn = await DatabaseConnection.get();
+    const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, user);
+    const { uuid } = submittedFeedbackResponse.feedback;
+    const ignoredFeedbackResponse = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
+
     const persistedUser = await conn.manager.findOne(UserModel, { where: { uuid: user.uuid } });
 
-    expect(ignoredFeedback.status).toEqual(FeedbackStatus.IGNORED);
+    expect(ignoredFeedbackResponse.feedback.status).toEqual(FeedbackStatus.IGNORED);
     expect(persistedUser.points).toEqual(user.points);
   });
 
   test('cannot be responded to after already being responded to', async () => {
+    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
-    await FeedbackControllerMock.mock([user, admin]);
-    const feedbackToAcknowledge = await FeedbackControllerMock.submitFeedback(feedback1, user);
-    const feedbackToIgnore = await FeedbackControllerMock.submitFeedback(feedback2, user);
+    const feedbackController = ControllerFactory.feedback(conn);
+    await new PortalState().createUsers([user, admin]).write(conn);
+    const feedbackToAcknowledgeResponse = await feedbackController.submitFeedback({ feedback: feedback1 }, user);
+    const feedbackToIgnoreResponse = await feedbackController.submitFeedback({ feedback: feedback2 }, user);
 
-    await FeedbackControllerMock.acknowledgeFeedback(feedbackToAcknowledge.uuid, admin);
-    await FeedbackControllerMock.ignoreFeedback(feedbackToIgnore.uuid, admin);
+    const acknowledgedFeedbackUuid = feedbackToAcknowledgeResponse.feedback.uuid;
+    const ignoredFeedbackUuid = feedbackToIgnoreResponse.feedback.uuid;
+    const acknowledgedStatus = { status: FeedbackStatus.ACKNOWLEDGED };
+    const ignoredStatus = { status: FeedbackStatus.IGNORED };
+
+    await feedbackController.updateFeedbackStatus(
+      acknowledgedFeedbackUuid, acknowledgedStatus, admin,
+    );
+    await feedbackController.updateFeedbackStatus(
+      ignoredFeedbackUuid, ignoredStatus, admin,
+    );
 
     const errorMessage = 'This feedback has already been responded to';
 
     await expect(
-      FeedbackControllerMock.acknowledgeFeedback(feedbackToAcknowledge.uuid, admin),
+      feedbackController.updateFeedbackStatus(acknowledgedFeedbackUuid, acknowledgedStatus, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      FeedbackControllerMock.acknowledgeFeedback(feedbackToIgnore.uuid, admin),
+      feedbackController.updateFeedbackStatus(ignoredFeedbackUuid, acknowledgedStatus, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      FeedbackControllerMock.ignoreFeedback(feedbackToAcknowledge.uuid, admin),
+      feedbackController.updateFeedbackStatus(acknowledgedFeedbackUuid, acknowledgedStatus, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      FeedbackControllerMock.ignoreFeedback(feedbackToIgnore.uuid, admin),
+      feedbackController.updateFeedbackStatus(ignoredFeedbackUuid, ignoredStatus, admin),
     ).rejects.toThrow(errorMessage);
   });
 });
