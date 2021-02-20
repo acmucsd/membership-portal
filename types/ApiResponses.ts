@@ -1,5 +1,6 @@
 import { ActivityType, FeedbackStatus, FeedbackType } from './Enums';
 import { Uuid } from '.';
+
 // RESPONSE TYPES
 
 export interface CustomErrorBody {
