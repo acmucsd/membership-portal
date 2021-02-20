@@ -32,7 +32,7 @@ describe('feedback submission', () => {
     const feedbackController = ControllerFactory.feedback(conn);
     await new PortalState().createUsers([user]).write(conn);
 
-    await ControllerFactory.feedback(conn).submitFeedback({ feedback }, user);
+    await feedbackController.submitFeedback({ feedback }, user);
     const submittedFeedbackResponse = await feedbackController.getFeedback(user);
 
     expect(submittedFeedbackResponse.feedback).toHaveLength(1);
