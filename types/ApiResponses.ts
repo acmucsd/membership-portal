@@ -1,4 +1,4 @@
-import { ActivityType, FeedbackStatus, FeedbackType } from './Enums';
+import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType } from './Enums';
 import { Uuid } from '.';
 
 // RESPONSE TYPES
@@ -232,6 +232,7 @@ export interface EditMerchOrderResponse extends ApiResponse {}
 
 export interface PublicActivity {
   type: ActivityType,
+  scope: ActivityScope,
   description: string,
   pointsEarned: number,
   timestamp: Date;
