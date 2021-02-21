@@ -1,5 +1,4 @@
 import { Body, ForbiddenError, Get, JsonController, Param, Patch, Post, UseBefore } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
@@ -16,7 +15,7 @@ import {
 export class FeedbackController {
   private feedbackService: FeedbackService;
 
-  constructor(@Inject() feedbackService: FeedbackService) {
+  constructor(feedbackService: FeedbackService) {
     this.feedbackService = feedbackService;
   }
 
