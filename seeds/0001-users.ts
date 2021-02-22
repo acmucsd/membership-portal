@@ -83,6 +83,17 @@ const users = [
     points: 750,
     graduationYear: 2023,
     major: 'Computer Science',
+  }, {
+    uuid: 'be1736b5-52d2-4321-86fe-e35b5e3def07',
+    email: 'sisteine@ucsd.edu',
+    accessType: UserAccessType.ADMIN,
+    state: UserState.ACTIVE,
+    firstName: 'Steven',
+    lastName: 'Steiner',
+    hash,
+    points: 1500,
+    graduationYear: 2022,
+    major: 'Computer Science',
   },
 ];
 
