@@ -6,7 +6,7 @@ import {
   Patch,
   Delete,
   Body,
-  Param,
+  Params,
   ForbiddenError,
   NotFoundError,
   BadRequestError,
@@ -15,7 +15,7 @@ import { Inject } from 'typedi';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
-  Uuid,
+  ValidUuid,
   GetOneMerchCollectionResponse,
   GetAllMerchCollectionsResponse,
   CreateMerchCollectionResponse,
@@ -53,10 +53,10 @@ export class MerchStoreController {
   private merchStoreService: MerchStoreService;
 
   @Get('/collection/:uuid')
-  async getOneMerchCollection(@Param('uuid') uuid: Uuid,
+  async getOneMerchCollection(@Params() vUuid: ValidUuid,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchCollectionResponse> {
     const canSeeHiddenItems = PermissionsService.canEditMerchStore(user);
-    const collection = await this.merchStoreService.findCollectionByUuid(uuid, canSeeHiddenItems);
+    const collection = await this.merchStoreService.findCollectionByUuid(vUuid.uuid, canSeeHiddenItems);
     return { error: null, collection };
   }
 
@@ -76,27 +76,27 @@ export class MerchStoreController {
   }
 
   @Patch('/collection/:uuid')
-  async editMerchCollection(@Param('uuid') uuid: Uuid,
+  async editMerchCollection(@Params() vUuid: ValidUuid,
     @Body() editCollectionRequest: EditMerchCollectionRequest,
     @AuthenticatedUser() user: UserModel): Promise<EditMerchCollectionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    const collection = await this.merchStoreService.editCollection(uuid, editCollectionRequest.collection);
+    const collection = await this.merchStoreService.editCollection(vUuid.uuid, editCollectionRequest.collection);
     return { error: null, collection };
   }
 
   @Delete('/collection/:uuid')
-  async deleteMerchCollection(@Param('uuid') uuid: Uuid,
+  async deleteMerchCollection(@Params() vUuid: ValidUuid,
     @AuthenticatedUser() user: UserModel): Promise<DeleteMerchCollectionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    await this.merchStoreService.deleteCollection(uuid);
+    await this.merchStoreService.deleteCollection(vUuid.uuid);
     return { error: null };
   }
 
   @Get('/item/:uuid')
-  async getOneMerchItem(@Param('uuid') uuid: Uuid,
+  async getOneMerchItem(@Params() vUuid: ValidUuid,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchItemResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const item = await this.merchStoreService.findItemByUuid(uuid);
+    const item = await this.merchStoreService.findItemByUuid(vUuid.uuid);
     return { error: null, item };
   }
 
@@ -109,44 +109,44 @@ export class MerchStoreController {
   }
 
   @Patch('/item/:uuid')
-  async editMerchItem(@Param('uuid') uuid: Uuid,
+  async editMerchItem(@Params() vUuid: ValidUuid,
     @Body() editItemRequest: EditMerchItemRequest,
     @AuthenticatedUser() user: UserModel): Promise<EditMerchItemResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    const item = await this.merchStoreService.editItem(uuid, editItemRequest.merchandise);
+    const item = await this.merchStoreService.editItem(vUuid.uuid, editItemRequest.merchandise);
     return { error: null, item };
   }
 
   @Delete('/item/:uuid')
-  async deleteMerchItem(@Param('uuid') uuid: Uuid,
+  async deleteMerchItem(@Params() vUuid: ValidUuid,
     @AuthenticatedUser() user: UserModel): Promise<DeleteMerchItemResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    await this.merchStoreService.deleteItem(uuid);
+    await this.merchStoreService.deleteItem(vUuid.uuid);
     return { error: null };
   }
 
   @Post('/option/:uuid')
-  async createMerchItemOption(@Param('uuid') uuid: Uuid,
+  async createMerchItemOption(@Params() vUuid: ValidUuid,
     @Body() createItemOptionRequest: CreateMerchItemOptionRequest, @AuthenticatedUser() user: UserModel):
     Promise<CreateMerchItemOptionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    const option = await this.merchStoreService.createItemOption(uuid, createItemOptionRequest.option);
+    const option = await this.merchStoreService.createItemOption(vUuid.uuid, createItemOptionRequest.option);
     return { error: null, option };
   }
 
   @Delete('/option/:uuid')
-  async deleteMerchItemOption(@Param('uuid') uuid: Uuid, @AuthenticatedUser() user: UserModel):
+  async deleteMerchItemOption(@Params() vUuid: ValidUuid, @AuthenticatedUser() user: UserModel):
   Promise<DeleteMerchItemOptionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    await this.merchStoreService.deleteItemOption(uuid);
+    await this.merchStoreService.deleteItemOption(vUuid.uuid);
     return { error: null };
   }
 
   @Get('/order/:uuid')
-  async getOneMerchOrder(@Param('uuid') uuid: Uuid,
+  async getOneMerchOrder(@Params() vUuid: ValidUuid,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchOrderResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const order = await this.merchStoreService.findOrderByUuid(uuid);
+    const order = await this.merchStoreService.findOrderByUuid(vUuid.uuid);
     if (!PermissionsService.canSeeMerchOrder(user, order)) throw new NotFoundError();
     return { error: null, order };
   }

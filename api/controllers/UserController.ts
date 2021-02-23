@@ -1,5 +1,5 @@
 import {
-  JsonController, Param, Get, Post, Patch, UseBefore, UploadedFile, Body,
+  JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body,
 } from 'routing-controllers';
 import { Inject } from 'typedi';
 import { UserModel } from '../../models/UserModel';
@@ -9,7 +9,7 @@ import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import {
   MediaType,
-  Uuid,
+  ValidUuid,
   File,
   GetUserActivityStreamResponse,
   UpdateProfilePictureResponse,
@@ -29,12 +29,12 @@ export class UserController {
   private storageService: StorageService;
 
   @Get('/:uuid/activity/')
-  async getUserActivityStream(@Param('uuid') uuid: Uuid,
+  async getUserActivityStream(@Params() vUuid: ValidUuid,
     @AuthenticatedUser() currentUser: UserModel): Promise<GetUserActivityStreamResponse> {
-    if (uuid === currentUser.uuid) {
+    if (vUuid.uuid === currentUser.uuid) {
       return this.getCurrentUserActivityStream(currentUser);
     }
-    const activityStream = await this.userAccountService.getUserActivityStream(uuid);
+    const activityStream = await this.userAccountService.getUserActivityStream(vUuid.uuid);
     return { error: null, activity: activityStream };
   }
 
@@ -55,11 +55,11 @@ export class UserController {
   }
 
   @Get('/:uuid')
-  async getUser(@Param('uuid') uuid: Uuid, @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
-    if (uuid === currentUser.uuid) {
+  async getUser(@Params() vUuid: ValidUuid, @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
+    if (vUuid.uuid === currentUser.uuid) {
       return this.getCurrentUser(currentUser);
     }
-    const user = await this.userAccountService.findByUuid(uuid);
+    const user = await this.userAccountService.findByUuid(vUuid.uuid);
     return { error: null, user: user.getPublicProfile() };
   }
 

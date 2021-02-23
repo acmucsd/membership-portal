@@ -8,6 +8,7 @@ import { AdminController } from './AdminController';
 import { MerchStoreController } from './MerchStoreController';
 import { LeaderboardController } from './LeaderboardController';
 import { FeedbackController } from './FeedbackController';
+import { createParamDecorator } from 'routing-controllers';
 
 export const controllers = [
   AuthController,
@@ -28,4 +29,17 @@ declare global {
       trace?: string;
     }
   }
+}
+
+export function ParamBody(options?: { required?: boolean }) {
+  return createParamDecorator({
+    required: options && options.required ? true : false,
+    value: action => {
+      const info = {
+        param:action.request.param,
+        body:action.request.body,
+      }
+      return info;
+    },
+  });
 }

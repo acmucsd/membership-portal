@@ -1,4 +1,4 @@
-import { JsonController, Param, Body, Get, Post, UseBefore } from 'routing-controllers';
+import { JsonController, Param, Params, Body, Get, Post, UseBefore } from 'routing-controllers';
 import { Inject } from 'typedi';
 import {
   RegistrationResponse,
@@ -19,6 +19,7 @@ import { authActionMetadata } from '../../utils/AuthActionMetadata';
 import { OptionalUserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
+import { ValidEmail } from '../../types/ApiParams';
 
 @JsonController('/auth')
 export class AuthController {
@@ -50,8 +51,8 @@ export class AuthController {
   }
 
   @Get('/emailVerification/:email')
-  async resendEmailVerification(@Param('email') email: string): Promise<ResendEmailVerificationResponse> {
-    const user = await this.userAuthService.setAccessCode(email.toLowerCase());
+  async resendEmailVerification(@Params() vEmail: ValidEmail): Promise<ResendEmailVerificationResponse> {
+    const user = await this.userAuthService.setAccessCode(vEmail.email.toLowerCase());
     await this.emailService.sendEmailVerification(user.email, user.firstName, user.accessCode);
     return { error: null };
   }
@@ -63,9 +64,9 @@ export class AuthController {
   }
 
   @Get('/passwordReset/:email')
-  async sendPasswordResetEmail(@Param('email') email: string,
+  async sendPasswordResetEmail(@Params() vEmail: ValidEmail,
     @RequestTrace() trace: string): Promise<SendPasswordResetEmailResponse> {
-    const user = await this.userAuthService.putAccountInPasswordResetMode(email.toLowerCase());
+    const user = await this.userAuthService.putAccountInPasswordResetMode(vEmail.email.toLowerCase());
     await this.emailService.sendPasswordReset(user.email, user.firstName, user.accessCode);
     log.info('user authentication (password reset - email)', authActionMetadata(trace, user));
     return { error: null };

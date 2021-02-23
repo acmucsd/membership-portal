@@ -1,10 +1,10 @@
-import { Body, ForbiddenError, Get, JsonController, Param, Patch, Post, UseBefore } from 'routing-controllers';
+import { Body, ForbiddenError, Get, JsonController, Params, Patch, Post, UseBefore } from 'routing-controllers';
 import { Inject } from 'typedi';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
 import FeedbackService from '../../services/FeedbackService';
-import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse, Uuid } from '../../types';
+import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse, ValidUuid } from '../../types';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   SubmitFeedbackRequest,
@@ -33,11 +33,11 @@ export class FeedbackController {
   }
 
   @Patch('/:uuid')
-  async updateFeedbackStatus(@Param('uuid') uuid: Uuid,
+  async updateFeedbackStatus(@Params() vUuid: ValidUuid,
     @Body() updateFeedbackStatusRequest: UpdateFeedbackStatusRequest,
     @AuthenticatedUser() user: UserModel): Promise<UpdateFeedbackStatusResponse> {
     if (!PermissionsService.canRespondToFeedback(user)) throw new ForbiddenError();
-    const feedback = await this.feedbackService.updateFeedbackStatus(uuid, updateFeedbackStatusRequest.status);
+    const feedback = await this.feedbackService.updateFeedbackStatus(vUuid.uuid, updateFeedbackStatusRequest.status);
     return { error: null, feedback };
   }
 }
