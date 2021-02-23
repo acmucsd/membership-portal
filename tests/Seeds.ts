@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as moment from 'moment';
 import { UserAccessType } from '../types';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
+import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
 
 function roundToHalfHour(date: moment.Moment): Date {
   const HALF_HOUR_IN_MILLISECONDS = moment.duration(30, 'minutes').asMilliseconds();
@@ -9,7 +8,7 @@ function roundToHalfHour(date: moment.Moment): Date {
 }
 
 function getGraduationYear(n: number) {
-  return moment().years() + n;
+  return moment().year() + n;
 }
 
 /**
@@ -255,7 +254,138 @@ async function seed(): Promise<void> {
     ...staffed,
   });
 
-  new PortalState()
+  const MERCH_COLLECTION_1 = MerchFactory.fakeCollection({
+    title: 'The Hack School Collection',
+    description: 'Do you like to code? Tell the world with this Hack School inspired collection.',
+  });
+  const MERCH_ITEM_1 = MerchFactory.fakeItem({
+    collection: MERCH_COLLECTION_1,
+    itemName: 'Unisex Hack School Anorak',
+    picture: '',
+    description: 'San Diego has an average annual precipitation less than 12 inches,'
+    + 'but that doesn\'t mean you don\'t need one of these.',
+    monthlyLimit: 1,
+    lifetimeLimit: 1,
+    hidden: false,
+  });
+  const MERCH_ITEM_1_OPTION = MerchFactory.fakeOption({
+    item: MERCH_ITEM_1,
+    quantity: 5,
+    price: 22500,
+    discountPercentage: 0,
+    metadata: {
+      size: 'XL',
+    },
+  });
+  MERCH_ITEM_1.options = [MERCH_ITEM_1_OPTION];
+  const MERCH_ITEM_2 = MerchFactory.fakeItem({
+    collection: MERCH_COLLECTION_1,
+    itemName: 'Hack School Sticker Pack (4)',
+    picture: '',
+    description: 'Make space on your laptop cover for these stickers. Pack of 4, size in inches.',
+    monthlyLimit: 5,
+    lifetimeLimit: 25,
+    hidden: false,
+  });
+  const MERCH_ITEM_2_CYAN = MerchFactory.fakeOption({
+    item: MERCH_ITEM_2,
+    quantity: 35,
+    price: 1500,
+    discountPercentage: 15,
+    metadata: {
+      color: 'CYAN',
+      size: '4x4',
+    },
+  });
+  const MERCH_ITEM_2_PINK = MerchFactory.fakeOption({
+    item: MERCH_ITEM_2,
+    quantity: 20,
+    price: 1500,
+    discountPercentage: 5,
+    metadata: {
+      color: 'LIGHT PINK',
+      size: '2x2',
+    },
+  });
+  const MERCH_ITEM_2_GREEN = MerchFactory.fakeOption({
+    item: MERCH_ITEM_2,
+    quantity: 80,
+    price: 1500,
+    discountPercentage: 55,
+    metadata: {
+      color: 'SEA GREEN',
+      size: '3x3',
+    },
+  });
+  MERCH_ITEM_2.options = [MERCH_ITEM_2_CYAN, MERCH_ITEM_2_PINK, MERCH_ITEM_2_GREEN];
+  MERCH_COLLECTION_1.items = [MERCH_ITEM_1, MERCH_ITEM_2];
+  const MERCH_COLLECTION_2 = MerchFactory.fakeCollection({
+    title: 'Fall 2001',
+    description: 'Celebrate the opening of Sixth College in style, featuring raccoon print jackets.',
+  });
+  const MERCH_ITEM_3 = MerchFactory.fakeItem({
+    collection: MERCH_COLLECTION_2,
+    itemName: 'Camp Snoopy Snapback',
+    picture: '',
+    description: 'Guaranteed 2x return on Grailed.',
+    monthlyLimit: 2,
+    lifetimeLimit: 5,
+    hidden: false,
+  });
+  const MERCH_ITEM_3_OPTION = MerchFactory.fakeOption({
+    item: MERCH_ITEM_3,
+    quantity: 1,
+    price: 8000,
+    discountPercentage: 5,
+  });
+  MERCH_ITEM_3.options = [MERCH_ITEM_3_OPTION];
+  const MERCH_ITEM_4 = MerchFactory.fakeItem({
+    collection: MERCH_COLLECTION_2,
+    itemName: 'Salt & Pepper (Canyon) Shakers',
+    picture: '',
+    description: 'Salt and pepper not included.',
+    monthlyLimit: 3,
+    lifetimeLimit: 10,
+    hidden: false,
+  });
+  const MERCH_ITEM_4_OPTION = MerchFactory.fakeOption({
+    item: MERCH_ITEM_4,
+    quantity: 10,
+    price: 2000,
+    discountPercentage: 20,
+  });
+  MERCH_ITEM_4.options = [MERCH_ITEM_4_OPTION];
+  const MERCH_ITEM_5 = MerchFactory.fakeItem({
+    collection: MERCH_COLLECTION_2,
+    itemName: 'Unisex Raccoon Print Shell Jacket',
+    picture: '',
+    description: 'Self-explanatory.',
+    monthlyLimit: 1,
+    lifetimeLimit: 2,
+    hidden: false,
+  });
+  const MERCH_ITEM_5_MEDIUM = MerchFactory.fakeOption({
+    item: MERCH_ITEM_5,
+    quantity: 10,
+    price: 19500,
+    discountPercentage: 0,
+    metadata: {
+      size: 'M',
+    },
+  });
+  const MERCH_ITEM_5_LARGE = MerchFactory.fakeOption({
+    item: MERCH_ITEM_5,
+    quantity: 10,
+    price: 20500,
+    discountPercentage: 0,
+    metadata: {
+      size: 'L',
+    },
+  });
+  MERCH_ITEM_5.options = [MERCH_ITEM_5_MEDIUM, MERCH_ITEM_5_LARGE];
+  MERCH_COLLECTION_2.items = [MERCH_ITEM_3, MERCH_ITEM_4, MERCH_ITEM_5];
+
+  await new PortalState()
     .createUsers([
       ADMIN,
       STAFF_AI,
@@ -274,21 +404,20 @@ async function seed(): Promise<void> {
       PAST_ACM_PANEL,
       PAST_ACM_SOCIAL_2,
     ])
-    .createMerch([])
     .attendEvents([
       STAFF_AI,
       STAFF_GENERAL,
       MEMBER_FRESHMAN,
       MEMBER_SOPHOMORE,
       MEMBER_JUNIOR,
-      MEMBER_SENIOR
+      MEMBER_SENIOR,
     ], [PAST_AI_WORKSHOP_1], true)
     .attendEvents([
       STAFF_HACK,
       STAFF_AI,
       MEMBER_SOPHOMORE,
       MEMBER_JUNIOR,
-      MEMBER_SENIOR
+      MEMBER_SENIOR,
     ], [PAST_HACK_WORKSHOP], true)
     .attendEvents([
       STAFF_GENERAL,
@@ -314,5 +443,32 @@ async function seed(): Promise<void> {
       MEMBER_FRESHMAN,
       MEMBER_JUNIOR,
       MEMBER_SENIOR,
-    ], [PAST_ACM_SOCIAL_2], true);
+    ], [PAST_ACM_SOCIAL_2], true)
+    .createEvents([
+      ONGOING_ACM_SOCIAL_1,
+      ONGOING_ACM_SOCIAL_2,
+    ])
+    .attendEvents([
+      STAFF_GENERAL,
+      MEMBER_FRESHMAN,
+      MEMBER_SENIOR,
+    ], [ONGOING_ACM_SOCIAL_1], false)
+    .attendEvents([
+      STAFF_AI,
+      STAFF_HACK,
+      MEMBER_SOPHOMORE,
+      MEMBER_JUNIOR,
+    ], [ONGOING_ACM_SOCIAL_2], true)
+    .createEvents([
+      FUTURE_AI_SOCIAL,
+      FUTURE_HACK_WORKSHOP_1,
+      FUTURE_HACK_WORKSHOP_2,
+    ])
+    .createMerch([
+      MERCH_COLLECTION_1,
+      MERCH_COLLECTION_2,
+    ])
+    .write(conn);
 }
+
+seed();
