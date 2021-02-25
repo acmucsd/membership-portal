@@ -52,7 +52,7 @@ describe('feedback submission', () => {
     expect(errors[0].constraints.minLength).toBeDefined();
   });
 
-  test('has has proper activity scope and type', async () => {
+  test('has proper activity scope and type', async () => {
     const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [feedback] = FeedbackFactory.create(1);
