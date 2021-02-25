@@ -41,11 +41,11 @@ export class EventFactory {
 
   private static randomTime(): [Date, Date] {
     // between last and next week
-    const days = FactoryUtils.getRandomNumber(14, -7);
+    const days = FactoryUtils.getRandomNumber(-7, 7);
     // between 8 AM and 6 PM
-    const hour = FactoryUtils.getRandomNumber(10, 9);
+    const hour = FactoryUtils.getRandomNumber(9, 19);
     // between 0.5 and 2.5 hours long, rounded to the half hour
-    const duration = FactoryUtils.getRandomNumber(5, 30, 30);
+    const duration = FactoryUtils.getRandomNumber(30, 150, 30);
     const start = moment().subtract(days, 'days').hour(hour);
     const end = moment(start.valueOf()).add(duration, 'minutes');
     return [new Date(start.valueOf()), new Date(end.valueOf())];
@@ -53,6 +53,6 @@ export class EventFactory {
 
   private static randomPointValue(): number {
     // some multiple of 5, min 5 and max 20
-    return FactoryUtils.getRandomNumber(3, 5, 5);
+    return FactoryUtils.getRandomNumber(5, 20, 5);
   }
 }

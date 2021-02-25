@@ -4,7 +4,7 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment';
-import { MerchItemOption } from 'api/validators/MerchStoreRequests';
+import { MerchItemOption } from '../api/validators/MerchStoreRequests';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,

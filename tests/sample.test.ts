@@ -5,6 +5,7 @@ import { EventModel } from '../models/EventModel';
 import { UserModel } from '../models/UserModel';
 import { DatabaseConnection, UserFactory, EventFactory, MerchFactory, PortalState } from './data';
 import { OrderModel } from '../models/OrderModel';
+import { FeedbackFactory } from './data/FeedbackFactory';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -43,13 +44,17 @@ describe('sample test', () => {
         options: [affordableOption],
       }),
     });
+    const feedback = FeedbackFactory.create(1);
+
     const state = new PortalState()
       .createUsers([user1])
       .createEvents([event])
       .createMerch(merch)
       .attendEvents([user1], [event], false)
       .createUsers([user2])
-      .orderMerch(user1, [{ option: affordableOption, quantity: 1 }]);
+      .orderMerch(user1, [{ option: affordableOption, quantity: 1 }])
+      .submitFeedback(user1, feedback);
+
     await state.write(conn);
 
     const persistedUser = await conn.manager.findOne(UserModel, user2.uuid);
@@ -63,13 +68,14 @@ describe('sample test', () => {
     expect(attendance.event).toStrictEqual(event);
 
     const activities = await conn.manager.find(ActivityModel);
-    expect(activities).toHaveLength(4);
+    expect(activities).toHaveLength(5);
     const activityTypes = activities.map((a) => a.type);
     expect(activityTypes).toStrictEqual([
       ActivityType.ACCOUNT_CREATE,
       ActivityType.ATTEND_EVENT,
       ActivityType.ACCOUNT_CREATE,
       ActivityType.ORDER_MERCHANDISE,
+      ActivityType.SUBMIT_FEEDBACK,
     ]);
 
     const [order] = await conn.manager.find(OrderModel, { relations: ['user', 'items'] });

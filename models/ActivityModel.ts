@@ -32,6 +32,7 @@ export class ActivityModel extends BaseEntity {
   public getPublicActivity(): PublicActivity {
     return pick(this, [
       'type',
+      'scope',
       'description',
       'pointsEarned',
       'timestamp',

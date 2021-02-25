@@ -43,7 +43,7 @@ export class MerchFactory {
       uuid: uuid(),
       title: faker.random.hexaDecimal(10),
       description: faker.lorem.sentences(2),
-      items: MerchFactory.createItems(FactoryUtils.getRandomNumber(5, 1)),
+      items: MerchFactory.createItems(FactoryUtils.getRandomNumber(1, 5)),
     });
   }
 
@@ -52,14 +52,14 @@ export class MerchFactory {
       uuid: uuid(),
       itemName: faker.random.hexaDecimal(10),
       description: faker.lorem.sentences(2),
-      options: MerchFactory.createOptions(FactoryUtils.getRandomNumber(5, 1)),
+      options: MerchFactory.createOptions(FactoryUtils.getRandomNumber(1, 5)),
     });
   }
 
   public static fakeOption(): MerchandiseItemOptionModel {
     return MerchandiseItemOptionModel.create({
       uuid: uuid(),
-      quantity: FactoryUtils.getRandomNumber(25),
+      quantity: FactoryUtils.getRandomNumber(0, 25),
       price: MerchFactory.randomPrice(),
       discountPercentage: MerchFactory.randomDiscountPercentage(),
     });
@@ -67,7 +67,7 @@ export class MerchFactory {
 
   private static randomPrice(): number {
     // some multiple of 50, min 250 and max 50_000
-    return FactoryUtils.getRandomNumber(996, 250, 50);
+    return FactoryUtils.getRandomNumber(250, 50_000, 50);
   }
 
   private static randomDiscountPercentage(): number {

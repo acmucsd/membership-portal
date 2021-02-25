@@ -1,5 +1,4 @@
 import { Body, ForbiddenError, Get, JsonController, Param, Patch, Post, UseBefore } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
@@ -14,8 +13,11 @@ import {
 @UseBefore(UserAuthentication)
 @JsonController('/feedback')
 export class FeedbackController {
-  @Inject()
   private feedbackService: FeedbackService;
+
+  constructor(feedbackService: FeedbackService) {
+    this.feedbackService = feedbackService;
+  }
 
   @Get()
   async getFeedback(@AuthenticatedUser() user: UserModel): Promise<GetFeedbackResponse> {
