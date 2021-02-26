@@ -4,7 +4,7 @@ import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   CreateBonusRequest,
   CreateMilestoneRequest,
-  SubmitAttendanceForUserRequest,
+  SubmitAttendanceForUsersRequest,
 } from '../validators/AdminControllerRequests';
 import {
   File,
@@ -13,7 +13,7 @@ import {
   CreateBonusResponse,
   UploadBannerResponse,
   GetAllEmailsResponse,
-  AttendEventResponse,
+  SubmitAttendanceForUsersResponse,
 } from '../../types';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import UserAccountService from '../../services/UserAccountService';
@@ -68,11 +68,12 @@ export class AdminController {
   }
 
   @Post('/attendance')
-  async submitAttendanceForUser(@Body() submitAttendanceForUserRequest: SubmitAttendanceForUserRequest,
-    @AuthenticatedUser() currentUser: UserModel): Promise<AttendEventResponse> {
+  async submitAttendanceForUsers(@Body() submitAttendanceForUsersRequest: SubmitAttendanceForUsersRequest,
+    @AuthenticatedUser() currentUser: UserModel): Promise<SubmitAttendanceForUsersResponse> {
     if (!PermissionsService.canSubmitAttendanceForUsers(currentUser)) throw new ForbiddenError();
-    const { user, event: eventToAttend, asStaff } = submitAttendanceForUserRequest;
-    const { event } = await this.attendanceService.submitAttendanceForUser(user, eventToAttend, asStaff, currentUser);
-    return { error: null, event };
+    const { users, event: eventToAttend, asStaff } = submitAttendanceForUsersRequest;
+    const attendances = await this.attendanceService
+      .submitAttendanceForUsers(users, eventToAttend, asStaff, currentUser);
+    return { error: null, attendances };
   }
 }
