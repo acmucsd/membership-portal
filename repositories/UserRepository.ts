@@ -54,15 +54,19 @@ export class UserRepository extends BaseRepository<UserModel> {
   }
 
   public async addPointsToMany(users: UserModel[], points: number) {
-    const uuids = users.map((user) => user.uuid);
-    return this.repository.createQueryBuilder()
-      .update()
-      .set({
-        points: () => `points + ${points}`,
-        credits: () => `credits + ${points * 100}`,
-      })
-      .where('uuid IN (:...uuids) ', { uuids })
-      .execute();
+    users.forEach((user) => {
+      user.points += points;
+      user.credits += points * 100;
+    });
+    return this.repository.save(users);
+  }
+
+  public async addSpecificPointsToMany(users: UserModel[], pointsBatch: number[]) {
+    users.forEach((user, i) => {
+      user.points += pointsBatch[i];
+      user.credits += pointsBatch[i] * 100;
+    });
+    return this.repository.save(users);
   }
 
   public async addPointsToAll(points: number) {

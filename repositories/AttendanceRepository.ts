@@ -38,6 +38,19 @@ export class AttendanceRepository extends BaseRepository<AttendanceModel> {
     return this.repository.save(AttendanceModel.create(attendance));
   }
 
+  public async batchAttendEvent(users: UserModel[], event: EventModel, asStaffBatch: boolean[]) {
+    const attendances: AttendanceModel[] = [];
+    for (let i = 0; i < users.length; i += 1) {
+      const attendance = {
+        user: users[i],
+        event,
+        asStaff: asStaffBatch[i],
+      };
+      attendances.push(AttendanceModel.create(attendance));
+    }
+    return this.repository.save(attendances);
+  }
+
   public async getUserAttendanceForEvent(user: UserModel, event: EventModel): Promise<AttendanceModel> {
     return this.repository.findOne({ user, event });
   }

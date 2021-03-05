@@ -48,7 +48,7 @@ export default class AttendanceService {
   }
 
   private async writeEventAttendance(user: UserModel, event: EventModel, asStaff: boolean,
-    txn: EntityManager, description?: string): Promise<AttendanceModel> {
+    txn: EntityManager): Promise<AttendanceModel> {
     const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
     const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
 
@@ -56,7 +56,6 @@ export default class AttendanceService {
       user,
       attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
       pointsEarned,
-      description,
     );
     await Repositories.user(txn).addPoints(user, pointsEarned);
 
@@ -64,30 +63,57 @@ export default class AttendanceService {
   }
 
   public async submitAttendanceForUsers(emails: string[], eventUuid: Uuid, asStaff = false,
-    admin: UserModel): Promise<PublicAttendance[]> {
+    onBehalfOfUser: UserModel): Promise<PublicAttendance[]> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByUuid(eventUuid);
       if (!event) throw new NotFoundError('This event doesn\'t exist');
 
       const users = await Repositories.user(txn).findByEmails(emails);
+      const emailsFound = users.map((user) => user.email);
+      const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
 
-      if (users.length !== emails.length) {
-        throw new BadRequestError('Couldn\'t find accounts matching one or more emails');
+      if (emailsNotFound.length > 0) {
+        throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
       }
 
-      return Promise.all(users.map(async (user) => {
-        const attendanceRepository = Repositories.attendance(txn);
-        const hasAlreadyAttendedEvent = await attendanceRepository.hasUserAttendedEvent(user, event);
-        if (hasAlreadyAttendedEvent) {
-          throw new UserError(`The user ${user.email} has already attended this event. `
-          + 'No attendances have been submitted');
-        }
+      const userAttendancesOfEvent = await this.haveUsersAttendedEvent(users, event, txn);
+      const usersThatHaventAttended = Array.from(userAttendancesOfEvent.entries())
+        .filter(([_user, hasAttended]) => hasAttended)
+        .map(([user, _hasAttended]) => user);
 
-        const activityDescription = `Attendance submitted by user ${admin.uuid}`;
-        const attendance = await this.writeEventAttendance(user, event, asStaff, txn, activityDescription);
-        return attendance.getPublicAttendance();
-      }));
+      return this.batchWriteEventAttendance(usersThatHaventAttended, event, asStaff, onBehalfOfUser, txn);
     });
+  }
+
+  private async haveUsersAttendedEvent(users: UserModel[], event: EventModel,
+    txn: EntityManager): Promise<Map<UserModel, boolean>> {
+    const attendances = await Repositories.attendance(txn).getAttendancesForEvent(event.uuid);
+    const usersThatAttended = attendances.map((attendance) => attendance.user);
+    return new Map(users.map((user) => [user, usersThatAttended.includes(user)]));
+  }
+
+  private async batchWriteEventAttendance(users: UserModel[], event: EventModel, asStaff: boolean,
+    onBehalfOfUser: UserModel, txn: EntityManager): Promise<AttendanceModel[]> {
+    const asStaffBatch: boolean[] = [];
+    const activityTypeBatch: ActivityType[] = [];
+    const pointsEarnedBatch: number[] = [];
+    const descriptionBatch: string[] = [];
+    const description = `Attendance submitted on behalf of user ${onBehalfOfUser.uuid}`;
+
+    users.forEach((user) => {
+      const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
+      const activityType = attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT;
+      const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
+
+      asStaffBatch.push(attendedAsStaff);
+      activityTypeBatch.push(activityType);
+      pointsEarnedBatch.push(pointsEarned);
+      descriptionBatch.push(description);
+    });
+
+    await Repositories.user(txn).addSpecificPointsToMany(users, pointsEarnedBatch);
+    await Repositories.activity(txn).batchLogActivity(users, activityTypeBatch, pointsEarnedBatch, descriptionBatch);
+    return Repositories.attendance(txn).batchAttendEvent(users, event, asStaffBatch);
   }
 
   public async submitEventFeedback(feedback: string[], eventUuid: Uuid, user: UserModel): Promise<PublicAttendance> {

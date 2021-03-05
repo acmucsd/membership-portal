@@ -30,11 +30,28 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
     const activity = {
       user,
       type,
-      description,
       pointsEarned,
+      description,
       scope: ActivityRepository.activityScopes[type],
     };
     return this.repository.save(ActivityModel.create(activity));
+  }
+
+  public async batchLogActivity(
+    users: UserModel[], types: ActivityType[], pointsEarnedBatch?: number[], descriptionBatch?: string[],
+  ): Promise<ActivityModel[]> {
+    const activities: ActivityModel[] = [];
+    for (let i = 0; i < users.length; i += 1) {
+      const activity = {
+        user: users[i],
+        type: types[i],
+        pointsEarned: pointsEarnedBatch[i],
+        description: descriptionBatch[i],
+        scope: ActivityRepository.activityScopes[types[i]],
+      };
+      activities.push(ActivityModel.create(activity));
+    }
+    return this.repository.save(activities);
   }
 
   public async logMilestone(description: string, pointsEarned: number): Promise<void> {

@@ -122,10 +122,14 @@ export default class UserAccountService {
   public async grantBonusPoints(emails: string[], description: string, points: number) {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
-      const users = await userRepository.findByEmails(emails);
-      if (users.length !== emails.length) {
-        throw new BadRequestError('Couldn\'t find accounts matching one or more emails');
+      const users = await Repositories.user(txn).findByEmails(emails);
+      const emailsFound = users.map((user) => user.email);
+      const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
+
+      if (emailsNotFound.length > 0) {
+        throw new BadRequestError(`Couldn't find accounts matching these emails: ${JSON.stringify(emailsNotFound)}`);
       }
+
       await userRepository.addPointsToMany(users, points);
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logBonus(users, description, points);
