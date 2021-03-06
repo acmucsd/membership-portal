@@ -78,7 +78,7 @@ export default class AttendanceService {
 
       const userAttendancesOfEvent = await this.haveUsersAttendedEvent(users, event, txn);
       const usersThatHaventAttended = Array.from(userAttendancesOfEvent.entries())
-        .filter(([_user, hasAttended]) => hasAttended)
+        .filter(([_user, hasAttended]) => !hasAttended)
         .map(([user, _hasAttended]) => user);
 
       return this.batchWriteEventAttendance(usersThatHaventAttended, event, asStaff, onBehalfOfUser, txn);
@@ -88,8 +88,8 @@ export default class AttendanceService {
   private async haveUsersAttendedEvent(users: UserModel[], event: EventModel,
     txn: EntityManager): Promise<Map<UserModel, boolean>> {
     const attendances = await Repositories.attendance(txn).getAttendancesForEvent(event.uuid);
-    const usersThatAttended = attendances.map((attendance) => attendance.user);
-    return new Map(users.map((user) => [user, usersThatAttended.includes(user)]));
+    const usersThatAttended = attendances.map((attendance) => attendance.user.uuid);
+    return new Map(users.map((user) => [user, usersThatAttended.includes(user.uuid)]));
   }
 
   private async batchWriteEventAttendance(users: UserModel[], event: EventModel, asStaff: boolean,
@@ -98,7 +98,7 @@ export default class AttendanceService {
     const activityTypeBatch: ActivityType[] = [];
     const pointsEarnedBatch: number[] = [];
     const descriptionBatch: string[] = [];
-    const description = `Attendance submitted on behalf of user ${onBehalfOfUser.uuid}`;
+    const description = `Attendance submitted on behalf of user ${onBehalfOfUser.email}`;
 
     users.forEach((user) => {
       const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
