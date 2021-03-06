@@ -18,12 +18,19 @@ import MerchStoreService from '../../services/MerchStoreService';
 
 export class ControllerFactory {
   private static userController: UserController = null;
+
   private static feedbackController: FeedbackController = null;
+
   private static adminController: AdminController = null;
+
   private static attendanceController: AttendanceController = null;
+
   private static authController: AuthController = null;
+
   private static eventController: EventController = null;
+
   private static leaderboardController: LeaderboardController = null;
+
   private static merchStoreController: MerchStoreController = null;
 
   public static user(conn: Connection): UserController {
@@ -44,7 +51,7 @@ export class ControllerFactory {
   }
 
   public static admin(conn: Connection): AdminController {
-    if(!ControllerFactory.adminController) {
+    if (!ControllerFactory.adminController) {
       const userAccountService = new UserAccountService(conn.manager);
       const storageService = new StorageService();
       const attendanceService = new AttendanceService(conn.manager);
@@ -54,7 +61,7 @@ export class ControllerFactory {
   }
 
   public static attendance(conn: Connection): AttendanceController {
-    if(!ControllerFactory.attendanceController) {
+    if (!ControllerFactory.attendanceController) {
       const attendanceService = new AttendanceService(conn.manager);
       ControllerFactory.attendanceController = new AttendanceController(attendanceService);
     }
@@ -62,7 +69,7 @@ export class ControllerFactory {
   }
 
   public static auth(conn: Connection): AuthController {
-    if(!ControllerFactory.authController) {
+    if (!ControllerFactory.authController) {
       const userAccountService = new UserAccountService(conn.manager);
       const userAuthService = new UserAuthService(conn.manager);
       const emailService = new EmailService();
@@ -72,7 +79,7 @@ export class ControllerFactory {
   }
 
   public static event(conn: Connection): EventController {
-    if(!ControllerFactory.eventController) {
+    if (!ControllerFactory.eventController) {
       const eventService = new EventService(conn.manager);
       const storageService = new StorageService();
       const attendanceService = new AttendanceService(conn.manager);
@@ -82,7 +89,7 @@ export class ControllerFactory {
   }
 
   public static leaderboard(conn: Connection): LeaderboardController {
-    if(!ControllerFactory.leaderboardController) {
+    if (!ControllerFactory.leaderboardController) {
       const userAccountService = new UserAccountService(conn.manager);
       ControllerFactory.leaderboardController = new LeaderboardController(userAccountService);
     }
@@ -90,7 +97,7 @@ export class ControllerFactory {
   }
 
   public static merchStore(conn: Connection): MerchStoreController {
-    if(!ControllerFactory.merchStoreController) {
+    if (!ControllerFactory.merchStoreController) {
       const merchStoreService = new MerchStoreService(conn.manager);
       ControllerFactory.merchStoreController = new MerchStoreController(merchStoreService);
     }

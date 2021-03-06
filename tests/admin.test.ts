@@ -1,7 +1,6 @@
-import { ActivityScope, ActivityType, UserAccessType } from "../types";
-import { ControllerFactory } from "./controllers";
-import { DatabaseConnection, EventFactory, UserFactory } from "./data";
-import { PortalState } from './data';
+import { ActivityScope, ActivityType, UserAccessType } from '../types';
+import { ControllerFactory } from './controllers';
+import { DatabaseConnection, EventFactory, UserFactory, PortalState } from './data';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -22,7 +21,7 @@ describe('retroactive attendance submission', () => {
     const [user1, user2] = UserFactory.create(2);
     const emails = [user1, user2].map((user) => user.email);
     const [onBehalfOfUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [event] = EventFactory.create(1); 
+    const [event] = EventFactory.create(1);
 
     await new PortalState()
       .createUsers([user1, user2, onBehalfOfUser])
@@ -34,7 +33,6 @@ describe('retroactive attendance submission', () => {
     const attendanceController = ControllerFactory.attendance(conn);
 
     await adminController.submitAttendanceForUsers({ users: emails, event: event.uuid }, onBehalfOfUser);
-
 
     const userResponse1 = await userController.getUser(user1.uuid, onBehalfOfUser);
     const userResponse2 = await userController.getUser(user2.uuid, onBehalfOfUser);
@@ -57,7 +55,7 @@ describe('retroactive attendance submission', () => {
     expect(activityResponse1.activity[1].pointsEarned).toEqual(event.pointValue);
     expect(activityResponse1.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
     expect(activityResponse1.activity[1].scope).toEqual(ActivityScope.PUBLIC);
-    
+
     expect(activityResponse2.activity).toHaveLength(2);
     expect(activityResponse2.activity[1].pointsEarned).toEqual(event.pointValue);
     expect(activityResponse2.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
@@ -68,7 +66,7 @@ describe('retroactive attendance submission', () => {
     const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [onBehalfOfUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [event] = EventFactory.create(1); 
+    const [event] = EventFactory.create(1);
 
     await new PortalState()
       .createUsers([user, onBehalfOfUser])
@@ -76,12 +74,9 @@ describe('retroactive attendance submission', () => {
       .attendEvents([user], [event])
       .write(conn);
 
-    const u = await ControllerFactory.leaderboard(conn).getLeaderboard({});
-    console.log('u', u)
-
     await ControllerFactory.admin(conn).submitAttendanceForUsers(
       { users: [user.email], event: event.uuid },
-      onBehalfOfUser
+      onBehalfOfUser,
     );
 
     const userResponse = await ControllerFactory.user(conn).getUser(user.uuid, onBehalfOfUser);

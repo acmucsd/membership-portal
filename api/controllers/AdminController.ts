@@ -1,5 +1,4 @@
 import { JsonController, Post, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   CreateBonusRequest,

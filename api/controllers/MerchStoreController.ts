@@ -11,7 +11,6 @@ import {
   NotFoundError,
   BadRequestError,
 } from 'routing-controllers';
-import { Inject } from 'typedi';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {

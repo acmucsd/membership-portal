@@ -1,5 +1,4 @@
 import { UseBefore, JsonController, Get, QueryParams } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { GetLeaderboardResponse } from 'types';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import UserAccountService from '../../services/UserAccountService';

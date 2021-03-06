@@ -1,7 +1,6 @@
 import {
   JsonController, Get, Patch, Delete, Post, UseBefore, Param, ForbiddenError, QueryParams, UploadedFile, Body,
 } from 'routing-controllers';
-import { Inject } from 'typedi';
 import EventService from '../../services/EventService';
 import { UserAuthentication, OptionalUserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';

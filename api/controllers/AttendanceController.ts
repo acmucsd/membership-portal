@@ -1,5 +1,4 @@
 import { JsonController, Get, Post, UseBefore, Param, ForbiddenError, Body } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { AttendEventRequest } from '../validators/AttendanceControllerRequests';
