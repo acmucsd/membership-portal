@@ -25,14 +25,18 @@ import AttendanceService from '../../services/AttendanceService';
 @UseBefore(UserAuthentication)
 @JsonController('/admin')
 export class AdminController {
-  @Inject()
   private storageService: StorageService;
 
-  @Inject()
   private userAccountService: UserAccountService;
 
-  @Inject()
   private attendanceService: AttendanceService;
+
+  constructor(storageService: StorageService, userAccountService: UserAccountService,
+    attendanceService: AttendanceService) {
+    this.storageService = storageService;
+    this.userAccountService = userAccountService;
+    this.attendanceService = attendanceService;
+  }
 
   @Get('/email')
   async getAllEmails(@AuthenticatedUser() user: UserModel): Promise<GetAllEmailsResponse> {

@@ -11,8 +11,11 @@ import { Uuid, GetAttendancesForEventResponse, GetAttendancesForUserResponse, At
 @UseBefore(UserAuthentication)
 @JsonController('/attendance')
 export class AttendanceController {
-  @Inject()
   private attendanceService: AttendanceService;
+
+  constructor(attendanceService: AttendanceService) {
+    this.attendanceService = attendanceService;
+  }
 
   @Get('/:uuid')
   async getAttendancesForEvent(@Param('uuid') uuid: Uuid,

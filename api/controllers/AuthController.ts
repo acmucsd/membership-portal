@@ -22,14 +22,17 @@ import { UserModel } from '../../models/UserModel';
 
 @JsonController('/auth')
 export class AuthController {
-  @Inject()
   private userAccountService: UserAccountService;
 
-  @Inject()
   private userAuthService: UserAuthService;
 
-  @Inject()
   private emailService: EmailService;
+
+  constructor(userAccountService: UserAccountService, userAuthService: UserAuthService, emailService: EmailService) {
+    this.userAccountService = userAccountService;
+    this.userAuthService = userAuthService;
+    this.emailService = emailService;
+  }
 
   @Post('/registration')
   async register(@Body() registrationRequest: RegistrationRequest,

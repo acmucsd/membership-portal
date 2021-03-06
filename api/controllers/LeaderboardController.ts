@@ -8,8 +8,11 @@ import { SlidingLeaderboardQueryParams } from '../validators/LeaderboardControll
 @UseBefore(UserAuthentication)
 @JsonController('/leaderboard')
 export class LeaderboardController {
-  @Inject()
   private userAccountService: UserAccountService;
+
+  constructor(userAccountService: UserAccountService) {
+    this.userAccountService = userAccountService;
+  }
 
   @Get()
   async getLeaderboard(@QueryParams() filters: SlidingLeaderboardQueryParams): Promise<GetLeaderboardResponse> {

@@ -30,14 +30,17 @@ import {
 
 @JsonController('/event')
 export class EventController {
-  @Inject()
-  eventService: EventService;
+  private eventService: EventService;
 
-  @Inject()
-  storageService: StorageService;
+  private storageService: StorageService;
 
-  @Inject()
-  attendanceService: AttendanceService;
+  private attendanceService: AttendanceService;
+
+  constructor(eventService: EventService, storageService: StorageService, attendanceService: AttendanceService) {
+    this.eventService = eventService;
+    this.storageService = storageService;
+    this.attendanceService = attendanceService;
+  }
 
   @UseBefore(OptionalUserAuthentication)
   @Get('/past')
