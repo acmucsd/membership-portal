@@ -22,13 +22,12 @@ afterAll(async () => {
 
 describe('feedback submission', () => {
   test('properly persists on successful submission', async () => {
-    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [feedback] = FeedbackFactory.create(1);
 
-    await new PortalState().createUsers([user]).write(conn);
+    await new PortalState().createUsers([user]).write();
 
-    const feedbackController = ControllerFactory.feedback(conn);
+    const feedbackController = await ControllerFactory.feedback();
     await feedbackController.submitFeedback({ feedback }, user);
     const submittedFeedbackResponse = await feedbackController.getFeedback(user);
 
@@ -53,14 +52,16 @@ describe('feedback submission', () => {
   });
 
   test('has proper activity scope and type', async () => {
-    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [feedback] = FeedbackFactory.create(1);
 
-    await new PortalState().createUsers([user]).write(conn);
+    await new PortalState().createUsers([user]).write();
 
-    await ControllerFactory.feedback(conn).submitFeedback({ feedback }, user);
-    const activityResponse = await ControllerFactory.user(conn).getCurrentUserActivityStream(user);
+    const userController = await ControllerFactory.user();
+    const feedbackController = await ControllerFactory.feedback();
+
+    await feedbackController.submitFeedback({ feedback }, user);
+    const activityResponse = await userController.getCurrentUserActivityStream(user);
     const feedbackSubmissionActivity = activityResponse.activity[1];
 
     expect(feedbackSubmissionActivity.scope).toEqual(ActivityScope.PRIVATE);
@@ -68,14 +69,13 @@ describe('feedback submission', () => {
   });
 
   test('admins can view feedback from any user', async () => {
-    const conn = await DatabaseConnection.get();
     const [user1, user2] = UserFactory.create(2);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
-    await new PortalState().createUsers([user1, user2, admin]).write(conn);
+    await new PortalState().createUsers([user1, user2, admin]).write();
 
-    const feedbackController = ControllerFactory.feedback(conn);
+    const feedbackController = await ControllerFactory.feedback();
     const submittedFeedback1Response = await feedbackController.submitFeedback({ feedback: feedback1 }, user1);
     const submittedFeedback2Response = await feedbackController.submitFeedback({ feedback: feedback2 }, user2);
     const allSubmittedFeedbackResponse = await feedbackController.getFeedback(admin);
@@ -87,13 +87,12 @@ describe('feedback submission', () => {
   });
 
   test('members can view only their own feedback', async () => {
-    const conn = await DatabaseConnection.get();
     const [user1, user2] = UserFactory.create(2);
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
-    await new PortalState().createUsers([user1, user2]).write(conn);
+    await new PortalState().createUsers([user1, user2]).write();
 
-    const feedbackController = ControllerFactory.feedback(conn);
+    const feedbackController = await ControllerFactory.feedback();
     await feedbackController.submitFeedback({ feedback: feedback1 }, user1);
     await feedbackController.submitFeedback({ feedback: feedback2 }, user2);
     const user1Feedback = await feedbackController.getFeedback(user1);
@@ -103,20 +102,21 @@ describe('feedback submission', () => {
   });
 
   test('admin can acknowledge and reward points for feedback', async () => {
-    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback] = FeedbackFactory.create(1);
 
-    await new PortalState().createUsers([user, admin]).write(conn);
+    await new PortalState().createUsers([user, admin]).write();
 
-    const feedbackController = ControllerFactory.feedback(conn);
+    const userController = await ControllerFactory.user();
+    const feedbackController = await ControllerFactory.feedback();
+
     const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, user);
     const { uuid } = submittedFeedbackResponse.feedback;
     const status = FeedbackStatus.ACKNOWLEDGED;
     const acknowledgedFeedback = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
 
-    const persistedUserResponse = await ControllerFactory.user(conn).getUser(user.uuid, admin);
+    const persistedUserResponse = await userController.getUser(user.uuid, admin);
 
     const feedbackPointReward = Config.pointReward.FEEDBACK_POINT_REWARD;
 
@@ -125,34 +125,34 @@ describe('feedback submission', () => {
   });
 
   test('admin can ignore and not reward points for feedback', async () => {
-    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback] = FeedbackFactory.create(1);
 
-    await new PortalState().createUsers([user, admin]).write(conn);
+    await new PortalState().createUsers([user, admin]).write();
 
-    const feedbackController = ControllerFactory.feedback(conn);
+    const userController = await ControllerFactory.user();
+    const feedbackController = await ControllerFactory.feedback();
+
     const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, user);
     const { uuid } = submittedFeedbackResponse.feedback;
     const status = FeedbackStatus.IGNORED;
     const ignoredFeedbackResponse = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
 
-    const persistedUserResponse = await ControllerFactory.user(conn).getUser(user.uuid, admin);
+    const persistedUserResponse = await userController.getUser(user.uuid, admin);
 
     expect(ignoredFeedbackResponse.feedback.status).toEqual(FeedbackStatus.IGNORED);
     expect(persistedUserResponse.user.points).toEqual(user.points);
   });
 
   test('cannot be responded to after already being responded to', async () => {
-    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
-    await new PortalState().createUsers([user, admin]).write(conn);
+    await new PortalState().createUsers([user, admin]).write();
 
-    const feedbackController = ControllerFactory.feedback(conn);
+    const feedbackController = await ControllerFactory.feedback();
     const feedbackToAcknowledgeResponse = await feedbackController.submitFeedback({ feedback: feedback1 }, user);
     const feedbackToIgnoreResponse = await feedbackController.submitFeedback({ feedback: feedback2 }, user);
 

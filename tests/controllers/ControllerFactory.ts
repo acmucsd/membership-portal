@@ -1,4 +1,3 @@
-import { Connection } from 'typeorm';
 import FeedbackService from '../../services/FeedbackService';
 import { FeedbackController } from '../../api/controllers/FeedbackController';
 import { UserController } from '../../api/controllers/UserController';
@@ -15,6 +14,7 @@ import UserAuthService from '../../services/UserAuthService';
 import EmailService from '../../services/EmailService';
 import EventService from '../../services/EventService';
 import MerchStoreService from '../../services/MerchStoreService';
+import { DatabaseConnection } from '../data';
 
 export class ControllerFactory {
   private static userController: UserController = null;
@@ -33,8 +33,9 @@ export class ControllerFactory {
 
   private static merchStoreController: MerchStoreController = null;
 
-  public static user(conn: Connection): UserController {
+  public static async user(): Promise<UserController> {
     if (!ControllerFactory.userController) {
+      const conn = await DatabaseConnection.get();
       const userAccountService = new UserAccountService(conn.manager);
       const storageService = new StorageService();
       ControllerFactory.userController = new UserController(userAccountService, storageService);
@@ -42,16 +43,18 @@ export class ControllerFactory {
     return ControllerFactory.userController;
   }
 
-  public static feedback(conn: Connection): FeedbackController {
+  public static async feedback(): Promise<FeedbackController> {
     if (!ControllerFactory.feedbackController) {
+      const conn = await DatabaseConnection.get();
       const feedbackService = new FeedbackService(conn.manager);
       ControllerFactory.feedbackController = new FeedbackController(feedbackService);
     }
     return ControllerFactory.feedbackController;
   }
 
-  public static admin(conn: Connection): AdminController {
+  public static async admin(): Promise<AdminController> {
     if (!ControllerFactory.adminController) {
+      const conn = await DatabaseConnection.get();
       const userAccountService = new UserAccountService(conn.manager);
       const storageService = new StorageService();
       const attendanceService = new AttendanceService(conn.manager);
@@ -60,16 +63,18 @@ export class ControllerFactory {
     return ControllerFactory.adminController;
   }
 
-  public static attendance(conn: Connection): AttendanceController {
+  public static async attendance(): Promise<AttendanceController> {
     if (!ControllerFactory.attendanceController) {
+      const conn = await DatabaseConnection.get();
       const attendanceService = new AttendanceService(conn.manager);
       ControllerFactory.attendanceController = new AttendanceController(attendanceService);
     }
     return ControllerFactory.attendanceController;
   }
 
-  public static auth(conn: Connection): AuthController {
+  public static async auth(): Promise<AuthController> {
     if (!ControllerFactory.authController) {
+      const conn = await DatabaseConnection.get();
       const userAccountService = new UserAccountService(conn.manager);
       const userAuthService = new UserAuthService(conn.manager);
       const emailService = new EmailService();
@@ -78,8 +83,9 @@ export class ControllerFactory {
     return ControllerFactory.authController;
   }
 
-  public static event(conn: Connection): EventController {
+  public static async event(): Promise<EventController> {
     if (!ControllerFactory.eventController) {
+      const conn = await DatabaseConnection.get();
       const eventService = new EventService(conn.manager);
       const storageService = new StorageService();
       const attendanceService = new AttendanceService(conn.manager);
@@ -88,16 +94,18 @@ export class ControllerFactory {
     return ControllerFactory.eventController;
   }
 
-  public static leaderboard(conn: Connection): LeaderboardController {
+  public static async leaderboard(): Promise<LeaderboardController> {
     if (!ControllerFactory.leaderboardController) {
+      const conn = await DatabaseConnection.get();
       const userAccountService = new UserAccountService(conn.manager);
       ControllerFactory.leaderboardController = new LeaderboardController(userAccountService);
     }
     return ControllerFactory.leaderboardController;
   }
 
-  public static merchStore(conn: Connection): MerchStoreController {
+  public static async merchStore(): Promise<MerchStoreController> {
     if (!ControllerFactory.merchStoreController) {
+      const conn = await DatabaseConnection.get();
       const merchStoreService = new MerchStoreService(conn.manager);
       ControllerFactory.merchStoreController = new MerchStoreController(merchStoreService);
     }
