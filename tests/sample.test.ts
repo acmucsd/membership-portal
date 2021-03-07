@@ -55,7 +55,7 @@ describe('sample test', () => {
       .orderMerch(user1, [{ option: affordableOption, quantity: 1 }])
       .submitFeedback(user1, feedback);
 
-    await state.write(conn);
+    await state.write();
 
     const persistedUser = await conn.manager.findOne(UserModel, user2.uuid);
     expect(persistedUser).toStrictEqual(user2);

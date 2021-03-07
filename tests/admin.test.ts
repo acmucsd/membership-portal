@@ -19,11 +19,11 @@ describe('retroactive attendance submission', () => {
   test('logs activity, attendance, and points for users who have not attended', async () => {
     const users = UserFactory.create(3);
     const emails = users.map((user) => user.email);
-    const [onBehalfOfUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [event] = EventFactory.create(1);
 
     await new PortalState()
-      .createUsers([...users, onBehalfOfUser])
+      .createUsers([...users, proxyUser])
       .createEvents([event])
       .write();
 
@@ -31,34 +31,33 @@ describe('retroactive attendance submission', () => {
     const userController = await ControllerFactory.user();
     const attendanceController = await ControllerFactory.attendance();
 
-    await adminController.submitAttendanceForUsers({ users: emails, event: event.uuid }, onBehalfOfUser);
+    await adminController.submitAttendanceForUsers({ users: emails, event: event.uuid }, proxyUser);
 
-    users.forEach(async (user) => {
-      const userResponse = await userController.getUser(user.uuid, onBehalfOfUser);
+    await Promise.all(users.map(async (user) => {
+      const userResponse = await userController.getUser(user.uuid, proxyUser);
 
       expect(userResponse.user.points).toEqual(user.points + event.pointValue);
 
       const attendanceResponse = await attendanceController.getAttendancesForCurrentUser(user);
-
       expect(attendanceResponse.attendances).toHaveLength(1);
       expect(attendanceResponse.attendances[0].event).toStrictEqual(event.getPublicEvent());
 
-      const activityResponse = await userController.getCurrentUserActivityStream(user);
+      const activityResponse = await userController.getUserActivityStream(user.uuid, proxyUser);
 
       expect(activityResponse.activity).toHaveLength(2);
       expect(activityResponse.activity[1].pointsEarned).toEqual(event.pointValue);
       expect(activityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
       expect(activityResponse.activity[1].scope).toEqual(ActivityScope.PUBLIC);
-    });
+    }));
   });
 
   test('does not log activity, attendance, and points for users who already attended', async () => {
     const [user] = UserFactory.create(1);
-    const [onBehalfOfUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [event] = EventFactory.create(1);
 
     await new PortalState()
-      .createUsers([user, onBehalfOfUser])
+      .createUsers([user, proxyUser])
       .createEvents([event])
       .attendEvents([user], [event])
       .write();
@@ -69,10 +68,10 @@ describe('retroactive attendance submission', () => {
 
     await adminController.submitAttendanceForUsers(
       { users: [user.email], event: event.uuid },
-      onBehalfOfUser,
+      proxyUser,
     );
 
-    const userResponse = await userController.getUser(user.uuid, onBehalfOfUser);
+    const userResponse = await userController.getUser(user.uuid, proxyUser);
     const attendanceResponse = await attendanceController.getAttendancesForCurrentUser(user);
     const activityResponse = await userController.getCurrentUserActivityStream(user);
 
