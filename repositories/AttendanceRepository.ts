@@ -4,6 +4,7 @@ import { AttendanceModel } from '../models/AttendanceModel';
 import { UserModel } from '../models/UserModel';
 import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
+import { Attendance } from '../types/internal';
 
 @EntityRepository(AttendanceModel)
 export class AttendanceRepository extends BaseRepository<AttendanceModel> {
@@ -38,17 +39,9 @@ export class AttendanceRepository extends BaseRepository<AttendanceModel> {
     return this.repository.save(AttendanceModel.create(attendance));
   }
 
-  public async batchAttendEvent(users: UserModel[], event: EventModel, asStaffBatch: boolean[]) {
-    const attendances: AttendanceModel[] = [];
-    for (let i = 0; i < users.length; i += 1) {
-      const attendance = {
-        user: users[i],
-        event,
-        asStaff: asStaffBatch[i],
-      };
-      attendances.push(AttendanceModel.create(attendance));
-    }
-    return this.repository.save(attendances);
+  public async writeAttendanceBatch(attendances: Attendance[]) {
+    const attendanceModels = attendances.map((attendance) => AttendanceModel.create(attendance));
+    return this.repository.save(attendanceModels);
   }
 
   public async getUserAttendanceForEvent(user: UserModel, event: EventModel): Promise<AttendanceModel> {
