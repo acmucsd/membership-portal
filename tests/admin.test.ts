@@ -1,4 +1,4 @@
-import { ActivityScope, ActivityType, UserAccessType } from '../types';
+import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, UserFactory, PortalState } from './data';
 
@@ -79,5 +79,37 @@ describe('retroactive attendance submission', () => {
     expect(attendanceResponse.attendances).toHaveLength(1);
     expect(activityResponse.activity).toHaveLength(2);
     expect(activityResponse.activity[1].description).toBeNull();
+  });
+
+  test('logs proper activity and point rewards for staff attendance', async () => {
+    const [user] = UserFactory.create(1);
+    const [staffUser] = UserFactory.with({ accessType: UserAccessType.STAFF });
+    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [event] = EventFactory.with({ requiresStaff: true, staffPointBonus: 10 });
+
+    await new PortalState()
+      .createUsers([user, staffUser, proxyUser])
+      .createEvents([event])
+      .write();
+
+    const adminController = await ControllerFactory.admin();
+    const userController = await ControllerFactory.user();
+    const request: SubmitAttendanceForUsersRequest = {
+      users: [user.email, staffUser.email],
+      event: event.uuid,
+      asStaff: true,
+    };
+
+    await adminController.submitAttendanceForUsers(request, proxyUser);
+
+    const userResponse = await userController.getUser(user.uuid, proxyUser);
+    const staffUserResponse = await userController.getUser(staffUser.uuid, proxyUser);
+    const activityResponse = await userController.getCurrentUserActivityStream(user);
+    const staffActivityResponse = await userController.getCurrentUserActivityStream(staffUser);
+
+    expect(userResponse.user.points).toEqual(event.pointValue);
+    expect(staffUserResponse.user.points).toEqual(event.pointValue + event.staffPointBonus);
+    expect(activityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
+    expect(staffActivityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT_AS_STAFF);
   });
 });

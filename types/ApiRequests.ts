@@ -101,6 +101,7 @@ export interface CreateBonusRequest {
 export interface SubmitAttendanceForUsersRequest {
   users: string[];
   event: Uuid;
+  asStaff?: boolean;
 }
 
 // EVENT

@@ -1,9 +1,9 @@
 import { EntityRepository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Activity } from '../types/internal';
 import { UserModel } from '../models/UserModel';
 import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
-import { Activity } from 'types/internal';
 
 @EntityRepository(UserModel)
 export class UserRepository extends BaseRepository<UserModel> {
