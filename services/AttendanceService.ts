@@ -103,7 +103,7 @@ export default class AttendanceService {
       const activityType = attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT;
       const activityScope = ActivityTypeToScope[activityType];
       const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
-      const description = `Attendance submitted on behalf of user ${proxyUser.email}`;
+      const description = `Attendance submitted on behalf of user by ${proxyUser.uuid}`;
 
       const attendance = {
         user,
