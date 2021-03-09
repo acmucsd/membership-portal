@@ -17,6 +17,7 @@ afterAll(async () => {
 
 describe('retroactive attendance submission', () => {
   test('logs activity, attendance, and points for users who have not attended', async () => {
+    const conn = await DatabaseConnection.get();
     const users = UserFactory.create(3);
     const emails = users.map((user) => user.email);
     const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
@@ -27,9 +28,9 @@ describe('retroactive attendance submission', () => {
       .createEvents([event])
       .write();
 
-    const adminController = await ControllerFactory.admin();
-    const userController = await ControllerFactory.user();
-    const attendanceController = await ControllerFactory.attendance();
+    const userController = ControllerFactory.user(conn);
+    const adminController = ControllerFactory.admin(conn);
+    const attendanceController = ControllerFactory.attendance(conn);
 
     await adminController.submitAttendanceForUsers({ users: emails, event: event.uuid }, proxyUser);
 
@@ -52,6 +53,7 @@ describe('retroactive attendance submission', () => {
   });
 
   test('does not log activity, attendance, and points for users who already attended', async () => {
+    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [event] = EventFactory.create(1);
@@ -62,9 +64,9 @@ describe('retroactive attendance submission', () => {
       .attendEvents([user], [event])
       .write();
 
-    const adminController = await ControllerFactory.admin();
-    const userController = await ControllerFactory.user();
-    const attendanceController = await ControllerFactory.attendance();
+    const adminController = ControllerFactory.admin(conn);
+    const userController = ControllerFactory.user(conn);
+    const attendanceController = ControllerFactory.attendance(conn);
 
     await adminController.submitAttendanceForUsers(
       { users: [user.email], event: event.uuid },
@@ -82,6 +84,7 @@ describe('retroactive attendance submission', () => {
   });
 
   test('logs proper activity and point rewards for staff attendance', async () => {
+    const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [staffUser] = UserFactory.with({ accessType: UserAccessType.STAFF });
     const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
@@ -92,8 +95,8 @@ describe('retroactive attendance submission', () => {
       .createEvents([event])
       .write();
 
-    const adminController = await ControllerFactory.admin();
-    const userController = await ControllerFactory.user();
+    const adminController = ControllerFactory.admin(conn);
+    const userController = ControllerFactory.user(conn);
     const request: SubmitAttendanceForUsersRequest = {
       users: [user.email, staffUser.email],
       event: event.uuid,
