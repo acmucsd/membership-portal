@@ -122,8 +122,7 @@ export default class AttendanceService {
       activities.push(activity);
     });
 
-    const pointsEarnedBatch = activities.map((activity) => activity.pointsEarned);
-    await Repositories.user(txn).addSpecificPointsToMany(users, pointsEarnedBatch);
+    await Repositories.user(txn).addPointsByActivities(activities);
     await Repositories.activity(txn).logActivityBatch(activities);
     return Repositories.attendance(txn).writeAttendanceBatch(attendances);
   }

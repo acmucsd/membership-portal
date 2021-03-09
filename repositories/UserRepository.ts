@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { UserModel } from '../models/UserModel';
 import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
+import { Activity } from 'types/internal';
 
 @EntityRepository(UserModel)
 export class UserRepository extends BaseRepository<UserModel> {
@@ -61,10 +62,13 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.save(users);
   }
 
-  public async addSpecificPointsToMany(users: UserModel[], pointsBatch: number[]) {
-    users.forEach((user, i) => {
-      user.points += pointsBatch[i];
-      user.credits += pointsBatch[i] * 100;
+  public async addPointsByActivities(activities: Activity[]) {
+    const users: UserModel[] = [];
+    activities.forEach((activity) => {
+      const { user, pointsEarned } = activity;
+      user.points += pointsEarned;
+      user.credits += pointsEarned * 100;
+      users.push(user);
     });
     return this.repository.save(users);
   }
