@@ -34,7 +34,8 @@ describe('retroactive attendance submission', () => {
 
     await adminController.submitAttendanceForUsers({ users: emails, event: event.uuid }, proxyUser);
 
-    await Promise.all(users.map(async (user) => {
+    for (let u = 0; u < users.length; u += 1) {
+      const user = users[u];
       const userResponse = await userController.getUser(user.uuid, proxyUser);
 
       expect(userResponse.user.points).toEqual(user.points + event.pointValue);
@@ -49,7 +50,7 @@ describe('retroactive attendance submission', () => {
       expect(activityResponse.activity[1].pointsEarned).toEqual(event.pointValue);
       expect(activityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
       expect(activityResponse.activity[1].scope).toEqual(ActivityScope.PUBLIC);
-    }));
+    }
   });
 
   test('does not log activity, attendance, and points for users who already attended', async () => {
