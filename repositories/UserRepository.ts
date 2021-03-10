@@ -1,5 +1,6 @@
 import { EntityRepository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Activity } from '../types/internal';
 import { UserModel } from '../models/UserModel';
 import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
@@ -54,15 +55,22 @@ export class UserRepository extends BaseRepository<UserModel> {
   }
 
   public async addPointsToMany(users: UserModel[], points: number) {
-    const uuids = users.map((user) => user.uuid);
-    return this.repository.createQueryBuilder()
-      .update()
-      .set({
-        points: () => `points + ${points}`,
-        credits: () => `credits + ${points * 100}`,
-      })
-      .where('uuid IN (:...uuids) ', { uuids })
-      .execute();
+    users.forEach((user) => {
+      user.points += points;
+      user.credits += points * 100;
+    });
+    return this.repository.save(users);
+  }
+
+  public async addPointsByActivities(activities: Activity[]) {
+    const users: UserModel[] = [];
+    activities.forEach((activity) => {
+      const { user, pointsEarned } = activity;
+      user.points += pointsEarned;
+      user.credits += pointsEarned * 100;
+      users.push(user);
+    });
+    return this.repository.save(users);
   }
 
   public async addPointsToAll(points: number) {

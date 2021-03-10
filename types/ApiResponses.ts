@@ -31,6 +31,10 @@ export interface GetAllEmailsResponse extends ApiResponse {
   emails: string[];
 }
 
+export interface SubmitAttendanceForUsersResponse extends ApiResponse {
+  attendances: PublicAttendance[];
+}
+
 // ATTENDANCE
 
 export interface PublicAttendance {

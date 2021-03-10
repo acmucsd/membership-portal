@@ -1,4 +1,3 @@
-import { Connection } from 'typeorm';
 import * as rfdc from 'rfdc';
 import { flatten } from 'underscore';
 import { AttendanceModel } from '../../models/AttendanceModel';
@@ -11,6 +10,7 @@ import { ActivityScope, ActivityType, Feedback } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { OrderItemModel } from '../../models/OrderItemModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
+import { DatabaseConnection } from './DatabaseConnection';
 
 export class PortalState {
   users: UserModel[] = [];
@@ -39,7 +39,8 @@ export class PortalState {
     return this;
   }
 
-  public async write(conn: Connection): Promise<void> {
+  public async write(): Promise<void> {
+    const conn = await DatabaseConnection.get();
     await conn.transaction(async (txn) => {
       this.users = await txn.save(this.users);
       this.events = await txn.save(this.events);
@@ -54,6 +55,7 @@ export class PortalState {
   public createUsers(users: UserModel[]): PortalState {
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
+      user.email = user.email.toLowerCase();
       this.users.push(user);
       this.activities.push(ActivityModel.create({
         user,

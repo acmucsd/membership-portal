@@ -1,5 +1,4 @@
 import { JsonController, Get, Post, UseBefore, Param, ForbiddenError, Body } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { AttendEventRequest } from '../validators/AttendanceControllerRequests';
@@ -11,8 +10,11 @@ import { Uuid, GetAttendancesForEventResponse, GetAttendancesForUserResponse, At
 @UseBefore(UserAuthentication)
 @JsonController('/attendance')
 export class AttendanceController {
-  @Inject()
   private attendanceService: AttendanceService;
+
+  constructor(attendanceService: AttendanceService) {
+    this.attendanceService = attendanceService;
+  }
 
   @Get('/:uuid')
   async getAttendancesForEvent(@Param('uuid') uuid: Uuid,

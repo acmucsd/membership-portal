@@ -11,7 +11,6 @@ import {
   NotFoundError,
   BadRequestError,
 } from 'routing-controllers';
-import { Inject } from 'typedi';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
@@ -49,8 +48,11 @@ import { UserError } from '../../utils/Errors';
 @UseBefore(UserAuthentication)
 @JsonController('/merch')
 export class MerchStoreController {
-  @Inject()
   private merchStoreService: MerchStoreService;
+
+  constructor(merchStoreService: MerchStoreService) {
+    this.merchStoreService = merchStoreService;
+  }
 
   @Get('/collection/:uuid')
   async getOneMerchCollection(@Param('uuid') uuid: Uuid,

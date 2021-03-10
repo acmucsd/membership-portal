@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 import {
   CreateBonusRequest as ICreateBonusRequest,
   CreateMilestoneRequest as ICreateMilestoneRequest,
-  SubmitAttendanceForUserRequest as ISubmitAttendanceForUserRequest,
+  SubmitAttendanceForUsersRequest as ISubmitAttendanceForUsersRequest,
   Milestone as IMilestone,
   Bonus as IBonus,
 } from '../../types';
@@ -46,10 +46,10 @@ export class CreateBonusRequest implements ICreateBonusRequest {
   bonus: Bonus;
 }
 
-export class SubmitAttendanceForUserRequest implements ISubmitAttendanceForUserRequest {
+export class SubmitAttendanceForUsersRequest implements ISubmitAttendanceForUsersRequest {
   @IsDefined()
-  @IsUUID()
-  user: string;
+  @ArrayNotEmpty()
+  users: string[];
 
   @IsDefined()
   @IsUUID()

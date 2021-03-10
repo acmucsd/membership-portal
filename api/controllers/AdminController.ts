@@ -1,10 +1,9 @@
 import { JsonController, Post, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   CreateBonusRequest,
   CreateMilestoneRequest,
-  SubmitAttendanceForUserRequest,
+  SubmitAttendanceForUsersRequest,
 } from '../validators/AdminControllerRequests';
 import {
   File,
@@ -13,7 +12,7 @@ import {
   CreateBonusResponse,
   UploadBannerResponse,
   GetAllEmailsResponse,
-  AttendEventResponse,
+  SubmitAttendanceForUsersResponse,
 } from '../../types';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import UserAccountService from '../../services/UserAccountService';
@@ -25,14 +24,18 @@ import AttendanceService from '../../services/AttendanceService';
 @UseBefore(UserAuthentication)
 @JsonController('/admin')
 export class AdminController {
-  @Inject()
   private storageService: StorageService;
 
-  @Inject()
   private userAccountService: UserAccountService;
 
-  @Inject()
   private attendanceService: AttendanceService;
+
+  constructor(storageService: StorageService, userAccountService: UserAccountService,
+    attendanceService: AttendanceService) {
+    this.storageService = storageService;
+    this.userAccountService = userAccountService;
+    this.attendanceService = attendanceService;
+  }
 
   @Get('/email')
   async getAllEmails(@AuthenticatedUser() user: UserModel): Promise<GetAllEmailsResponse> {
@@ -68,11 +71,12 @@ export class AdminController {
   }
 
   @Post('/attendance')
-  async submitAttendanceForUser(@Body() submitAttendanceForUserRequest: SubmitAttendanceForUserRequest,
-    @AuthenticatedUser() currentUser: UserModel): Promise<AttendEventResponse> {
+  async submitAttendanceForUsers(@Body() submitAttendanceForUsersRequest: SubmitAttendanceForUsersRequest,
+    @AuthenticatedUser() currentUser: UserModel): Promise<SubmitAttendanceForUsersResponse> {
     if (!PermissionsService.canSubmitAttendanceForUsers(currentUser)) throw new ForbiddenError();
-    const { user, event: eventToAttend, asStaff } = submitAttendanceForUserRequest;
-    const { event } = await this.attendanceService.submitAttendanceForUser(user, eventToAttend, asStaff, currentUser);
-    return { error: null, event };
+    const { users, event, asStaff } = submitAttendanceForUsersRequest;
+    const emails = users.map((e) => e.toLowerCase());
+    const attendances = await this.attendanceService.submitAttendanceForUsers(emails, event, asStaff, currentUser);
+    return { error: null, attendances };
   }
 }

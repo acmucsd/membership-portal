@@ -1,7 +1,6 @@
 import {
   JsonController, Get, Patch, Delete, Post, UseBefore, Param, ForbiddenError, QueryParams, UploadedFile, Body,
 } from 'routing-controllers';
-import { Inject } from 'typedi';
 import EventService from '../../services/EventService';
 import { UserAuthentication, OptionalUserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -30,14 +29,17 @@ import {
 
 @JsonController('/event')
 export class EventController {
-  @Inject()
-  eventService: EventService;
+  private eventService: EventService;
 
-  @Inject()
-  storageService: StorageService;
+  private storageService: StorageService;
 
-  @Inject()
-  attendanceService: AttendanceService;
+  private attendanceService: AttendanceService;
+
+  constructor(eventService: EventService, storageService: StorageService, attendanceService: AttendanceService) {
+    this.eventService = eventService;
+    this.storageService = storageService;
+    this.attendanceService = attendanceService;
+  }
 
   @UseBefore(OptionalUserAuthentication)
   @Get('/past')

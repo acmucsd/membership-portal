@@ -26,9 +26,10 @@ describe('feedback submission', () => {
     const [user] = UserFactory.create(1);
     const [feedback] = FeedbackFactory.create(1);
 
-    await new PortalState().createUsers([user]).write(conn);
+    await new PortalState().createUsers([user]).write();
 
     const feedbackController = ControllerFactory.feedback(conn);
+
     await feedbackController.submitFeedback({ feedback }, user);
     const submittedFeedbackResponse = await feedbackController.getFeedback(user);
 
@@ -57,7 +58,7 @@ describe('feedback submission', () => {
     const [user] = UserFactory.create(1);
     const [feedback] = FeedbackFactory.create(1);
 
-    await new PortalState().createUsers([user]).write(conn);
+    await new PortalState().createUsers([user]).write();
 
     await ControllerFactory.feedback(conn).submitFeedback({ feedback }, user);
     const activityResponse = await ControllerFactory.user(conn).getCurrentUserActivityStream(user);
@@ -73,9 +74,10 @@ describe('feedback submission', () => {
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
-    await new PortalState().createUsers([user1, user2, admin]).write(conn);
+    await new PortalState().createUsers([user1, user2, admin]).write();
 
     const feedbackController = ControllerFactory.feedback(conn);
+
     const submittedFeedback1Response = await feedbackController.submitFeedback({ feedback: feedback1 }, user1);
     const submittedFeedback2Response = await feedbackController.submitFeedback({ feedback: feedback2 }, user2);
     const allSubmittedFeedbackResponse = await feedbackController.getFeedback(admin);
@@ -91,7 +93,7 @@ describe('feedback submission', () => {
     const [user1, user2] = UserFactory.create(2);
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
-    await new PortalState().createUsers([user1, user2]).write(conn);
+    await new PortalState().createUsers([user1, user2]).write();
 
     const feedbackController = ControllerFactory.feedback(conn);
     await feedbackController.submitFeedback({ feedback: feedback1 }, user1);
@@ -108,15 +110,17 @@ describe('feedback submission', () => {
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback] = FeedbackFactory.create(1);
 
-    await new PortalState().createUsers([user, admin]).write(conn);
+    await new PortalState().createUsers([user, admin]).write();
 
+    const userController = ControllerFactory.user(conn);
     const feedbackController = ControllerFactory.feedback(conn);
+
     const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, user);
     const { uuid } = submittedFeedbackResponse.feedback;
     const status = FeedbackStatus.ACKNOWLEDGED;
     const acknowledgedFeedback = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
 
-    const persistedUserResponse = await ControllerFactory.user(conn).getUser(user.uuid, admin);
+    const persistedUserResponse = await userController.getUser(user.uuid, admin);
 
     const feedbackPointReward = Config.pointReward.FEEDBACK_POINT_REWARD;
 
@@ -130,15 +134,17 @@ describe('feedback submission', () => {
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback] = FeedbackFactory.create(1);
 
-    await new PortalState().createUsers([user, admin]).write(conn);
+    await new PortalState().createUsers([user, admin]).write();
 
+    const userController = ControllerFactory.user(conn);
     const feedbackController = ControllerFactory.feedback(conn);
+
     const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, user);
     const { uuid } = submittedFeedbackResponse.feedback;
     const status = FeedbackStatus.IGNORED;
     const ignoredFeedbackResponse = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
 
-    const persistedUserResponse = await ControllerFactory.user(conn).getUser(user.uuid, admin);
+    const persistedUserResponse = await userController.getUser(user.uuid, admin);
 
     expect(ignoredFeedbackResponse.feedback.status).toEqual(FeedbackStatus.IGNORED);
     expect(persistedUserResponse.user.points).toEqual(user.points);
@@ -150,7 +156,7 @@ describe('feedback submission', () => {
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [feedback1, feedback2] = FeedbackFactory.create(2);
 
-    await new PortalState().createUsers([user, admin]).write(conn);
+    await new PortalState().createUsers([user, admin]).write();
 
     const feedbackController = ControllerFactory.feedback(conn);
     const feedbackToAcknowledgeResponse = await feedbackController.submitFeedback({ feedback: feedback1 }, user);

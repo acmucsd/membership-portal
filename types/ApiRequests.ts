@@ -98,9 +98,10 @@ export interface CreateBonusRequest {
   bonus: Bonus;
 }
 
-export interface SubmitAttendanceForUserRequest {
-  user: Uuid;
+export interface SubmitAttendanceForUsersRequest {
+  users: string[];
   event: Uuid;
+  asStaff?: boolean;
 }
 
 // EVENT
