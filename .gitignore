@@ -6,7 +6,6 @@
 
 # build
 build/
-node_modules/
 yarn.lock
 
 # stdout
