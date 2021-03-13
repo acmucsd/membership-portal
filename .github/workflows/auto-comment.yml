@@ -1,0 +1,13 @@
+name: Auto Comment on PRs
+on: pull_request
+jobs:
+  auto-comment:
+    name: Auto comment on PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto Comment Step
+        uses: bubkoo/auto-comment@v1.0.7
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          pullRequestOpened: Thanks for contributing! Please make sure to bump the package version and document API changes as appropriate.
+  
