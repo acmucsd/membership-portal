@@ -2,6 +2,7 @@ import { Service } from 'typedi';
 import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as multer from 'multer';
+import * as sharp from 'sharp';
 import { InternalServerError } from 'routing-controllers';
 import { Config } from '../config';
 import { MediaType } from '../types';
@@ -13,6 +14,8 @@ interface MediaTypeConfig {
   type: MediaType;
   maxFileSize: number;
   uploadPath: string;
+  width?: number;
+  height?: number;
 }
 
 @Service()
@@ -24,10 +27,13 @@ export default class StorageService {
   });
 
   public async upload(file: File, mediaType: MediaType, fileName: string): Promise<string> {
-    const { uploadPath } = StorageService.getMediaConfig(mediaType);
+    const { uploadPath, width, height } = StorageService.getMediaConfig(mediaType);
+    const isFileResizable = width && height;
+    const fileBuffer = isFileResizable ? await StorageService.resizeFile(file, width, height) : file.buffer;
+
     const params = {
       ACL: 'public-read',
-      Body: file.buffer,
+      Body: fileBuffer,
       Bucket: Config.s3.bucket,
       Key: `${uploadPath}/${fileName}${path.extname(file.originalname)}`,
     };
@@ -52,6 +58,8 @@ export default class StorageService {
           type: MediaType.EVENT_COVER,
           maxFileSize: Config.file.MAX_EVENT_COVER_FILE_SIZE,
           uploadPath: Config.file.EVENT_COVER_UPLOAD_PATH,
+          width: Config.file.EVENT_COVER_WIDTH,
+          height: Config.file.EVENT_COVER_HEIGHT,
         };
       }
       case MediaType.PROFILE_PICTURE: {
@@ -72,5 +80,11 @@ export default class StorageService {
         throw new InternalServerError('Invalid media type for file');
       }
     }
+  }
+
+  private static async resizeFile(file: File, width: number, height: number): Promise<Buffer> {
+    return sharp(file.buffer)
+      .resize(width, height)
+      .toBuffer();
   }
 }
