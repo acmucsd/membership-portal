@@ -83,8 +83,10 @@ export default class StorageService {
   }
 
   private static async resizeFile(file: File, width: number, height: number): Promise<Buffer> {
+    // resize the image, maintaining the original aspect ratio with the guarantee
+    // that both dimensions are greater than or equal to the dimensions provided
     return sharp(file.buffer)
-      .resize(width, height)
+      .resize(width, height, { fit: 'outside' })
       .toBuffer();
   }
 }
