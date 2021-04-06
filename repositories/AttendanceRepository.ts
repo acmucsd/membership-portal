@@ -30,12 +30,7 @@ export class AttendanceRepository extends BaseRepository<AttendanceModel> {
     return count > 0;
   }
 
-  public async attendEvent(user: UserModel, event: EventModel, asStaff: boolean): Promise<AttendanceModel> {
-    const attendance = {
-      user,
-      event,
-      asStaff,
-    };
+  public async writeAttendance(attendance: Attendance): Promise<AttendanceModel> {
     return this.repository.save(AttendanceModel.create(attendance));
   }
 

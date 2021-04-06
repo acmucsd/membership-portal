@@ -34,7 +34,10 @@ export default class UserAuthService {
         accessCode: UserAuthService.generateAccessCode(),
       }));
       const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(user, ActivityType.ACCOUNT_CREATE);
+      await activityRepository.logActivity({
+        user,
+        type: ActivityType.ACCOUNT_CREATE,
+      });
       return user;
     });
   }
@@ -57,7 +60,10 @@ export default class UserAuthService {
       if (!user) throw new NotFoundError('There is no account associated with that email');
       if (user.isBlocked()) throw new ForbiddenError('Your account has been blocked');
       if (!(await user.verifyPass(pass))) throw new ForbiddenError('Incorrect password');
-      await Repositories.activity(txn).logActivity(user, ActivityType.ACCOUNT_LOGIN);
+      await Repositories.activity(txn).logActivity({
+        user,
+        type: ActivityType.ACCOUNT_LOGIN,
+      });
       return user;
     });
     const token: AuthToken = {
@@ -75,7 +81,10 @@ export default class UserAuthService {
       if (!user) throw new NotFoundError('There is no account associated with that email');
       const passwordMatched = await user.verifyPass(pass);
       if (!passwordMatched) throw new ForbiddenError('Incorrect password');
-      await Repositories.activity(txn).logActivity(user, ActivityType.ACCOUNT_LOGIN);
+      await Repositories.activity(txn).logActivity({
+        user,
+        type: ActivityType.ACCOUNT_LOGIN,
+      });
       return user;
     });
     if (authenticatedUser.isBlocked()) throw new ForbiddenError('Your account has been blocked');
@@ -110,7 +119,10 @@ export default class UserAuthService {
       });
       await Repositories
         .activity(txn)
-        .logActivity(user, ActivityType.ACCOUNT_RESET_PASS_REQUEST);
+        .logActivity({
+          user,
+          type: ActivityType.ACCOUNT_RESET_PASS_REQUEST,
+        });
       return user;
     });
   }
@@ -129,7 +141,10 @@ export default class UserAuthService {
 
       await Repositories
         .activity(txn)
-        .logActivity(user, ActivityType.ACCOUNT_RESET_PASS);
+        .logActivity({
+          user,
+          type: ActivityType.ACCOUNT_RESET_PASS,
+        });
       return user;
     });
   }

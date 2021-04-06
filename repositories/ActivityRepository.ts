@@ -8,21 +8,16 @@ import { Activity, ActivityTypeToScope } from '../types/internal';
 
 @EntityRepository(ActivityModel)
 export class ActivityRepository extends BaseRepository<ActivityModel> {
-  public async logActivity(
-    user: UserModel, type: ActivityType, pointsEarned?: number, description?: string,
-  ): Promise<ActivityModel> {
-    const activity = {
-      user,
-      type,
-      pointsEarned,
-      description,
-      scope: ActivityTypeToScope[type],
-    };
+  public async logActivity(activity: Activity): Promise<ActivityModel> {
+    activity.scope = ActivityTypeToScope[activity.type];
     return this.repository.save(ActivityModel.create(activity));
   }
 
   public async logActivityBatch(activities: Activity[]): Promise<ActivityModel[]> {
-    const activityModels = activities.map((activity) => ActivityModel.create(activity));
+    const activityModels = activities.map((activity) => {
+      activity.scope = ActivityTypeToScope[activity.type];
+      return ActivityModel.create(activity);
+    });
     return this.repository.save(activityModels);
   }
 

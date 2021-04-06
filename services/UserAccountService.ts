@@ -84,9 +84,15 @@ export default class UserAccountService {
     }
     return this.transactions.readWrite(async (txn) => {
       const updatedFields = Object.keys(userPatches).join(', ');
+      const activity = {
+        user,
+        type: ActivityType.ACCOUNT_UPDATE_INFO,
+        pointsEarned: 0,
+        description: updatedFields,
+      };
       await Repositories
         .activity(txn)
-        .logActivity(user, ActivityType.ACCOUNT_UPDATE_INFO, 0, updatedFields);
+        .logActivity(activity);
       return Repositories.user(txn).upsertUser(user, changes);
     });
   }

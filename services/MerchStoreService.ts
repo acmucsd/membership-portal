@@ -269,7 +269,12 @@ export default class MerchStoreService {
       }));
 
       const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity(user, ActivityType.ORDER_MERCHANDISE, 0, `Order ${createdOrder.uuid}`);
+      await activityRepository.logActivity({
+        user,
+        type: ActivityType.ORDER_MERCHANDISE,
+        pointsEarned: 0,
+        description: `Order ${createdOrder.uuid}`,
+      });
 
       await Promise.all(originalOrder.map(async (optionAndQuantity) => {
         const option = itemOptions.get(optionAndQuantity.option);
