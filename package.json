@@ -15,7 +15,7 @@
     "lint": "eslint ./ --ext .ts",
     "lint:fix": "eslint ./ --ext .ts --fix",
     "db:migrate:create": "ts-node ./node_modules/.bin/typeorm migration:create -n",
-    "db:migrate": "ts-node ./node_modules/.bin/typeorm migration:run",
+    "db:migrate": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "db:rollback": "ts-node ./node_modules/.bin/typeorm migration:revert",
     "db:seed:create": "ts-node ./node_modules/.bin/typeorm migration:create -c seed -n",
     "db:seed": "ts-node ./node_modules/.bin/typeorm migration:run -c seed",
