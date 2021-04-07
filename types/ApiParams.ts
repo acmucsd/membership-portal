@@ -1,4 +1,4 @@
-import { IsEmail, IsUUID } from 'class-validator';
+import { IsEmail, IsUUID, IsHexadecimal, Length } from 'class-validator';
 import { Uuid } from '.';
 
 export class ValidEmail{
@@ -8,4 +8,10 @@ export class ValidEmail{
 export class ValidUuid{
     @IsUUID()
     uuid:Uuid;
+}
+
+export class ValidAccessCode{
+    @IsHexadecimal()
+    @Length(32,32)
+    accessCode:string;
 }

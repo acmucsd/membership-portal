@@ -19,7 +19,7 @@ import { authActionMetadata } from '../../utils/AuthActionMetadata';
 import { OptionalUserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
-import { ValidEmail } from '../../types/ApiParams';
+import { ValidEmail, ValidAccessCode } from '../../types/ApiParams';
 
 @JsonController('/auth')
 export class AuthController {
@@ -58,8 +58,8 @@ export class AuthController {
   }
 
   @Post('/emailVerification/:accessCode')
-  async verifyEmail(@Param('accessCode') accessCode: string): Promise<VerifyEmailResponse> {
-    await this.userAccountService.verifyEmail(accessCode);
+  async verifyEmail(@Param('accessCode') accessCode: ValidAccessCode): Promise<VerifyEmailResponse> {
+    await this.userAccountService.verifyEmail(accessCode.accessCode);
     return { error: null };
   }
 
