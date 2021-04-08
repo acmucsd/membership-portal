@@ -37,7 +37,7 @@ export class UserFactory {
       hash: UserFactory.PASSWORD_HASH,
       accessType: UserAccessType.STANDARD,
       state: UserState.ACTIVE,
-      graduationYear: FactoryUtils.getRandomNumber(6, moment().year()),
+      graduationYear: FactoryUtils.getRandomNumber(moment().year(), moment().year() + 6),
       major: FactoryUtils.pickRandomValue(UserFactory.MAJORS),
       points: 0,
       credits: 0,

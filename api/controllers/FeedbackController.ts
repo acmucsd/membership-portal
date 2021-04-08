@@ -14,8 +14,11 @@ import {
 @UseBefore(UserAuthentication)
 @JsonController('/feedback')
 export class FeedbackController {
-  @Inject()
   private feedbackService: FeedbackService;
+
+  constructor(feedbackService: FeedbackService) {
+    this.feedbackService = feedbackService;
+  }
 
   @Get()
   async getFeedback(@AuthenticatedUser() user: UserModel): Promise<GetFeedbackResponse> {

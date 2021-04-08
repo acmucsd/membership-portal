@@ -1,7 +1,6 @@
 import {
   JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body,
 } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
 import StorageService from '../../services/StorageService';
@@ -22,11 +21,14 @@ import { PatchUserRequest } from '../validators/UserControllerRequests';
 @UseBefore(UserAuthentication)
 @JsonController('/user')
 export class UserController {
-  @Inject()
   private userAccountService: UserAccountService;
 
-  @Inject()
   private storageService: StorageService;
+
+  constructor(userAccountService: UserAccountService, storageService: StorageService) {
+    this.userAccountService = userAccountService;
+    this.storageService = storageService;
+  }
 
   @Get('/:uuid/activity/')
   async getUserActivityStream(@Params() vUuid: ValidUuid,

@@ -4,41 +4,30 @@ import { ActivityScope, ActivityType, Uuid } from '../types';
 import { UserModel } from '../models/UserModel';
 import { ActivityModel } from '../models/ActivityModel';
 import { BaseRepository } from './BaseRepository';
+import { Activity, ActivityTypeToScope } from '../types/internal';
 
 @EntityRepository(ActivityModel)
 export class ActivityRepository extends BaseRepository<ActivityModel> {
-  private static activityScopes = {
-    [ActivityType.ACCOUNT_CREATE]: ActivityScope.PUBLIC,
-    [ActivityType.ATTEND_EVENT]: ActivityScope.PUBLIC,
-    [ActivityType.ATTEND_EVENT_AS_STAFF]: ActivityScope.PUBLIC,
-    [ActivityType.BONUS_POINTS]: ActivityScope.PUBLIC,
-    [ActivityType.MILESTONE]: ActivityScope.PUBLIC,
-    [ActivityType.FEEDBACK_ACKNOWLEDGED]: ActivityScope.PRIVATE,
-    [ActivityType.ORDER_MERCHANDISE]: ActivityScope.PRIVATE,
-    [ActivityType.SUBMIT_EVENT_FEEDBACK]: ActivityScope.PRIVATE,
-    [ActivityType.SUBMIT_FEEDBACK]: ActivityScope.PRIVATE,
-    [ActivityType.ACCOUNT_ACTIVATE]: ActivityScope.HIDDEN,
-    [ActivityType.ACCOUNT_LOGIN]: ActivityScope.HIDDEN,
-    [ActivityType.ACCOUNT_RESET_PASS]: ActivityScope.HIDDEN,
-    [ActivityType.ACCOUNT_RESET_PASS_REQUEST]: ActivityScope.HIDDEN,
-    [ActivityType.ACCOUNT_UPDATE_INFO]: ActivityScope.HIDDEN,
-  };
-
   public async logActivity(
     user: UserModel, type: ActivityType, pointsEarned?: number, description?: string,
   ): Promise<ActivityModel> {
     const activity = {
       user,
       type,
-      description,
       pointsEarned,
-      scope: ActivityRepository.activityScopes[type],
+      description,
+      scope: ActivityTypeToScope[type],
     };
     return this.repository.save(ActivityModel.create(activity));
   }
 
+  public async logActivityBatch(activities: Activity[]): Promise<ActivityModel[]> {
+    const activityModels = activities.map((activity) => ActivityModel.create(activity));
+    return this.repository.save(activityModels);
+  }
+
   public async logMilestone(description: string, pointsEarned: number): Promise<void> {
-    const scope = ActivityRepository.activityScopes[ActivityType.MILESTONE];
+    const scope = ActivityTypeToScope[ActivityType.MILESTONE];
     return this.repository.query(
       'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "scope") '
       + `SELECT uuid, '${ActivityType.MILESTONE}', '${description}', '${pointsEarned}', '${scope}' `
@@ -47,7 +36,7 @@ export class ActivityRepository extends BaseRepository<ActivityModel> {
   }
 
   public async logBonus(users: UserModel[], description: string, pointsEarned: number): Promise<void> {
-    const scope = ActivityRepository.activityScopes[ActivityType.BONUS_POINTS];
+    const scope = ActivityTypeToScope[ActivityType.BONUS_POINTS];
     const uuids = users.map((user) => `'${user.uuid}'`);
     return this.repository.query(
       'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "scope") '

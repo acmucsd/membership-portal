@@ -1,4 +1,3 @@
-import { Connection } from 'typeorm';
 import * as rfdc from 'rfdc';
 import { flatten } from 'underscore';
 import { AttendanceModel } from '../../models/AttendanceModel';
@@ -7,9 +6,11 @@ import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionMo
 import { OrderModel } from '../../models/OrderModel';
 import { UserModel } from '../../models/UserModel';
 import { ActivityModel } from '../../models/ActivityModel';
-import { ActivityScope, ActivityType } from '../../types';
+import { ActivityScope, ActivityType, Feedback } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { OrderItemModel } from '../../models/OrderItemModel';
+import { FeedbackModel } from '../../models/FeedbackModel';
+import { DatabaseConnection } from './DatabaseConnection';
 
 export class PortalState {
   users: UserModel[] = [];
@@ -24,6 +25,8 @@ export class PortalState {
 
   orders: OrderModel[] = [];
 
+  feedback: FeedbackModel[] = [];
+
   public from(state: PortalState): PortalState {
     // deep clones all around for immutable PortalStates
     this.users = rfdc()(state.users);
@@ -32,10 +35,12 @@ export class PortalState {
     this.activities = rfdc()(state.activities);
     this.merch = rfdc()(state.merch);
     this.orders = rfdc()(state.orders);
+    this.feedback = rfdc()(state.feedback);
     return this;
   }
 
-  public async write(conn: Connection): Promise<void> {
+  public async write(): Promise<void> {
+    const conn = await DatabaseConnection.get();
     await conn.transaction(async (txn) => {
       this.users = await txn.save(this.users);
       this.events = await txn.save(this.events);
@@ -43,12 +48,14 @@ export class PortalState {
       this.activities = await txn.save(this.activities);
       this.merch = await txn.save(this.merch);
       this.orders = await txn.save(this.orders);
+      this.feedback = await txn.save(this.feedback);
     });
   }
 
   public createUsers(users: UserModel[]): PortalState {
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
+      user.email = user.email.toLowerCase();
       this.users.push(user);
       this.activities.push(ActivityModel.create({
         user,
@@ -114,6 +121,18 @@ export class PortalState {
       user,
       type: ActivityType.ORDER_MERCHANDISE,
     }));
+    return this;
+  }
+
+  public submitFeedback(user: UserModel, feedback: Feedback[]): PortalState {
+    for (let f = 0; f < feedback.length; f += 1) {
+      const fb = feedback[f];
+      this.feedback.push(FeedbackModel.create({ ...fb, user }));
+      this.activities.push(ActivityModel.create({
+        user,
+        type: ActivityType.SUBMIT_FEEDBACK,
+      }));
+    }
     return this;
   }
 

@@ -1,19 +1,18 @@
-import { ActivityType, FeedbackStatus, FeedbackType } from './Enums';
+import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType } from './Enums';
 import { Uuid } from '.';
+
 // RESPONSE TYPES
 
-export interface CustomErrorResponse {
-  error: {
-    name: string;
-    message: string;
-    httpCode: number;
-    stack?: string;
-    errors?: any;
-  }
+export interface CustomErrorBody {
+  name: string;
+  message: string;
+  httpCode: number;
+  stack?: string;
+  errors?: any;
 }
 
 export interface ApiResponse {
-  error: CustomErrorResponse;
+  error: CustomErrorBody;
 }
 
 // ADMIN
@@ -30,6 +29,10 @@ export interface UploadBannerResponse extends ApiResponse {
 
 export interface GetAllEmailsResponse extends ApiResponse {
   emails: string[];
+}
+
+export interface SubmitAttendanceForUsersResponse extends ApiResponse {
+  attendances: PublicAttendance[];
 }
 
 // ATTENDANCE
@@ -233,6 +236,7 @@ export interface EditMerchOrderResponse extends ApiResponse {}
 
 export interface PublicActivity {
   type: ActivityType,
+  scope: ActivityScope,
   description: string,
   pointsEarned: number,
   timestamp: Date;

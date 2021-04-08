@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
-import { NotFoundError } from 'routing-controllers';
+import { BadRequestError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import { ActivityType, PublicAttendance, Uuid } from '../types';
@@ -10,6 +10,7 @@ import { EventModel } from '../models/EventModel';
 import { AttendanceModel } from '../models/AttendanceModel';
 import { UserError } from '../utils/Errors';
 import Repositories, { TransactionsManager } from '../repositories';
+import { Activity, ActivityTypeToScope, Attendance } from '../types/internal';
 
 @Service()
 export default class AttendanceService {
@@ -48,7 +49,7 @@ export default class AttendanceService {
   }
 
   private async writeEventAttendance(user: UserModel, event: EventModel, asStaff: boolean,
-    txn: EntityManager, description?: string): Promise<AttendanceModel> {
+    txn: EntityManager): Promise<AttendanceModel> {
     const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
     const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
 
@@ -56,30 +57,74 @@ export default class AttendanceService {
       user,
       attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
       pointsEarned,
-      description,
     );
     await Repositories.user(txn).addPoints(user, pointsEarned);
 
     return Repositories.attendance(txn).attendEvent(user, event, attendedAsStaff);
   }
 
-  public async submitAttendanceForUser(userUuid: Uuid, eventUuid: Uuid, asStaff = false,
-    admin: UserModel): Promise<PublicAttendance> {
+  public async submitAttendanceForUsers(emails: string[], eventUuid: Uuid, asStaff = false,
+    proxyUser: UserModel): Promise<PublicAttendance[]> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByUuid(eventUuid);
       if (!event) throw new NotFoundError('This event doesn\'t exist');
 
-      const user = await Repositories.user(txn).findByUuid(userUuid);
-      if (!user) throw new NotFoundError('This user was not found');
+      const users = await Repositories.user(txn).findByEmails(emails);
+      const emailsFound = users.map((user) => user.email);
+      const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
 
-      const attendanceRepository = Repositories.attendance(txn);
-      const hasAlreadyAttended = await attendanceRepository.hasUserAttendedEvent(user, event);
-      if (hasAlreadyAttended) throw new UserError('This user has already attended this event');
+      if (emailsNotFound.length > 0) {
+        throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
+      }
 
-      const activityDescription = `Attendance submitted by user ${admin.uuid}`;
-      const attendance = await this.writeEventAttendance(user, event, asStaff, txn, activityDescription);
-      return attendance.getPublicAttendance();
+      const userAttendancesOfEvent = await this.haveUsersAttendedEvent(users, event, txn);
+      const usersThatHaventAttended = Array.from(userAttendancesOfEvent.entries())
+        .filter(([_user, hasAttended]) => !hasAttended)
+        .map(([user, _hasAttended]) => user);
+
+      return this.batchWriteEventAttendance(usersThatHaventAttended, event, asStaff, proxyUser, txn);
     });
+  }
+
+  private async haveUsersAttendedEvent(users: UserModel[], event: EventModel,
+    txn: EntityManager): Promise<Map<UserModel, boolean>> {
+    const attendances = await Repositories.attendance(txn).getAttendancesForEvent(event.uuid);
+    const usersThatAttended = attendances.map((attendance) => attendance.user.uuid);
+    return new Map(users.map((user) => [user, usersThatAttended.includes(user.uuid)]));
+  }
+
+  private async batchWriteEventAttendance(users: UserModel[], event: EventModel, asStaff: boolean,
+    proxyUser: UserModel, txn: EntityManager): Promise<AttendanceModel[]> {
+    const attendances: Attendance[] = [];
+    const activities: Activity[] = [];
+
+    users.forEach((user) => {
+      const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
+      const activityType = attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT;
+      const activityScope = ActivityTypeToScope[activityType];
+      const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
+      const description = `Attendance submitted on behalf of user by ${proxyUser.uuid}`;
+
+      const attendance = {
+        user,
+        event,
+        asStaff: attendedAsStaff,
+      };
+      const activity = {
+        user,
+        type: activityType,
+        scope: activityScope,
+        pointsEarned,
+        description,
+      };
+
+      attendances.push(attendance);
+      activities.push(activity);
+    });
+
+    await Repositories.user(txn).addPointsByActivities(activities);
+    await Repositories.activity(txn).logActivityBatch(activities);
+    return Repositories.attendance(txn).writeAttendanceBatch(attendances);
   }
 
   public async submitEventFeedback(feedback: string[], eventUuid: Uuid, user: UserModel): Promise<PublicAttendance> {

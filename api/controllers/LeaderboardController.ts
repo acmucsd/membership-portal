@@ -1,5 +1,4 @@
 import { UseBefore, JsonController, Get, QueryParams } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { GetLeaderboardResponse } from 'types';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import UserAccountService from '../../services/UserAccountService';
@@ -8,8 +7,11 @@ import { SlidingLeaderboardQueryParams } from '../validators/LeaderboardControll
 @UseBefore(UserAuthentication)
 @JsonController('/leaderboard')
 export class LeaderboardController {
-  @Inject()
   private userAccountService: UserAccountService;
+
+  constructor(userAccountService: UserAccountService) {
+    this.userAccountService = userAccountService;
+  }
 
   @Get()
   async getLeaderboard(@QueryParams() filters: SlidingLeaderboardQueryParams): Promise<GetLeaderboardResponse> {

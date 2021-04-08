@@ -30,3 +30,9 @@ rules:
   object-curly-newline:
     - "error"
     - consistent: true
+overrides:
+- files:
+    - "tests/*.test.ts"
+  rules:
+    no-await-in-loop: "off"
+

@@ -1,4 +1,4 @@
-import { JsonController, Param, Params, Body, Get, Post, UseBefore } from 'routing-controllers';
+import { JsonController, Params, Body, Get, Post, UseBefore } from 'routing-controllers';
 import { Inject } from 'typedi';
 import {
   RegistrationResponse,
@@ -58,7 +58,7 @@ export class AuthController {
   }
 
   @Post('/emailVerification/:accessCode')
-  async verifyEmail(@Param('accessCode') accessCode: ValidAccessCode): Promise<VerifyEmailResponse> {
+  async verifyEmail(@Params() accessCode: ValidAccessCode): Promise<VerifyEmailResponse> {
     await this.userAccountService.verifyEmail(accessCode.accessCode);
     return { error: null };
   }
@@ -73,10 +73,10 @@ export class AuthController {
   }
 
   @Post('/passwordReset/:accessCode')
-  async resetPassword(@Param('accessCode') accessCode: string,
+  async resetPassword(@Params() accessCode: ValidAccessCode,
     @Body() passwordResetRequest: PasswordResetRequest,
     @RequestTrace() trace: string): Promise<ResetPasswordResponse> {
-    const user = await this.userAuthService.resetPassword(accessCode, passwordResetRequest.user.newPassword);
+    const user = await this.userAuthService.resetPassword(accessCode.accessCode, passwordResetRequest.user.newPassword);
     log.info('user authentication (password reset - access code)', authActionMetadata(trace, user));
     return { error: null };
   }
