@@ -147,10 +147,9 @@ export default class AttendanceService {
 
       const attendanceWithFeedback = await attendanceRepository.submitEventFeedback(attendance, feedback);
       const pointsEarned = Config.pointReward.EVENT_FEEDBACK_POINT_REWARD;
-      const activityType = ActivityType.SUBMIT_EVENT_FEEDBACK;
       await Repositories.activity(txn).logActivity({
         user,
-        type: activityType,
+        type: ActivityType.SUBMIT_EVENT_FEEDBACK,
         pointsEarned,
       });
       await Repositories.user(txn).addPoints(user, pointsEarned);

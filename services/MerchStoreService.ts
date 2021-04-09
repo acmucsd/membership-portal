@@ -272,7 +272,6 @@ export default class MerchStoreService {
       await activityRepository.logActivity({
         user,
         type: ActivityType.ORDER_MERCHANDISE,
-        pointsEarned: 0,
         description: `Order ${createdOrder.uuid}`,
       });
 
