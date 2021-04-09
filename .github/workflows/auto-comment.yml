@@ -7,4 +7,7 @@ jobs:
       - uses: bubkoo/auto-comment@v1.0.7
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          pullRequestOpened: Thanks for contributing! Please make sure to bump the package version and document API changes as appropriate.
+          pullRequestOpened: >
+            Thanks for contributing! Please make sure to bump the package version&mdash;
+            see [this guide to semantic versioning](https://semver.org/))&mdash; and
+            document API changes as appropriate.
