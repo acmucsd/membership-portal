@@ -84,9 +84,14 @@ export default class UserAccountService {
     }
     return this.transactions.readWrite(async (txn) => {
       const updatedFields = Object.keys(userPatches).join(', ');
+      const activity = {
+        user,
+        type: ActivityType.ACCOUNT_UPDATE_INFO,
+        description: updatedFields,
+      };
       await Repositories
         .activity(txn)
-        .logActivity(user, ActivityType.ACCOUNT_UPDATE_INFO, 0, updatedFields);
+        .logActivity(activity);
       return Repositories.user(txn).upsertUser(user, changes);
     });
   }
@@ -122,7 +127,7 @@ export default class UserAccountService {
   public async grantBonusPoints(emails: string[], description: string, points: number) {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
-      const users = await Repositories.user(txn).findByEmails(emails);
+      const users = await userRepository.findByEmails(emails);
       const emailsFound = users.map((user) => user.email);
       const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
 
@@ -131,8 +136,7 @@ export default class UserAccountService {
       }
 
       await userRepository.addPointsToMany(users, points);
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logBonus(users, description, points);
+      return Repositories.activity(txn).logBonus(users, description, points);
     });
   }
 
