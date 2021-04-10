@@ -7,12 +7,8 @@ jobs:
       - uses: bubkoo/auto-comment@v1.0.7
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          pullRequestOpened: |
-            Thanks for contributing! Please make sure to bump the package version and document API changes as appropriate.\n
-            
-            Given a version number `MAJOR.MINOR.PATCH`, increment the:
-            1. MAJOR version when you make incompatible API changes,
-            2. MINOR version when you add functionality in a backwards compatible manner, and
-            3. PATCH version when you make backwards compatible bug fixes.
-            No need to bump the version number if no changes were made to the API's functionality (e.g. refactors).
-            See [this guide to semantic versioning](https://semver.org/) for details.
+          pullRequestOpened: >
+            Thanks for contributing!
+            If you've made changes to the API's functionality, please make sure to bump the package
+            version&mdash;see [this guide to semantic versioning](https://semver.org/) for details&mdash;and
+            document those changes as appropriate.
