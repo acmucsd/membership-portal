@@ -28,7 +28,10 @@ export default class FeedbackService {
 
   public async submitFeedback(user: UserModel, feedback: Feedback): Promise<PublicFeedback> {
     const addedFeedback = await this.transactions.readWrite(async (txn) => {
-      await Repositories.activity(txn).logActivity(user, ActivityType.SUBMIT_FEEDBACK);
+      await Repositories.activity(txn).logActivity({
+        user,
+        type: ActivityType.SUBMIT_FEEDBACK,
+      });
       return Repositories.feedback(txn).upsertFeedback(FeedbackModel.create({ ...feedback, user }));
     });
     return addedFeedback.getPublicFeedback();
@@ -46,7 +49,11 @@ export default class FeedbackService {
       const { user } = feedback;
       if (status === FeedbackStatus.ACKNOWLEDGED) {
         const pointsEarned = Config.pointReward.FEEDBACK_POINT_REWARD;
-        await Repositories.activity(txn).logActivity(user, ActivityType.FEEDBACK_ACKNOWLEDGED, pointsEarned);
+        await Repositories.activity(txn).logActivity({
+          user,
+          type: ActivityType.FEEDBACK_ACKNOWLEDGED,
+          pointsEarned,
+        });
         await Repositories.user(txn).addPoints(user, pointsEarned);
       }
 
