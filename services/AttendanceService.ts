@@ -52,12 +52,11 @@ export default class AttendanceService {
     txn: EntityManager): Promise<AttendanceModel> {
     const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
     const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
-    const activityType = attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT;
 
     await Repositories.activity(txn).logActivity({
       user,
       pointsEarned,
-      type: activityType,
+      type: attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
     });
     await Repositories.user(txn).addPoints(user, pointsEarned);
     return Repositories.attendance(txn).writeAttendance({
@@ -104,8 +103,6 @@ export default class AttendanceService {
 
     users.forEach((user) => {
       const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
-      const activityType = attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT;
-      const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
       const description = `Attendance submitted on behalf of user by ${proxyUser.uuid}`;
 
       const attendance = {
@@ -115,8 +112,8 @@ export default class AttendanceService {
       };
       const activity = {
         user,
-        type: activityType,
-        pointsEarned,
+        type: attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
+        pointsEarned: attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue,
         description,
       };
 
