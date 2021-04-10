@@ -8,7 +8,7 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           pullRequestOpened: |
-            Thanks for contributing! Please make sure to bump the package version and document API changes as appropriate.
+            Thanks for contributing! Please make sure to bump the package version and document API changes as appropriate.\n
             
             Given a version number `MAJOR.MINOR.PATCH`, increment the:
             1. MAJOR version when you make incompatible API changes,
