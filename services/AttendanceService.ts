@@ -10,7 +10,7 @@ import { EventModel } from '../models/EventModel';
 import { AttendanceModel } from '../models/AttendanceModel';
 import { UserError } from '../utils/Errors';
 import Repositories, { TransactionsManager } from '../repositories';
-import { Activity, ActivityTypeToScope, Attendance } from '../types/internal';
+import { Activity, Attendance } from '../types/internal';
 
 @Service()
 export default class AttendanceService {
@@ -53,14 +53,17 @@ export default class AttendanceService {
     const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
     const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
 
-    await Repositories.activity(txn).logActivity(
+    await Repositories.activity(txn).logActivity({
       user,
-      attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
       pointsEarned,
-    );
+      type: attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
+    });
     await Repositories.user(txn).addPoints(user, pointsEarned);
-
-    return Repositories.attendance(txn).attendEvent(user, event, attendedAsStaff);
+    return Repositories.attendance(txn).writeAttendance({
+      user,
+      event,
+      asStaff: attendedAsStaff,
+    });
   }
 
   public async submitAttendanceForUsers(emails: string[], eventUuid: Uuid, asStaff = false,
@@ -100,9 +103,6 @@ export default class AttendanceService {
 
     users.forEach((user) => {
       const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
-      const activityType = attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT;
-      const activityScope = ActivityTypeToScope[activityType];
-      const pointsEarned = attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
       const description = `Attendance submitted on behalf of user by ${proxyUser.uuid}`;
 
       const attendance = {
@@ -112,9 +112,8 @@ export default class AttendanceService {
       };
       const activity = {
         user,
-        type: activityType,
-        scope: activityScope,
-        pointsEarned,
+        type: attendedAsStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
+        pointsEarned: attendedAsStaff ? event.pointValue + event.staffPointBonus : event.pointValue,
         description,
       };
 
@@ -145,7 +144,11 @@ export default class AttendanceService {
 
       const attendanceWithFeedback = await attendanceRepository.submitEventFeedback(attendance, feedback);
       const pointsEarned = Config.pointReward.EVENT_FEEDBACK_POINT_REWARD;
-      await Repositories.activity(txn).logActivity(user, ActivityType.SUBMIT_EVENT_FEEDBACK, pointsEarned);
+      await Repositories.activity(txn).logActivity({
+        user,
+        type: ActivityType.SUBMIT_EVENT_FEEDBACK,
+        pointsEarned,
+      });
       await Repositories.user(txn).addPoints(user, pointsEarned);
 
       return attendanceWithFeedback.getPublicAttendance();
