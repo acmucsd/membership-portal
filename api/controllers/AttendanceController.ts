@@ -7,7 +7,7 @@ import { UserModel } from '../../models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
 import { Uuid, GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '../../types';
-import { ValidUuid } from '../../types/ApiParams';
+import { ValidUuid } from '../validators/GenericRequests';
 
 @UseBefore(UserAuthentication)
 @JsonController('/attendance')

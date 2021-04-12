@@ -19,7 +19,7 @@ import { authActionMetadata } from '../../utils/AuthActionMetadata';
 import { OptionalUserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
-import { ValidEmail, ValidAccessCode } from '../../types/ApiParams';
+import { ValidEmail, ValidAccessCode } from '../validators/GenericRequests';
 
 @JsonController('/auth')
 export class AuthController {

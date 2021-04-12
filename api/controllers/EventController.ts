@@ -9,7 +9,6 @@ import PermissionsService from '../../services/PermissionsService';
 import StorageService from '../../services/StorageService';
 import AttendanceService from '../../services/AttendanceService';
 import {
-  Uuid,
   MediaType,
   File,
   CreateEventResponse,
@@ -19,8 +18,8 @@ import {
   UpdateEventCoverResponse,
   GetFutureEventsResponse,
   GetPastEventsResponse,
-  ValidUuid
 } from '../../types';
+import { ValidUuid } from '../validators/GenericRequests'
 import {
   EventSearchOptions,
   PatchEventRequest,

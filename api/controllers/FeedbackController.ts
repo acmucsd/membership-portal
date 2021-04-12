@@ -4,7 +4,8 @@ import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
 import FeedbackService from '../../services/FeedbackService';
-import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse, ValidUuid } from '../../types';
+import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse } from '../../types';
+import { ValidUuid } from '../validators/GenericRequests'
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   SubmitFeedbackRequest,
