@@ -42,8 +42,8 @@ export default class UserAuthService {
     });
   }
 
-  public async checkAuthToken(authHeader: string): Promise<UserModel> {
-    const token = jwt.verify(UserAuthService.parseAuthHeader(authHeader), Config.auth.secret);
+  public async checkAuthToken(authToken: string): Promise<UserModel> {
+    const token = jwt.verify(authToken, Config.auth.secret);
     if (!UserAuthService.isAuthToken(token)) throw new BadRequestError('Invalid auth token');
     const user = await this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
@@ -147,17 +147,6 @@ export default class UserAuthService {
         });
       return user;
     });
-  }
-
-  private static parseAuthHeader(authHeader: string): string {
-    const splitHeader = authHeader.split(' ');
-    const invalidAuthFormat = splitHeader.length !== 2
-            || splitHeader[0] !== 'Bearer'
-            || splitHeader[1].length === 0;
-    if (invalidAuthFormat) {
-      throw new ForbiddenError();
-    }
-    return splitHeader[1];
   }
 
   private static isAuthToken(token: string | object): token is AuthToken {

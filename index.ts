@@ -1,6 +1,9 @@
 import 'reflect-metadata'; // this shim is required
 
-import { createExpressServer, useContainer as routingUseContainer } from 'routing-controllers';
+import * as express from 'express';
+import * as cookieParser from 'cookie-parser';
+
+import { useExpressServer, useContainer as routingUseContainer } from 'routing-controllers';
 
 import { createConnection, useContainer as ormUseContainer } from 'typeorm';
 import { Container } from 'typedi';
@@ -35,7 +38,10 @@ createConnection({
   log.error(error);
 });
 
-const app = createExpressServer({
+const app = express();
+app.use(cookieParser());
+
+useExpressServer(app, {
   cors: true,
   routePrefix: '/api/v2',
   controllers,

@@ -1,4 +1,5 @@
-import { JsonController, Param, Body, Get, Post, UseBefore } from 'routing-controllers';
+import { JsonController, Param, Body, Get, Post, UseBefore, Res } from 'routing-controllers';
+import { Response } from 'express';
 import {
   RegistrationResponse,
   LoginResponse,
@@ -44,9 +45,14 @@ export class AuthController {
   }
 
   @Post('/login')
-  async login(@Body() loginRequest: LoginRequest, @RequestTrace() trace: string): Promise<LoginResponse> {
+  async login(
+    @Body() loginRequest: LoginRequest,
+      @RequestTrace() trace: string,
+      @Res() res: Response,
+  ): Promise<LoginResponse> {
     const user = await this.userAuthService.checkCredentials(loginRequest.email.toLowerCase(), loginRequest.password);
     const token = UserAuthService.generateAuthToken(user);
+    res.cookie('token', token);
     log.info('user authentication (login)', authActionMetadata(trace, user));
     return { error: null, token };
   }

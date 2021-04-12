@@ -10,9 +10,10 @@ export class UserAuthentication implements ExpressMiddlewareInterface {
   private userAuthService: UserAuthService;
 
   async use(request: express.Request, response: express.Response, next?: express.NextFunction) {
-    const authHeader = request.get('Authorization');
-    if (!authHeader) throw new ForbiddenError('Missing auth token');
-    request.user = await this.userAuthService.checkAuthToken(authHeader);
+    const { token } = request.cookies;
+    console.log('authToken', token);
+    if (!token) throw new ForbiddenError('Missing auth token');
+    request.user = await this.userAuthService.checkAuthToken(token);
     log.info('user authentication (middleware)', authActionMetadata(request.trace, request.user));
     return next();
   }
