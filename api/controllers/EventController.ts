@@ -1,5 +1,5 @@
 import {
-  JsonController, Get, Patch, Delete, Post, UseBefore, Param, Params, ForbiddenError, QueryParams, UploadedFile, Body,
+  JsonController, Get, Patch, Delete, Post, UseBefore, Params, ForbiddenError, QueryParams, UploadedFile, Body,
 } from 'routing-controllers';
 import EventService from '../../services/EventService';
 import { UserAuthentication, OptionalUserAuthentication } from '../middleware/UserAuthentication';
@@ -19,7 +19,7 @@ import {
   GetFutureEventsResponse,
   GetPastEventsResponse,
 } from '../../types';
-import { ValidUuid } from '../validators/GenericRequests'
+import { ValidUuid } from '../validators/GenericRequests';
 import {
   EventSearchOptions,
   PatchEventRequest,

@@ -1,11 +1,10 @@
 import { Body, ForbiddenError, Get, JsonController, Params, Patch, Post, UseBefore } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
 import FeedbackService from '../../services/FeedbackService';
 import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse } from '../../types';
-import { ValidUuid } from '../validators/GenericRequests'
+import { ValidUuid } from '../validators/GenericRequests';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   SubmitFeedbackRequest,

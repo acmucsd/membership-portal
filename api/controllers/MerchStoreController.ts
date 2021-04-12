@@ -14,7 +14,6 @@ import {
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
-  ValidUuid,
   GetOneMerchCollectionResponse,
   GetAllMerchCollectionsResponse,
   CreateMerchCollectionResponse,
@@ -31,6 +30,7 @@ import {
   CreateMerchItemOptionResponse,
   DeleteMerchItemOptionResponse,
 } from '../../types';
+import { ValidUuid } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import MerchStoreService from '../../services/MerchStoreService';

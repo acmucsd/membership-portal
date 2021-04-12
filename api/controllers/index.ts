@@ -29,4 +29,3 @@ declare global {
     }
   }
 }
-

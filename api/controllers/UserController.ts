@@ -8,7 +8,6 @@ import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import {
   MediaType,
-  ValidUuid,
   File,
   GetUserActivityStreamResponse,
   UpdateProfilePictureResponse,
@@ -16,6 +15,7 @@ import {
   GetCurrentUserResponse,
   PatchUserResponse,
 } from '../../types';
+import { ValidUuid } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
 
 @UseBefore(UserAuthentication)

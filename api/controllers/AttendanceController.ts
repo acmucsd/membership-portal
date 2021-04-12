@@ -1,12 +1,11 @@
 import { JsonController, Get, Post, UseBefore, Params, ForbiddenError, Body } from 'routing-controllers';
-import { Inject } from 'typedi';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { AttendEventRequest } from '../validators/AttendanceControllerRequests';
 import { UserModel } from '../../models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
-import { Uuid, GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '../../types';
+import { GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '../../types';
 import { ValidUuid } from '../validators/GenericRequests';
 
 @UseBefore(UserAuthentication)
