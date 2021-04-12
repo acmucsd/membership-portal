@@ -50,7 +50,7 @@ export class LoginRequestParam implements request{
     requestTrace?:string;
 }
 
-export class resendEmailVerificationRequestParam implements request{
+export class ResendEmailVerificationRequest implements Request {
     @IsNotEmpty()
     @IsDefined()
     @ValidateNested()
