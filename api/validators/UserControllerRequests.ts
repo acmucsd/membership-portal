@@ -1,4 +1,4 @@
-import { ValidateNested, IsNotEmpty, IsDefined } from 'class-validator';
+import { ValidateNested, IsDefined, Allow } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsValidName, IsValidMajor, IsValidGraduationYear, HasMatchingPasswords } from '../decorators/Validators';
 import {
@@ -26,7 +26,7 @@ export class UserPatches implements IUserPatches {
   @IsValidGraduationYear()
   graduationYear?: number;
 
-  @IsNotEmpty()
+  @Allow()
   bio?: string;
 
   @Type(() => PasswordUpdate)
