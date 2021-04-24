@@ -23,7 +23,6 @@ export class Feedback implements IFeedback {
   type: FeedbackType;
 }
 
-
 export class SubmitFeedbackRequest implements ISubmitFeedbackRequest {
   @Type(() => Feedback)
   @ValidateNested()

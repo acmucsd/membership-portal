@@ -18,7 +18,7 @@ export class StorageUtils {
 
   public async deleteAllFilesInFolder(pathToFolder: string) {
     const files = await this.getAllFilesFromFolder(pathToFolder);
-    if(files.length === 0) return;
+    if (files.length === 0) return;
     const objectsToDelete = files.map((file) => ({ Key: file.Key }));
 
     return this.s3Service.deleteObjects({

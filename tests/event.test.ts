@@ -1,9 +1,11 @@
-import * as moment from 'moment';
+import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
 import { DatabaseConnection, EventFactory, FeedbackFactory, FileFactory, PortalState, UserFactory } from './data';
 import { ControllerFactory } from './controllers';
 import { UserAccessType } from '../types';
 import { Config } from '../config';
 import { StorageUtils } from './utils';
+import { SubmitEventFeedbackRequest } from '../api/validators/EventControllerRequests';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -126,7 +128,6 @@ describe('event covers', () => {
   test('rejects upload if file size too large', async () => {
     // TODO: implement once API wrappers exist (since multer validation can't be mocked with function calls)
   });
-  
 });
 
 describe('event feedback', () => {
@@ -141,11 +142,11 @@ describe('event feedback', () => {
       .createEvents([event])
       .attendEvents([user], [event], false)
       .write();
-    
+
     const previousPoints = user.points;
-    
+
     await ControllerFactory.event(conn).submitEventFeedback(event.uuid, { feedback }, user);
-    
+
     const attendanceResponse = await ControllerFactory.attendance(conn).getAttendancesForCurrentUser(user);
     const attendance = attendanceResponse.attendances[0];
 
@@ -155,18 +156,70 @@ describe('event feedback', () => {
   });
 
   test('is rejected on submission to an event not attended', async () => {
+    const conn = await DatabaseConnection.get();
+    const event = EventFactory.fakeOngoingEvent();
+    const user = UserFactory.fake();
+    const feedback = FeedbackFactory.createEventFeedback(3);
 
+    await new PortalState()
+      .createUsers([user])
+      .createEvents([event])
+      .write();
+
+    const errorMessage = 'You must attend this event before submiting feedback';
+
+    await expect(
+      ControllerFactory.event(conn).submitEventFeedback(event.uuid, { feedback }, user),
+    ).rejects.toThrow(errorMessage);
   });
 
   test('is rejected if submitted to an event multiple times', async () => {
+    const conn = await DatabaseConnection.get();
+    const event = EventFactory.fakeOngoingEvent();
+    const user = UserFactory.fake();
+    const feedback = FeedbackFactory.createEventFeedback(3);
 
+    await new PortalState()
+      .createUsers([user])
+      .createEvents([event])
+      .attendEvents([user], [event], false)
+      .write();
+
+    const eventController = ControllerFactory.event(conn);
+    await eventController.submitEventFeedback(event.uuid, { feedback }, user);
+
+    const errorMessage = 'You cannot submit feedback for this event more than once';
+
+    await expect(
+      eventController.submitEventFeedback(event.uuid, { feedback }, user),
+    ).rejects.toThrow(errorMessage);
   });
 
   test('is rejected if sent after 2 days of event completion', async () => {
+    const conn = await DatabaseConnection.get();
+    const event = EventFactory.fakePastEvent(3);
+    const user = UserFactory.fake();
+    const feedback = FeedbackFactory.createEventFeedback(3);
 
+    await new PortalState()
+      .createUsers([user])
+      .createEvents([event])
+      .attendEvents([user], [event], false)
+      .write();
+
+    const errorMessage = 'You must submit feedback within 2 days of the event ending';
+
+    await expect(
+      ControllerFactory.event(conn).submitEventFeedback(event.uuid, { feedback }, user),
+    ).rejects.toThrow(errorMessage);
   });
 
   test('is rejected if more than 3 feedback is provided', async () => {
+    const feedback = FeedbackFactory.createEventFeedback(4);
+    const errors = await validate(plainToClass(SubmitEventFeedbackRequest, { feedback }));
 
-  })
+    expect(errors).toBeDefined();
+    expect(errors).toHaveLength(1);
+    expect(errors[0].property).toEqual('feedback');
+  });
 });
