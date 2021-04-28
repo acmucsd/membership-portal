@@ -55,8 +55,8 @@ export class AuthController {
   }
 
   @Post('/emailVerification/:accessCode')
-  async verifyEmail(@Params() accessCode: AccessCodeParam): Promise<VerifyEmailResponse> {
-    await this.userAccountService.verifyEmail(accessCode.accessCode);
+  async verifyEmail(@Params() params: AccessCodeParam): Promise<VerifyEmailResponse> {
+    await this.userAccountService.verifyEmail(params.accessCode);
     return { error: null };
   }
 
@@ -70,10 +70,10 @@ export class AuthController {
   }
 
   @Post('/passwordReset/:accessCode')
-  async resetPassword(@Params() accessCode: AccessCodeParam,
+  async resetPassword(@Params() params: AccessCodeParam,
     @Body() passwordResetRequest: PasswordResetRequest,
     @RequestTrace() trace: string): Promise<ResetPasswordResponse> {
-    const user = await this.userAuthService.resetPassword(accessCode.accessCode, passwordResetRequest.user.newPassword);
+    const user = await this.userAuthService.resetPassword(params.accessCode, passwordResetRequest.user.newPassword);
     log.info('user authentication (password reset - access code)', authActionMetadata(trace, user));
     return { error: null };
   }
