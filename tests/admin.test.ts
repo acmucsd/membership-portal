@@ -36,7 +36,10 @@ describe('retroactive attendance submission', () => {
 
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
-      const userResponse = await userController.getUser(user.uuid, proxyUser);
+      const userUuid = {
+        uuid:user.uuid
+      }
+      const userResponse = await userController.getUser(userUuid, proxyUser);
 
       expect(userResponse.user.points).toEqual(user.points + event.pointValue);
 
@@ -44,7 +47,7 @@ describe('retroactive attendance submission', () => {
       expect(attendanceResponse.attendances).toHaveLength(1);
       expect(attendanceResponse.attendances[0].event).toStrictEqual(event.getPublicEvent());
 
-      const activityResponse = await userController.getUserActivityStream(user.uuid, proxyUser);
+      const activityResponse = await userController.getUserActivityStream(userUuid, proxyUser);
 
       expect(activityResponse.activity).toHaveLength(2);
       expect(activityResponse.activity[1].pointsEarned).toEqual(event.pointValue);
@@ -74,7 +77,11 @@ describe('retroactive attendance submission', () => {
       proxyUser,
     );
 
-    const userResponse = await userController.getUser(user.uuid, proxyUser);
+    const userUuid = {
+      uuid:user.uuid
+    }
+
+    const userResponse = await userController.getUser(userUuid, proxyUser);
     const attendanceResponse = await attendanceController.getAttendancesForCurrentUser(user);
     const activityResponse = await userController.getCurrentUserActivityStream(user);
 
@@ -106,8 +113,15 @@ describe('retroactive attendance submission', () => {
 
     await adminController.submitAttendanceForUsers(request, proxyUser);
 
-    const userResponse = await userController.getUser(user.uuid, proxyUser);
-    const staffUserResponse = await userController.getUser(staffUser.uuid, proxyUser);
+    const userUuid = {
+      uuid:user.uuid
+    }
+    const staffUuid = {
+      uuid:staffUser.uuid
+    }
+
+    const userResponse = await userController.getUser(userUuid, proxyUser);
+    const staffUserResponse = await userController.getUser(staffUuid, proxyUser);
     const activityResponse = await userController.getCurrentUserActivityStream(user);
     const staffActivityResponse = await userController.getCurrentUserActivityStream(staffUser);
 
