@@ -37,8 +37,8 @@ describe('retroactive attendance submission', () => {
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
       const userUuid = {
-        uuid:user.uuid
-      }
+        uuid: user.uuid,
+      };
       const userResponse = await userController.getUser(userUuid, proxyUser);
 
       expect(userResponse.user.points).toEqual(user.points + event.pointValue);
@@ -78,8 +78,8 @@ describe('retroactive attendance submission', () => {
     );
 
     const userUuid = {
-      uuid:user.uuid
-    }
+      uuid: user.uuid,
+    };
 
     const userResponse = await userController.getUser(userUuid, proxyUser);
     const attendanceResponse = await attendanceController.getAttendancesForCurrentUser(user);
@@ -114,11 +114,11 @@ describe('retroactive attendance submission', () => {
     await adminController.submitAttendanceForUsers(request, proxyUser);
 
     const userUuid = {
-      uuid:user.uuid
-    }
+      uuid: user.uuid,
+    };
     const staffUuid = {
-      uuid:staffUser.uuid
-    }
+      uuid: staffUser.uuid,
+    };
 
     const userResponse = await userController.getUser(userUuid, proxyUser);
     const staffUserResponse = await userController.getUser(staffUuid, proxyUser);

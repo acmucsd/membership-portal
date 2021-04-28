@@ -29,6 +29,12 @@ export class AuthController {
 
   private emailService: EmailService;
 
+  constructor(userAccountService: UserAccountService, userAuthService: UserAuthService, emailService: EmailService) {
+    this.userAccountService = userAccountService;
+    this.userAuthService = userAuthService;
+    this.emailService = emailService;
+  }
+
   @Post('/registration')
   async register(@Body() registrationRequest: RegistrationRequest,
     @RequestTrace() trace: string): Promise<RegistrationResponse> {
