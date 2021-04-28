@@ -1,5 +1,4 @@
 import { JsonController, Params, Body, Get, Post, UseBefore } from 'routing-controllers';
-import { Inject } from 'typedi';
 import {
   RegistrationResponse,
   LoginResponse,
