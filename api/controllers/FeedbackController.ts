@@ -4,7 +4,7 @@ import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
 import FeedbackService from '../../services/FeedbackService';
 import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse } from '../../types';
-import { ValidUuid } from '../validators/GenericRequests';
+import { UuidParam } from '../validators/GenericRequests';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   SubmitFeedbackRequest,
@@ -36,11 +36,11 @@ export class FeedbackController {
   }
 
   @Patch('/:uuid')
-  async updateFeedbackStatus(@Params() vUuid: ValidUuid,
+  async updateFeedbackStatus(@Params() params: UuidParam,
     @Body() updateFeedbackStatusRequest: UpdateFeedbackStatusRequest,
     @AuthenticatedUser() user: UserModel): Promise<UpdateFeedbackStatusResponse> {
     if (!PermissionsService.canRespondToFeedback(user)) throw new ForbiddenError();
-    const feedback = await this.feedbackService.updateFeedbackStatus(vUuid.uuid, updateFeedbackStatusRequest.status);
+    const feedback = await this.feedbackService.updateFeedbackStatus(params.uuid, updateFeedbackStatusRequest.status);
     return { error: null, feedback };
   }
 }

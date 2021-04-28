@@ -9,16 +9,16 @@ export class Pagination implements IPagination {
   limit?: number;
 }
 
-export class ValidEmail {
+export class EmailParam {
   @IsEmail()
   email:string;
 }
-export class ValidUuid {
+export class UuidParam {
   @IsUUID()
   uuid:Uuid;
 }
 
-export class ValidAccessCode {
+export class AccessCodeParam {
   @IsHexadecimal()
   @Length(32, 32)
   accessCode:string;

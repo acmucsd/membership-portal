@@ -15,7 +15,7 @@ import {
   GetCurrentUserResponse,
   PatchUserResponse,
 } from '../../types';
-import { ValidUuid } from '../validators/GenericRequests';
+import { UuidParam } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
 
 @UseBefore(UserAuthentication)
@@ -31,12 +31,12 @@ export class UserController {
   }
 
   @Get('/:uuid/activity/')
-  async getUserActivityStream(@Params() vUuid: ValidUuid,
+  async getUserActivityStream(@Params() params: UuidParam,
     @AuthenticatedUser() currentUser: UserModel): Promise<GetUserActivityStreamResponse> {
-    if (vUuid.uuid === currentUser.uuid) {
+    if (params.uuid === currentUser.uuid) {
       return this.getCurrentUserActivityStream(currentUser);
     }
-    const activityStream = await this.userAccountService.getUserActivityStream(vUuid.uuid);
+    const activityStream = await this.userAccountService.getUserActivityStream(params.uuid);
     return { error: null, activity: activityStream };
   }
 
@@ -57,11 +57,11 @@ export class UserController {
   }
 
   @Get('/:uuid')
-  async getUser(@Params() vUuid: ValidUuid, @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
-    if (vUuid.uuid === currentUser.uuid) {
+  async getUser(@Params() params: UuidParam, @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
+    if (params.uuid === currentUser.uuid) {
       return this.getCurrentUser(currentUser);
     }
-    const user = await this.userAccountService.findByUuid(vUuid.uuid);
+    const user = await this.userAccountService.findByUuid(params.uuid);
     return { error: null, user: user.getPublicProfile() };
   }
 
