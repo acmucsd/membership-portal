@@ -94,6 +94,7 @@ describe('event CRUD operations', () => {
     const eventsResponse = await eventController.getAllEvents({}, admin);
 
     expect(eventsResponse.events).toHaveLength(1);
+    expect(eventsResponse.events[0]).toStrictEqual(event1.getPublicEvent(true));
   });
 });
 
@@ -146,9 +147,8 @@ describe('event feedback', () => {
     await ControllerFactory.event(conn).submitEventFeedback(event.uuid, { feedback }, user);
 
     const attendanceResponse = await ControllerFactory.attendance(conn).getAttendancesForCurrentUser(user);
-    const attendance = attendanceResponse.attendances[0];
 
-    expect(attendance.feedback).toEqual(feedback);
+    expect(attendanceResponse.attendances[0].feedback).toEqual(feedback);
 
     expect(user.points).toEqual(event.pointValue + Config.pointReward.EVENT_FEEDBACK_POINT_REWARD);
   });
