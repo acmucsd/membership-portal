@@ -9,6 +9,7 @@ import { SubmitEventFeedbackRequest } from '../api/validators/EventControllerReq
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
+  await new StorageUtils().deleteAllFilesInFolder(Config.file.EVENT_COVER_UPLOAD_PATH);
 });
 
 beforeEach(async () => {
@@ -142,8 +143,6 @@ describe('event feedback', () => {
       .createEvents([event])
       .attendEvents([user], [event], false)
       .write();
-
-    const previousPoints = user.points;
 
     await ControllerFactory.event(conn).submitEventFeedback(event.uuid, { feedback }, user);
 

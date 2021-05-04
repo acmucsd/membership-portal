@@ -24,23 +24,14 @@ export class EventFactory {
 
   public static fake(): EventModel {
     const [start, end] = EventFactory.randomTime();
-    return EventFactory.fakeWithTime(start, end);
-  }
-
-  private static fakeWithTime(start: Date, end: Date): EventModel {
-    const event = EventFactory.fakeWithoutTime();
-    event.start = start;
-    event.end = end;
-    return event;
-  }
-
-  public static fakeWithoutTime(): EventModel {
     return EventModel.create({
       uuid: uuid(),
       organization: FactoryUtils.pickRandomValue(EventFactory.ORGS),
       title: faker.random.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       location: faker.random.hexaDecimal(10),
+      start,
+      end,
       attendanceCode: faker.random.hexaDecimal(10),
       pointValue: EventFactory.randomPointValue(),
       requiresStaff: FactoryUtils.getRandomBoolean(),
@@ -50,17 +41,17 @@ export class EventFactory {
 
   public static fakePastEvent(daysAgo = 1): EventModel {
     const [start, end] = EventFactory.randomPastTime(daysAgo);
-    return EventFactory.fakeWithTime(start, end);
+    return EventFactory.with({ start, end })[0];
   }
 
   public static fakeOngoingEvent(): EventModel {
     const [start, end] = EventFactory.randomOngoingTime();
-    return EventFactory.fakeWithTime(start, end);
+    return EventFactory.with({ start, end })[0];
   }
 
   public static fakeFutureEvent(daysAhead = 1): EventModel {
     const [start, end] = EventFactory.randomFutureTime(daysAhead);
-    return EventFactory.fakeWithTime(start, end);
+    return EventFactory.with({ start, end })[0];
   }
 
   private static randomTime(): [Date, Date] {
