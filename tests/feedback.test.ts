@@ -173,16 +173,20 @@ describe('feedback submission', () => {
     const errorMessage = 'This feedback has already been responded to';
 
     await expect(
-      feedbackController.updateFeedbackStatus({ uuid: feedbackToAcknowledgeResponse.feedback.uuid }, { status: FeedbackStatus.ACKNOWLEDGED }, admin),
+      feedbackController.updateFeedbackStatus({ uuid: feedbackToAcknowledgeResponse.feedback.uuid },
+        { status: FeedbackStatus.ACKNOWLEDGED }, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      feedbackController.updateFeedbackStatus({ uuid: feedbackToAcknowledgeResponse.feedback.uuid }, { status: FeedbackStatus.IGNORED }, admin),
+      feedbackController.updateFeedbackStatus({ uuid: feedbackToAcknowledgeResponse.feedback.uuid },
+        { status: FeedbackStatus.IGNORED }, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      feedbackController.updateFeedbackStatus({ uuid: feedbackToIgnoreResponse.feedback.uuid }, { status: FeedbackStatus.ACKNOWLEDGED }, admin),
+      feedbackController.updateFeedbackStatus({ uuid: feedbackToIgnoreResponse.feedback.uuid },
+        { status: FeedbackStatus.ACKNOWLEDGED }, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      feedbackController.updateFeedbackStatus({ uuid: feedbackToIgnoreResponse.feedback.uuid }, { status: FeedbackStatus.IGNORED }, admin),
+      feedbackController.updateFeedbackStatus({ uuid: feedbackToIgnoreResponse.feedback.uuid },
+        { status: FeedbackStatus.IGNORED }, admin),
     ).rejects.toThrow(errorMessage);
   });
 });
