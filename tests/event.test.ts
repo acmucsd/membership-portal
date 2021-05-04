@@ -86,11 +86,10 @@ describe('event CRUD operations', () => {
       .write();
 
     const eventController = ControllerFactory.event(conn);
-    const errorMessage = 'Attendance code has already been used';
 
     await expect(
       eventController.createEvent({ event: event2 }, admin),
-    ).rejects.toThrow(errorMessage);
+    ).rejects.toThrow('Attendance code has already been used');
 
     const eventsResponse = await eventController.getAllEvents({}, admin);
 
@@ -165,11 +164,9 @@ describe('event feedback', () => {
       .createEvents([event])
       .write();
 
-    const errorMessage = 'You must attend this event before submiting feedback';
-
     await expect(
       ControllerFactory.event(conn).submitEventFeedback(event.uuid, { feedback }, user),
-    ).rejects.toThrow(errorMessage);
+    ).rejects.toThrow('You must attend this event before submiting feedback');
   });
 
   test('is rejected if submitted to an event multiple times', async () => {
@@ -187,11 +184,9 @@ describe('event feedback', () => {
     const eventController = ControllerFactory.event(conn);
     await eventController.submitEventFeedback(event.uuid, { feedback }, user);
 
-    const errorMessage = 'You cannot submit feedback for this event more than once';
-
     await expect(
       eventController.submitEventFeedback(event.uuid, { feedback }, user),
-    ).rejects.toThrow(errorMessage);
+    ).rejects.toThrow('You cannot submit feedback for this event more than once');
   });
 
   test('is rejected if sent after 2 days of event completion', async () => {
@@ -206,11 +201,9 @@ describe('event feedback', () => {
       .attendEvents([user], [event], false)
       .write();
 
-    const errorMessage = 'You must submit feedback within 2 days of the event ending';
-
     await expect(
       ControllerFactory.event(conn).submitEventFeedback(event.uuid, { feedback }, user),
-    ).rejects.toThrow(errorMessage);
+    ).rejects.toThrow('You must submit feedback within 2 days of the event ending');
   });
 
   test('is rejected if more than 3 feedback is provided', async () => {
