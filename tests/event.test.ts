@@ -152,7 +152,7 @@ describe('event feedback', () => {
 
     expect(attendance.feedback).toEqual(feedback);
 
-    expect(user.points).toEqual(previousPoints + Config.pointReward.EVENT_FEEDBACK_POINT_REWARD);
+    expect(user.points).toEqual(event.pointValue + Config.pointReward.EVENT_FEEDBACK_POINT_REWARD);
   });
 
   test('is rejected on submission to an event not attended', async () => {
