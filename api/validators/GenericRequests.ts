@@ -11,15 +11,15 @@ export class Pagination implements IPagination {
 
 export class EmailParam {
   @IsEmail()
-  email:string;
+  email: string;
 }
 export class UuidParam {
   @IsUUID()
-  uuid:Uuid;
+  uuid: Uuid;
 }
 
 export class AccessCodeParam {
   @IsHexadecimal()
   @Length(32, 32)
-  accessCode:string;
+  accessCode: string;
 }
