@@ -1,5 +1,5 @@
 import {
-  JsonController, Param, Get, Post, Patch, UseBefore, UploadedFile, Body,
+  JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body,
 } from 'routing-controllers';
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
@@ -8,7 +8,6 @@ import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import {
   MediaType,
-  Uuid,
   File,
   GetUserActivityStreamResponse,
   UpdateProfilePictureResponse,
@@ -16,6 +15,7 @@ import {
   GetCurrentUserResponse,
   PatchUserResponse,
 } from '../../types';
+import { UuidParam } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
 
 @UseBefore(UserAuthentication)
@@ -31,12 +31,12 @@ export class UserController {
   }
 
   @Get('/:uuid/activity/')
-  async getUserActivityStream(@Param('uuid') uuid: Uuid,
+  async getUserActivityStream(@Params() params: UuidParam,
     @AuthenticatedUser() currentUser: UserModel): Promise<GetUserActivityStreamResponse> {
-    if (uuid === currentUser.uuid) {
+    if (params.uuid === currentUser.uuid) {
       return this.getCurrentUserActivityStream(currentUser);
     }
-    const activityStream = await this.userAccountService.getUserActivityStream(uuid);
+    const activityStream = await this.userAccountService.getUserActivityStream(params.uuid);
     return { error: null, activity: activityStream };
   }
 
@@ -57,11 +57,11 @@ export class UserController {
   }
 
   @Get('/:uuid')
-  async getUser(@Param('uuid') uuid: Uuid, @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
-    if (uuid === currentUser.uuid) {
+  async getUser(@Params() params: UuidParam, @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
+    if (params.uuid === currentUser.uuid) {
       return this.getCurrentUser(currentUser);
     }
-    const user = await this.userAccountService.findByUuid(uuid);
+    const user = await this.userAccountService.findByUuid(params.uuid);
     return { error: null, user: user.getPublicProfile() };
   }
 

@@ -116,11 +116,12 @@ describe('feedback submission', () => {
     const feedbackController = ControllerFactory.feedback(conn);
 
     const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, user);
-    const { uuid } = submittedFeedbackResponse.feedback;
+
     const status = FeedbackStatus.ACKNOWLEDGED;
+    const uuid = submittedFeedbackResponse.feedback;
     const acknowledgedFeedback = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
 
-    const persistedUserResponse = await userController.getUser(user.uuid, admin);
+    const persistedUserResponse = await userController.getUser({ uuid: user.uuid }, admin);
 
     const feedbackPointReward = Config.pointReward.FEEDBACK_POINT_REWARD;
 
@@ -140,11 +141,11 @@ describe('feedback submission', () => {
     const feedbackController = ControllerFactory.feedback(conn);
 
     const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, user);
-    const { uuid } = submittedFeedbackResponse.feedback;
     const status = FeedbackStatus.IGNORED;
+    const uuid = submittedFeedbackResponse.feedback;
     const ignoredFeedbackResponse = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
 
-    const persistedUserResponse = await userController.getUser(user.uuid, admin);
+    const persistedUserResponse = await userController.getUser({ uuid: user.uuid }, admin);
 
     expect(ignoredFeedbackResponse.feedback.status).toEqual(FeedbackStatus.IGNORED);
     expect(persistedUserResponse.user.points).toEqual(user.points);
@@ -162,29 +163,30 @@ describe('feedback submission', () => {
     const feedbackToAcknowledgeResponse = await feedbackController.submitFeedback({ feedback: feedback1 }, user);
     const feedbackToIgnoreResponse = await feedbackController.submitFeedback({ feedback: feedback2 }, user);
 
-    const acknowledgedUuid = feedbackToAcknowledgeResponse.feedback.uuid;
-    const ignoredUuid = feedbackToIgnoreResponse.feedback.uuid;
-
     await feedbackController.updateFeedbackStatus(
-      acknowledgedUuid, { status: FeedbackStatus.ACKNOWLEDGED }, admin,
+      { uuid: feedbackToAcknowledgeResponse.feedback.uuid }, { status: FeedbackStatus.ACKNOWLEDGED }, admin,
     );
     await feedbackController.updateFeedbackStatus(
-      ignoredUuid, { status: FeedbackStatus.IGNORED }, admin,
+      { uuid: feedbackToIgnoreResponse.feedback.uuid }, { status: FeedbackStatus.IGNORED }, admin,
     );
 
     const errorMessage = 'This feedback has already been responded to';
 
     await expect(
-      feedbackController.updateFeedbackStatus(acknowledgedUuid, { status: FeedbackStatus.ACKNOWLEDGED }, admin),
+      feedbackController.updateFeedbackStatus({ uuid: feedbackToAcknowledgeResponse.feedback.uuid },
+        { status: FeedbackStatus.ACKNOWLEDGED }, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      feedbackController.updateFeedbackStatus(acknowledgedUuid, { status: FeedbackStatus.IGNORED }, admin),
+      feedbackController.updateFeedbackStatus({ uuid: feedbackToAcknowledgeResponse.feedback.uuid },
+        { status: FeedbackStatus.IGNORED }, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      feedbackController.updateFeedbackStatus(ignoredUuid, { status: FeedbackStatus.ACKNOWLEDGED }, admin),
+      feedbackController.updateFeedbackStatus({ uuid: feedbackToIgnoreResponse.feedback.uuid },
+        { status: FeedbackStatus.ACKNOWLEDGED }, admin),
     ).rejects.toThrow(errorMessage);
     await expect(
-      feedbackController.updateFeedbackStatus(ignoredUuid, { status: FeedbackStatus.IGNORED }, admin),
+      feedbackController.updateFeedbackStatus({ uuid: feedbackToIgnoreResponse.feedback.uuid },
+        { status: FeedbackStatus.IGNORED }, admin),
     ).rejects.toThrow(errorMessage);
   });
 });
