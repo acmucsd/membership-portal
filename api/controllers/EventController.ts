@@ -1,5 +1,5 @@
 import {
-  JsonController, Get, Patch, Delete, Post, UseBefore, Param, ForbiddenError, QueryParams, UploadedFile, Body,
+  JsonController, Get, Patch, Delete, Post, UseBefore, Params, ForbiddenError, QueryParams, UploadedFile, Body,
 } from 'routing-controllers';
 import EventService from '../../services/EventService';
 import { UserAuthentication, OptionalUserAuthentication } from '../middleware/UserAuthentication';
@@ -9,7 +9,6 @@ import PermissionsService from '../../services/PermissionsService';
 import StorageService from '../../services/StorageService';
 import AttendanceService from '../../services/AttendanceService';
 import {
-  Uuid,
   MediaType,
   File,
   CreateEventResponse,
@@ -20,6 +19,7 @@ import {
   GetFutureEventsResponse,
   GetPastEventsResponse,
 } from '../../types';
+import { UuidParam } from '../validators/GenericRequests';
 import {
   EventSearchOptions,
   PatchEventRequest,
@@ -63,48 +63,48 @@ export class EventController {
   @Post('/picture/:uuid')
   async updateEventCover(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.EVENT_COVER) }) file: File,
-    @Param('uuid') uuid: Uuid,
+    @Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<UpdateEventCoverResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
-    const cover = await this.storageService.upload(file, MediaType.EVENT_COVER, uuid);
-    const event = await this.eventService.updateByUuid(uuid, { cover });
+    const cover = await this.storageService.upload(file, MediaType.EVENT_COVER, params.uuid);
+    const event = await this.eventService.updateByUuid(params.uuid, { cover });
     return { error: null, event };
   }
 
   @UseBefore(UserAuthentication)
   @Post('/:uuid/feedback')
-  async submitEventFeedback(@Param('uuid') uuid: Uuid, @Body() submitEventFeedbackRequest: SubmitEventFeedbackRequest,
+  async submitEventFeedback(@Params() params: UuidParam, @Body() submitEventFeedbackRequest: SubmitEventFeedbackRequest,
     @AuthenticatedUser() user: UserModel) {
     if (!PermissionsService.canSubmitFeedback(user)) throw new ForbiddenError();
-    await this.attendanceService.submitEventFeedback(submitEventFeedbackRequest.feedback, uuid, user);
+    await this.attendanceService.submitEventFeedback(submitEventFeedbackRequest.feedback, params.uuid, user);
     return { error: null };
   }
 
   @UseBefore(UserAuthentication)
   @Get('/:uuid')
-  async getOneEvent(@Param('uuid') uuid: Uuid,
+  async getOneEvent(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetOneEventResponse> {
     const canSeeAttendanceCode = PermissionsService.canEditEvents(user);
-    const event = await this.eventService.findByUuid(uuid, canSeeAttendanceCode);
+    const event = await this.eventService.findByUuid(params.uuid, canSeeAttendanceCode);
     return { error: null, event };
   }
 
   @UseBefore(UserAuthentication)
   @Patch('/:uuid')
-  async updateEvent(@Param('uuid') uuid: Uuid,
+  async updateEvent(@Params() params: UuidParam,
     @Body() patchEventRequest: PatchEventRequest,
     @AuthenticatedUser() user: UserModel): Promise<PatchEventResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
-    const event = await this.eventService.updateByUuid(uuid, patchEventRequest.event);
+    const event = await this.eventService.updateByUuid(params.uuid, patchEventRequest.event);
     return { error: null, event };
   }
 
   @UseBefore(UserAuthentication)
   @Delete('/:uuid')
-  async deleteEvent(@Param('uuid') uuid: Uuid,
+  async deleteEvent(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<DeleteEventResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
-    await this.eventService.deleteByUuid(uuid);
+    await this.eventService.deleteByUuid(params.uuid);
     return { error: null };
   }
 
