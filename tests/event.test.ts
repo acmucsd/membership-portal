@@ -116,7 +116,9 @@ describe('event covers', () => {
       .createEvents([event])
       .write();
 
-    const eventCoverResponse = await ControllerFactory.event(conn).updateEventCover(cover, event.uuid, admin);
+    const eventCoverResponse = await ControllerFactory
+      .event(conn)
+      .updateEventCover(cover, { uuid: event.uuid }, admin);
     expect(eventCoverResponse.event.cover).toBeTruthy();
 
     const eventCoverFiles = await storage.getAllFilesFromFolder(Config.file.EVENT_COVER_UPLOAD_PATH);
@@ -144,7 +146,7 @@ describe('event feedback', () => {
       .attendEvents([user], [event], false)
       .write();
 
-    await ControllerFactory.event(conn).submitEventFeedback(event.uuid, { feedback }, user);
+    await ControllerFactory.event(conn).submitEventFeedback({ uuid: event.uuid }, { feedback }, user);
 
     const attendanceResponse = await ControllerFactory.attendance(conn).getAttendancesForCurrentUser(user);
 
@@ -165,7 +167,7 @@ describe('event feedback', () => {
       .write();
 
     await expect(
-      ControllerFactory.event(conn).submitEventFeedback(event.uuid, { feedback }, user),
+      ControllerFactory.event(conn).submitEventFeedback({ uuid: event.uuid }, { feedback }, user),
     ).rejects.toThrow('You must attend this event before submiting feedback');
   });
 
@@ -182,10 +184,10 @@ describe('event feedback', () => {
       .write();
 
     const eventController = ControllerFactory.event(conn);
-    await eventController.submitEventFeedback(event.uuid, { feedback }, user);
+    await eventController.submitEventFeedback({ uuid: event.uuid }, { feedback }, user);
 
     await expect(
-      eventController.submitEventFeedback(event.uuid, { feedback }, user),
+      eventController.submitEventFeedback({ uuid: event.uuid }, { feedback }, user),
     ).rejects.toThrow('You cannot submit feedback for this event more than once');
   });
 
@@ -202,7 +204,7 @@ describe('event feedback', () => {
       .write();
 
     await expect(
-      ControllerFactory.event(conn).submitEventFeedback(event.uuid, { feedback }, user),
+      ControllerFactory.event(conn).submitEventFeedback({ uuid: event.uuid }, { feedback }, user),
     ).rejects.toThrow('You must submit feedback within 2 days of the event ending');
   });
 

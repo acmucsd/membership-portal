@@ -118,8 +118,8 @@ describe('feedback submission', () => {
     const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, user);
 
     const status = FeedbackStatus.ACKNOWLEDGED;
-    const uuid = submittedFeedbackResponse.feedback;
-    const acknowledgedFeedback = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
+    const { uuid } = submittedFeedbackResponse.feedback;
+    const acknowledgedFeedback = await feedbackController.updateFeedbackStatus({ uuid }, { status }, admin);
 
     const persistedUserResponse = await userController.getUser({ uuid: user.uuid }, admin);
 
