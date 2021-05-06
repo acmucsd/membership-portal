@@ -142,12 +142,12 @@ describe('feedback submission', () => {
 
     const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, user);
     const status = FeedbackStatus.IGNORED;
-    const uuid = submittedFeedbackResponse.feedback;
-    const ignoredFeedbackResponse = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
+    const { uuid } = submittedFeedbackResponse.feedback;
+
+    const ignoredFeedbackResponse = await feedbackController.updateFeedbackStatus({ uuid }, { status }, admin);
+    expect(ignoredFeedbackResponse.feedback.status).toEqual(FeedbackStatus.IGNORED);
 
     const persistedUserResponse = await userController.getUser({ uuid: user.uuid }, admin);
-
-    expect(ignoredFeedbackResponse.feedback.status).toEqual(FeedbackStatus.IGNORED);
     expect(persistedUserResponse.user.points).toEqual(user.points);
   });
 

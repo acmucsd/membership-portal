@@ -37,18 +37,19 @@ describe('event CRUD operations', () => {
     const eventController = ControllerFactory.event(conn);
 
     const pastEventsResponse = await eventController.getPastEvents({}, user);
-    const futureEventsResponse = await eventController.getFutureEvents({}, user);
-    const allEventsResponse = await eventController.getAllEvents({}, user);
-
     expect(pastEventsResponse.events).toEqual(
       expect.arrayContaining([pastEvent.getPublicEvent()]),
     );
+
+    const futureEventsResponse = await eventController.getFutureEvents({}, user);
     expect(futureEventsResponse.events).toEqual(
       expect.arrayContaining([
         ongoingEvent.getPublicEvent(),
         futureEvent.getPublicEvent(),
       ]),
     );
+
+    const allEventsResponse = await eventController.getAllEvents({}, user);
     expect(allEventsResponse.events).toEqual(
       expect.arrayContaining([
         pastEvent.getPublicEvent(),
@@ -151,7 +152,6 @@ describe('event feedback', () => {
     const attendanceResponse = await ControllerFactory.attendance(conn).getAttendancesForCurrentUser(user);
 
     expect(attendanceResponse.attendances[0].feedback).toEqual(feedback);
-
     expect(user.points).toEqual(event.pointValue + Config.pointReward.EVENT_FEEDBACK_POINT_REWARD);
   });
 
