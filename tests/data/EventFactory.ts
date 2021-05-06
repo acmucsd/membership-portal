@@ -55,47 +55,36 @@ export class EventFactory {
   }
 
   private static randomTime(): [Date, Date] {
-    // between last and next week
-    const days = FactoryUtils.getRandomNumber(-7, 7);
-    // between 8 AM and 6 PM
-    const hour = FactoryUtils.getRandomNumber(9, 19);
-    // between 0.5 and 2.5 hours long, rounded to the half hour
-    const duration = FactoryUtils.getRandomNumber(30, 150, 30);
-    const start = moment().subtract(days, 'days').hour(hour);
-    const end = moment(start.valueOf()).add(duration, 'minutes');
-    return [start.toDate(), end.toDate()];
+    // random day between last and next week
+    const day = FactoryUtils.getRandomNumber(-7, 7);
+    return EventFactory.randomIntervalInDay(day);
   }
 
   private static randomPastTime(daysAgo: number): [Date, Date] {
     // random day between daysAgo and a week before daysAgo
-    const days = FactoryUtils.getRandomNumber(daysAgo, daysAgo + 7);
-    // between 8 AM and 6 PM
-    const hour = FactoryUtils.getRandomNumber(9, 19);
-    // between 0.5 and 2.5 hours long, rounded to the half hour
-    const duration = FactoryUtils.getRandomNumber(30, 150, 30);
-    const start = moment().subtract(days, 'days').hour(hour);
-    const end = moment(start.valueOf()).add(duration, 'minutes');
-    return [start.toDate(), end.toDate()];
+    const day = FactoryUtils.getRandomNumber(-daysAgo - 7, -daysAgo);
+    return EventFactory.randomIntervalInDay(day);
   }
 
   private static randomOngoingTime(): [Date, Date] {
-    // 0-2 hours before now
-    const hour = FactoryUtils.getRandomNumber(0, 2);
-    // between 2.5 and 6 hours long, rounded to the half hour
-    const duration = FactoryUtils.getRandomNumber(150, 480, 30);
-    const start = moment().subtract(hour, 'hours');
-    const end = moment(start.valueOf()).add(duration, 'minutes');
-    return [start.toDate(), end.toDate()];
+    // 0, 30 mins, or 1 hour before now
+    const currentHour = moment().hour();
+    const hour = FactoryUtils.getRandomNumber(currentHour - 1, currentHour, 0.5);
+    return EventFactory.randomIntervalInDay(0, hour);
   }
 
   private static randomFutureTime(daysAhead: number): [Date, Date] {
-    // random day between daysAhead and a week before daysAhead
-    const days = FactoryUtils.getRandomNumber(daysAhead, daysAhead + 7);
-    // between 8 AM and 6 PM
-    const hour = FactoryUtils.getRandomNumber(9, 19);
-    // between 0.5 and 2.5 hours long, rounded to the half hour
-    const duration = FactoryUtils.getRandomNumber(30, 150, 30);
-    const start = moment().add(days, 'days').hour(hour);
+    // random day between daysAhead and a week after daysAhead
+    const day = FactoryUtils.getRandomNumber(daysAhead, daysAhead + 7);
+    return EventFactory.randomIntervalInDay(day);
+  }
+
+  private static randomIntervalInDay(day: number, hour?: number): [Date, Date] {
+    // default between 8 AM and 6 PM
+    if (!hour) hour = FactoryUtils.getRandomNumber(9, 19);
+    // between 1 and 2.5 hours long, rounded to the half hour
+    const duration = FactoryUtils.getRandomNumber(60, 150, 30);
+    const start = moment().add(day, 'days').hour(hour);
     const end = moment(start.valueOf()).add(duration, 'minutes');
     return [start.toDate(), end.toDate()];
   }
