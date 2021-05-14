@@ -23,7 +23,7 @@ export class ReplaceEnumsWithStrings1602914093929 implements MigrationInterface 
       isNullable: true,
     };
     await this.changeType(queryRunner, table, column, tableColumnOptions, dfault);
-    await queryRunner.query(`DROP TYPE "enum_${table}_${column}" CASCADE`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "enum_${table}_${column}" CASCADE`);
   }
 
   private async stringToEnum(queryRunner: QueryRunner, table: string, column: string, keys: string[], dfault?: string) {
