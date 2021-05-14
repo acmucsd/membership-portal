@@ -1,5 +1,4 @@
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { pick } from 'underscore';
 import * as bcrypt from 'bcrypt';
 import { PrivateProfile, PublicProfile, Uuid, UserAccessType, UserState } from '../types';
 import { ActivityModel } from './ActivityModel';
@@ -89,32 +88,32 @@ export class UserModel extends BaseEntity {
   }
 
   public getPublicProfile(): PublicProfile {
-    return pick(this, [
-      'uuid',
-      'firstName',
-      'lastName',
-      'profilePicture',
-      'graduationYear',
-      'major',
-      'bio',
-      'points',
-    ]);
+    return {
+      uuid: this.uuid,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      profilePicture: this.profilePicture,
+      graduationYear: this.graduationYear,
+      major: this.major,
+      bio: this.bio,
+      points: this.points,
+    };
   }
 
   public getFullUserProfile(): PrivateProfile {
-    return pick(this, [
-      'uuid',
-      'email',
-      'firstName',
-      'lastName',
-      'profilePicture',
-      'accessType',
-      'state',
-      'graduationYear',
-      'major',
-      'bio',
-      'points',
-      'credits',
-    ]);
+    return {
+      uuid: this.uuid,
+      email: this.email,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      profilePicture: this.profilePicture,
+      accessType: this.accessType,
+      state: this.state,
+      graduationYear: this.graduationYear,
+      major: this.major,
+      bio: this.bio,
+      points: this.points,
+      credits: this.credits,
+    };
   }
 }

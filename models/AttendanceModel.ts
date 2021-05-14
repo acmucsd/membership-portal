@@ -1,5 +1,4 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
-import { pick } from 'underscore';
 import { PublicAttendance, Uuid } from '../types';
 import { UserModel } from './UserModel';
 import { EventModel } from './EventModel';
@@ -40,17 +39,12 @@ export class AttendanceModel extends BaseEntity {
   feedback: string[];
 
   public getPublicAttendance(): PublicAttendance {
-    const rawAttendance = pick(this, [
-      'user',
-      'event',
-      'timestamp',
-      'asStaff',
-      'feedback',
-    ]);
-
-    const publicAttendance: PublicAttendance = { ...rawAttendance };
-    if (rawAttendance.user) publicAttendance.user = rawAttendance.user.getPublicProfile();
-    if (rawAttendance.event) publicAttendance.event = rawAttendance.event.getPublicEvent();
-    return publicAttendance;
+    return {
+      user: this.user?.getPublicProfile(),
+      event: this.event?.getPublicEvent(),
+      timestamp: this.timestamp,
+      asStaff: this.asStaff,
+      feedback: this.feedback,
+    };
   }
 }
