@@ -1,3 +1,4 @@
+import { CreateBonusRequest } from 'api/validators/AdminControllerRequests';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, UserFactory, PortalState } from './data';
@@ -115,5 +116,85 @@ describe('retroactive attendance submission', () => {
     expect(staffUserResponse.user.points).toEqual(event.pointValue + event.staffPointBonus);
     expect(activityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
     expect(staffActivityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT_AS_STAFF);
+  });
+});
+
+describe('email retrieval', () => {
+  test('gets all the emails of stored users', async () => {
+    const conn = await DatabaseConnection.get();
+    const users = UserFactory.create(5);
+    const emails = users.map((user) => user.email.toLowerCase());
+    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+
+    await new PortalState()
+      .createUsers([...users, proxyUser])
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+    const response = await adminController.getAllEmails(proxyUser);
+    expect([...emails, proxyUser.email].sort()).toEqual(response.emails.sort());
+  });
+
+  test('no other emails present asides from registered users', async () => {
+    const conn = await DatabaseConnection.get();
+    const users = UserFactory.create(5);
+    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [extraneousUser] = UserFactory.create(1);
+
+    await new PortalState()
+      .createUsers([...users, proxyUser])
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+    const response = await adminController.getAllEmails(proxyUser);
+    expect(response.emails).not.toContain(extraneousUser.email.toLowerCase());
+  });
+});
+
+describe('bonus points submission', () => {
+  test('updates points and activity to the users in the bonus request', async () => {
+    const conn = await DatabaseConnection.get();
+    const users = UserFactory.create(5);
+    const emails = users.map((user) => user.email.toLowerCase());
+    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+
+    await new PortalState()
+      .createUsers([...users, proxyUser])
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+    const userController = ControllerFactory.user(conn);
+    const request: CreateBonusRequest = { bonus: { description: 'Test addition of bonus points',
+      users: emails,
+      points: 200 } };
+    const bonusResponse = await adminController.addBonus(request, proxyUser);
+    const userResponse = await userController.getUser({ uuid: users[0].uuid }, proxyUser);
+
+    expect(userResponse.user.points).toEqual(200);
+    expect(bonusResponse.emails.sort()).toEqual(emails.sort());
+  });
+
+  test("Does not update points and activity to the users who aren't in the bonus request", async () => {
+    const conn = await DatabaseConnection.get();
+    const users = UserFactory.create(5);
+    const emails = users.map((user) => user.email.toLowerCase());
+    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [extraneousUser] = UserFactory.create(1);
+
+    await new PortalState()
+      .createUsers([...users, extraneousUser, proxyUser])
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+    const userController = ControllerFactory.user(conn);
+    const request: CreateBonusRequest = { bonus: { description: 'Test addition of bonus points',
+      users: emails,
+      points: 200 } };
+
+    await adminController.addBonus(request, proxyUser);
+
+    const userResponse = await userController.getUser({ uuid: extraneousUser.uuid }, proxyUser);
+
+    expect(userResponse.user.points).toEqual(0);
   });
 });
