@@ -41,7 +41,7 @@ export class MerchFactory {
   public static fakeCollection(): MerchandiseCollectionModel {
     return MerchandiseCollectionModel.create({
       uuid: uuid(),
-      title: faker.random.hexaDecimal(10),
+      title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       items: MerchFactory.createItems(FactoryUtils.getRandomNumber(1, 5)),
     });
@@ -50,7 +50,7 @@ export class MerchFactory {
   public static fakeItem(): MerchandiseItemModel {
     return MerchandiseItemModel.create({
       uuid: uuid(),
-      itemName: faker.random.hexaDecimal(10),
+      itemName: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       options: MerchFactory.createOptions(FactoryUtils.getRandomNumber(1, 5)),
     });
