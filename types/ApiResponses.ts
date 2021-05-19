@@ -140,6 +140,7 @@ export interface GetLeaderboardResponse extends ApiResponse {
 export interface PublicMerchCollection {
   uuid: Uuid;
   title: string;
+  themeColor?: string;
   description: string;
   items: PublicMerchItem[];
 }
@@ -152,14 +153,21 @@ export interface PublicMerchItem {
   description: string;
   monthlyLimit: number;
   lifetimeLimit: number;
+  hasVariants: boolean;
   options: PublicMerchItemOption[];
+}
+
+export interface PublicMerchItemOptionMetadata {
+  type: string;
+  value: string;
+  position: number;
 }
 
 export interface PublicMerchItemOption {
   uuid: Uuid;
   price: number;
   discountPercentage: number;
-  metadata: object;
+  metadata: PublicMerchItemOptionMetadata;
 }
 
 export interface PublicOrderItem {
