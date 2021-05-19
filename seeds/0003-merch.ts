@@ -5,6 +5,7 @@ const merchandise = [
   {
     uuid: '0de9ad9d-fb30-4b27-8321-05cae445a66b',
     title: 'The Hack School Collection',
+    themeColor: '#EB8C34',
     description: 'Do you like to code? Tell the world with this Hack School inspired collection.',
     items: [
       {
@@ -16,15 +17,13 @@ const merchandise = [
         monthlyLimit: 1,
         lifetimeLimit: 1,
         hidden: false,
+        hasVariants: false,
         options: [
           {
             uuid: '09739cd2-25ca-40d2-ace3-d012a1c1769c',
             quantity: 5,
             price: 22500,
             discountPercentage: 0,
-            metadata: {
-              size: 'XL',
-            },
           },
         ],
       }, {
@@ -35,6 +34,7 @@ const merchandise = [
         monthlyLimit: 5,
         lifetimeLimit: 25,
         hidden: false,
+        hasVariants: true,
         options: [
           {
             uuid: 'fdcc9e16-4d19-4436-84e7-b46ef9666b50',
@@ -42,8 +42,9 @@ const merchandise = [
             price: 1500,
             discountPercentage: 15,
             metadata: {
-              color: 'CYAN',
-              size: '4x4',
+              type: 'SIZE',
+              value: '4x4',
+              position: 2,
             },
           },
           {
@@ -52,8 +53,9 @@ const merchandise = [
             price: 1500,
             discountPercentage: 5,
             metadata: {
-              color: 'LIGHT PINK',
-              size: '2x2',
+              type: 'SIZE',
+              value: '2x2',
+              position: 0,
             },
           },
           {
@@ -62,8 +64,9 @@ const merchandise = [
             price: 1500,
             discountPercentage: 55,
             metadata: {
-              color: 'SEA GREEN',
-              size: '3x3',
+              type: 'SIZE',
+              value: '3x3',
+              position: 1,
             },
           },
         ],
@@ -72,6 +75,7 @@ const merchandise = [
   }, {
     uuid: '45ed524f-0b1b-46ee-b591-f721dfb06a67',
     title: 'Fall 2001',
+    themeColor: '#36BF13',
     description: 'Celebrate the opening of Sixth College in style, featuring raccoon print jackets.',
     items: [
       {
@@ -82,6 +86,7 @@ const merchandise = [
         monthlyLimit: 2,
         lifetimeLimit: 5,
         hidden: false,
+        hasVariants: false,
         options: [
           {
             uuid: 'bce24df4-cf8d-41c1-98d4-bc67f12fdb4e',
@@ -98,6 +103,7 @@ const merchandise = [
         monthlyLimit: 3,
         lifetimeLimit: 10,
         hidden: false,
+        hasVariants: false,
         options: [
           {
             uuid: '79757093-1965-4657-baae-252484939d92',
@@ -114,6 +120,7 @@ const merchandise = [
         monthlyLimit: 1,
         lifetimeLimit: 2,
         hidden: false,
+        hasVariants: true,
         options: [
           {
             uuid: '6558f269-a449-4f94-8002-67ed39aa65c8',
@@ -121,7 +128,9 @@ const merchandise = [
             price: 19500,
             discountPercentage: 0,
             metadata: {
-              size: 'M',
+              type: 'SIZE',
+              value: 'M',
+              position: 0,
             },
           },
           {
@@ -130,7 +139,9 @@ const merchandise = [
             price: 20500,
             discountPercentage: 0,
             metadata: {
-              size: 'L',
+              type: 'SIZE',
+              value: 'L',
+              position: 1,
             },
           },
         ],
