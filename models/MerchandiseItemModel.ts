@@ -35,6 +35,9 @@ export class MerchandiseItemModel extends BaseEntity {
   @Column('boolean', { default: false })
   hidden: boolean;
 
+  @Column('boolean')
+  hasVariants: boolean;
+
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })
   options: MerchandiseItemOptionModel[];
 
@@ -47,6 +50,7 @@ export class MerchandiseItemModel extends BaseEntity {
       options: this.options.map((o) => o.getPublicMerchItemOption()),
       monthlyLimit: this.monthlyLimit,
       lifetimeLimit: this.lifetimeLimit,
+      hasVariants: this.hasVariants,
     };
     if (this.collection) baseMerchItem.collection = this.collection.getPublicMerchCollection();
     return baseMerchItem;

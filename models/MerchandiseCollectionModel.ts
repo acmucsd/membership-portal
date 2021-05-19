@@ -10,6 +10,9 @@ export class MerchandiseCollectionModel extends BaseEntity {
   @Column('varchar', { length: 255 })
   title: string;
 
+  @Column('varchar', { length: 255, nullable: true })
+  themeColor: string;
+
   @Column('text')
   description: string;
 
@@ -23,6 +26,7 @@ export class MerchandiseCollectionModel extends BaseEntity {
     const baseMerchCollection: any = {
       uuid: this.uuid,
       title: this.title,
+      themeColor: this.themeColor,
       description: this.description,
     };
     if (this.items) baseMerchCollection.items = this.items.map((i) => i.getPublicMerchItem());

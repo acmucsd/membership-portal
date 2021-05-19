@@ -1,7 +1,7 @@
 import {
   Entity, BaseEntity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, Index,
 } from 'typeorm';
-import { Uuid, PublicMerchItemOption } from '../types';
+import { Uuid, PublicMerchItemOption, MerchItemOptionMetadata } from '../types';
 import { OrderItemModel } from './OrderItemModel';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
 
@@ -24,19 +24,20 @@ export class MerchandiseItemOptionModel extends BaseEntity {
   @Column('integer', { default: 0 })
   discountPercentage: number;
 
+  // Potential fields: type: string, value: string, position: number
   @Column({
     type: 'text',
     nullable: true,
     transformer: {
-      to(value: object): string {
+      to(value: MerchItemOptionMetadata): string {
         return JSON.stringify(value);
       },
-      from(value: string): object {
+      from(value: string): MerchItemOptionMetadata {
         return value ? JSON.parse(value) : null;
       },
     },
   })
-  metadata: object;
+  metadata: MerchItemOptionMetadata;
 
   @OneToMany((type) => OrderItemModel, (orderItem) => orderItem.option)
   orders: OrderItemModel;
