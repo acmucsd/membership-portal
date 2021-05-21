@@ -7,9 +7,13 @@ import { Config } from '../config';
 import { StorageUtils } from './utils';
 import { SubmitEventFeedbackRequest } from '../api/validators/EventControllerRequests';
 
+jest.mock('aws-sdk', () => {
+  const S3Mock = require('./mocks/S3Mock').default;
+  return S3Mock.mockFileUploads();
+});
+
 beforeAll(async () => {
   await DatabaseConnection.connect();
-  await new StorageUtils().deleteAllFilesInFolder(Config.file.EVENT_COVER_UPLOAD_PATH);
 });
 
 beforeEach(async () => {
@@ -100,12 +104,6 @@ describe('event CRUD operations', () => {
 });
 
 describe('event covers', () => {
-  const storage = new StorageUtils();
-
-  afterEach(async () => {
-    await storage.deleteAllFilesInFolder(Config.file.EVENT_COVER_UPLOAD_PATH);
-  });
-
   test('properly updates cover photo in database and on S3', async () => {
     const conn = await DatabaseConnection.get();
     const [event] = EventFactory.create(1);
@@ -120,13 +118,10 @@ describe('event covers', () => {
     const eventCoverResponse = await ControllerFactory
       .event(conn)
       .updateEventCover(cover, { uuid: event.uuid }, admin);
-    expect(eventCoverResponse.event.cover).toBeTruthy();
 
-    const eventCoverFiles = await storage.getAllFilesFromFolder(Config.file.EVENT_COVER_UPLOAD_PATH);
-    expect(eventCoverFiles).toHaveLength(1);
+    const expectedUploadPath = StorageUtils.getExpectedUploadPath(event, cover);
 
-    const fileName = StorageUtils.parseFirstFileNameFromFiles(eventCoverFiles);
-    expect(fileName).toEqual(event.uuid);
+    expect(eventCoverResponse.event.cover).toEqual(expectedUploadPath);
   });
 
   test('rejects upload if file size too large', async () => {
