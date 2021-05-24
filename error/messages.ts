@@ -14,5 +14,5 @@ export enum NotFoundErrors {
   MERCH_ITEM = 'Merch item not found',
   MERCH_ITEM_OPTION = 'Merch item option not found',
   MERCH_ORDER = 'Merch order not found',
-  MERCH_ORDER_ITEM_MISSING = 'Missing some order items', 
+  MERCH_ORDER_ITEM_MISSING = 'Missing some order items',
 }
