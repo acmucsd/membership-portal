@@ -20,7 +20,7 @@ describe('merch item options', () => {
   test('can be added to an item with variants enabled and with same option type', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [metadata, newMetadata] = MerchFactory.createOptionMetadata(2);
+    const [metadata, newMetadata] = MerchFactory.createOptionMetadataOfSameType(2);
     const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
     const [merchItem] = MerchFactory.itemsWith({
       hasVariants: true,
@@ -48,7 +48,7 @@ describe('merch item options', () => {
   test('cannot be added to an item with variants disabled', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [metadata, newMetadata] = MerchFactory.createOptionMetadata(2);
+    const [metadata, newMetadata] = MerchFactory.createOptionMetadataOfSameType(2);
     const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
     const [merchItem] = MerchFactory.itemsWith({
       hasVariants: false,
