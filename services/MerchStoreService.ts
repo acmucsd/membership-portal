@@ -29,6 +29,7 @@ import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
+import { NotFoundErrors, UserErrors } from 'error';
 
 @Service()
 export default class MerchStoreService {
@@ -45,7 +46,7 @@ export default class MerchStoreService {
     const collection = await this.transactions.readOnly(async (txn) => Repositories
       .merchStoreCollection(txn)
       .findByUuid(uuid));
-    if (!collection) throw new NotFoundError('Collection not found');
+    if (!collection) throw new NotFoundError(NotFoundErrors.MERCH_COLLECTION);
     if (collection.archived && !canSeeSeeHiddenItems) throw new ForbiddenError();
     return canSeeSeeHiddenItems ? collection : collection.getPublicMerchCollection();
   }
@@ -71,7 +72,7 @@ export default class MerchStoreService {
     return this.transactions.readWrite(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       const currentCollection = await merchCollectionRepository.findByUuid(uuid);
-      if (!currentCollection) throw new NotFoundError('Collection not found');
+      if (!currentCollection) throw new NotFoundError(NotFoundErrors.MERCH_COLLECTION);
       let updatedCollection = await merchCollectionRepository.upsertMerchCollection(currentCollection, changes);
       if (changes.discountPercentage) {
         const { discountPercentage } = changes;
@@ -88,11 +89,11 @@ export default class MerchStoreService {
     return this.transactions.readWrite(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       const collection = await merchCollectionRepository.findByUuid(uuid);
-      if (!collection) throw new NotFoundError('Collection not found');
+      if (!collection) throw new NotFoundError(NotFoundErrors.MERCH_COLLECTION);
       const hasBeenOrderedFrom = await Repositories
         .merchOrderItem(txn)
         .hasCollectionBeenOrderedFrom(uuid);
-      if (hasBeenOrderedFrom) throw new UserError('This collection has been ordered from');
+      if (hasBeenOrderedFrom) throw new UserError(UserErrors.MERCH_COLLECTION_ORDERED_FROM);
       return merchCollectionRepository.deleteMerchCollection(collection);
     });
   }
@@ -101,19 +102,19 @@ export default class MerchStoreService {
     const item = await this.transactions.readOnly(async (txn) => Repositories
       .merchStoreItem(txn)
       .findByUuid(uuid));
-    if (!item) throw new NotFoundError('Item not found');
+    if (!item) throw new NotFoundError(NotFoundErrors.MERCH_ITEM);
     return item.getPublicMerchItem();
   }
 
   public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
     return this.transactions.readWrite(async (txn) => {
-      if (this.hasMultipleOptionTypes(item.options)) throw new UserError('Item has multiple option types');
+      if (this.hasMultipleOptionTypes(item.options)) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
       if (!item.hasVariants && item.options.length > 1) {
-        throw new UserError('Item has no variants but has multiple options');
+        throw new UserError(UserErrors.NO_ITEM_VARIANTS_BUT_MULTIPLE_OPTIONS);
       }
 
       const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
-      if (!collection) throw new NotFoundError('Collection not found');
+      if (!collection) throw new NotFoundError(NotFoundErrors.MERCH_COLLECTION);
 
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const merchItem = MerchandiseItemModel.create({ ...item, collection });
@@ -137,13 +138,13 @@ export default class MerchStoreService {
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
       const { options, collection: updatedCollection, hasVariants, ...changes } = itemEdit;
-      if (this.hasMultipleOptionTypes(options)) throw new UserError('Item has multiple option types');
-      if (!hasVariants && options.length > 1) throw new UserError('Item has no variants but multiple options');
+      if (this.hasMultipleOptionTypes(options)) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
+      if (!hasVariants && options.length > 1) throw new UserError(UserErrors.NO_ITEM_VARIANTS_BUT_MULTIPLE_OPTIONS);
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const updatedOptions = await Promise.all(options.map(async (optionUpdate) => {
         const option = await merchItemOptionRepository.findByUuid(optionUpdate.uuid);
-        if (!option) throw new NotFoundError('Item option not found');
+        if (!option) throw new NotFoundError(NotFoundErrors.MERCH_ITEM_OPTION);
         // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
         // e.g. there's 10 of an item and someone adds 5 to stock while someone else orders 1
         // so the merch store admin sets quantity to 15 but the true quantity is 14
@@ -158,7 +159,7 @@ export default class MerchStoreService {
         const collection = await Repositories
           .merchStoreCollection(txn)
           .findByUuid(updatedCollection);
-        if (!collection) throw new NotFoundError('Collection not found');
+        if (!collection) throw new NotFoundError(NotFoundErrors.MERCH_COLLECTION);
       }
 
       await merchItemRepository.upsertMerchItem(item, changes);
@@ -172,7 +173,7 @@ export default class MerchStoreService {
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
       const hasBeenOrdered = await Repositories.merchOrderItem(txn).hasItemBeenOrdered(uuid);
-      if (hasBeenOrdered) throw new UserError('This item has been ordered already');
+      if (hasBeenOrdered) throw new UserError(UserErrors.MERCH_ITEM_ORDERED_FROM);
       return merchItemRepository.deleteMerchItem(item);
     });
   }
@@ -180,10 +181,10 @@ export default class MerchStoreService {
   public async createItemOption(item: Uuid, option: MerchItemOption): Promise<PublicMerchItemOption> {
     return this.transactions.readWrite(async (txn) => {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
-      if (!merchItem) throw new NotFoundError('Item not found');
-      if (!merchItem.hasVariants) throw new UserError('Item does not allow for multiple options');
+      if (!merchItem) throw new NotFoundError(NotFoundErrors.MERCH_ITEM);
+      if (!merchItem.hasVariants) throw new UserError(UserErrors.NO_ITEM_VARIANTS_ADD_OPTION);
       const hasDifferentOptionType = merchItem.options && merchItem.options[0].metadata?.type !== option.metadata?.type;
-      if (hasDifferentOptionType) throw new UserError('Item has multiple option types');
+      if (hasDifferentOptionType) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const createdOption = MerchandiseItemOptionModel.create({ ...option, item: merchItem });
@@ -198,7 +199,7 @@ export default class MerchStoreService {
       const option = await merchItemOptionRepository.findByUuid(uuid);
       if (!option) throw new NotFoundError();
       const hasBeenOrdered = await Repositories.merchOrderItem(txn).hasOptionBeenOrdered(uuid);
-      if (hasBeenOrdered) throw new UserError('This item option has been ordered already');
+      if (hasBeenOrdered) throw new UserError(UserErrors.MERCH_ITEM_OPTION_ORDERED_FROM);
       return merchItemOptionRepository.deleteMerchItemOption(option);
     });
   }
@@ -207,7 +208,7 @@ export default class MerchStoreService {
     const order = await this.transactions.readOnly(async (txn) => Repositories
       .merchOrder(txn)
       .findByUuid(uuid));
-    if (!order) throw new NotFoundError();
+    if (!order) throw new NotFoundError(NotFoundErrors.MERCH_ORDER);
     return order.getPublicOrder();
   }
 
@@ -273,7 +274,7 @@ export default class MerchStoreService {
         const quantityRequested = o.quantity;
         return sum + (option.getPrice() * quantityRequested);
       }, 0);
-      if (user.credits < totalCost) throw new UserError('You don\'t have enough credits');
+      if (user.credits < totalCost) throw new UserError(UserErrors.NOT_ENOUGH_CREDITS);
 
       // if all checks pass, the order is placed
       const createdOrder = await merchOrderRepository.createMerchOrder(OrderModel.create({
@@ -338,7 +339,7 @@ export default class MerchStoreService {
       const orderItemRepository = Repositories.merchOrderItem(txn);
       const orderItems = await orderItemRepository.batchFindByUuid(Array.from(fulfillmentUpdates.map((oi) => oi.uuid)));
       if (orderItems.size !== fulfillmentUpdates.length) {
-        throw new NotFoundError('Missing some order items');
+        throw new NotFoundError(NotFoundErrors.MERCH_ORDER_ITEM_MISSING);
       }
 
       const toBeFulfilled = fulfillmentUpdates
@@ -348,7 +349,7 @@ export default class MerchStoreService {
         .filter((oi) => oi.fulfilled)
         .map((oi) => oi.uuid);
       if (intersection(toBeFulfilled, alreadyFulfilled).length > 0) {
-        throw new UserError('At least one order item marked to be fulfilled has already been fulfilled');
+        throw new UserError(UserErrors.MERCH_ORDER_DOUBLE_FULFILLMENT);
       }
 
       await Promise.all(Array.from(orderItems.values()).map((oi) => {
