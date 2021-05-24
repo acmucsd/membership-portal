@@ -109,7 +109,7 @@ export default class MerchStoreService {
     return this.transactions.readWrite(async (txn) => {
       if (this.hasMultipleOptionTypes(item.options)) throw new UserError('Item has multiple option types');
       if (!item.hasVariants && item.options.length > 1) {
-        throw new UserError('Item has no variants but has multiple option types');
+        throw new UserError('Item has no variants but has multiple options');
       }
 
       const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
@@ -138,7 +138,7 @@ export default class MerchStoreService {
       if (!item) throw new NotFoundError();
       const { options, collection: updatedCollection, hasVariants, ...changes } = itemEdit;
       if (this.hasMultipleOptionTypes(options)) throw new UserError('Item has multiple option types');
-      if (!hasVariants && options.length > 1) throw new UserError('Item has no variants but multiple option types');
+      if (!hasVariants && options.length > 1) throw new UserError('Item has no variants but multiple options');
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const updatedOptions = await Promise.all(options.map(async (optionUpdate) => {
