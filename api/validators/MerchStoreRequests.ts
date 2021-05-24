@@ -60,8 +60,7 @@ export class MerchItemOptionMetadata implements IMerchItemOptionMetadata {
   value: string;
 
   @Allow()
-  @Min(0)
-  position: number;
+  position?: number;
 }
 
 export class MerchItemOption implements IMerchItemOption {

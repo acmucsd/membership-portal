@@ -205,7 +205,7 @@ export interface CommonMerchItemProperties {
 export interface MerchItemOptionMetadata {
   type: string;
   value: string;
-  position: number;
+  position?: number;
 }
 
 export interface MerchItemOption {

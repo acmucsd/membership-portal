@@ -160,7 +160,7 @@ export interface PublicMerchItem {
 export interface PublicMerchItemOptionMetadata {
   type: string;
   value: string;
-  position: number;
+  position?: number;
 }
 
 export interface PublicMerchItemOption {
