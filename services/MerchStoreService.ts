@@ -29,7 +29,7 @@ import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
-import { NotFoundErrors, UserErrors } from 'error';
+import { NotFoundErrors, UserErrors } from '../error';
 
 @Service()
 export default class MerchStoreService {
@@ -189,7 +189,8 @@ export default class MerchStoreService {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const createdOption = MerchandiseItemOptionModel.create({ ...option, item: merchItem });
       await merchItemOptionRepository.upsertMerchItemOption(createdOption);
-      return merchItemOptionRepository.findByUuid(createdOption.uuid);
+      const upsertedOption = await merchItemOptionRepository.findByUuid(createdOption.uuid);
+      return upsertedOption.getPublicMerchItemOption();
     });
   }
 

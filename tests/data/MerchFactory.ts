@@ -1,4 +1,5 @@
 import * as faker from 'faker';
+import { MerchItemOptionMetadata } from 'types';
 import { v4 as uuid } from 'uuid';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
@@ -38,6 +39,17 @@ export class MerchFactory {
     return substitutes.map((sub) => MerchandiseItemOptionModel.merge(MerchFactory.fakeOption(), sub));
   }
 
+  public static optionMetadataWith(...substitutes: Partial<MerchItemOptionMetadata>[]): MerchItemOptionMetadata[] {
+    return substitutes.map((sub) => {
+      const metadata = MerchFactory.fakeOptionMetadata();
+      return {
+        type: sub.type ?? metadata.type,
+        value: sub.value ?? metadata.value,
+        position: sub.position ?? metadata.position,
+      };
+    });
+  }
+
   public static fakeCollection(): MerchandiseCollectionModel {
     return MerchandiseCollectionModel.create({
       uuid: uuid(),
@@ -66,6 +78,14 @@ export class MerchFactory {
       price: MerchFactory.randomPrice(),
       discountPercentage: MerchFactory.randomDiscountPercentage(),
     });
+  }
+
+  public static fakeOptionMetadata(): MerchItemOptionMetadata {
+    return {
+      type: faker.datatype.hexaDecimal(10),
+      value: faker.datatype.hexaDecimal(10),
+      position: FactoryUtils.getRandomNumber(1, 10),
+    };
   }
 
   private static randomPrice(): number {
