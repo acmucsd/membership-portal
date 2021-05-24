@@ -98,5 +98,5 @@ describe('merch item options', () => {
         admin,
       ),
     ).rejects.toThrow(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
-  })
+  });
 });
