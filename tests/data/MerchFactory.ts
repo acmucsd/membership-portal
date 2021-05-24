@@ -19,6 +19,13 @@ export class MerchFactory {
     return FactoryUtils.create(n, MerchFactory.fakeOption);
   }
 
+  public static createOptionMetadata(n: number): MerchItemOptionMetadata[] {
+    // metadata type has to be the same across all options by store behavior 
+    const type = faker.datatype.hexaDecimal(10);
+    const substitutes = Array(n).fill({ type });
+    return MerchFactory.optionMetadataWith(...substitutes);
+  }
+
   public static collectionsWith(...substitutes: Partial<MerchandiseCollectionModel>[]): MerchandiseCollectionModel[] {
     return substitutes.map((sub) => {
       const merged = MerchandiseCollectionModel.merge(MerchFactory.fakeCollection(), sub);

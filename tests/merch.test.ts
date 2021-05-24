@@ -17,22 +17,14 @@ afterAll(async () => {
 });
 
 describe('merch item options', () => {
-  test('can be added to an item with variants enabled', async () => {
+  test('can be added to an item with variants enabled and with same option type', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const metadata = MerchFactory.optionMetadataWith(
-      { type: 'COLOR' },
-      { type: 'COLOR' },
-      { type: 'COLOR' },
-    );
-    const [option1, option2, newOption] = MerchFactory.optionsWith(
-      { metadata: metadata[0] },
-      { metadata: metadata[1] },
-      { metadata: metadata[2] },
-    );
+    const [metadata, newMetadata] = MerchFactory.createOptionMetadata(2);
+    const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
     const [merchItem] = MerchFactory.itemsWith({
       hasVariants: true,
-      options: [option1, option2],
+      options: [option],
     });
     const [merchCollection] = MerchFactory.collectionsWith({
       items: [merchItem],
@@ -56,10 +48,11 @@ describe('merch item options', () => {
   test('cannot be added to an item with variants disabled', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [singletonOption, newOption] = MerchFactory.optionsWith({ metadata: MerchFactory.fakeOptionMetadata() });
+    const [metadata, newMetadata] = MerchFactory.createOptionMetadata(2);
+    const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
     const [merchItem] = MerchFactory.itemsWith({
       hasVariants: false,
-      options: [singletonOption],
+      options: [option],
     });
     const [merchCollection] = MerchFactory.collectionsWith({
       items: [merchItem],
@@ -78,4 +71,32 @@ describe('merch item options', () => {
       ),
     ).rejects.toThrow(UserErrors.NO_ITEM_VARIANTS_ADD_OPTION);
   });
+
+  test('cannot be added to an item with different metadata types', async () => {
+    const conn = await DatabaseConnection.get();
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [metadata] = MerchFactory.optionMetadataWith({ type: 'COLOR' });
+    const [newMetadata] = MerchFactory.optionMetadataWith({ type: 'SIZE' });
+    const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
+    const [merchItem] = MerchFactory.itemsWith({
+      hasVariants: true,
+      options: [option],
+    });
+    const [merchCollection] = MerchFactory.collectionsWith({
+      items: [merchItem],
+    });
+
+    await new PortalState()
+      .createUsers([admin])
+      .createMerch([merchCollection])
+      .write();
+
+    await expect(
+      ControllerFactory.merchStore(conn).createMerchItemOption(
+        { uuid: merchItem.uuid },
+        { option: newOption },
+        admin,
+      ),
+    ).rejects.toThrow(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
+  })
 });
