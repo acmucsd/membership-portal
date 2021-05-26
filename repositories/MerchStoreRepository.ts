@@ -53,6 +53,20 @@ export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
     return this.repository.save(item);
   }
 
+  public async updateMerchItemInCollection(collection: string, hidden: boolean): Promise<void> {
+    const qb = this.repository.createQueryBuilder();
+    await qb
+      .update()
+      .set({ 'hidden':hidden })
+      .where(`item IN ${qb.subQuery()
+        .select('merch.uuid')
+        .from(MerchandiseItemModel, 'merch')
+        .where('merch.collection = :collection')
+        .getQuery()}`)
+      .setParameter('collection', collection)
+      .execute();
+  }
+
   public async deleteMerchItem(item: MerchandiseItemModel) {
     await this.repository.remove(item);
   }
