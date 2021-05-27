@@ -4,13 +4,8 @@ import { DatabaseConnection, EventFactory, FeedbackFactory, FileFactory, PortalS
 import { ControllerFactory } from './controllers';
 import { UserAccessType } from '../types';
 import { Config } from '../config';
-import { StorageUtils } from './utils';
 import { SubmitEventFeedbackRequest } from '../api/validators/EventControllerRequests';
-
-jest.mock('aws-sdk', () => {
-  const S3Mock = require('./mocks/S3Mock').default;
-  return S3Mock.mockFileUploads();
-});
+import Mocks from './mocks';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -144,11 +139,12 @@ describe('event CRUD operations', () => {
 });
 
 describe('event covers', () => {
-  test('properly updates cover photo in database and on S3', async () => {
+  test('properly updates cover photo in database', async () => {
     const conn = await DatabaseConnection.get();
     const [event] = EventFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const cover = FileFactory.image(Config.file.MAX_EVENT_COVER_FILE_SIZE / 2);
+    const fileLocation = 'fake location';
 
     await new PortalState()
       .createUsers([admin])
@@ -156,12 +152,10 @@ describe('event covers', () => {
       .write();
 
     const eventCoverResponse = await ControllerFactory
-      .event(conn)
+      .event(conn, null, Mocks.storage(fileLocation))
       .updateEventCover(cover, { uuid: event.uuid }, admin);
 
-    const expectedUploadPath = StorageUtils.getExpectedUploadPath(event, cover);
-
-    expect(eventCoverResponse.event.cover).toEqual(expectedUploadPath);
+    expect(eventCoverResponse.event.cover).toEqual(fileLocation);
   });
 
   test('rejects upload if file size too large', async () => {
