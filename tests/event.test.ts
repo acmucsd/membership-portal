@@ -101,6 +101,46 @@ describe('event CRUD operations', () => {
     expect(eventsResponse.events).toHaveLength(1);
     expect(eventsResponse.events[0]).toStrictEqual(event1.getPublicEvent(true));
   });
+
+  test('events can be updated by an admin', async () => {
+    const conn = await DatabaseConnection.get();
+    const [event] = EventFactory.with({ attendanceCode: 'code' });
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+
+    await new PortalState()
+      .createEvents([event])
+      .createUsers([admin])
+      .write();
+
+    const eventChanges = {
+      title: 'new title',
+      description: 'new description',
+    };
+
+    const updateEventResponse = await ControllerFactory
+      .event(conn)
+      .updateEvent({ uuid: event.uuid }, { event: eventChanges }, admin);
+
+    expect(updateEventResponse.event).toMatchObject({ ...event.getPublicEvent(), ...eventChanges });
+  });
+
+  test('event attendance code cannot be updated to a duplicate one', async () => {
+    const conn = await DatabaseConnection.get();
+    const [event1] = EventFactory.with({ attendanceCode: 'code' });
+    const [event2] = EventFactory.with({ attendanceCode: 'another-code' });
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+
+    await new PortalState()
+      .createEvents([event1, event2])
+      .createUsers([admin])
+      .write();
+
+    event1.attendanceCode = event2.attendanceCode;
+
+    await expect(
+      ControllerFactory.event(conn).updateEvent({ uuid: event1.uuid }, { event: event1 }, admin),
+    ).rejects.toThrow('Attendance code has already been used');
+  });
 });
 
 describe('event covers', () => {
@@ -125,7 +165,7 @@ describe('event covers', () => {
   });
 
   test('rejects upload if file size too large', async () => {
-    // TODO: implement once API wrappers exist (since multer validation can't be mocked with function calls)
+    // TODO: implement once API wrappers exist (since multer validation can't be verified with function calls)
   });
 });
 
