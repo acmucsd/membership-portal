@@ -21,11 +21,11 @@ describe('retroactive attendance submission', () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(3);
     const emails = users.map((user) => user.email);
-    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [adminUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [event] = EventFactory.create(1);
 
     await new PortalState()
-      .createUsers([...users, proxyUser])
+      .createUsers([...users, adminUser])
       .createEvents([event])
       .write();
 
@@ -33,11 +33,11 @@ describe('retroactive attendance submission', () => {
     const adminController = ControllerFactory.admin(conn);
     const attendanceController = ControllerFactory.attendance(conn);
 
-    await adminController.submitAttendanceForUsers({ users: emails, event: event.uuid }, proxyUser);
+    await adminController.submitAttendanceForUsers({ users: emails, event: event.uuid }, adminUser);
 
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
-      const userResponse = await userController.getUser({ uuid: user.uuid }, proxyUser);
+      const userResponse = await userController.getUser({ uuid: user.uuid }, adminUser);
 
       expect(userResponse.user.points).toEqual(user.points + event.pointValue);
 
@@ -45,7 +45,7 @@ describe('retroactive attendance submission', () => {
       expect(attendanceResponse.attendances).toHaveLength(1);
       expect(attendanceResponse.attendances[0].event).toStrictEqual(event.getPublicEvent());
 
-      const activityResponse = await userController.getUserActivityStream({ uuid: user.uuid }, proxyUser);
+      const activityResponse = await userController.getUserActivityStream({ uuid: user.uuid }, adminUser);
 
       expect(activityResponse.activity).toHaveLength(2);
       expect(activityResponse.activity[1].pointsEarned).toEqual(event.pointValue);
@@ -57,11 +57,11 @@ describe('retroactive attendance submission', () => {
   test('does not log activity, attendance, and points for users who already attended', async () => {
     const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
-    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [adminUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [event] = EventFactory.create(1);
 
     await new PortalState()
-      .createUsers([user, proxyUser])
+      .createUsers([user, adminUser])
       .createEvents([event])
       .attendEvents([user], [event])
       .write();
@@ -72,10 +72,10 @@ describe('retroactive attendance submission', () => {
 
     await adminController.submitAttendanceForUsers(
       { users: [user.email], event: event.uuid },
-      proxyUser,
+      adminUser,
     );
 
-    const userResponse = await userController.getUser({ uuid: user.uuid }, proxyUser);
+    const userResponse = await userController.getUser({ uuid: user.uuid }, adminUser);
     const attendanceResponse = await attendanceController.getAttendancesForCurrentUser(user);
     const activityResponse = await userController.getCurrentUserActivityStream(user);
 
@@ -89,11 +89,11 @@ describe('retroactive attendance submission', () => {
     const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [staffUser] = UserFactory.with({ accessType: UserAccessType.STAFF });
-    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [adminUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [event] = EventFactory.with({ requiresStaff: true, staffPointBonus: 10 });
 
     await new PortalState()
-      .createUsers([user, staffUser, proxyUser])
+      .createUsers([user, staffUser, adminUser])
       .createEvents([event])
       .write();
 
@@ -105,10 +105,10 @@ describe('retroactive attendance submission', () => {
       asStaff: true,
     };
 
-    await adminController.submitAttendanceForUsers(request, proxyUser);
+    await adminController.submitAttendanceForUsers(request, adminUser);
 
-    const userResponse = await userController.getUser({ uuid: user.uuid }, proxyUser);
-    const staffUserResponse = await userController.getUser({ uuid: staffUser.uuid }, proxyUser);
+    const userResponse = await userController.getUser({ uuid: user.uuid }, adminUser);
+    const staffUserResponse = await userController.getUser({ uuid: staffUser.uuid }, adminUser);
     const activityResponse = await userController.getCurrentUserActivityStream(user);
     const staffActivityResponse = await userController.getCurrentUserActivityStream(staffUser);
 
@@ -124,29 +124,29 @@ describe('email retrieval', () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(5);
     const emails = users.map((user) => user.email.toLowerCase());
-    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [adminUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
 
     await new PortalState()
-      .createUsers([...users, proxyUser])
+      .createUsers([...users, adminUser])
       .write();
 
     const adminController = ControllerFactory.admin(conn);
-    const response = await adminController.getAllEmails(proxyUser);
-    expect([...emails, proxyUser.email].sort()).toEqual(response.emails.sort());
+    const response = await adminController.getAllEmails(adminUser);
+    expect([...emails, adminUser.email].sort()).toEqual(response.emails.sort());
   });
 
   test('no other emails present asides from registered users', async () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(5);
-    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [adminUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [extraneousUser] = UserFactory.create(1);
 
     await new PortalState()
-      .createUsers([...users, proxyUser])
+      .createUsers([...users, adminUser])
       .write();
 
     const adminController = ControllerFactory.admin(conn);
-    const response = await adminController.getAllEmails(proxyUser);
+    const response = await adminController.getAllEmails(adminUser);
     expect(response.emails).not.toContain(extraneousUser.email.toLowerCase());
   });
 });
@@ -156,10 +156,10 @@ describe('bonus points submission', () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(5);
     const emails = users.map((user) => user.email.toLowerCase());
-    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [adminUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
 
     await new PortalState()
-      .createUsers([...users, proxyUser])
+      .createUsers([...users, adminUser])
       .write();
 
     const adminController = ControllerFactory.admin(conn);
@@ -167,8 +167,8 @@ describe('bonus points submission', () => {
     const request: CreateBonusRequest = { bonus: { description: 'Test addition of bonus points',
       users: emails,
       points: 200 } };
-    const bonusResponse = await adminController.addBonus(request, proxyUser);
-    const userResponse = await userController.getUser({ uuid: users[0].uuid }, proxyUser);
+    const bonusResponse = await adminController.addBonus(request, adminUser);
+    const userResponse = await userController.getUser({ uuid: users[0].uuid }, adminUser);
 
     expect(userResponse.user.points).toEqual(200);
     expect(bonusResponse.emails.sort()).toEqual(emails.sort());
@@ -178,11 +178,11 @@ describe('bonus points submission', () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(5);
     const emails = users.map((user) => user.email.toLowerCase());
-    const [proxyUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [adminUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [extraneousUser] = UserFactory.create(1);
 
     await new PortalState()
-      .createUsers([...users, extraneousUser, proxyUser])
+      .createUsers([...users, extraneousUser, adminUser])
       .write();
 
     const adminController = ControllerFactory.admin(conn);
@@ -191,9 +191,9 @@ describe('bonus points submission', () => {
       users: emails,
       points: 200 } };
 
-    await adminController.addBonus(request, proxyUser);
+    await adminController.addBonus(request, adminUser);
 
-    const userResponse = await userController.getUser({ uuid: extraneousUser.uuid }, proxyUser);
+    const userResponse = await userController.getUser({ uuid: extraneousUser.uuid }, adminUser);
 
     expect(userResponse.user.points).toEqual(0);
   });
