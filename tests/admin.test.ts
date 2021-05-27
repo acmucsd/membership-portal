@@ -75,11 +75,12 @@ describe('retroactive attendance submission', () => {
     );
 
     const userResponse = await userController.getUser({ uuid: user.uuid }, adminUser);
-    const attendanceResponse = await attendanceController.getAttendancesForCurrentUser(user);
-    const activityResponse = await userController.getCurrentUserActivityStream(user);
-
     expect(userResponse.user.points).toEqual(user.points);
+
+    const attendanceResponse = await attendanceController.getAttendancesForCurrentUser(user);
     expect(attendanceResponse.attendances).toHaveLength(1);
+
+    const activityResponse = await userController.getCurrentUserActivityStream(user);
     expect(activityResponse.activity).toHaveLength(2);
     expect(activityResponse.activity[1].description).toBeNull();
   });
@@ -107,13 +108,15 @@ describe('retroactive attendance submission', () => {
     await adminController.submitAttendanceForUsers(request, adminUser);
 
     const userResponse = await userController.getUser({ uuid: user.uuid }, adminUser);
-    const staffUserResponse = await userController.getUser({ uuid: staffUser.uuid }, adminUser);
-    const activityResponse = await userController.getCurrentUserActivityStream(user);
-    const staffActivityResponse = await userController.getCurrentUserActivityStream(staffUser);
-
     expect(userResponse.user.points).toEqual(event.pointValue);
+
+    const staffUserResponse = await userController.getUser({ uuid: staffUser.uuid }, adminUser);
     expect(staffUserResponse.user.points).toEqual(event.pointValue + event.staffPointBonus);
+
+    const activityResponse = await userController.getCurrentUserActivityStream(user);
     expect(activityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
+
+    const staffActivityResponse = await userController.getCurrentUserActivityStream(staffUser);
     expect(staffActivityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT_AS_STAFF);
   });
 });
