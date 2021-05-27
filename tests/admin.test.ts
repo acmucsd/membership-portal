@@ -132,7 +132,7 @@ describe('email retrieval', () => {
 
     const adminController = ControllerFactory.admin(conn);
     const response = await adminController.getAllEmails(adminUser);
-    expect([...emails, adminUser.email].sort()).toEqual(response.emails.sort());
+    expect([...emails, adminUser.email]).toEqual(expect.arrayContaining(response.emails));
   });
 
   test('no other emails present asides from registered users', async () => {
@@ -171,7 +171,7 @@ describe('bonus points submission', () => {
     const userResponse = await userController.getUser({ uuid: users[0].uuid }, adminUser);
 
     expect(userResponse.user.points).toEqual(200);
-    expect(bonusResponse.emails.sort()).toEqual(emails.sort());
+    expect(bonusResponse.emails).toEqual(expect.arrayContaining(emails));
   });
 
   test("Does not update points and activity to the users who aren't in the bonus request", async () => {
