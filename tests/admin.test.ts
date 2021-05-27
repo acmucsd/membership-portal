@@ -134,21 +134,6 @@ describe('email retrieval', () => {
     const response = await adminController.getAllEmails(adminUser);
     expect([...emails, adminUser.email]).toEqual(expect.arrayContaining(response.emails));
   });
-
-  test('no other emails present asides from registered users', async () => {
-    const conn = await DatabaseConnection.get();
-    const users = UserFactory.create(5);
-    const [adminUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [extraneousUser] = UserFactory.create(1);
-
-    await new PortalState()
-      .createUsers([...users, adminUser])
-      .write();
-
-    const adminController = ControllerFactory.admin(conn);
-    const response = await adminController.getAllEmails(adminUser);
-    expect(response.emails).not.toContain(extraneousUser.email.toLowerCase());
-  });
 });
 
 describe('bonus points submission', () => {
