@@ -4,9 +4,8 @@ import * as path from 'path';
 import * as multer from 'multer';
 import { InternalServerError } from 'routing-controllers';
 import { Config } from '../config';
-import { MediaType } from '../types';
+import { MediaType, File } from '../types';
 
-type File = Express.Multer.File;
 type FileOptions = multer.Options;
 
 interface MediaTypeConfig {
