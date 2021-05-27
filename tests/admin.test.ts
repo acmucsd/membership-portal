@@ -1,7 +1,6 @@
-import { CreateBonusRequest } from 'api/validators/AdminControllerRequests';
-import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
-import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, UserFactory, PortalState } from './data';
+import {ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType} from '../types';
+import {ControllerFactory} from './controllers';
+import {DatabaseConnection, EventFactory, PortalState, UserFactory} from './data';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -147,16 +146,17 @@ describe('bonus points submission', () => {
       .createUsers([...users, adminUser])
       .write();
 
-    const adminController = ControllerFactory.admin(conn);
-    const userController = ControllerFactory.user(conn);
-    const request: CreateBonusRequest = { bonus: { description: 'Test addition of bonus points',
+    const bonus = {
+      description: 'Test addition of bonus points',
       users: emails,
-      points: 200 } };
-    const bonusResponse = await adminController.addBonus(request, adminUser);
-    const userResponse = await userController.getUser({ uuid: users[0].uuid }, adminUser);
+      points: 200,
+    };
 
-    expect(userResponse.user.points).toEqual(200);
-    expect(bonusResponse.emails).toEqual(expect.arrayContaining(emails));
+    const createBonusResponse = await ControllerFactory.admin(conn).addBonus({ bonus }, adminUser);
+    const getUserResponse = await ControllerFactory.user(conn).getUser({ uuid: users[0].uuid }, adminUser);
+
+    expect(getUserResponse.user.points).toEqual(200);
+    expect(createBonusResponse.emails).toEqual(expect.arrayContaining(emails));
   });
 
   test("Does not update points and activity to the users who aren't in the bonus request", async () => {
@@ -170,15 +170,14 @@ describe('bonus points submission', () => {
       .createUsers([...users, extraneousUser, adminUser])
       .write();
 
-    const adminController = ControllerFactory.admin(conn);
-    const userController = ControllerFactory.user(conn);
-    const request: CreateBonusRequest = { bonus: { description: 'Test addition of bonus points',
+    const bonus = {
+      description: 'Test addition of bonus points',
       users: emails,
-      points: 200 } };
+      points: 200,
+    };
 
-    await adminController.addBonus(request, adminUser);
-
-    const userResponse = await userController.getUser({ uuid: extraneousUser.uuid }, adminUser);
+    await ControllerFactory.admin(conn).addBonus({ bonus }, adminUser);
+    const userResponse = await ControllerFactory.user(conn).getUser({ uuid: extraneousUser.uuid }, adminUser);
 
     expect(userResponse.user.points).toEqual(0);
   });
