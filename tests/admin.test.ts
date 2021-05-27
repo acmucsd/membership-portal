@@ -153,10 +153,13 @@ describe('bonus points submission', () => {
     };
 
     const createBonusResponse = await ControllerFactory.admin(conn).addBonus({ bonus }, adminUser);
-    const getUserResponse = await ControllerFactory.user(conn).getUser({ uuid: users[0].uuid }, adminUser);
-
-    expect(getUserResponse.user.points).toEqual(200);
     expect(createBonusResponse.emails).toEqual(expect.arrayContaining(emails));
+
+    for (let u = 0; u < users.length; u += 1) {
+      const user = users[u];
+      const getUserResponse = await ControllerFactory.user(conn).getUser({ uuid: user.uuid }, adminUser);
+      expect(getUserResponse.user.points).toEqual(200);
+    }
   });
 
   test("Does not update points and activity to the users who aren't in the bonus request", async () => {
