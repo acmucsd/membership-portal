@@ -1,6 +1,6 @@
-import {ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType} from '../types';
-import {ControllerFactory} from './controllers';
-import {DatabaseConnection, EventFactory, PortalState, UserFactory} from './data';
+import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
+import { ControllerFactory } from './controllers';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -141,9 +141,10 @@ describe('bonus points submission', () => {
     const users = UserFactory.create(5);
     const emails = users.map((user) => user.email.toLowerCase());
     const [adminUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [extraneousUser] = UserFactory.create(1);
 
     await new PortalState()
-      .createUsers([...users, adminUser])
+      .createUsers([...users, extraneousUser, adminUser])
       .write();
 
     const bonus = {
@@ -160,28 +161,8 @@ describe('bonus points submission', () => {
       const getUserResponse = await ControllerFactory.user(conn).getUser({ uuid: user.uuid }, adminUser);
       expect(getUserResponse.user.points).toEqual(200);
     }
-  });
 
-  test("Does not update points and activity to the users who aren't in the bonus request", async () => {
-    const conn = await DatabaseConnection.get();
-    const users = UserFactory.create(5);
-    const emails = users.map((user) => user.email.toLowerCase());
-    const [adminUser] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [extraneousUser] = UserFactory.create(1);
-
-    await new PortalState()
-      .createUsers([...users, extraneousUser, adminUser])
-      .write();
-
-    const bonus = {
-      description: 'Test addition of bonus points',
-      users: emails,
-      points: 200,
-    };
-
-    await ControllerFactory.admin(conn).addBonus({ bonus }, adminUser);
-    const userResponse = await ControllerFactory.user(conn).getUser({ uuid: extraneousUser.uuid }, adminUser);
-
-    expect(userResponse.user.points).toEqual(0);
+    const getExtraUserResponse = await ControllerFactory.user(conn).getUser({ uuid: extraneousUser.uuid }, adminUser);
+    expect(getExtraUserResponse.user.points).toEqual(0);
   });
 });
