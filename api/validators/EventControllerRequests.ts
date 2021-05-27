@@ -58,30 +58,30 @@ export class Event extends OptionalEventProperties implements IEvent {
   pointValue: number;
 }
 
-export class EventPatches extends OptionalEventProperties implements IEvent {
+export class EventPatches extends OptionalEventProperties implements Partial<IEvent> {
   @IsNotEmpty()
-  cover: string;
+  cover?: string;
 
   @IsNotEmpty()
-  title: string;
+  title?: string;
 
   @IsNotEmpty()
-  description: string;
+  description?: string;
 
   @IsNotEmpty()
-  location: string;
+  location?: string;
 
   @IsDateString()
-  start: Date;
+  start?: Date;
 
   @IsDateString()
-  end: Date;
+  end?: Date;
 
   @IsNotEmpty()
-  attendanceCode: string;
+  attendanceCode?: string;
 
   @Allow()
-  pointValue: number;
+  pointValue?: number;
 }
 
 export class EventSearchOptions implements IEventSearchOptions {
