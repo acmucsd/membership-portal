@@ -41,7 +41,7 @@ export class MerchFactory {
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
     const fake = MerchandiseCollectionModel.create({
       uuid: uuid(),
-      title: faker.random.hexaDecimal(10),
+      title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       items: MerchFactory.createItems(FactoryUtils.getRandomNumber(1, 5)),
     });
@@ -51,7 +51,7 @@ export class MerchFactory {
   public static fakeItem(substitute?: Partial<MerchandiseItemModel>): MerchandiseItemModel {
     const fake = MerchandiseItemModel.create({
       uuid: uuid(),
-      itemName: faker.random.hexaDecimal(10),
+      itemName: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       options: MerchFactory.createOptions(FactoryUtils.getRandomNumber(1, 5)),
     });
