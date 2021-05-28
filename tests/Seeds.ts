@@ -27,7 +27,6 @@ function getGraduationYear(n: number) {
  * admins granting bonus points to members that forgot/were unable to check-in.
  */
 async function seed(): Promise<void> {
-  const conn = await DatabaseConnection.get();
   await DatabaseConnection.clear();
 
   const ADMIN = UserFactory.fake({
