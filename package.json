@@ -18,7 +18,7 @@
     "db:migrate": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "db:rollback": "ts-node ./node_modules/typeorm/cli.js migration:revert",
     "db:seed:create": "ts-node ./node_modules/typeorm/cli.js migration:create -c seed -n",
-    "db:seed": "ts-node tests/Seed.ts",
+    "db:seed": "ts-node tests/Seeds.ts",
     "publish-package": "cp package.json build && npm publish build --access public",
     "update-package": "npm version patch && npm run publish-package"
   },
