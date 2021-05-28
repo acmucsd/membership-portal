@@ -209,6 +209,21 @@ async function seed(): Promise<void> {
     attendanceCode: 'k0be',
     ...unstaffed,
   });
+  const ONGOING_HACK_WORKSHOP = EventFactory.fake({
+    title: 'Hack: Intro to Smart Contracts',
+    description: `A smart contract is a computer program or a transaction protocol
+    which is intended to automatically execute, control or document legally relevant
+    events and actions according to the terms of a contract or an agreement. The
+    objectives of smart contracts are the reduction of need in trusted intermediators,
+    arbitrations and enforcement costs, fraud losses, as well as the reduction of
+    malicious and accidental exceptions.`,
+    ...hack,
+    location: 'Hack Discord, channel #smart-contracts',
+    start: roundToHalfHour(moment().subtract(45, 'minutes')),
+    end: roundToHalfHour(moment().add(45, 'minutes')),
+    attendanceCode: 'd3fi',
+    ...staffed,
+  });
 
   const FUTURE_AI_SOCIAL = EventFactory.fake({
     title: 'AI Plays: Chess IRL',
@@ -447,6 +462,7 @@ async function seed(): Promise<void> {
     .createEvents([
       ONGOING_ACM_SOCIAL_1,
       ONGOING_ACM_SOCIAL_2,
+      ONGOING_HACK_WORKSHOP,
     ])
     .attendEvents([
       STAFF_GENERAL,
