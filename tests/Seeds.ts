@@ -484,7 +484,7 @@ async function seed(): Promise<void> {
       MERCH_COLLECTION_1,
       MERCH_COLLECTION_2,
     ])
-    .write(conn);
+    .write();
 }
 
 seed();
