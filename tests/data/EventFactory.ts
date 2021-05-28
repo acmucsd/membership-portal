@@ -22,21 +22,22 @@ export class EventFactory {
     return substitutes.map((sub) => EventModel.merge(EventFactory.fake(), sub));
   }
 
-  public static fake(): EventModel {
+  public static fake(substitute?: Partial<EventModel>): EventModel {
     const [start, end] = EventFactory.randomTime();
-    return EventModel.create({
+    const fake = EventModel.create({
       uuid: uuid(),
       organization: FactoryUtils.pickRandomValue(EventFactory.ORGS),
-      title: faker.random.hexaDecimal(10),
+      title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
-      location: faker.random.hexaDecimal(10),
+      location: faker.datatype.hexaDecimal(10),
       start,
       end,
-      attendanceCode: faker.random.hexaDecimal(10),
+      attendanceCode: faker.datatype.hexaDecimal(10),
       pointValue: EventFactory.randomPointValue(),
       requiresStaff: FactoryUtils.getRandomBoolean(),
       staffPointBonus: EventFactory.randomPointValue(),
     });
+    return EventModel.merge(fake, substitute);
   }
 
   private static randomTime(): [Date, Date] {
