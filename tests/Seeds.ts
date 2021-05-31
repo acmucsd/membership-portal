@@ -271,6 +271,7 @@ async function seed(): Promise<void> {
   const MERCH_COLLECTION_1 = MerchFactory.fakeCollection({
     title: 'The Hack School Collection',
     description: 'Do you like to code? Tell the world with this Hack School inspired collection.',
+    themeColor: '#EB8C34',
   });
   const MERCH_ITEM_1 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
@@ -281,6 +282,7 @@ async function seed(): Promise<void> {
     monthlyLimit: 1,
     lifetimeLimit: 1,
     hidden: false,
+    hasVariants: true,
   });
   const MERCH_ITEM_1_OPTION_XS = MerchFactory.fakeOption({
     item: MERCH_ITEM_1,
@@ -291,7 +293,7 @@ async function seed(): Promise<void> {
       type: 'SIZE',
       value: 'XS',
       position: 0,
-    }
+    },
   });
   const MERCH_ITEM_1_OPTION_S = MerchFactory.fakeOption({
     item: MERCH_ITEM_1,
@@ -302,7 +304,7 @@ async function seed(): Promise<void> {
       type: 'SIZE',
       value: 'S',
       position: 1,
-    }
+    },
   });
   const MERCH_ITEM_1_OPTION_M = MerchFactory.fakeOption({
     item: MERCH_ITEM_1,
@@ -313,7 +315,7 @@ async function seed(): Promise<void> {
       type: 'SIZE',
       value: 'M',
       position: 2,
-    }
+    },
   });
   const MERCH_ITEM_1_OPTION_L = MerchFactory.fakeOption({
     item: MERCH_ITEM_1,
@@ -324,7 +326,7 @@ async function seed(): Promise<void> {
       type: 'SIZE',
       value: 'L',
       position: 3,
-    }
+    },
   });
   const MERCH_ITEM_1_OPTION_XL = MerchFactory.fakeOption({
     item: MERCH_ITEM_1,
@@ -335,7 +337,7 @@ async function seed(): Promise<void> {
       type: 'SIZE',
       value: 'XL',
       position: 4,
-    }
+    },
   });
   MERCH_ITEM_1.options = [
     MERCH_ITEM_1_OPTION_XS,
@@ -352,8 +354,9 @@ async function seed(): Promise<void> {
     monthlyLimit: 5,
     lifetimeLimit: 25,
     hidden: false,
+    hasVariants: true,
   });
-  const MERCH_ITEM_2_OPTION_2x2 = MerchFactory.fakeOption({
+  const MERCH_ITEM_2_OPTION_2X2 = MerchFactory.fakeOption({
     item: MERCH_ITEM_2,
     quantity: 35,
     price: 1500,
@@ -364,7 +367,7 @@ async function seed(): Promise<void> {
       position: 0,
     },
   });
-  const MERCH_ITEM_2_OPTION_3x3 = MerchFactory.fakeOption({
+  const MERCH_ITEM_2_OPTION_3X3 = MerchFactory.fakeOption({
     item: MERCH_ITEM_2,
     quantity: 20,
     price: 1500,
@@ -375,7 +378,7 @@ async function seed(): Promise<void> {
       position: 1,
     },
   });
-  const MERCH_ITEM_2_OPTION_4x4 = MerchFactory.fakeOption({
+  const MERCH_ITEM_2_OPTION_4X4 = MerchFactory.fakeOption({
     item: MERCH_ITEM_2,
     quantity: 80,
     price: 1500,
@@ -387,9 +390,9 @@ async function seed(): Promise<void> {
     },
   });
   MERCH_ITEM_2.options = [
-    MERCH_ITEM_2_OPTION_2x2,
-    MERCH_ITEM_2_OPTION_3x3,
-    MERCH_ITEM_2_OPTION_4x4,
+    MERCH_ITEM_2_OPTION_2X2,
+    MERCH_ITEM_2_OPTION_3X3,
+    MERCH_ITEM_2_OPTION_4X4,
   ];
   MERCH_COLLECTION_1.items = [MERCH_ITEM_1, MERCH_ITEM_2];
 
@@ -405,6 +408,7 @@ async function seed(): Promise<void> {
     monthlyLimit: 2,
     lifetimeLimit: 5,
     hidden: false,
+    hasVariants: false,
   });
   const MERCH_ITEM_3_OPTION = MerchFactory.fakeOption({
     item: MERCH_ITEM_3,
@@ -421,6 +425,7 @@ async function seed(): Promise<void> {
     monthlyLimit: 3,
     lifetimeLimit: 10,
     hidden: false,
+    hasVariants: false,
   });
   const MERCH_ITEM_4_OPTION = MerchFactory.fakeOption({
     item: MERCH_ITEM_4,
@@ -437,6 +442,7 @@ async function seed(): Promise<void> {
     monthlyLimit: 1,
     lifetimeLimit: 2,
     hidden: false,
+    hasVariants: true,
   });
   const MERCH_ITEM_5_MEDIUM = MerchFactory.fakeOption({
     item: MERCH_ITEM_5,
