@@ -68,13 +68,13 @@ export class MerchFactory {
   }
 
   public static fakeItem(substitute?: Partial<MerchandiseItemModel>): MerchandiseItemModel {
-    const hasVariants = FactoryUtils.getRandomBoolean();
-    const maxNumOptions = hasVariants ? 5 : 1;
+    const hasVariantsEnabled = FactoryUtils.getRandomBoolean();
+    const maxNumOptions = hasVariantsEnabled ? 5 : 1;
     const fake = MerchandiseItemModel.create({
       uuid: uuid(),
       itemName: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
-      hasVariants,
+      hasVariantsEnabled,
       options: MerchFactory.createOptions(FactoryUtils.getRandomNumber(1, maxNumOptions)),
     });
     return MerchandiseItemModel.merge(fake, substitute);

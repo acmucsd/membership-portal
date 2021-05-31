@@ -199,7 +199,7 @@ export interface CommonMerchItemProperties {
   hidden?: boolean;
   monthlyLimit?: number;
   lifetimeLimit?: number;
-  hasVariants: boolean;
+  hasVariantsEnabled: boolean;
 }
 
 export interface MerchItemOptionMetadata {

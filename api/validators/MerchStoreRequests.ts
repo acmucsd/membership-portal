@@ -131,7 +131,7 @@ export class MerchItem implements IMerchItem {
   hidden?: boolean;
 
   @IsDefined()
-  hasVariants: boolean;
+  hasVariantsEnabled: boolean;
 
   @Type(() => MerchItemOption)
   @ValidateNested()

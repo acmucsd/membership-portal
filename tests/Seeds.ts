@@ -282,7 +282,7 @@ async function seed(): Promise<void> {
     monthlyLimit: 1,
     lifetimeLimit: 1,
     hidden: false,
-    hasVariants: true,
+    hasVariantsEnabled: true,
   });
   const MERCH_ITEM_1_OPTION_XS = MerchFactory.fakeOption({
     item: MERCH_ITEM_1,
@@ -354,7 +354,7 @@ async function seed(): Promise<void> {
     monthlyLimit: 5,
     lifetimeLimit: 25,
     hidden: false,
-    hasVariants: true,
+    hasVariantsEnabled: true,
   });
   const MERCH_ITEM_2_OPTION_2X2 = MerchFactory.fakeOption({
     item: MERCH_ITEM_2,
@@ -408,7 +408,7 @@ async function seed(): Promise<void> {
     monthlyLimit: 2,
     lifetimeLimit: 5,
     hidden: false,
-    hasVariants: false,
+    hasVariantsEnabled: false,
   });
   const MERCH_ITEM_3_OPTION = MerchFactory.fakeOption({
     item: MERCH_ITEM_3,
@@ -425,7 +425,7 @@ async function seed(): Promise<void> {
     monthlyLimit: 3,
     lifetimeLimit: 10,
     hidden: false,
-    hasVariants: false,
+    hasVariantsEnabled: false,
   });
   const MERCH_ITEM_4_OPTION = MerchFactory.fakeOption({
     item: MERCH_ITEM_4,
@@ -442,7 +442,7 @@ async function seed(): Promise<void> {
     monthlyLimit: 1,
     lifetimeLimit: 2,
     hidden: false,
-    hasVariants: true,
+    hasVariantsEnabled: true,
   });
   const MERCH_ITEM_5_MEDIUM = MerchFactory.fakeOption({
     item: MERCH_ITEM_5,

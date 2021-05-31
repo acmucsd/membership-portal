@@ -153,7 +153,7 @@ export interface PublicMerchItem {
   description: string;
   monthlyLimit: number;
   lifetimeLimit: number;
-  hasVariants: boolean;
+  hasVariantsEnabled: boolean;
   options: PublicMerchItemOption[];
 }
 

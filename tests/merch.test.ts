@@ -23,7 +23,7 @@ describe('merch item options', () => {
     const [metadata, newMetadata] = MerchFactory.createOptionMetadataOfSameType(2);
     const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
     const [merchItem] = MerchFactory.itemsWith({
-      hasVariants: true,
+      hasVariantsEnabled: true,
       options: [option],
     });
     const [merchCollection] = MerchFactory.collectionsWith({
@@ -51,7 +51,7 @@ describe('merch item options', () => {
     const [metadata, newMetadata] = MerchFactory.createOptionMetadataOfSameType(2);
     const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
     const [merchItem] = MerchFactory.itemsWith({
-      hasVariants: false,
+      hasVariantsEnabled: false,
       options: [option],
     });
     const [merchCollection] = MerchFactory.collectionsWith({
@@ -79,7 +79,7 @@ describe('merch item options', () => {
     const [newMetadata] = MerchFactory.optionMetadataWith({ type: 'SIZE' });
     const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
     const [merchItem] = MerchFactory.itemsWith({
-      hasVariants: true,
+      hasVariantsEnabled: true,
       options: [option],
     });
     const [merchCollection] = MerchFactory.collectionsWith({
