@@ -24,7 +24,6 @@ export class MerchandiseItemOptionModel extends BaseEntity {
   @Column('integer', { default: 0 })
   discountPercentage: number;
 
-  // Potential fields: type: string, value: string, position: number
   @Column({
     type: 'text',
     nullable: true,
