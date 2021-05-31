@@ -57,34 +57,37 @@ export class MerchFactory {
     });
   }
 
-  public static fakeCollection(): MerchandiseCollectionModel {
-    return MerchandiseCollectionModel.create({
+  public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
+    const fake = MerchandiseCollectionModel.create({
       uuid: uuid(),
       title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       items: MerchFactory.createItems(FactoryUtils.getRandomNumber(1, 5)),
     });
+    return MerchandiseCollectionModel.merge(fake, substitute);
   }
 
-  public static fakeItem(): MerchandiseItemModel {
+  public static fakeItem(substitute?: Partial<MerchandiseItemModel>): MerchandiseItemModel {
     const hasVariants = FactoryUtils.getRandomBoolean();
     const maxNumOptions = hasVariants ? 5 : 1;
-    return MerchandiseItemModel.create({
+    const fake = MerchandiseItemModel.create({
       uuid: uuid(),
       itemName: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       hasVariants,
       options: MerchFactory.createOptions(FactoryUtils.getRandomNumber(1, maxNumOptions)),
     });
+    return MerchandiseItemModel.merge(fake, substitute);
   }
 
-  public static fakeOption(): MerchandiseItemOptionModel {
-    return MerchandiseItemOptionModel.create({
+  public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {
+    const fake = MerchandiseItemOptionModel.create({
       uuid: uuid(),
       quantity: FactoryUtils.getRandomNumber(0, 25),
       price: MerchFactory.randomPrice(),
       discountPercentage: MerchFactory.randomDiscountPercentage(),
     });
+    return MerchandiseItemOptionModel.merge(fake, substitute);
   }
 
   public static fakeOptionMetadata(): MerchItemOptionMetadata {

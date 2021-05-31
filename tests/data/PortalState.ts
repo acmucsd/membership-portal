@@ -76,12 +76,13 @@ export class PortalState {
     return this;
   }
 
-  public attendEvents(users: UserModel[], events: EventModel[], asStaff = false): PortalState {
+  public attendEvents(users: UserModel[], events: EventModel[], includesStaff = false): PortalState {
     for (let e = 0; e < events.length; e += 1) {
       const event = events[e];
-      const pointsEarned = event.pointValue; // TODO
       for (let u = 0; u < users.length; u += 1) {
         const user = users[u];
+        const asStaff = includesStaff && user.isStaff() && event.requiresStaff;
+        const pointsEarned = asStaff ? event.pointValue + event.staffPointBonus : event.pointValue;
         user.points += pointsEarned;
         user.credits += pointsEarned * 100;
         const timestamp = this.getDateDuring(event);
