@@ -271,7 +271,7 @@ async function seed(): Promise<void> {
   const MERCH_COLLECTION_1 = MerchFactory.fakeCollection({
     title: 'The Hack School Collection',
     description: 'Do you like to code? Tell the world with this Hack School inspired collection.',
-    themeColor: '#EB8C34',
+    themeColorHex: '#EB8C34',
   });
   const MERCH_ITEM_1 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,

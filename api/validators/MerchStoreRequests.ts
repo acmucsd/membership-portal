@@ -25,7 +25,7 @@ export class MerchCollection implements IMerchCollection {
   title: string;
 
   @Allow()
-  themeColor?: string;
+  themeColorHex?: string;
 
   @IsDefined()
   @IsNotEmpty()

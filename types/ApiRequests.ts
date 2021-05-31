@@ -182,7 +182,7 @@ export interface FulfillMerchOrderRequest {
 
 export interface MerchCollection {
   title: string;
-  themeColor?: string;
+  themeColorHex?: string;
   description: string;
   archived?: boolean;
 }

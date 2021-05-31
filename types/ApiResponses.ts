@@ -140,7 +140,7 @@ export interface GetLeaderboardResponse extends ApiResponse {
 export interface PublicMerchCollection {
   uuid: Uuid;
   title: string;
-  themeColor?: string;
+  themeColorHex?: string;
   description: string;
   items: PublicMerchItem[];
 }
