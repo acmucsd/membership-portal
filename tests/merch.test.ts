@@ -72,7 +72,7 @@ describe('merch item options', () => {
     ).rejects.toThrow(UserErrors.NO_ITEM_VARIANTS_ADD_OPTION);
   });
 
-  test('cannot be added to an item with different metadata types', async () => {
+  test('cannot add different metadata types to an item', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [metadata] = MerchFactory.optionMetadataWith({ type: 'COLOR' });
