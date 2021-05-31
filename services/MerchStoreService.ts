@@ -110,7 +110,7 @@ export default class MerchStoreService {
     return this.transactions.readWrite(async (txn) => {
       if (this.hasMultipleOptionTypes(item.options)) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
       if (!item.hasVariantsEnabled && item.options.length > 1) {
-        throw new UserError(UserErrors.NO_ITEM_VARIANTS_BUT_MULTIPLE_OPTIONS);
+        throw new UserError(UserErrors.VARIANTS_DISABLED_MULTIPLE_OPTIONS);
       }
 
       const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
@@ -139,7 +139,7 @@ export default class MerchStoreService {
       if (!item) throw new NotFoundError();
       const { options, collection: updatedCollection, hasVariantsEnabled, ...changes } = itemEdit;
       if (this.hasMultipleOptionTypes(options)) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
-      if (!hasVariantsEnabled && options.length > 1) throw new UserError(UserErrors.NO_ITEM_VARIANTS_BUT_MULTIPLE_OPTIONS);
+      if (!hasVariantsEnabled && options.length > 1) throw new UserError(UserErrors.VARIANTS_DISABLED_MULTIPLE_OPTIONS);
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const updatedOptions = await Promise.all(options.map(async (optionUpdate) => {
@@ -173,7 +173,7 @@ export default class MerchStoreService {
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
       const hasBeenOrdered = await Repositories.merchOrderItem(txn).hasItemBeenOrdered(uuid);
-      if (hasBeenOrdered) throw new UserError(UserErrors.MERCH_ITEM_ORDERED_FROM);
+      if (hasBeenOrdered) throw new UserError(UserErrors.MERCH_ITEM_ORDERED);
       return merchItemRepository.deleteMerchItem(item);
     });
   }
@@ -182,7 +182,7 @@ export default class MerchStoreService {
     return this.transactions.readWrite(async (txn) => {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError(NotFoundErrors.MERCH_ITEM);
-      if (!merchItem.hasVariantsEnabled) throw new UserError(UserErrors.NO_ITEM_VARIANTS_ADD_OPTION);
+      if (!merchItem.hasVariantsEnabled) throw new UserError(UserErrors.VARIANTS_DISABLED_ADD_OPTION);
       const hasDifferentOptionType = merchItem.options && merchItem.options[0].metadata?.type !== option.metadata?.type;
       if (hasDifferentOptionType) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
 
@@ -200,7 +200,7 @@ export default class MerchStoreService {
       const option = await merchItemOptionRepository.findByUuid(uuid);
       if (!option) throw new NotFoundError();
       const hasBeenOrdered = await Repositories.merchOrderItem(txn).hasOptionBeenOrdered(uuid);
-      if (hasBeenOrdered) throw new UserError(UserErrors.MERCH_ITEM_OPTION_ORDERED_FROM);
+      if (hasBeenOrdered) throw new UserError(UserErrors.MERCH_ITEM_OPTION_ORDERED);
       return merchItemOptionRepository.deleteMerchItemOption(option);
     });
   }
