@@ -62,6 +62,7 @@ export class MerchFactory {
       uuid: uuid(),
       title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
+      themeColorHex: faker.internet.color(),
       items: MerchFactory.createItems(FactoryUtils.getRandomNumber(1, 5)),
     });
     return MerchandiseCollectionModel.merge(fake, substitute);

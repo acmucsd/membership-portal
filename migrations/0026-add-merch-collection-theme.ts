@@ -5,7 +5,6 @@ export class AddMerchCollectionTheme1621463276136 implements MigrationInterface 
     await queryRunner.addColumn('MerchandiseCollections', new TableColumn({
       name: 'themeColorHex',
       type: 'varchar(255)',
-      isNullable: true,
     }));
   }
 

@@ -10,7 +10,7 @@ export class MerchandiseCollectionModel extends BaseEntity {
   @Column('varchar', { length: 255 })
   title: string;
 
-  @Column('varchar', { length: 255, nullable: true })
+  @Column('varchar', { length: 255 })
   themeColorHex: string;
 
   @Column('text')
