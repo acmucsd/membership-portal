@@ -183,7 +183,7 @@ export default class MerchStoreService {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError(NotFoundErrors.MERCH_ITEM);
       if (!merchItem.hasVariantsEnabled) throw new UserError(UserErrors.VARIANTS_DISABLED_ADD_OPTION);
-      const hasDifferentOptionType = merchItem.options && merchItem.options[0].metadata?.type !== option.metadata?.type;
+      const hasDifferentOptionType = merchItem.options[0].metadata?.type !== option.metadata?.type;
       if (hasDifferentOptionType) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
