@@ -108,10 +108,10 @@ export default class MerchStoreService {
 
   public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
     return this.transactions.readWrite(async (txn) => {
-      if (this.hasMultipleOptionTypes(item.options)) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
       if (!item.hasVariantsEnabled && item.options.length > 1) {
         throw new UserError(UserErrors.VARIANTS_DISABLED_MULTIPLE_OPTIONS);
       }
+      if (this.hasMultipleOptionTypes(item.options)) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
 
       const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
       if (!collection) throw new NotFoundError(NotFoundErrors.MERCH_COLLECTION);
