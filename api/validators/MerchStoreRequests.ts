@@ -155,6 +155,9 @@ export class MerchItemEdit implements IMerchItemEdit {
   @Allow()
   hidden?: boolean;
 
+  @Allow()
+  hasVariantsEnabled?: boolean;
+
   @Type(() => MerchItemOptionEdit)
   @ValidateNested()
   options?: MerchItemOptionEdit[];
