@@ -78,12 +78,12 @@ export default class MerchStoreService {
           .merchStoreItemOption(txn)
           .updateMerchItemOptionsInCollection(uuid, discountPercentage);
       }
-      if(changes.archived){
+      if (changes.archived) {
         await Repositories
           .merchStoreItem(txn)
-          .updateMerchItemInCollection(uuid,true);
+          .updateMerchItemInCollection(uuid, true);
       }
-      if(changes.discountPercentage || changes.archived){
+      if (changes.discountPercentage || changes.archived) {
         updatedCollection = await merchCollectionRepository.findByUuid(uuid);
       }
       return updatedCollection;

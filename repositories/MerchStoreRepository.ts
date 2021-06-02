@@ -57,7 +57,7 @@ export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
     const qb = this.repository.createQueryBuilder();
     await qb
       .update()
-      .set({ 'hidden':hidden })
+      .set({ hidden })
       .where(`item IN ${qb.subQuery()
         .select('merch.uuid')
         .from(MerchandiseItemModel, 'merch')
