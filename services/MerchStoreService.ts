@@ -137,23 +137,27 @@ export default class MerchStoreService {
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
-      const { options, collection: updatedCollection, hasVariantsEnabled, ...changes } = itemEdit;
-      if (this.hasMultipleOptionTypes(options)) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
-      if (!hasVariantsEnabled && options.length > 1) throw new UserError(UserErrors.VARIANTS_DISABLED_MULTIPLE_OPTIONS);
+      const { options, collection: updatedCollection, ...changes } = itemEdit;
 
-      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-      const updatedOptions = await Promise.all(options.map(async (optionUpdate) => {
-        const option = await merchItemOptionRepository.findByUuid(optionUpdate.uuid);
-        if (!option) throw new NotFoundError(NotFoundErrors.MERCH_ITEM_OPTION);
-        // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
-        // e.g. there's 10 of an item and someone adds 5 to stock while someone else orders 1
-        // so the merch store admin sets quantity to 15 but the true quantity is 14
-        if (optionUpdate.quantity) optionUpdate.quantity += option.quantity;
-        return merchItemOptionRepository.upsertMerchItemOption(option, optionUpdate);
-      }));
+      if (options) {
+        const updatedOptionMap = new Map(options.map((option) => [option.uuid, option]));
+        item.options.forEach((option, i) => {
+          if (!updatedOptionMap.has(option.uuid)) return;
+          const updatedOption = updatedOptionMap.get(option.uuid);
+          // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
+          // e.g. there's 10 of an item and someone adds 5 to stock while someone else orders 1
+          // so the merch store admin sets quantity to 15 but the true quantity is 14
+          if (updatedOption.quantity) updatedOption.quantity += option.quantity;
+          this[i] = MerchandiseItemOptionModel.merge(option, updatedOption);
+        }, item);
+      }
 
-      const updatedOptionsIds = new Set(updatedOptions.map((option) => option.uuid));
-      item.options = [...updatedOptions, ...item.options.filter((option) => !updatedOptionsIds.has(option.uuid))];
+      // ensure the hasVariantsEnabled <--> options.length invariant is still consistent
+      if (changes.hasVariantsEnabled !== undefined) item.hasVariantsEnabled = changes.hasVariantsEnabled;
+      if (!item.hasVariantsEnabled && item.options.length > 1) {
+        throw new UserError(UserErrors.VARIANTS_DISABLED_MULTIPLE_OPTIONS);
+      }
+      if (this.hasMultipleOptionTypes(item.options)) throw new UserError(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
 
       if (updatedCollection) {
         const collection = await Repositories
