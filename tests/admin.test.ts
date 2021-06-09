@@ -154,16 +154,18 @@ describe('bonus points submission', () => {
       points: 200,
     };
 
+    const userController = ControllerFactory.user(conn);
+
     const createBonusResponse = await ControllerFactory.admin(conn).addBonus({ bonus }, admin);
     expect(createBonusResponse.emails).toEqual(expect.arrayContaining(emails));
 
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
-      const getUserResponse = await ControllerFactory.user(conn).getUser({ uuid: user.uuid }, admin);
+      const getUserResponse = await userController.getUser({ uuid: user.uuid }, admin);
       expect(getUserResponse.user.points).toEqual(200);
     }
 
-    const getNoBonusUserResponse = await ControllerFactory.user(conn).getUser({ uuid: userNotGettingBonus.uuid }, admin);
+    const getNoBonusUserResponse = await userController.getUser({ uuid: userNotGettingBonus.uuid }, admin);
     expect(getNoBonusUserResponse.user.points).toEqual(0);
   });
 });
