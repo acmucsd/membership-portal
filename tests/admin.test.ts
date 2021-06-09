@@ -132,9 +132,8 @@ describe('email retrieval', () => {
       .createUsers([...users, admin])
       .write();
 
-    const adminController = ControllerFactory.admin(conn);
-    const response = await adminController.getAllEmails(admin);
-    expect([...emails, admin.email]).toEqual(expect.arrayContaining(response.emails));
+    const response = await ControllerFactory.admin(conn).getAllEmails(admin);
+    expect(expect.arrayContaining(response.emails)).toEqual([...emails, admin.email]);
   });
 });
 
