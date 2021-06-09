@@ -140,13 +140,12 @@ describe('email retrieval', () => {
 describe('bonus points submission', () => {
   test('updates points and activity to the users in the bonus request', async () => {
     const conn = await DatabaseConnection.get();
-    const users = UserFactory.create(5);
+    const [userNotGettingBonus, ...users] = UserFactory.create(5);
     const emails = users.map((user) => user.email.toLowerCase());
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [extraneousUser] = UserFactory.create(1);
 
     await new PortalState()
-      .createUsers([...users, extraneousUser, admin])
+      .createUsers([...users, userNotGettingBonus, admin])
       .write();
 
     const bonus = {
@@ -164,7 +163,7 @@ describe('bonus points submission', () => {
       expect(getUserResponse.user.points).toEqual(200);
     }
 
-    const getExtraUserResponse = await ControllerFactory.user(conn).getUser({ uuid: extraneousUser.uuid }, admin);
-    expect(getExtraUserResponse.user.points).toEqual(0);
+    const getNoBonusUserResponse = await ControllerFactory.user(conn).getUser({ uuid: userNotGettingBonus.uuid }, admin);
+    expect(getNoBonusUserResponse.user.points).toEqual(0);
   });
 });
