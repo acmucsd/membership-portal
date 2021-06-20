@@ -1,5 +1,4 @@
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { pick } from 'underscore';
 import { PublicEvent, Uuid } from '../types';
 import { AttendanceModel } from './AttendanceModel';
 
@@ -60,22 +59,22 @@ export class EventModel extends BaseEntity {
   attendances: AttendanceModel[];
 
   public getPublicEvent(canSeeAttendanceCode = false): PublicEvent {
-    const publicEvent: PublicEvent = pick(this, [
-      'uuid',
-      'organization',
-      'committee',
-      'thumbnail',
-      'cover',
-      'title',
-      'description',
-      'location',
-      'eventLink',
-      'start',
-      'end',
-      'pointValue',
-      'requiresStaff',
-      'staffPointBonus',
-    ]);
+    const publicEvent: PublicEvent = {
+      uuid: this.uuid,
+      organization: this.organization,
+      committee: this.committee,
+      thumbnail: this.thumbnail,
+      cover: this.cover,
+      title: this.title,
+      description: this.description,
+      location: this.location,
+      eventLink: this.eventLink,
+      start: this.start,
+      end: this.end,
+      pointValue: this.pointValue,
+      requiresStaff: this.requiresStaff,
+      staffPointBonus: this.staffPointBonus,
+    };
     if (canSeeAttendanceCode) publicEvent.attendanceCode = this.attendanceCode;
     return publicEvent;
   }

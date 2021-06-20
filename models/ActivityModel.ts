@@ -1,5 +1,4 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
-import { pick } from 'underscore';
 import { ActivityScope, ActivityType, PublicActivity, Uuid } from '../types';
 import { UserModel } from './UserModel';
 
@@ -30,12 +29,12 @@ export class ActivityModel extends BaseEntity {
   scope: ActivityScope;
 
   public getPublicActivity(): PublicActivity {
-    return pick(this, [
-      'type',
-      'scope',
-      'description',
-      'pointsEarned',
-      'timestamp',
-    ]);
+    return {
+      type: this.type,
+      scope: this.scope,
+      description: this.description,
+      pointsEarned: this.pointsEarned,
+      timestamp: this.timestamp,
+    };
   }
 }
