@@ -1,4 +1,3 @@
-import { UserErrors } from '../error';
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
@@ -179,7 +178,7 @@ describe('merch item edit', () => {
       { uuid: item.uuid },
       { merchandise: { hasVariantsEnabled: false } },
       admin,
-    )).rejects.toThrow(UserErrors.VARIANTS_DISABLED_MULTIPLE_OPTIONS);
+    )).rejects.toThrow('Items with variants disabled cannot have multiple options');
   });
 
   test('fails when updated options have multiple types', async () => {
@@ -211,7 +210,7 @@ describe('merch item edit', () => {
       { uuid: item.uuid },
       { merchandise: { options } },
       admin,
-    )).rejects.toThrow(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
+    )).rejects.toThrow('Item cannot have multiple option types');
   });
 });
 
@@ -271,7 +270,7 @@ describe('merch item options', () => {
         { option: newOption },
         admin,
       ),
-    ).rejects.toThrow(UserErrors.VARIANTS_DISABLED_ADD_OPTION);
+    ).rejects.toThrow('Cannot add option to items with variants disabled');
   });
 
   test('cannot add different metadata types to an item', async () => {
@@ -299,6 +298,6 @@ describe('merch item options', () => {
         { option: newOption },
         admin,
       ),
-    ).rejects.toThrow(UserErrors.MULTIPLE_MERCH_OPTION_TYPES);
+    ).rejects.toThrow('Item cannot have multiple option types');
   });
 });
