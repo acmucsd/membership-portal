@@ -16,7 +16,14 @@ export class MerchFactory {
   }
 
   public static createOptions(n: number): MerchandiseItemOptionModel[] {
-    return FactoryUtils.create(n, MerchFactory.fakeOption);
+    const options = FactoryUtils.create(n, MerchFactory.fakeOption);
+    if (n === 1) return options;
+
+    const optionMetadata = this.createOptionMetadata(n);
+    return options.map((option, i) => {
+      option.metadata = optionMetadata[i];
+      return option;
+    });
   }
 
   public static createOptionMetadata(n: number): MerchItemOptionMetadata[] {
