@@ -234,14 +234,17 @@ describe('merch item options', () => {
       .createMerch([merchCollection])
       .write();
 
-    const response = await ControllerFactory.merchStore(conn).createMerchItemOption(
-      { uuid: merchItem.uuid },
-      { option: newOption },
-      admin,
-    );
+    await ControllerFactory
+      .merchStore(conn)
+      .createMerchItemOption({ uuid: merchItem.uuid }, { option: newOption }, admin);
 
-    expect(response.error).toBeNull();
-    expect(response.option).toStrictEqual(newOption.getPublicMerchItemOption());
+    const merchItemResponse = await ControllerFactory
+      .merchStore(conn)
+      .getOneMerchItem({ uuid: merchItem.uuid }, admin);
+
+    expect(merchItemResponse.item.options).toEqual(
+      expect.arrayContaining([option.getPublicMerchItemOption(), newOption.getPublicMerchItemOption()]),
+    );
   });
 
   test('cannot be added to an item with variants disabled', async () => {

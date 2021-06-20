@@ -70,13 +70,13 @@ export class MerchFactory {
 
   public static fakeItem(substitute?: Partial<MerchandiseItemModel>): MerchandiseItemModel {
     const hasVariantsEnabled = FactoryUtils.getRandomBoolean();
-    const maxNumOptions = hasVariantsEnabled ? 5 : 1;
+    const numOptions = hasVariantsEnabled ? FactoryUtils.getRandomNumber(1, 5) : 1;
     const fake = MerchandiseItemModel.create({
       uuid: uuid(),
       itemName: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       hasVariantsEnabled,
-      options: MerchFactory.createOptions(FactoryUtils.getRandomNumber(1, maxNumOptions)),
+      options: MerchFactory.createOptions(numOptions),
     });
     return MerchandiseItemModel.merge(fake, substitute);
   }
