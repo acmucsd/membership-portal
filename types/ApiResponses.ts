@@ -1,5 +1,5 @@
 import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType } from './Enums';
-import { Uuid } from '.';
+import { MerchItemOptionMetadata, Uuid } from '.';
 
 // RESPONSE TYPES
 
@@ -157,17 +157,11 @@ export interface PublicMerchItem {
   options: PublicMerchItemOption[];
 }
 
-export interface PublicMerchItemOptionMetadata {
-  type: string;
-  value: string;
-  position?: number;
-}
-
 export interface PublicMerchItemOption {
   uuid: Uuid;
   price: number;
   discountPercentage: number;
-  metadata: PublicMerchItemOptionMetadata;
+  metadata: MerchItemOptionMetadata;
 }
 
 export interface PublicOrderItem {
