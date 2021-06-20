@@ -19,7 +19,6 @@ import {
   MerchItemOptionAndQuantity,
   MerchItemEdit,
   PublicMerchItemOption,
-  MerchItemOptionEdit,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
@@ -107,10 +106,7 @@ export default class MerchStoreService {
 
   public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
     return this.transactions.readWrite(async (txn) => {
-      if (!item.hasVariantsEnabled && item.options.length > 1) {
-        throw new UserError('Items with variants disabled cannot have multiple options');
-      }
-      if (this.hasMultipleOptionTypes(item.options)) throw new UserError('Item cannot have multiple option types');
+      this.verifyVariantAndOptionConsistency(item);
 
       const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
       if (!collection) throw new NotFoundError('Merch collection not found');
@@ -122,13 +118,20 @@ export default class MerchStoreService {
     });
   }
 
-  private hasMultipleOptionTypes(options: MerchItemOption[] | MerchandiseItemOptionModel[] | MerchItemOptionEdit[]) {
-    for (let i = 1; i < options.length; i += 1) {
-      if (options[i].metadata?.type !== options[i - 1].metadata?.type) {
-        return true;
-      }
+  // verify that item.hasVariantsEnabled is consistent with the item options length and option type consistency
+  // as defined by the merch store functionality
+  private verifyVariantAndOptionConsistency(item: MerchItem | MerchandiseItemModel) {
+    if (!item.hasVariantsEnabled && item.options.length > 1) {
+      throw new UserError('Items with variants disabled cannot have multiple options');
     }
-    return false;
+    if (item.hasVariantsEnabled && this.hasMultipleOptionTypes(item.options)) {
+      throw new UserError('Item cannot have multiple option types');
+    }
+  }
+
+  private hasMultipleOptionTypes(options: MerchItemOption[]) {
+    const optionTypes = new Set(options.map((option) => option.metadata.type));
+    return optionTypes.size > 1;
   }
 
   public async editItem(uuid: Uuid, itemEdit: MerchItemEdit): Promise<MerchandiseItemModel> {
@@ -153,10 +156,7 @@ export default class MerchStoreService {
 
       // ensure the hasVariantsEnabled <--> options.length invariant is still consistent
       if (changes.hasVariantsEnabled !== undefined) item.hasVariantsEnabled = changes.hasVariantsEnabled;
-      if (!item.hasVariantsEnabled && item.options.length > 1) {
-        throw new UserError('Items with variants disabled cannot have multiple options');
-      }
-      if (this.hasMultipleOptionTypes(item.options)) throw new UserError('Item cannot have multiple option types');
+      this.verifyVariantAndOptionConsistency(item);
 
       if (updatedCollection) {
         const collection = await Repositories
