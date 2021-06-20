@@ -1,5 +1,5 @@
-import { UserAccessType } from 'types';
-import { UserError } from 'utils/Errors';
+import { UserAccessType } from '../types';
+import { UserError } from '../utils/Errors';
 import { DatabaseConnection, MerchFactory, UserFactory, PortalState } from './data';
 import { ControllerFactory } from './controllers';
 
