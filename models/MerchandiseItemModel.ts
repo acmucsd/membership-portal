@@ -35,7 +35,7 @@ export class MerchandiseItemModel extends BaseEntity {
   @Column('boolean', { default: false })
   hidden: boolean;
 
-  @Column('boolean')
+  @Column('boolean', { default: false })
   hasVariantsEnabled: boolean;
 
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })

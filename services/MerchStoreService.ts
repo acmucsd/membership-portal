@@ -106,6 +106,7 @@ export default class MerchStoreService {
 
   public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
     return this.transactions.readWrite(async (txn) => {
+      item.hasVariantsEnabled ??= false;
       this.verifyVariantAndOptionConsistency(item);
 
       const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
