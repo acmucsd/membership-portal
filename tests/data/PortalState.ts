@@ -97,6 +97,7 @@ export class PortalState {
           type: asStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
           timestamp,
           scope: ActivityScope.PUBLIC,
+          pointsEarned,
         }));
       }
     }

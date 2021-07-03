@@ -86,6 +86,7 @@ describe('retroactive attendance submission', () => {
     expect(activityResponse.activity).toHaveLength(2);
     expect(activityResponse.activity[1].description).toBeNull();
     expect(activityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
+    expect(activityResponse.activity[1].pointsEarned).toEqual(event.pointValue);
   });
 
   test('logs proper activity and point rewards for staff attendance', async () => {
