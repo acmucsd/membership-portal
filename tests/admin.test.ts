@@ -85,6 +85,7 @@ describe('retroactive attendance submission', () => {
     const activityResponse = await userController.getCurrentUserActivityStream(user);
     expect(activityResponse.activity).toHaveLength(2);
     expect(activityResponse.activity[1].description).toBeNull();
+    expect(activityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
   });
 
   test('logs proper activity and point rewards for staff attendance', async () => {
@@ -165,6 +166,12 @@ describe('bonus points submission', () => {
       const user = users[u];
       const getUserResponse = await userController.getUser({ uuid: user.uuid }, admin);
       expect(getUserResponse.user.points).toEqual(200);
+
+      const activityResponse = await userController.getCurrentUserActivityStream(user);
+      expect(activityResponse.activity).toHaveLength(2);
+      expect(activityResponse.activity[1].description).toEqual(bonus.description);
+      expect(activityResponse.activity[1].type).toEqual(ActivityType.BONUS_POINTS);
+      expect(activityResponse.activity[1].pointsEarned).toEqual(bonus.points);
     }
 
     const getNoBonusUserResponse = await userController.getUser({ uuid: userNotGettingBonus.uuid }, admin);
