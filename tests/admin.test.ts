@@ -79,6 +79,8 @@ describe('retroactive attendance submission', () => {
 
     const attendanceResponse = await attendanceController.getAttendancesForCurrentUser(user);
     expect(attendanceResponse.attendances).toHaveLength(1);
+    expect(attendanceResponse.attendances[0].event.uuid).toEqual(event.uuid);
+    expect(attendanceResponse.attendances[0].asStaff).toEqual(false);
 
     const activityResponse = await userController.getCurrentUserActivityStream(user);
     expect(activityResponse.activity).toHaveLength(2);
@@ -154,10 +156,10 @@ describe('bonus points submission', () => {
       points: 200,
     };
 
-    const userController = ControllerFactory.user(conn);
-
     const createBonusResponse = await ControllerFactory.admin(conn).addBonus({ bonus }, admin);
     expect(createBonusResponse.emails).toEqual(expect.arrayContaining(emails));
+
+    const userController = ControllerFactory.user(conn);
 
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
