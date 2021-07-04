@@ -119,9 +119,11 @@ export default class MerchStoreService {
     });
   }
 
-  // verify that item.hasVariantsEnabled is consistent with the item options length and option type consistency
-  // as defined by the merch store functionality
-  private verifyVariantAndOptionConsistency(item: MerchItem | MerchandiseItemModel) {
+  /**
+   * Verify that items have valid options. An item with variants disabled cannot have multiple 
+   * options, and an item with variants enabled cannot have multiple option types.
+   */
+   private static verifyItemHasValidOptions(item: MerchandiseItemModel) {
     if (!item.hasVariantsEnabled && item.options.length > 1) {
       throw new UserError('Items with variants disabled cannot have multiple options');
     }
