@@ -157,9 +157,7 @@ export default class MerchStoreService {
         });
       }
 
-      // ensure the hasVariantsEnabled <--> options.length invariant is still consistent
-      if (changes.hasVariantsEnabled !== undefined) item.hasVariantsEnabled = changes.hasVariantsEnabled;
-      this.verifyVariantAndOptionConsistency(item);
+      this.verifyItemHasValidOptions(MerchandiseItemModel.merge(item, changes));
 
       if (updatedCollection) {
         const collection = await Repositories
