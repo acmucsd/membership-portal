@@ -188,7 +188,7 @@ export default class MerchStoreService {
       if (!merchItem) throw new NotFoundError('Merch item not found');
       if (!merchItem.hasVariantsEnabled) throw new UserError('Cannot add option to items with variants disabled');
       const hasDifferentOptionType = merchItem.options[0].metadata?.type !== option.metadata?.type;
-      if (hasDifferentOptionType) throw new UserError('Item cannot have multiple option types');
+      if (hasDifferentOptionType) throw new UserError('Merch item cannot have multiple option types');
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const createdOption = MerchandiseItemOptionModel.create({ ...option, item: merchItem });
