@@ -145,10 +145,10 @@ export default class MerchStoreService {
       const { options, collection: updatedCollection, ...changes } = itemEdit;
 
       if (options) {
-        const updatedOptionMap = new Map(options.map((option) => [option.uuid, option]));
+        const updatedOptionsByUuid = new Map(options.map((option) => [option.uuid, option]));
         item.options.map((option) => {
-          if (!updatedOptionMap.has(option.uuid)) return;
-          const updatedOption = updatedOptionMap.get(option.uuid);
+          if (!updatedOptionsByUuid.has(option.uuid)) return;
+          const updatedOption = updatedOptionsByUuid.get(option.uuid);
           // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
           // e.g. there's 10 of an item and someone adds 5 to stock while someone else orders 1
           // so the merch store admin sets quantity to 15 but the true quantity is 14
