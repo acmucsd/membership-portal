@@ -120,10 +120,10 @@ export default class MerchStoreService {
   }
 
   /**
-   * Verify that items have valid options. An item with variants disabled cannot have multiple 
+   * Verify that items have valid options. An item with variants disabled cannot have multiple
    * options, and an item with variants enabled cannot have multiple option types.
    */
-   private static verifyItemHasValidOptions(item: MerchItem | MerchandiseItemModel) {
+  private static verifyItemHasValidOptions(item: MerchItem | MerchandiseItemModel) {
     if (!item.hasVariantsEnabled && item.options.length > 1) {
       throw new UserError('Merch items with variants disabled cannot have multiple options');
     }
