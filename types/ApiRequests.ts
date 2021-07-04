@@ -219,8 +219,12 @@ export interface MerchItem extends CommonMerchItemProperties {
   options: MerchItemOption[];
 }
 
-export interface MerchItemOptionEdit extends Partial<MerchItemOption> {
+export interface MerchItemOptionEdit {
   uuid: string;
+  addQuantity?: number;
+  price?: number;
+  discountPercentage?: number;
+  metadata?: MerchItemOptionMetadata;
 }
 
 export interface MerchItemEdit extends Partial<CommonMerchItemProperties> {
