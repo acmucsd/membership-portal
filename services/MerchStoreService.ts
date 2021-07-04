@@ -107,7 +107,7 @@ export default class MerchStoreService {
   public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
     return this.transactions.readWrite(async (txn) => {
       item.hasVariantsEnabled ??= false;
-      this.verifyVariantAndOptionConsistency(item);
+      MerchStoreService.verifyItemHasValidOptions(item);
 
       const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
       if (!collection) throw new NotFoundError('Merch collection not found');
@@ -123,16 +123,16 @@ export default class MerchStoreService {
    * Verify that items have valid options. An item with variants disabled cannot have multiple 
    * options, and an item with variants enabled cannot have multiple option types.
    */
-   private static verifyItemHasValidOptions(item: MerchandiseItemModel) {
+   private static verifyItemHasValidOptions(item: MerchItem | MerchandiseItemModel) {
     if (!item.hasVariantsEnabled && item.options.length > 1) {
       throw new UserError('Merch items with variants disabled cannot have multiple options');
     }
-    if (item.hasVariantsEnabled && this.hasMultipleOptionTypes(item.options)) {
+    if (item.hasVariantsEnabled && MerchStoreService.hasMultipleOptionTypes(item.options)) {
       throw new UserError('Merch items cannot have multiple option types');
     }
   }
 
-  private hasMultipleOptionTypes(options: MerchItemOption[]) {
+  private static hasMultipleOptionTypes(options: MerchItemOption[]) {
     const optionTypes = new Set(options.map((option) => option.metadata.type));
     return optionTypes.size > 1;
   }
@@ -157,7 +157,7 @@ export default class MerchStoreService {
         });
       }
 
-      this.verifyItemHasValidOptions(MerchandiseItemModel.merge(item, changes));
+      MerchStoreService.verifyItemHasValidOptions(MerchandiseItemModel.merge(item, changes));
 
       if (updatedCollection) {
         const collection = await Repositories
