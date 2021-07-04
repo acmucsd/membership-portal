@@ -179,7 +179,7 @@ describe('merch item edit', () => {
       { uuid: item.uuid },
       { merchandise: { hasVariantsEnabled: false } },
       admin,
-    )).rejects.toThrow('Items with variants disabled cannot have multiple options');
+    )).rejects.toThrow('Merch items with variants disabled cannot have multiple options');
   });
 
   test('fails when updated options have multiple types', async () => {
@@ -211,7 +211,7 @@ describe('merch item edit', () => {
       { uuid: item.uuid },
       { merchandise: { options } },
       admin,
-    )).rejects.toThrow('Item cannot have multiple option types');
+    )).rejects.toThrow('Merch items cannot have multiple option types');
   });
 });
 
@@ -299,6 +299,6 @@ describe('merch item options', () => {
         { option: newOption },
         admin,
       ),
-    ).rejects.toThrow('Item cannot have multiple option types');
+    ).rejects.toThrow('Merch item cannot have multiple option types');
   });
 });

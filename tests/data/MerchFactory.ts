@@ -21,7 +21,7 @@ export class MerchFactory {
 
     const type = faker.datatype.hexaDecimal(10);
     return options.map((o) => {
-      o.metadata = MerchFactory.optionMetadataWith({ type });
+      [o.metadata] = MerchFactory.optionMetadataWith({ type });
       return o;
     });
   }
