@@ -54,6 +54,7 @@ describe('merch item edit', () => {
       ...merchItemEdits,
     });
   });
+
   test('succeeds when basic option fields are updated', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
