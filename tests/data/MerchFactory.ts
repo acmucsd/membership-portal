@@ -19,10 +19,10 @@ export class MerchFactory {
     const options = FactoryUtils.create(n, MerchFactory.fakeOption);
     if (n === 1) return options;
 
-    const optionMetadata = this.createOptionMetadata(n);
-    return options.map((option, i) => {
-      option.metadata = optionMetadata[i];
-      return option;
+    const type = faker.datatype.hexaDecimal(10);
+    return options.map((o) => {
+      o.metadata = MerchFactory.optionMetadataWith({ type });
+      return o;
     });
   }
 
