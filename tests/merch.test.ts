@@ -1,8 +1,7 @@
-import { UserAccessType } from '../types';
 import { ForbiddenError } from 'routing-controllers';
+import { UserAccessType } from '../types';
 import { DatabaseConnection, MerchFactory, UserFactory, PortalState } from './data';
 import { ControllerFactory } from './controllers';
-import { EditMerchCollectionResponse } from '../types/ApiResponses'
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -22,7 +21,7 @@ describe('collection editing', () => {
     const conn = await DatabaseConnection.get();
     const itemOpt = MerchFactory.fakeOption();
     const [item] = MerchFactory.itemsWith({
-      options:[itemOpt]
+      options: [itemOpt],
     });
     const [collection] = MerchFactory.collectionsWith({
       items: [item],

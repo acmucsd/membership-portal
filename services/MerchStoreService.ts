@@ -24,7 +24,6 @@ import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
-import PermissionsService from './PermissionsService';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
@@ -221,13 +220,13 @@ export default class MerchStoreService {
         const missingItems = difference(requestedItems, foundItems);
         throw new NotFoundError(`Missing: ${missingItems}`);
       }
-      
+
       // Checks that hidden items were not ordered
       const hiddenItem = Array.from(itemOptions.values())
-          .filter((o) => o.item.hidden)
-          .map((o) => o.uuid);
+        .filter((o) => o.item.hidden)
+        .map((o) => o.uuid);
 
-      if( hiddenItem.length !== 0 ){
+      if (hiddenItem.length !== 0) {
         throw new ForbiddenError(`Not allowed to order: ${hiddenItem}`);
       }
 
