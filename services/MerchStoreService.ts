@@ -24,6 +24,7 @@ import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
+import PermissionsService from './PermissionsService';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
@@ -72,18 +73,18 @@ export default class MerchStoreService {
       const currentCollection = await merchCollectionRepository.findByUuid(uuid);
       if (!currentCollection) throw new NotFoundError('Collection not found');
       let updatedCollection = await merchCollectionRepository.upsertMerchCollection(currentCollection, changes);
-      if (changes.discountPercentage) {
+      if (changes.discountPercentage !== undefined) {
         const { discountPercentage } = changes;
         await Repositories
           .merchStoreItemOption(txn)
           .updateMerchItemOptionsInCollection(uuid, discountPercentage);
       }
-      if (changes.archived) {
+      if (changes.archived !== undefined) {
         await Repositories
           .merchStoreItem(txn)
           .updateMerchItemInCollection(uuid, true);
       }
-      if (changes.discountPercentage || changes.archived) {
+      if (changes.discountPercentage !== undefined || changes.archived !== undefined) {
         updatedCollection = await merchCollectionRepository.findByUuid(uuid);
       }
       return updatedCollection;
@@ -219,6 +220,15 @@ export default class MerchStoreService {
           .map((o) => o.uuid);
         const missingItems = difference(requestedItems, foundItems);
         throw new NotFoundError(`Missing: ${missingItems}`);
+      }
+      
+      // Checks that hidden items were not ordered
+      const hiddenItem = Array.from(itemOptions.values())
+          .filter((o) => o.item.hidden)
+          .map((o) => o.uuid);
+
+      if( hiddenItem.length !== 0 ){
+        throw new ForbiddenError(`Not allowed to order: ${hiddenItem}`);
       }
 
       // checks that the user hasn't exceeded monthly/lifetime purchase limits

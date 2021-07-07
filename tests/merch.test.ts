@@ -1,7 +1,8 @@
 import { UserAccessType } from '../types';
-import { UserError } from '../utils/Errors';
+import { ForbiddenError } from 'routing-controllers';
 import { DatabaseConnection, MerchFactory, UserFactory, PortalState } from './data';
 import { ControllerFactory } from './controllers';
+import { EditMerchCollectionResponse } from '../types/ApiResponses'
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -19,11 +20,16 @@ afterAll(async () => {
 describe('collection editing', () => {
   test('Set collection to archive', async () => {
     const conn = await DatabaseConnection.get();
-    const item = MerchFactory.fakeItem();
+    const itemOpt = MerchFactory.fakeOption();
+    const [item] = MerchFactory.itemsWith({
+      options:[itemOpt]
+    });
     const [collection] = MerchFactory.collectionsWith({
       items: [item],
       archived: false,
     });
+    item.collection = collection;
+    itemOpt.item = item;
 
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [user] = UserFactory.with({ accessType: UserAccessType.STANDARD });
@@ -43,18 +49,16 @@ describe('collection editing', () => {
       },
     };
 
-    merchStore.editMerchCollection({ uuid: collection.uuid }, editCollection, admin);
+    await merchStore.editMerchCollection({ uuid: collection.uuid }, editCollection, admin);
 
-    const resultCollection = await merchStore.getOneMerchCollection({ uuid: collection.uuid }, user);
+    const error = `Not allowed to order: ${[itemOpt.uuid]}`;
 
-    expect(resultCollection.error).toBeNull();
-    expect(resultCollection.collection).toBeDefined();
-    expect(resultCollection.collection.title).toEqual(collection.title);
+    await expect(merchStore.getOneMerchCollection({ uuid: collection.uuid }, user)).rejects.toThrow(ForbiddenError);
 
-    expect(await merchStore.placeMerchOrder({
+    await expect(merchStore.placeMerchOrder({
       order: [
-        { option: item.uuid, quantity: 1 },
+        { option: itemOpt.uuid, quantity: 1 },
       ],
-    }, user)).toThrowError(UserError);
+    }, user)).rejects.toThrow(error);
   });
 });

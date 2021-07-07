@@ -58,11 +58,7 @@ export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
     await qb
       .update()
       .set({ hidden })
-      .where(`item IN ${qb.subQuery()
-        .select('merch.uuid')
-        .from(MerchandiseItemModel, 'merch')
-        .where('merch.collection = :collection')
-        .getQuery()}`)
+      .where('collection.uuid = :collection')
       .setParameter('collection', collection)
       .execute();
   }
@@ -94,11 +90,7 @@ export class MerchItemOptionRepository extends BaseRepository<MerchandiseItemOpt
     await qb
       .update()
       .set({ discountPercentage })
-      .where(`item IN ${qb.subQuery()
-        .select('merch.uuid')
-        .from(MerchandiseItemModel, 'merch')
-        .where('merch.collection = :collection')
-        .getQuery()}`)
+      .where('merch.collection = :collection')
       .setParameter('collection', collection)
       .execute();
   }
