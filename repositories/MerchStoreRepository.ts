@@ -4,6 +4,7 @@ import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
+import { UserError } from '../utils/Errors';
 
 @EntityRepository(MerchandiseCollectionModel)
 export class MerchCollectionRepository extends BaseRepository<MerchandiseCollectionModel> {
@@ -53,11 +54,15 @@ export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
     return this.repository.save(item);
   }
 
-  public async updateMerchItemInCollection(collection: string, hidden: boolean): Promise<void> {
+  public async updateMerchItemsInCollection(collection: string, changes: any): Promise<void> {
+    if (Object.keys(changes).length === 0) {
+      throw new UserError('No changes sent');
+    }
     const qb = this.repository.createQueryBuilder();
+
     await qb
       .update()
-      .set({ hidden })
+      .set(changes)
       .where('collection.uuid = :collection')
       .setParameter('collection', collection)
       .execute();
@@ -90,7 +95,10 @@ export class MerchItemOptionRepository extends BaseRepository<MerchandiseItemOpt
     await qb
       .update()
       .set({ discountPercentage })
-      .where('merch.collection = :collection')
+      .where(`item IN ${qb.subQuery().select('merch.uuid')
+        .from(MerchandiseItemModel, 'merch')
+        .where('merch.collection = :collection')
+        .getQuery()}`)
       .setParameter('collection', collection)
       .execute();
   }

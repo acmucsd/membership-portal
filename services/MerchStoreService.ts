@@ -81,7 +81,7 @@ export default class MerchStoreService {
       if (changes.archived !== undefined) {
         await Repositories
           .merchStoreItem(txn)
-          .updateMerchItemInCollection(uuid, true);
+          .updateMerchItemsInCollection(uuid, { hidden: changes.archived });
       }
       if (changes.discountPercentage !== undefined || changes.archived !== undefined) {
         updatedCollection = await merchCollectionRepository.findByUuid(uuid);
@@ -222,12 +222,12 @@ export default class MerchStoreService {
       }
 
       // Checks that hidden items were not ordered
-      const hiddenItem = Array.from(itemOptions.values())
+      const hiddenItems = Array.from(itemOptions.values())
         .filter((o) => o.item.hidden)
         .map((o) => o.uuid);
 
-      if (hiddenItem.length !== 0) {
-        throw new ForbiddenError(`Not allowed to order: ${hiddenItem}`);
+      if (hiddenItems.length !== 0) {
+        throw new UserError(`Not allowed to order: ${hiddenItems}`);
       }
 
       // checks that the user hasn't exceeded monthly/lifetime purchase limits
