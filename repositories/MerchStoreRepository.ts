@@ -95,7 +95,8 @@ export class MerchItemOptionRepository extends BaseRepository<MerchandiseItemOpt
     await qb
       .update()
       .set({ discountPercentage })
-      .where(`item IN ${qb.subQuery().select('merch.uuid')
+      .where(`item IN ${qb.subQuery()
+        .select('merch.uuid')
         .from(MerchandiseItemModel, 'merch')
         .where('merch.collection = :collection')
         .getQuery()}`)
