@@ -55,9 +55,6 @@ export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
   }
 
   public async updateMerchItemsInCollection(collection: string, changes: any): Promise<void> {
-    if (Object.keys(changes).length === 0) {
-      throw new UserError('No changes sent');
-    }
     const qb = this.repository.createQueryBuilder();
 
     await qb
