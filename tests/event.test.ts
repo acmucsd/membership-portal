@@ -151,11 +151,12 @@ describe('event covers', () => {
       .createEvents([event])
       .write();
 
-    const eventCoverResponse = await ControllerFactory
+    await ControllerFactory
       .event(conn, undefined, Mocks.storage(fileLocation))
       .updateEventCover(cover, { uuid: event.uuid }, admin);
 
-    expect(eventCoverResponse.event.cover).toEqual(fileLocation);
+    const eventResponse = await ControllerFactory.event(conn).getOneEvent({ uuid: event.uuid }, admin);
+    expect(eventResponse.event.cover).toEqual(fileLocation);
   });
 
   test('rejects upload if file size too large', async () => {
