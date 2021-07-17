@@ -176,12 +176,9 @@ describe('event feedback', () => {
       .attendEvents([user], [event], false)
       .write();
 
-    console.log('user.points before: ' + user.points);
     await ControllerFactory.event(conn).submitEventFeedback({ uuid: event.uuid }, { feedback }, user);
 
     const attendanceResponse = await ControllerFactory.attendance(conn).getAttendancesForCurrentUser(user);
-
-    console.log('user.points after: ' + user.points);
 
     expect(attendanceResponse.attendances[0].feedback).toEqual(feedback);
     expect(user.points).toEqual(event.pointValue + Config.pointReward.EVENT_FEEDBACK_POINT_REWARD);
@@ -247,5 +244,8 @@ describe('event feedback', () => {
     expect(errors).toBeDefined();
     expect(errors).toHaveLength(1);
     expect(errors[0].property).toEqual('feedback');
+    expect(errors[0].constraints.EventFeedbackValidator).toEqual(
+      'No more than 3 event feedback comments can be submitted'
+    );
   });
 });
