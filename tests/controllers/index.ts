@@ -17,132 +17,62 @@ import EventService from '../../services/EventService';
 import MerchStoreService from '../../services/MerchStoreService';
 
 export class ControllerFactory {
-  private static userController: UserController = null;
-
-  private static feedbackController: FeedbackController = null;
-
-  private static adminController: AdminController = null;
-
-  private static attendanceController: AttendanceController = null;
-
-  private static authController: AuthController = null;
-
-  private static eventController: EventController = null;
-
-  private static leaderboardController: LeaderboardController = null;
-
-  private static merchStoreController: MerchStoreController = null;
-
-  // Allow services to be dependency injected for mocking/stubbing
   public static user(
     conn: Connection,
-    userAccountService?: UserAccountService,
-    storageService?: StorageService,
+    userAccountService = new UserAccountService(conn.manager),
+    storageService = new StorageService(),
   ): UserController {
-    const hasInjectedService = userAccountService || storageService;
-    if (!ControllerFactory.userController || hasInjectedService) {
-      ControllerFactory.userController = new UserController(
-        userAccountService || new UserAccountService(conn.manager),
-        storageService || new StorageService(),
-      );
-    }
-    return ControllerFactory.userController;
+    return new UserController(userAccountService, storageService);
   }
 
   public static feedback(
     conn: Connection,
-    feedbackService?: FeedbackService,
+    feedbackService = new FeedbackService(conn.manager),
   ): FeedbackController {
-    const hasInjectedService = !!feedbackService;
-    if (!ControllerFactory.feedbackController || hasInjectedService) {
-      ControllerFactory.feedbackController = new FeedbackController(
-        feedbackService || new FeedbackService(conn.manager),
-      );
-    }
-    return ControllerFactory.feedbackController;
+    return new FeedbackController(feedbackService);
   }
 
   public static admin(
     conn: Connection,
-    storageService?: StorageService,
-    userAccountService?: UserAccountService,
-    attendanceService?: AttendanceService,
+    storageService = new StorageService(),
+    userAccountService = new UserAccountService(conn.manager),
+    attendanceService = new AttendanceService(conn.manager),
   ): AdminController {
-    const hasInjectedService = storageService || userAccountService || attendanceService;
-    if (!ControllerFactory.adminController || hasInjectedService) {
-      ControllerFactory.adminController = new AdminController(
-        storageService || new StorageService(),
-        userAccountService || new UserAccountService(conn.manager),
-        attendanceService || new AttendanceService(conn.manager),
-      );
-    }
-    return ControllerFactory.adminController;
+    return new AdminController(storageService, userAccountService, attendanceService);
   }
 
   public static attendance(
     conn: Connection,
-    attendanceService?: AttendanceService,
+    attendanceService = new AttendanceService(conn.manager),
   ): AttendanceController {
-    const hasInjectedService = !!attendanceService;
-    if (!ControllerFactory.attendanceController || hasInjectedService) {
-      ControllerFactory.attendanceController = new AttendanceController(
-        attendanceService || new AttendanceService(conn.manager),
-      );
-    }
-    return ControllerFactory.attendanceController;
+    return new AttendanceController(attendanceService);
   }
 
   public static auth(
     conn: Connection,
-    userAccountService?: UserAccountService,
-    userAuthService?: UserAuthService,
-    emailService?: EmailService,
+    userAccountService = new UserAccountService(conn.manager),
+    userAuthService = new UserAuthService(conn.manager),
+    emailService = new EmailService(),
   ): AuthController {
-    const hasInjectedService = userAccountService || userAuthService || emailService;
-    if (!ControllerFactory.authController || hasInjectedService) {
-      ControllerFactory.authController = new AuthController(
-        userAccountService || new UserAccountService(conn.manager),
-        userAuthService || new UserAuthService(conn.manager),
-        emailService || new EmailService(),
-      );
-    }
-    return ControllerFactory.authController;
+    return new AuthController(userAccountService, userAuthService, emailService);
   }
 
   public static event(
     conn: Connection,
-    eventService?: EventService,
-    storageService?: StorageService,
-    attendanceService?: AttendanceService,
+    eventService = new EventService(conn.manager),
+    storageService = new StorageService(),
+    attendanceService = new AttendanceService(conn.manager),
   ): EventController {
-    const hasInjectedService = eventService || storageService || attendanceService;
-    if (!ControllerFactory.eventController || hasInjectedService) {
-      ControllerFactory.eventController = new EventController(
-        eventService || new EventService(conn.manager),
-        storageService || new StorageService(),
-        attendanceService || new AttendanceService(conn.manager),
-      );
-    }
-    return ControllerFactory.eventController;
+    return new EventController(eventService, storageService, attendanceService);
   }
 
-  public static leaderboard(conn: Connection, userAccountService?: UserAccountService): LeaderboardController {
-    const hasInjectedService = !!userAccountService;
-    if (!ControllerFactory.leaderboardController || hasInjectedService) {
-      ControllerFactory.leaderboardController = new LeaderboardController(
-        userAccountService || new UserAccountService(conn.manager),
-      );
-    }
-    return ControllerFactory.leaderboardController;
+  public static leaderboard(conn: Connection,
+    userAccountService = new UserAccountService(conn.manager)): LeaderboardController {
+    return new LeaderboardController(userAccountService);
   }
 
-  public static merchStore(conn: Connection, merchStoreService?: MerchStoreService): MerchStoreController {
-    const hasInjectedService = !!merchStoreService;
-    if (!ControllerFactory.merchStoreController || hasInjectedService) {
-      ControllerFactory.merchStoreController = new MerchStoreController(
-        merchStoreService || new MerchStoreService(conn.manager),
-      );
-    }
-    return ControllerFactory.merchStoreController;
+  public static merchStore(conn: Connection,
+    merchStoreService = new MerchStoreService(conn.manager)): MerchStoreController {
+    return new MerchStoreController(merchStoreService);
   }
 }

@@ -152,7 +152,7 @@ describe('event covers', () => {
       .write();
 
     const eventCoverResponse = await ControllerFactory
-      .event(conn, null, Mocks.storage(fileLocation))
+      .event(conn, undefined, Mocks.storage(fileLocation))
       .updateEventCover(cover, { uuid: event.uuid }, admin);
 
     expect(eventCoverResponse.event.cover).toEqual(fileLocation);
