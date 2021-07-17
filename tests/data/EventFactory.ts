@@ -22,9 +22,9 @@ export class EventFactory {
     return substitutes.map((sub) => EventModel.merge(EventFactory.fake(), sub));
   }
 
-  public static fake(): EventModel {
+  public static fake(substitute?: Partial<EventModel>): EventModel {
     const [start, end] = EventFactory.randomTime();
-    return EventModel.create({
+    const fake = EventModel.create({
       uuid: uuid(),
       organization: FactoryUtils.pickRandomValue(EventFactory.ORGS),
       title: faker.datatype.hexaDecimal(10),
@@ -37,6 +37,7 @@ export class EventFactory {
       requiresStaff: FactoryUtils.getRandomBoolean(),
       staffPointBonus: EventFactory.randomPointValue(),
     });
+    return EventModel.merge(fake, substitute);
   }
 
   public static fakePastEvent(daysAgo = 1): EventModel {
