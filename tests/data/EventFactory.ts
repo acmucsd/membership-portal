@@ -55,6 +55,10 @@ export class EventFactory {
     return EventFactory.with({ start, end })[0];
   }
 
+  public static createEventFeedback(n: number): string[] {
+    return new Array(n).fill(faker.random.word());
+  }
+
   private static randomTime(): [Date, Date] {
     // random day between last and next week
     const day = FactoryUtils.getRandomNumber(-7, 7);

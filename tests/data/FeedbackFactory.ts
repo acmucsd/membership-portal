@@ -19,10 +19,6 @@ export class FeedbackFactory {
     };
   }
 
-  public static createEventFeedback(n: number): string[] {
-    return new Array(n).fill(faker.random.word());
-  }
-
   private static randomFeedbackType(): FeedbackType {
     return FactoryUtils.pickRandomValue(Object.values(FeedbackType));
   }

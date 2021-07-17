@@ -168,7 +168,7 @@ describe('event feedback', () => {
     const conn = await DatabaseConnection.get();
     const event = EventFactory.fakeOngoingEvent();
     const user = UserFactory.fake();
-    const feedback = FeedbackFactory.createEventFeedback(3);
+    const feedback = EventFactory.createEventFeedback(3);
 
     await new PortalState()
       .createUsers([user])
@@ -176,9 +176,12 @@ describe('event feedback', () => {
       .attendEvents([user], [event], false)
       .write();
 
+    console.log('user.points before: ' + user.points);
     await ControllerFactory.event(conn).submitEventFeedback({ uuid: event.uuid }, { feedback }, user);
 
     const attendanceResponse = await ControllerFactory.attendance(conn).getAttendancesForCurrentUser(user);
+
+    console.log('user.points after: ' + user.points);
 
     expect(attendanceResponse.attendances[0].feedback).toEqual(feedback);
     expect(user.points).toEqual(event.pointValue + Config.pointReward.EVENT_FEEDBACK_POINT_REWARD);
@@ -188,7 +191,7 @@ describe('event feedback', () => {
     const conn = await DatabaseConnection.get();
     const event = EventFactory.fakeOngoingEvent();
     const user = UserFactory.fake();
-    const feedback = FeedbackFactory.createEventFeedback(3);
+    const feedback = EventFactory.createEventFeedback(3);
 
     await new PortalState()
       .createUsers([user])
@@ -204,7 +207,7 @@ describe('event feedback', () => {
     const conn = await DatabaseConnection.get();
     const event = EventFactory.fakeOngoingEvent();
     const user = UserFactory.fake();
-    const feedback = FeedbackFactory.createEventFeedback(3);
+    const feedback = EventFactory.createEventFeedback(3);
 
     await new PortalState()
       .createUsers([user])
@@ -224,7 +227,7 @@ describe('event feedback', () => {
     const conn = await DatabaseConnection.get();
     const event = EventFactory.fakePastEvent(3);
     const user = UserFactory.fake();
-    const feedback = FeedbackFactory.createEventFeedback(3);
+    const feedback = EventFactory.createEventFeedback(3);
 
     await new PortalState()
       .createUsers([user])
@@ -238,7 +241,7 @@ describe('event feedback', () => {
   });
 
   test('is rejected if more than 3 feedback is provided', async () => {
-    const feedback = FeedbackFactory.createEventFeedback(4);
+    const feedback = EventFactory.createEventFeedback(4);
     const errors = await validate(plainToClass(SubmitEventFeedbackRequest, { feedback }));
 
     expect(errors).toBeDefined();
