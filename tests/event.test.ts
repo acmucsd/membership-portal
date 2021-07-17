@@ -1,6 +1,6 @@
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { DatabaseConnection, EventFactory, FeedbackFactory, FileFactory, PortalState, UserFactory } from './data';
+import { DatabaseConnection, EventFactory, FileFactory, PortalState, UserFactory } from './data';
 import { ControllerFactory } from './ControllerFactory';
 import { UserAccessType } from '../types';
 import { Config } from '../config';
@@ -245,7 +245,7 @@ describe('event feedback', () => {
     expect(errors).toHaveLength(1);
     expect(errors[0].property).toEqual('feedback');
     expect(errors[0].constraints.EventFeedbackValidator).toEqual(
-      'No more than 3 event feedback comments can be submitted'
+      'No more than 3 event feedback comments can be submitted',
     );
   });
 });
