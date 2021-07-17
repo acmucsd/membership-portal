@@ -72,9 +72,9 @@ export class EventFactory {
   }
 
   private static randomOngoingTime(): [Date, Date] {
-    // 0, 30 mins, or 1 hour before now
+    // 0 or 30 mins before now
     const currentHour = moment().hour();
-    const hour = FactoryUtils.getRandomNumber(currentHour - 1, currentHour, 0.5);
+    const hour = FactoryUtils.getRandomNumber(currentHour - 0.5, currentHour, 0.5);
     return EventFactory.randomIntervalInDay(0, hour);
   }
 
