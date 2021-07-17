@@ -1,20 +1,20 @@
 import { Connection } from 'typeorm';
-import FeedbackService from '../../services/FeedbackService';
-import { FeedbackController } from '../../api/controllers/FeedbackController';
-import { UserController } from '../../api/controllers/UserController';
-import UserAccountService from '../../services/UserAccountService';
-import StorageService from '../../services/StorageService';
-import { AdminController } from '../../api/controllers/AdminController';
-import AttendanceService from '../../services/AttendanceService';
-import { AttendanceController } from '../../api/controllers/AttendanceController';
-import { AuthController } from '../../api/controllers/AuthController';
-import { EventController } from '../../api/controllers/EventController';
-import { LeaderboardController } from '../../api/controllers/LeaderboardController';
-import { MerchStoreController } from '../../api/controllers/MerchStoreController';
-import UserAuthService from '../../services/UserAuthService';
-import EmailService from '../../services/EmailService';
-import EventService from '../../services/EventService';
-import MerchStoreService from '../../services/MerchStoreService';
+import FeedbackService from '../services/FeedbackService';
+import { FeedbackController } from '../api/controllers/FeedbackController';
+import { UserController } from '../api/controllers/UserController';
+import UserAccountService from '../services/UserAccountService';
+import StorageService from '../services/StorageService';
+import { AdminController } from '../api/controllers/AdminController';
+import AttendanceService from '../services/AttendanceService';
+import { AttendanceController } from '../api/controllers/AttendanceController';
+import { AuthController } from '../api/controllers/AuthController';
+import { EventController } from '../api/controllers/EventController';
+import { LeaderboardController } from '../api/controllers/LeaderboardController';
+import { MerchStoreController } from '../api/controllers/MerchStoreController';
+import UserAuthService from '../services/UserAuthService';
+import EmailService from '../services/EmailService';
+import EventService from '../services/EventService';
+import MerchStoreService from '../services/MerchStoreService';
 
 export class ControllerFactory {
   public static user(

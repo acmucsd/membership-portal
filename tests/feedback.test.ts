@@ -5,7 +5,7 @@ import { FeedbackFactory } from './data/FeedbackFactory';
 import { ActivityScope, ActivityType, FeedbackStatus, UserAccessType } from '../types';
 import { Feedback } from '../api/validators/FeedbackControllerRequests';
 import { Config } from '../config';
-import { ControllerFactory } from './controllers';
+import { ControllerFactory } from './ControllerFactory';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

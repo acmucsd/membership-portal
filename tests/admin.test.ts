@@ -1,5 +1,5 @@
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
-import { ControllerFactory } from './controllers';
+import { ControllerFactory } from './ControllerFactory';
 import { DatabaseConnection, EventFactory, UserFactory, PortalState } from './data';
 
 beforeAll(async () => {

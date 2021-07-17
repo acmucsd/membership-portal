@@ -1,7 +1,7 @@
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { DatabaseConnection, EventFactory, FeedbackFactory, FileFactory, PortalState, UserFactory } from './data';
-import { ControllerFactory } from './controllers';
+import { ControllerFactory } from './ControllerFactory';
 import { UserAccessType } from '../types';
 import { Config } from '../config';
 import { SubmitEventFeedbackRequest } from '../api/validators/EventControllerRequests';
