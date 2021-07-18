@@ -17,7 +17,7 @@ afterAll(async () => {
 });
 
 describe('collection editing', () => {
-  test('Appropriate Permission Check for Getting Archived Items', async () => {
+  test('Only Admin Can Getting Archived Items', async () => {
     const conn = await DatabaseConnection.get();
     const itemOption = MerchFactory.fakeOption();
     const [item] = MerchFactory.itemsWith({
@@ -38,15 +38,13 @@ describe('collection editing', () => {
 
     const merchStore = ControllerFactory.merchStore(conn);
 
-    const editCollection = {
+    const collectionEdit = {
       collection: {
-        title: collection.title,
-        description: collection.description,
         archived: true,
       },
     };
 
-    await merchStore.editMerchCollection({ uuid: collection.uuid }, editCollection, admin);
+    await merchStore.editMerchCollection({ uuid: collection.uuid }, collectionEdit, admin);
 
     await expect(merchStore.getOneMerchCollection({ uuid: collection.uuid }, user)).rejects.toThrow(ForbiddenError);
 
@@ -54,7 +52,7 @@ describe('collection editing', () => {
     expect(result.collection.uuid).toEqual(collection.uuid);
   });
 
-  test('Ordering Archived Items is not allowed', async () => {
+  test('ordering items in archived collections is not allowed', async () => {
     const conn = await DatabaseConnection.get();
     const itemOption = MerchFactory.fakeOption();
     const [item] = MerchFactory.itemsWith({
@@ -75,26 +73,18 @@ describe('collection editing', () => {
 
     const merchStore = ControllerFactory.merchStore(conn);
 
-    const editCollection = {
+    const collectionEdit = {
       collection: {
-        title: collection.title,
-        description: collection.description,
         archived: true,
       },
     };
 
-    await merchStore.editMerchCollection({ uuid: collection.uuid }, editCollection, admin);
+    await merchStore.editMerchCollection({ uuid: collection.uuid }, collectionEdit, admin);
 
     await expect(merchStore.placeMerchOrder({
       order: [
         { option: itemOption.uuid, quantity: 1 },
       ],
     }, user)).rejects.toThrow(`Not allowed to order: ${[itemOption.uuid]}`);
-
-    await expect(merchStore.placeMerchOrder({
-      order: [
-        { option: itemOption.uuid, quantity: 1 },
-      ],
-    }, admin)).rejects.toThrow(`Not allowed to order: ${[itemOption.uuid]}`);
   });
 });
