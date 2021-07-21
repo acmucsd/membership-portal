@@ -72,11 +72,18 @@ export default class MerchStoreService {
       const currentCollection = await merchCollectionRepository.findByUuid(uuid);
       if (!currentCollection) throw new NotFoundError('Collection not found');
       let updatedCollection = await merchCollectionRepository.upsertMerchCollection(currentCollection, changes);
-      if (changes.discountPercentage) {
+      if (changes.discountPercentage !== undefined) {
         const { discountPercentage } = changes;
         await Repositories
           .merchStoreItemOption(txn)
           .updateMerchItemOptionsInCollection(uuid, discountPercentage);
+      }
+      if (changes.archived !== undefined) {
+        await Repositories
+          .merchStoreItem(txn)
+          .updateMerchItemsInCollection(uuid, { hidden: changes.archived });
+      }
+      if (changes.discountPercentage !== undefined || changes.archived !== undefined) {
         updatedCollection = await merchCollectionRepository.findByUuid(uuid);
       }
       return updatedCollection;
@@ -212,6 +219,15 @@ export default class MerchStoreService {
           .map((o) => o.uuid);
         const missingItems = difference(requestedItems, foundItems);
         throw new NotFoundError(`Missing: ${missingItems}`);
+      }
+
+      // Checks that hidden items were not ordered
+      const hiddenItems = Array.from(itemOptions.values())
+        .filter((o) => o.item.hidden)
+        .map((o) => o.uuid);
+
+      if (hiddenItems.length !== 0) {
+        throw new UserError(`Not allowed to order: ${hiddenItems}`);
       }
 
       // checks that the user hasn't exceeded monthly/lifetime purchase limits
