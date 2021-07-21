@@ -17,7 +17,7 @@ afterAll(async () => {
 });
 
 describe('collection editing', () => {
-  test('Only Admin Can Getting Archived Items', async () => {
+  test('Only Admin Can View Archived Items', async () => {
     const conn = await DatabaseConnection.get();
     const itemOption = MerchFactory.fakeOption();
     const [item] = MerchFactory.itemsWith({

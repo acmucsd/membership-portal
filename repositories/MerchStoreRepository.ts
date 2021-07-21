@@ -53,7 +53,7 @@ export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
     return this.repository.save(item);
   }
 
-  public async updateMerchItemsInCollection(collection: string, changes: any): Promise<void> {
+  public async updateMerchItemsInCollection(collection: string, changes: Partial<MerchandiseItemModel>): Promise<void> {
     const qb = this.repository.createQueryBuilder();
 
     await qb
