@@ -52,7 +52,7 @@ export class PortalState {
     });
   }
 
-  public createUsers(users: UserModel[]): PortalState {
+  public createUsers(users: UserModel[], timestamp?: Date): PortalState {
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
       user.email = user.email.toLowerCase();
@@ -61,22 +61,7 @@ export class PortalState {
         user,
         type: ActivityType.ACCOUNT_CREATE,
         scope: ActivityScope.PUBLIC,
-      }));
-    }
-    return this;
-  }
-
-  public createUsersAtBeginningOfTime(users: UserModel[]): PortalState {
-    for (let u = 0; u < users.length; u += 1) {
-      const user = users[u];
-      user.email = user.email.toLowerCase();
-      this.users.push(user);
-      const beginningOfTime = new Date(0);
-      this.activities.push(ActivityModel.create({
-        user,
-        type: ActivityType.ACCOUNT_CREATE,
-        scope: ActivityScope.PUBLIC,
-        timestamp: beginningOfTime,
+        timestamp: timestamp || new Date(),
       }));
     }
     return this;

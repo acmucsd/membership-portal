@@ -63,7 +63,7 @@ describe('retroactive attendance submission', () => {
       // Create users at beginning of time to ensure that account creation time does not
       // end up after event attendance time, causing the order guarantee for activities
       // below to fail.
-      .createUsersAtBeginningOfTime([user, admin])
+      .createUsers([user, admin], new Date(0))
       .createEvents([event])
       .attendEvents([user], [event])
       .write();
