@@ -60,7 +60,10 @@ describe('retroactive attendance submission', () => {
     const [event] = EventFactory.create(1);
 
     await new PortalState()
-      .createUsers([user, admin])
+      // Create users at beginning of time to ensure that account creation time does not
+      // end up after event attendance time, causing the order guarantee for activities
+      // below to fail.
+      .createUsersAtBeginningOfTime([user, admin])
       .createEvents([event])
       .attendEvents([user], [event])
       .write();

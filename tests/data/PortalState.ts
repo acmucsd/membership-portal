@@ -66,6 +66,22 @@ export class PortalState {
     return this;
   }
 
+  public createUsersAtBeginningOfTime(users: UserModel[]): PortalState {
+    for (let u = 0; u < users.length; u += 1) {
+      const user = users[u];
+      user.email = user.email.toLowerCase();
+      this.users.push(user);
+      const beginningOfTime = new Date(0);
+      this.activities.push(ActivityModel.create({
+        user,
+        type: ActivityType.ACCOUNT_CREATE,
+        scope: ActivityScope.PUBLIC,
+        timestamp: beginningOfTime,
+      }));
+    }
+    return this;
+  }
+
   public createEvents(events: EventModel[]): PortalState {
     this.events = this.events.concat(events);
     return this;
