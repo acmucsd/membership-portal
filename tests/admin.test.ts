@@ -57,11 +57,7 @@ describe('retroactive attendance submission', () => {
     const conn = await DatabaseConnection.get();
     const [user] = UserFactory.create(1);
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    // Create event in the future to guarantee account creation does not
-    // have a later timestamp than any possible event attendance.
-    //
-    // Not reproducible in production.
-    const event = EventFactory.fakeFutureEvent();
+    const [event] = EventFactory.create(1);
 
     await new PortalState()
       .createUsers([user, admin])
