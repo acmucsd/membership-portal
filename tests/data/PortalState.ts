@@ -44,8 +44,8 @@ export class PortalState {
     await conn.transaction(async (txn) => {
       this.users = await txn.save(this.users);
       this.events = await txn.save(this.events);
-      this.activities = await txn.save(this.activities);
       this.attendances = await txn.save(this.attendances);
+      this.activities = await txn.save(this.activities);
       this.merch = await txn.save(this.merch);
       this.orders = await txn.save(this.orders);
       this.feedback = await txn.save(this.feedback);
