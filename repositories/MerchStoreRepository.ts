@@ -53,6 +53,17 @@ export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
     return this.repository.save(item);
   }
 
+  public async updateMerchItemsInCollection(collection: string, changes: Partial<MerchandiseItemModel>): Promise<void> {
+    const qb = this.repository.createQueryBuilder();
+
+    await qb
+      .update()
+      .set(changes)
+      .where('collection.uuid = :collection')
+      .setParameter('collection', collection)
+      .execute();
+  }
+
   public async deleteMerchItem(item: MerchandiseItemModel) {
     await this.repository.remove(item);
   }
