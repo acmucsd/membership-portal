@@ -55,6 +55,7 @@ describe('archived merch collections', () => {
   test('ordering items from archived collections is not allowed', async () => {
     const conn = await DatabaseConnection.get();
     const [itemOption] = MerchFactory.optionsWith({ price: 5000 });
+
     const [item] = MerchFactory.itemsWith({
       options: [itemOption],
     });
