@@ -56,6 +56,9 @@ export class PortalState {
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
       user.email = user.email.toLowerCase();
+      if (user.points) user.credits = user.points * 100;
+      else if (user.credits) user.points = Math.floor(user.credits / 100);
+
       this.users.push(user);
       this.activities.push(ActivityModel.create({
         user,

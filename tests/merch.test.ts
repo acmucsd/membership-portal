@@ -1,6 +1,7 @@
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
+import { ForbiddenError } from 'routing-controllers';
+import { DatabaseConnection, MerchFactory, UserFactory, PortalState } from './data';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -15,7 +16,85 @@ afterAll(async () => {
   await DatabaseConnection.close();
 });
 
-describe('merch item edit', () => {
+
+describe('archived merch collections', () => {
+  test('only admins can view archived collections', async () => {
+    const conn = await DatabaseConnection.get();
+    const itemOption = MerchFactory.fakeOption();
+    const [item] = MerchFactory.itemsWith({
+      options: [itemOption],
+    });
+    const [collection] = MerchFactory.collectionsWith({
+      items: [item],
+      archived: false,
+    });
+
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [user] = UserFactory.with({ accessType: UserAccessType.STANDARD });
+
+    await new PortalState()
+      .createUsers([admin, user])
+      .createMerch([collection])
+      .write();
+
+    const merchStore = ControllerFactory.merchStore(conn);
+
+    const collectionEdit = {
+      collection: {
+        archived: true,
+      },
+    };
+
+    await merchStore.editMerchCollection({ uuid: collection.uuid }, collectionEdit, admin);
+
+    await expect(merchStore.getOneMerchCollection({ uuid: collection.uuid }, user)).rejects.toThrow(ForbiddenError);
+
+    const result = await merchStore.getOneMerchCollection({ uuid: collection.uuid }, admin);
+    expect(result.collection.uuid).toEqual(collection.uuid);
+  });
+
+  test('ordering items from archived collections is not allowed', async () => {
+    const conn = await DatabaseConnection.get();
+    const [itemOption] = MerchFactory.optionsWith({ price: 5000 })
+    const [item] = MerchFactory.itemsWith({
+      options: [itemOption],
+    });
+    const [collection] = MerchFactory.collectionsWith({
+      items: [item],
+      archived: false,
+    });
+
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [user] = UserFactory.with({
+      accessType: UserAccessType.STANDARD,
+      credits: 5000,
+    });
+
+    await new PortalState()
+      .createUsers([admin, user])
+      .createMerch([collection])
+      .write();
+
+    const merchStore = ControllerFactory.merchStore(conn);
+
+    const collectionEdit = {
+      collection: {
+        archived: true,
+      },
+    };
+
+    await merchStore.editMerchCollection({ uuid: collection.uuid }, collectionEdit, admin);
+
+    await expect(merchStore.placeMerchOrder({
+      order: [
+        { option: itemOption.uuid, quantity: 1 },
+      ],
+    }, user)).rejects.toThrow(`Not allowed to order: ${[itemOption.uuid]}`);
+  });
+});
+
+
+describe('merch item edits', () => {
   test('succeeds on base fields update', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
@@ -115,6 +194,7 @@ describe('merch item edit', () => {
       expect.arrayContaining([option1.getPublicMerchItemOption(), option2.getPublicMerchItemOption()]),
     );
   });
+
   test('succeeds when updated item option metadata types are changed but are still consistent', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
@@ -300,5 +380,5 @@ describe('merch item options', () => {
         admin,
       ),
     ).rejects.toThrow('Merch item cannot have multiple option types');
-  });
+  })
 });
