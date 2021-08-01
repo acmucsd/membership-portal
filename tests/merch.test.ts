@@ -1,6 +1,6 @@
+import { ForbiddenError } from 'routing-controllers';
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
-import { ForbiddenError } from 'routing-controllers';
 import { DatabaseConnection, MerchFactory, UserFactory, PortalState } from './data';
 
 beforeAll(async () => {
@@ -15,7 +15,6 @@ afterAll(async () => {
   await DatabaseConnection.clear();
   await DatabaseConnection.close();
 });
-
 
 describe('archived merch collections', () => {
   test('only admins can view archived collections', async () => {
@@ -55,7 +54,7 @@ describe('archived merch collections', () => {
 
   test('ordering items from archived collections is not allowed', async () => {
     const conn = await DatabaseConnection.get();
-    const [itemOption] = MerchFactory.optionsWith({ price: 5000 })
+    const [itemOption] = MerchFactory.optionsWith({ price: 5000 });
     const [item] = MerchFactory.itemsWith({
       options: [itemOption],
     });
@@ -92,7 +91,6 @@ describe('archived merch collections', () => {
     }, user)).rejects.toThrow(`Not allowed to order: ${[itemOption.uuid]}`);
   });
 });
-
 
 describe('merch item edits', () => {
   test('succeeds on base fields update', async () => {
@@ -198,12 +196,7 @@ describe('merch item edits', () => {
   test('succeeds when updated item option metadata types are changed but are still consistent', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [metadata1, metadata2, metadata3] = MerchFactory.createOptionMetadata(3);
-    const options = MerchFactory.optionsWith(
-      { metadata: metadata1 },
-      { metadata: metadata2 },
-      { metadata: metadata3 },
-    );
+    const options = MerchFactory.createOptions(3);
     const [item] = MerchFactory.itemsWith({
       hasVariantsEnabled: true,
       options,
@@ -236,12 +229,7 @@ describe('merch item edits', () => {
   test('fails when variants are updated to disabled but multiple options still remain', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [metadata1, metadata2, metadata3] = MerchFactory.createOptionMetadata(3);
-    const options = MerchFactory.optionsWith(
-      { metadata: metadata1 },
-      { metadata: metadata2 },
-      { metadata: metadata3 },
-    );
+    const options = MerchFactory.createOptions(3);
     const [item] = MerchFactory.itemsWith({
       hasVariantsEnabled: true,
       options,
@@ -265,12 +253,7 @@ describe('merch item edits', () => {
   test('fails when updated options have multiple types', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [metadata1, metadata2, metadata3] = MerchFactory.createOptionMetadata(3);
-    const options = MerchFactory.optionsWith(
-      { metadata: metadata1 },
-      { metadata: metadata2 },
-      { metadata: metadata3 },
-    );
+    const options = MerchFactory.createOptions(3);
     const [item] = MerchFactory.itemsWith({
       hasVariantsEnabled: true,
       options,
@@ -380,5 +363,5 @@ describe('merch item options', () => {
         admin,
       ),
     ).rejects.toThrow('Merch item cannot have multiple option types');
-  })
+  });
 });
