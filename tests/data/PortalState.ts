@@ -1,5 +1,6 @@
 import * as rfdc from 'rfdc';
 import { flatten } from 'underscore';
+import * as moment from 'moment';
 import { AttendanceModel } from '../../models/AttendanceModel';
 import { EventModel } from '../../models/EventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
@@ -61,6 +62,7 @@ export class PortalState {
         user,
         type: ActivityType.ACCOUNT_CREATE,
         scope: ActivityScope.PUBLIC,
+        timestamp: moment().subtract(1, 'months'),
       }));
     }
     return this;
@@ -97,6 +99,7 @@ export class PortalState {
           type: asStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
           timestamp,
           scope: ActivityScope.PUBLIC,
+          pointsEarned,
         }));
       }
     }
