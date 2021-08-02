@@ -113,7 +113,6 @@ export default class MerchStoreService {
 
   public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
     return this.transactions.readWrite(async (txn) => {
-      item.hasVariantsEnabled ??= false;
       MerchStoreService.verifyItemHasValidOptions(item);
 
       const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
@@ -194,6 +193,7 @@ export default class MerchStoreService {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Merch item not found');
       if (!merchItem.hasVariantsEnabled) throw new UserError('Cannot add option to items with variants disabled');
+      // check only the first option since all other options must have same type as first based on prior validation
       const hasDifferentOptionType = merchItem.options[0].metadata?.type !== option.metadata?.type;
       if (hasDifferentOptionType) throw new UserError('Merch item cannot have multiple option types');
 

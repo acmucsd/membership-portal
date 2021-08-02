@@ -106,6 +106,8 @@ export class MerchStoreController {
   async createMerchItem(@Body() createItemRequest: CreateMerchItemRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateMerchItemResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    // Default behavior is to have variants disabled if not specified
+    createItemRequest.merchandise.hasVariantsEnabled ??= false;
     const item = await this.merchStoreService.createItem(createItemRequest.merchandise);
     return { error: null, item };
   }

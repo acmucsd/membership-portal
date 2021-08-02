@@ -1,4 +1,4 @@
-import { Allow, IsNotEmpty, Min, Max, IsDefined, IsUUID, ValidateNested } from 'class-validator';
+import { Allow, IsNotEmpty, Min, Max, IsDefined, IsUUID, ValidateNested, IsHexColor } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   CreateMerchCollectionRequest as ICreateMerchCollectionRequest,
@@ -24,8 +24,9 @@ export class MerchCollection implements IMerchCollection {
   @IsNotEmpty()
   title: string;
 
-  @Allow()
-  themeColorHex?: string;
+  @IsDefined()
+  @IsHexColor()
+  themeColorHex: string;
 
   @IsDefined()
   @IsNotEmpty()
@@ -38,6 +39,9 @@ export class MerchCollection implements IMerchCollection {
 export class MerchCollectionEdit implements IMerchCollectionEdit {
   @IsNotEmpty()
   title?: string;
+
+  @Allow()
+  themeColorHex?: string;
 
   @IsNotEmpty()
   description?: string;
