@@ -175,7 +175,7 @@ describe('merch item edits', () => {
     option1.discountPercentage = 15;
     option2.price += 500;
     option2.quantity += 5;
-    option1.discountPercentage = 0;
+    option2.discountPercentage = 0;
 
     await ControllerFactory.merchStore(conn).editMerchItem(
       { uuid: item.uuid },
