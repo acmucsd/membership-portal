@@ -48,11 +48,7 @@ export class MerchFactory {
   public static optionMetadataWith(...substitutes: Partial<MerchItemOptionMetadata>[]): MerchItemOptionMetadata[] {
     return substitutes.map((sub) => {
       const metadata = MerchFactory.fakeOptionMetadata();
-      return {
-        type: sub.type ?? metadata.type,
-        value: sub.value ?? metadata.value,
-        position: sub.position ?? metadata.position,
-      };
+      return { ...metadata, ...sub };
     });
   }
 
