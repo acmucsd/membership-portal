@@ -160,6 +160,7 @@ export interface PublicMerchItem {
 export interface PublicMerchItemOption {
   uuid: Uuid;
   price: number;
+  quantity?: number;
   discountPercentage: number;
   metadata: MerchItemOptionMetadata;
 }
