@@ -63,8 +63,8 @@ export class MerchItemOptionMetadata implements IMerchItemOptionMetadata {
   @IsNotEmpty()
   value: string;
 
-  @Allow()
-  position?: number;
+  @IsDefined()
+  position: number;
 }
 
 export class MerchItemOption implements IMerchItemOption {
