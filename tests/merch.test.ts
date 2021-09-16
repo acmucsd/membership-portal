@@ -20,15 +20,14 @@ afterAll(async () => {
 describe('archived merch collections', () => {
   test('only admins can view archived collections', async () => {
     const conn = await DatabaseConnection.get();
-    const itemOption = MerchFactory.fakeOption();
+    const option = MerchFactory.fakeOption();
     const [item] = MerchFactory.itemsWith({
-      options: [itemOption],
+      options: [option],
     });
     const [collection] = MerchFactory.collectionsWith({
       items: [item],
       archived: false,
     });
-
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [user] = UserFactory.with({ accessType: UserAccessType.STANDARD });
 
@@ -37,7 +36,7 @@ describe('archived merch collections', () => {
       .createMerch([collection])
       .write();
 
-    const merchStore = ControllerFactory.merchStore(conn);
+    const merchStoreController = ControllerFactory.merchStore(conn);
 
     const collectionEdit = {
       collection: {
@@ -45,26 +44,26 @@ describe('archived merch collections', () => {
       },
     };
 
-    await merchStore.editMerchCollection({ uuid: collection.uuid }, collectionEdit, admin);
+    await merchStoreController.editMerchCollection({ uuid: collection.uuid }, collectionEdit, admin);
 
-    await expect(merchStore.getOneMerchCollection({ uuid: collection.uuid }, user)).rejects.toThrow(ForbiddenError);
+    await expect(merchStoreController.getOneMerchCollection({ uuid: collection.uuid }, user))
+      .rejects
+      .toThrow(ForbiddenError);
 
-    const result = await merchStore.getOneMerchCollection({ uuid: collection.uuid }, admin);
+    const result = await merchStoreController.getOneMerchCollection({ uuid: collection.uuid }, admin);
     expect(result.collection.uuid).toEqual(collection.uuid);
   });
 
   test('ordering items from archived collections is not allowed', async () => {
     const conn = await DatabaseConnection.get();
-    const [itemOption] = MerchFactory.optionsWith({ price: 5000 });
-
+    const [option] = MerchFactory.optionsWith({ price: 5000 });
     const [item] = MerchFactory.itemsWith({
-      options: [itemOption],
+      options: [option],
     });
     const [collection] = MerchFactory.collectionsWith({
       items: [item],
       archived: false,
     });
-
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [user] = UserFactory.with({
       accessType: UserAccessType.STANDARD,
@@ -76,21 +75,21 @@ describe('archived merch collections', () => {
       .createMerch([collection])
       .write();
 
-    const merchStore = ControllerFactory.merchStore(conn);
-
     const collectionEdit = {
       collection: {
         archived: true,
       },
     };
 
-    await merchStore.editMerchCollection({ uuid: collection.uuid }, collectionEdit, admin);
+    const merchStoreController = ControllerFactory.merchStore(conn);
 
-    await expect(merchStore.placeMerchOrder({
+    await merchStoreController.editMerchCollection({ uuid: collection.uuid }, collectionEdit, admin);
+
+    await expect(merchStoreController.placeMerchOrder({
       order: [
-        { option: itemOption.uuid, quantity: 1 },
+        { option: option.uuid, quantity: 1 },
       ],
-    }, user)).rejects.toThrow(`Not allowed to order: ${[itemOption.uuid]}`);
+    }, user)).rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
   });
 });
 
@@ -114,14 +113,15 @@ describe('merch items', () => {
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
-
     await merchStoreController.deleteMerchItemOption({ uuid: option.uuid }, admin);
     let updatedItemResponse = await merchStoreController.getOneMerchItem({ uuid: item.uuid }, admin);
+
     expect(updatedItemResponse.item.options).toHaveLength(0);
 
     // Check that adding an option to an item with 0 options behaves properly
     await merchStoreController.createMerchItemOption({ uuid: item.uuid }, { option }, admin);
     updatedItemResponse = await merchStoreController.getOneMerchItem({ uuid: item.uuid }, admin);
+
     expect(updatedItemResponse.item.options).toHaveLength(1);
   });
 
@@ -159,6 +159,7 @@ describe('merch item edits', () => {
       monthlyLimit: 5,
       lifetimeLimit: 10,
     });
+    console.log(item);
     const [collection] = MerchFactory.collectionsWith({
       items: [item],
     });
@@ -173,14 +174,9 @@ describe('merch item edits', () => {
       monthlyLimit: 10,
       lifetimeLimit: 20,
     };
-
-    await ControllerFactory.merchStore(conn).editMerchItem(
-      { uuid: item.uuid },
-      { merchandise: merchItemEdits },
-      admin,
-    );
-
-    const merchItemResponse = await ControllerFactory.merchStore(conn).getOneMerchItem({ uuid: item.uuid }, admin);
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    await merchStoreController.editMerchItem({ uuid: item.uuid }, { merchandise: merchItemEdits }, admin);
+    const merchItemResponse = await merchStoreController.getOneMerchItem({ uuid: item.uuid }, admin);
 
     expect(merchItemResponse.item).toStrictEqual({
       collection: merchItemResponse.item.collection,
@@ -239,7 +235,9 @@ describe('merch item edits', () => {
       discountPercentage: 20,
     };
 
-    await ControllerFactory.merchStore(conn).editMerchItem(
+    const merchStoreController = ControllerFactory.merchStore(conn);
+
+    await merchStoreController.editMerchItem(
       {
         uuid: item.uuid,
       },
@@ -251,7 +249,7 @@ describe('merch item edits', () => {
       admin,
     );
 
-    const merchItemResponse = await ControllerFactory.merchStore(conn).getOneMerchItem({ uuid: item.uuid }, admin);
+    const merchItemResponse = await merchStoreController.getOneMerchItem({ uuid: item.uuid }, admin);
 
     expect(merchItemResponse.item.options).toEqual(
       expect.arrayContaining([
@@ -293,13 +291,9 @@ describe('merch item edits', () => {
     // change every option's type to a different but consistent one
     options = options.map((option) => MerchandiseItemOptionModel.merge(option, { metadata: { type: 'new type ' } }));
 
-    await ControllerFactory.merchStore(conn).editMerchItem(
-      { uuid: item.uuid },
-      { merchandise: { options } },
-      admin,
-    );
-
-    const merchItemResponse = await ControllerFactory.merchStore(conn).getOneMerchItem({ uuid: item.uuid }, admin);
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    await merchStoreController.editMerchItem({ uuid: item.uuid }, { merchandise: { options } }, admin);
+    const merchItemResponse = await merchStoreController.getOneMerchItem({ uuid: item.uuid }, admin);
 
     expect(merchItemResponse.item.options).toEqual(
       expect.arrayContaining(options.map((option) => option.getPublicMerchItemOption(true))),
@@ -403,13 +397,9 @@ describe('merch item options', () => {
       .createMerch([merchCollection])
       .write();
 
-    await ControllerFactory
-      .merchStore(conn)
-      .createMerchItemOption({ uuid: merchItem.uuid }, { option: newOption }, admin);
-
-    const merchItemResponse = await ControllerFactory
-      .merchStore(conn)
-      .getOneMerchItem({ uuid: merchItem.uuid }, admin);
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    await merchStoreController.createMerchItemOption({ uuid: merchItem.uuid }, { option: newOption }, admin);
+    const merchItemResponse = await merchStoreController.getOneMerchItem({ uuid: merchItem.uuid }, admin);
 
     expect(merchItemResponse.item.options).toEqual(
       expect.arrayContaining([option.getPublicMerchItemOption(true), newOption.getPublicMerchItemOption(true)]),
