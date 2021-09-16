@@ -92,7 +92,7 @@ export class MerchItemOptionEdit implements IMerchItemOptionEdit {
   uuid: string;
 
   @Min(0)
-  quantity?: number;
+  quantityToAdd?: number;
 
   @Min(0)
   price?: number;

@@ -221,7 +221,7 @@ export interface MerchItem extends CommonMerchItemProperties {
 
 export interface MerchItemOptionEdit {
   uuid: string;
-  addQuantity?: number;
+  quantityToAdd?: number;
   price?: number;
   discountPercentage?: number;
   metadata?: MerchItemOptionMetadata;
