@@ -2,6 +2,7 @@ import { ForbiddenError } from 'routing-controllers';
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, UserFactory, PortalState } from './data';
+import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -93,8 +94,63 @@ describe('archived merch collections', () => {
   });
 });
 
+describe('merch items', () => {
+  test('can have 0 item options if the item is hidden', async () => {
+    const conn = await DatabaseConnection.get();
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const option = MerchFactory.fakeOption();
+    const item = MerchFactory.fakeItem({
+      hidden: true,
+      hasVariantsEnabled: false,
+      options: [option],
+    });
+    const collection = MerchFactory.fakeCollection({
+      items: [item],
+    });
+
+    await new PortalState()
+      .createUsers([admin])
+      .createMerch([collection])
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+
+    await merchStoreController.deleteMerchItemOption({ uuid: option.uuid }, admin);
+    let updatedItemResponse = await merchStoreController.getOneMerchItem({ uuid: item.uuid }, admin);
+    expect(updatedItemResponse.item.options).toHaveLength(0);
+
+    // Check that adding an option to an item with 0 options behaves properly
+    await merchStoreController.createMerchItemOption({ uuid: item.uuid }, { option }, admin);
+    updatedItemResponse = await merchStoreController.getOneMerchItem({ uuid: item.uuid }, admin);
+    expect(updatedItemResponse.item.options).toHaveLength(1);
+  });
+
+  test('cannot have 0 item options if the item is not hidden', async () => {
+    const conn = await DatabaseConnection.get();
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const option = MerchFactory.fakeOption();
+    const item = MerchFactory.fakeItem({
+      hidden: false,
+      hasVariantsEnabled: false,
+      options: [option],
+    });
+    const collection = MerchFactory.fakeCollection({
+      items: [item],
+    });
+
+    await new PortalState()
+      .createUsers([admin])
+      .createMerch([collection])
+      .write();
+
+    expect(ControllerFactory.merchStore(conn).deleteMerchItemOption({ uuid: option.uuid }, admin))
+      .rejects
+      .toThrow('Cannot delete the only option for an item when it is visible');
+  });
+});
+
 describe('merch item edits', () => {
-  test('succeeds on base fields update', async () => {
+  test('succeeds when item fields are edited', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [item] = MerchFactory.itemsWith({
@@ -128,12 +184,12 @@ describe('merch item edits', () => {
 
     expect(merchItemResponse.item).toStrictEqual({
       collection: merchItemResponse.item.collection,
-      ...item.getPublicMerchItem(),
+      ...item.getPublicMerchItem(true),
       ...merchItemEdits,
     });
   });
 
-  test('succeeds when basic option fields are updated', async () => {
+  test('succeeds when item option fields are updated', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [option1, option2] = MerchFactory.optionsWith(
@@ -170,18 +226,26 @@ describe('merch item edits', () => {
       .createMerch([collection])
       .write();
 
-    option1.price -= 1000;
-    option1.quantity -= 5;
-    option1.discountPercentage = 15;
-    option2.price += 500;
-    option2.quantity += 5;
-    option1.discountPercentage = 0;
+    const option1Update = {
+      uuid: option1.uuid,
+      price: 2000,
+      quantityToAdd: 5,
+      discountPercentage: 10,
+    };
+    const option2Update = {
+      uuid: option2.uuid,
+      price: 1000,
+      quantityToAdd: 10,
+      discountPercentage: 20,
+    };
 
     await ControllerFactory.merchStore(conn).editMerchItem(
-      { uuid: item.uuid },
+      {
+        uuid: item.uuid,
+      },
       {
         merchandise: {
-          options: [option1, option2],
+          options: [option1Update, option2Update],
         },
       },
       admin,
@@ -190,14 +254,29 @@ describe('merch item edits', () => {
     const merchItemResponse = await ControllerFactory.merchStore(conn).getOneMerchItem({ uuid: item.uuid }, admin);
 
     expect(merchItemResponse.item.options).toEqual(
-      expect.arrayContaining([option1.getPublicMerchItemOption(), option2.getPublicMerchItemOption()]),
+      expect.arrayContaining([
+        {
+          uuid: option1.uuid,
+          quantity: option1.quantity + option1Update.quantityToAdd,
+          price: option1Update.price,
+          discountPercentage: option1Update.discountPercentage,
+          metadata: option1.metadata,
+        },
+        {
+          uuid: option2.uuid,
+          quantity: option2.quantity + option2Update.quantityToAdd,
+          price: option2Update.price,
+          discountPercentage: option2Update.discountPercentage,
+          metadata: option2.metadata,
+        },
+      ]),
     );
   });
 
-  test('succeeds when updated item option metadata types are changed but are still consistent', async () => {
+  test('succeeds when item option metadata types are updated', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const options = MerchFactory.createOptions(3);
+    let options = MerchFactory.createOptions(3);
     const [item] = MerchFactory.itemsWith({
       hasVariantsEnabled: true,
       options,
@@ -212,7 +291,7 @@ describe('merch item edits', () => {
       .write();
 
     // change every option's type to a different but consistent one
-    options.forEach((option) => { option.metadata.type = 'new type'; });
+    options = options.map((option) => MerchandiseItemOptionModel.merge(option, { metadata: { type: 'new type ' } }));
 
     await ControllerFactory.merchStore(conn).editMerchItem(
       { uuid: item.uuid },
@@ -223,7 +302,7 @@ describe('merch item edits', () => {
     const merchItemResponse = await ControllerFactory.merchStore(conn).getOneMerchItem({ uuid: item.uuid }, admin);
 
     expect(merchItemResponse.item.options).toEqual(
-      expect.arrayContaining(options.map((option) => option.getPublicMerchItemOption())),
+      expect.arrayContaining(options.map((option) => option.getPublicMerchItemOption(true))),
     );
   });
 
@@ -277,6 +356,32 @@ describe('merch item edits', () => {
       admin,
     )).rejects.toThrow('Merch items cannot have multiple option types');
   });
+
+  test('fails when the item is updated to be visible but the item has 0 options', async () => {
+    const conn = await DatabaseConnection.get();
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const item = MerchFactory.fakeItem({
+      hidden: true,
+      hasVariantsEnabled: true,
+      options: [],
+    });
+    const collection = MerchFactory.fakeCollection({
+      items: [item],
+    });
+
+    await new PortalState()
+      .createUsers([admin])
+      .createMerch([collection])
+      .write();
+
+    await expect(ControllerFactory.merchStore(conn).editMerchItem(
+      { uuid: item.uuid },
+      { merchandise: { hidden: false } },
+      admin,
+    ))
+      .rejects
+      .toThrow('Item cannot be set to visible if it has 0 options.');
+  });
 });
 
 describe('merch item options', () => {
@@ -307,7 +412,7 @@ describe('merch item options', () => {
       .getOneMerchItem({ uuid: merchItem.uuid }, admin);
 
     expect(merchItemResponse.item.options).toEqual(
-      expect.arrayContaining([option.getPublicMerchItemOption(), newOption.getPublicMerchItemOption()]),
+      expect.arrayContaining([option.getPublicMerchItemOption(true), newOption.getPublicMerchItemOption(true)]),
     );
   });
 
@@ -335,7 +440,7 @@ describe('merch item options', () => {
         { option: newOption },
         admin,
       ),
-    ).rejects.toThrow('Cannot add option to items with variants disabled');
+    ).rejects.toThrow('Cannot add more than 1 option to items with variants disabled');
   });
 
   test('cannot add different metadata types to an item', async () => {
