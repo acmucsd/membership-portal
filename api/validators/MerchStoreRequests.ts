@@ -40,7 +40,7 @@ export class MerchCollectionEdit implements IMerchCollectionEdit {
   @IsNotEmpty()
   title?: string;
 
-  @Allow()
+  @IsHexColor()
   themeColorHex?: string;
 
   @IsNotEmpty()
