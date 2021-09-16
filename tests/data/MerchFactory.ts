@@ -34,23 +34,15 @@ export class MerchFactory {
   }
 
   public static collectionsWith(...substitutes: Partial<MerchandiseCollectionModel>[]): MerchandiseCollectionModel[] {
-    return substitutes.map((sub) => {
-      const merged = MerchandiseCollectionModel.merge(MerchFactory.fakeCollection(), sub);
-      if (sub.items) merged.items = sub.items;
-      return merged;
-    });
+    return substitutes.map((sub) => MerchFactory.fakeCollection(sub));
   }
 
   public static itemsWith(...substitutes: Partial<MerchandiseItemModel>[]): MerchandiseItemModel[] {
-    return substitutes.map((sub) => {
-      const merged = MerchandiseItemModel.merge(MerchFactory.fakeItem(), sub);
-      if (sub.options) merged.options = sub.options;
-      return merged;
-    });
+    return substitutes.map((sub) => MerchFactory.fakeItem(sub));
   }
 
   public static optionsWith(...substitutes: Partial<MerchandiseItemOptionModel>[]): MerchandiseItemOptionModel[] {
-    return substitutes.map((sub) => MerchandiseItemOptionModel.merge(MerchFactory.fakeOption(), sub));
+    return substitutes.map((sub) => MerchFactory.fakeOption(sub));
   }
 
   public static optionMetadataWith(...substitutes: Partial<MerchItemOptionMetadata>[]): MerchItemOptionMetadata[] {
@@ -70,9 +62,16 @@ export class MerchFactory {
       title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       themeColorHex: faker.internet.color(),
-      items: MerchFactory.createItems(FactoryUtils.getRandomNumber(1, 5)),
     });
-    return MerchandiseCollectionModel.merge(fake, substitute);
+
+    const fakeModel = MerchandiseCollectionModel.merge(fake, substitute);
+    // set the items array if substitute does not provide items, since BaseEntity.merge also merges arrays,
+    // so fakeModel.items array would have both substitute and fake items if items
+    // are created in the MerchandiseItemModel.create() call.
+    if (!fakeModel.items) fakeModel.items = MerchFactory.createItems(FactoryUtils.getRandomNumber(1, 5));
+    // explicitly set the item.collection field for all collection's items since it is required to be non-null
+    fakeModel.items.map((item) => ({ ...item, collection: fake }));
+    return fakeModel;
   }
 
   public static fakeItem(substitute?: Partial<MerchandiseItemModel>): MerchandiseItemModel {
@@ -81,11 +80,18 @@ export class MerchFactory {
     const fake = MerchandiseItemModel.create({
       uuid: uuid(),
       itemName: faker.datatype.hexaDecimal(10),
+      picture: faker.image.cats(),
       description: faker.lorem.sentences(2),
       hasVariantsEnabled,
-      options: MerchFactory.createOptions(numOptions),
     });
-    return MerchandiseItemModel.merge(fake, substitute);
+    const fakeModel = MerchandiseItemModel.merge(fake, substitute);
+    // set the options array if substitute does not provide options, since BaseEntity.merge also merges arrays,
+    // so fakeModel.options array would have both substitute and fake items if items
+    // are created in the MerchandiseItemModel.create() call.
+    if (!fakeModel.options) fakeModel.options = MerchFactory.createOptions(numOptions);
+    // explicitly set the option.item field for all item's options since it is required to be non-null
+    fakeModel.options.map((option) => ({ ...option, item: fakeModel }));
+    return fakeModel;
   }
 
   public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {
@@ -94,6 +100,7 @@ export class MerchFactory {
       quantity: FactoryUtils.getRandomNumber(0, 25),
       price: MerchFactory.randomPrice(),
       discountPercentage: MerchFactory.randomDiscountPercentage(),
+      metadata: null,
     });
     return MerchandiseItemOptionModel.merge(fake, substitute);
   }
