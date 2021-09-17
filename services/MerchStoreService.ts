@@ -230,7 +230,7 @@ export default class MerchStoreService {
   }
 
   /**
-   * Deletetes the given item option. Deletion will fail if the item option has already been ordered,
+   * Deletes the given item option. Deletion will fail if the item option has already been ordered,
    * or if the deletion will result in the item having 0 options while being visible to the public.
    *
    * Note that the item is allowed to have 0 options, but only if the item is hidden.
