@@ -145,7 +145,7 @@ describe('merch items', () => {
 
     expect(ControllerFactory.merchStore(conn).deleteMerchItemOption({ uuid: option.uuid }, admin))
       .rejects
-      .toThrow('Cannot delete the only option for an item when it is visible');
+      .toThrow('Cannot delete the only option for a visible merch item');
   });
 });
 

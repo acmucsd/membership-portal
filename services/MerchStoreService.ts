@@ -243,7 +243,9 @@ export default class MerchStoreService {
       if (!option) throw new NotFoundError();
       const hasBeenOrdered = await Repositories.merchOrderItem(txn).hasOptionBeenOrdered(uuid);
       if (hasBeenOrdered) throw new UserError('This item option has been ordered and cannot be deleted');
-      if (option.item.options.length === 1 && !option.item.hidden) {
+
+      const item = await Repositories.merchStoreItem(txn).findByUuid(option.item.uuid);
+      if (item.options.length === 1 && !option.item.hidden) {
         throw new UserError('Cannot delete the only option for a visible merch item');
       }
 
