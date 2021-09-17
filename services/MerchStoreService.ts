@@ -147,8 +147,6 @@ export default class MerchStoreService {
    * Edits a merch item and its options, given the item edit.
    * Item edits cannot add or remove item options - they can only edit existing options.
    * If the visibility of the item is set to visible, then the item cannot have 0 options.
-   * @param uuid item uuid
-   * @param itemEdit item edits
    * @returns edited item
    */
   public async editItem(uuid: Uuid, itemEdit: MerchItemEdit): Promise<MerchandiseItemModel> {
