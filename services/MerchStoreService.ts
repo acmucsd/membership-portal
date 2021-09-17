@@ -276,7 +276,7 @@ export default class MerchStoreService {
    * The order is placed if the following conditions are met:
    *    - all the ordered item options exist within the database
    *    - the ordered item options were placed for non-hidden items
-   *    - the user wouldn't reach monthly and lifetime limits for the item if this order is placed
+   *    - the user wouldn't reach monthly or lifetime limits for any item if this order is placed
    *    - the requested item options are in stock
    *    - the user has enough credits to place the order
    *
