@@ -98,7 +98,8 @@ export class MerchStoreController {
   async getOneMerchItem(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchItemResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const item = await this.merchStoreService.findItemByUuid(params.uuid);
+    const canSeeOptionQuantities = PermissionsService.canSeeOptionQuantities(user);
+    const item = await this.merchStoreService.findItemByUuid(params.uuid, canSeeOptionQuantities);
     return { error: null, item };
   }
 
@@ -106,6 +107,8 @@ export class MerchStoreController {
   async createMerchItem(@Body() createItemRequest: CreateMerchItemRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateMerchItemResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    // Default behavior is to have variants disabled if not specified
+    createItemRequest.merchandise.hasVariantsEnabled ??= false;
     const item = await this.merchStoreService.createItem(createItemRequest.merchandise);
     return { error: null, item };
   }

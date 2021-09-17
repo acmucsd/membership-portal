@@ -1,4 +1,4 @@
-import { Allow, IsNotEmpty, Min, Max, IsDefined, IsUUID, ValidateNested } from 'class-validator';
+import { Allow, IsNotEmpty, Min, Max, IsDefined, IsUUID, ValidateNested, IsHexColor } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   CreateMerchCollectionRequest as ICreateMerchCollectionRequest,
@@ -16,12 +16,17 @@ import {
   MerchItemEdit as IMerchItemEdit,
   MerchItemOption as IMerchItemOption,
   MerchItemOptionEdit as IMerchItemOptionEdit,
+  MerchItemOptionMetadata as IMerchItemOptionMetadata,
 } from '../../types';
 
 export class MerchCollection implements IMerchCollection {
   @IsDefined()
   @IsNotEmpty()
   title: string;
+
+  @IsDefined()
+  @IsHexColor()
+  themeColorHex: string;
 
   @IsDefined()
   @IsNotEmpty()
@@ -35,6 +40,9 @@ export class MerchCollectionEdit implements IMerchCollectionEdit {
   @IsNotEmpty()
   title?: string;
 
+  @IsHexColor()
+  themeColorHex?: string;
+
   @IsNotEmpty()
   description?: string;
 
@@ -44,6 +52,19 @@ export class MerchCollectionEdit implements IMerchCollectionEdit {
   @Min(0)
   @Max(100)
   discountPercentage?: number;
+}
+
+export class MerchItemOptionMetadata implements IMerchItemOptionMetadata {
+  @IsDefined()
+  @IsNotEmpty()
+  type: string;
+
+  @IsDefined()
+  @IsNotEmpty()
+  value: string;
+
+  @IsDefined()
+  position: number;
 }
 
 export class MerchItemOption implements IMerchItemOption {
@@ -59,8 +80,10 @@ export class MerchItemOption implements IMerchItemOption {
   @Max(100)
   discountPercentage?: number;
 
+  @Type(() => MerchItemOptionMetadata)
+  @ValidateNested()
   @Allow()
-  metadata?: object;
+  metadata?: MerchItemOptionMetadata;
 }
 
 export class MerchItemOptionEdit implements IMerchItemOptionEdit {
@@ -69,7 +92,7 @@ export class MerchItemOptionEdit implements IMerchItemOptionEdit {
   uuid: string;
 
   @Min(0)
-  quantity?: number;
+  quantityToAdd?: number;
 
   @Min(0)
   price?: number;
@@ -78,8 +101,10 @@ export class MerchItemOptionEdit implements IMerchItemOptionEdit {
   @Max(100)
   discountPercentage?: number;
 
+  @Type(() => MerchItemOptionMetadata)
+  @ValidateNested()
   @Allow()
-  metadata?: object;
+  metadata?: MerchItemOptionMetadata;
 }
 
 export class MerchItem implements IMerchItem {
@@ -109,6 +134,9 @@ export class MerchItem implements IMerchItem {
   @Allow()
   hidden?: boolean;
 
+  @Allow()
+  hasVariantsEnabled?: boolean;
+
   @Type(() => MerchItemOption)
   @ValidateNested()
   @IsDefined()
@@ -130,6 +158,9 @@ export class MerchItemEdit implements IMerchItemEdit {
 
   @Allow()
   hidden?: boolean;
+
+  @Allow()
+  hasVariantsEnabled?: boolean;
 
   @Type(() => MerchItemOptionEdit)
   @ValidateNested()

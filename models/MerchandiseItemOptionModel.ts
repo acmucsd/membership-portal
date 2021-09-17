@@ -1,7 +1,7 @@
 import {
   Entity, BaseEntity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, Index,
 } from 'typeorm';
-import { Uuid, PublicMerchItemOption } from '../types';
+import { Uuid, PublicMerchItemOption, MerchItemOptionMetadata } from '../types';
 import { OrderItemModel } from './OrderItemModel';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
 
@@ -28,15 +28,15 @@ export class MerchandiseItemOptionModel extends BaseEntity {
     type: 'text',
     nullable: true,
     transformer: {
-      to(value: object): string {
+      to(value: MerchItemOptionMetadata): string {
         return JSON.stringify(value);
       },
-      from(value: string): object {
+      from(value: string): MerchItemOptionMetadata {
         return value ? JSON.parse(value) : null;
       },
     },
   })
-  metadata: object;
+  metadata: MerchItemOptionMetadata;
 
   @OneToMany((type) => OrderItemModel, (orderItem) => orderItem.option)
   orders: OrderItemModel;
@@ -45,12 +45,14 @@ export class MerchandiseItemOptionModel extends BaseEntity {
     return Math.round(this.price * (1 - (this.discountPercentage / 100)));
   }
 
-  public getPublicMerchItemOption(): PublicMerchItemOption {
-    return {
+  public getPublicMerchItemOption(canSeeOptionQuantities = false): PublicMerchItemOption {
+    const option: PublicMerchItemOption = {
       uuid: this.uuid,
       price: this.price,
       discountPercentage: this.discountPercentage,
       metadata: this.metadata,
     };
+    if (canSeeOptionQuantities) option.quantity = this.quantity;
+    return option;
   }
 }

@@ -44,6 +44,10 @@ export default class PermissionsService {
     return user.state === UserState.ACTIVE;
   }
 
+  public static canSeeOptionQuantities(user: UserModel): boolean {
+    return user.isAdmin();
+  }
+
   public static canSeeMerchOrder(user: UserModel, order: PublicOrder) {
     return user.isAdmin() || (this.canAccessMerchStore(user) && order.user === user.uuid);
   }

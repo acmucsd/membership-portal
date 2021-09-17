@@ -57,6 +57,9 @@ export class PortalState {
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
       user.email = user.email.toLowerCase();
+      if (user.points) user.credits = user.points * 100;
+      else if (user.credits) user.points = Math.floor(user.credits / 100);
+
       this.users.push(user);
       this.activities.push(ActivityModel.create({
         user,
@@ -109,9 +112,9 @@ export class PortalState {
   public orderMerch(user: UserModel, order: MerchItemOptionAndQuantity[]): PortalState {
     const totalCost = order.reduce((sum, m) => m.option.getPrice() * m.quantity, 0);
     user.credits -= totalCost;
-    order.forEach(({ option, quantity }) => {
-      option.quantity -= quantity;
-    });
+
+    this.decrementOptionQuantities(order);
+
     this.orders.push(OrderModel.create({
       user,
       totalCost,
@@ -126,6 +129,28 @@ export class PortalState {
       type: ActivityType.ORDER_MERCHANDISE,
     }));
     return this;
+  }
+
+  private decrementOptionQuantities(order: MerchItemOptionAndQuantity[]): void {
+    // decrement option quantities within order object so that the order object
+    // within the test gets updated
+    order.forEach(({ option, quantity }) => {
+      option.quantity -= quantity;
+    });
+
+    // decrement option quantities within the collection objects so that the option
+    // quantity updates get written to the database
+    const optionQuantitiesByUuid = new Map(order.map(({ option, quantity }) => [option.uuid, quantity]));
+
+    this.merch.forEach((collection) => {
+      collection.items.forEach((item) => {
+        item.options.forEach((option) => {
+          if (optionQuantitiesByUuid.has(option.uuid)) {
+            option.quantity -= optionQuantitiesByUuid.get(option.uuid);
+          }
+        });
+      });
+    });
   }
 
   public submitFeedback(user: UserModel, feedback: Feedback[]): PortalState {

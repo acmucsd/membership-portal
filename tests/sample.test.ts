@@ -6,6 +6,8 @@ import { UserModel } from '../models/UserModel';
 import { DatabaseConnection, UserFactory, EventFactory, MerchFactory, PortalState } from './data';
 import { OrderModel } from '../models/OrderModel';
 import { FeedbackFactory } from './data/FeedbackFactory';
+import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
+import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -77,6 +79,11 @@ describe('sample test', () => {
       ActivityType.ORDER_MERCHANDISE,
       ActivityType.SUBMIT_FEEDBACK,
     ]);
+
+    const [collection] = await conn.manager.find(MerchandiseCollectionModel, { relations: ['items'] });
+    expect(collection.items).toHaveLength(1);
+    const [item] = await conn.manager.find(MerchandiseItemModel, { relations: ['options'] });
+    expect(item.options).toHaveLength(1);
 
     const [order] = await conn.manager.find(OrderModel, { relations: ['user', 'items'] });
     expect(order.user.uuid).toStrictEqual(user1.uuid);

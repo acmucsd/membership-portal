@@ -1,5 +1,5 @@
 import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType } from './Enums';
-import { Uuid } from '.';
+import { MerchItemOptionMetadata, Uuid } from '.';
 
 // RESPONSE TYPES
 
@@ -140,6 +140,7 @@ export interface GetLeaderboardResponse extends ApiResponse {
 export interface PublicMerchCollection {
   uuid: Uuid;
   title: string;
+  themeColorHex?: string;
   description: string;
   items: PublicMerchItem[];
 }
@@ -152,14 +153,16 @@ export interface PublicMerchItem {
   description: string;
   monthlyLimit: number;
   lifetimeLimit: number;
+  hasVariantsEnabled: boolean;
   options: PublicMerchItemOption[];
 }
 
 export interface PublicMerchItemOption {
   uuid: Uuid;
   price: number;
+  quantity?: number;
   discountPercentage: number;
-  metadata: object;
+  metadata: MerchItemOptionMetadata;
 }
 
 export interface PublicOrderItem {

@@ -182,6 +182,7 @@ export interface FulfillMerchOrderRequest {
 
 export interface MerchCollection {
   title: string;
+  themeColorHex?: string;
   description: string;
   archived?: boolean;
 }
@@ -198,21 +199,32 @@ export interface CommonMerchItemProperties {
   hidden?: boolean;
   monthlyLimit?: number;
   lifetimeLimit?: number;
+  hasVariantsEnabled?: boolean;
+}
+
+export interface MerchItemOptionMetadata {
+  type: string;
+  value: string;
+  position: number;
 }
 
 export interface MerchItemOption {
   quantity: number;
   price: number;
   discountPercentage?: number;
-  metadata?: object;
+  metadata?: MerchItemOptionMetadata;
 }
 
 export interface MerchItem extends CommonMerchItemProperties {
   options: MerchItemOption[];
 }
 
-export interface MerchItemOptionEdit extends Partial<MerchItemOption> {
+export interface MerchItemOptionEdit {
   uuid: string;
+  quantityToAdd?: number;
+  price?: number;
+  discountPercentage?: number;
+  metadata?: MerchItemOptionMetadata;
 }
 
 export interface MerchItemEdit extends Partial<CommonMerchItemProperties> {
