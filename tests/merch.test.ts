@@ -159,7 +159,6 @@ describe('merch item edits', () => {
       monthlyLimit: 5,
       lifetimeLimit: 10,
     });
-    console.log(item);
     const [collection] = MerchFactory.collectionsWith({
       items: [item],
     });
