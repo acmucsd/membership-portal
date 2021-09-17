@@ -174,7 +174,8 @@ export default class MerchStoreService {
         });
       }
 
-      MerchStoreService.verifyItemHasValidOptions(MerchandiseItemModel.merge(item, changes));
+      const updatedItem = MerchandiseItemModel.merge(item, changes);
+      MerchStoreService.verifyItemHasValidOptions(updatedItem);
 
       if (updatedCollection) {
         const collection = await Repositories
@@ -183,8 +184,7 @@ export default class MerchStoreService {
         if (!collection) throw new NotFoundError('Merch collection not found');
       }
 
-      await merchItemRepository.upsertMerchItem(item, changes);
-      return merchItemRepository.findByUuid(uuid);
+      return merchItemRepository.upsertMerchItem(updatedItem);
     });
   }
 
