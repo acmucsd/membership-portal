@@ -282,7 +282,7 @@ export default class MerchStoreService {
    *
    * @param originalOrder the order containing item options and their quantities
    * @param user user placing the order
-   * @returns PublicOrder object placed
+   * @returns the finalized order, including sale price, discount, and fulfillment details
    */
   public async placeOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<PublicOrder> {
     const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
