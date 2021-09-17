@@ -405,34 +405,7 @@ describe('merch item options', () => {
     );
   });
 
-  test('cannot be added to an item with variants disabled', async () => {
-    const conn = await DatabaseConnection.get();
-    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [metadata, newMetadata] = MerchFactory.createOptionMetadata(2);
-    const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
-    const [merchItem] = MerchFactory.itemsWith({
-      hasVariantsEnabled: false,
-      options: [option],
-    });
-    const [merchCollection] = MerchFactory.collectionsWith({
-      items: [merchItem],
-    });
-
-    await new PortalState()
-      .createUsers([admin])
-      .createMerch([merchCollection])
-      .write();
-
-    await expect(
-      ControllerFactory.merchStore(conn).createMerchItemOption(
-        { uuid: merchItem.uuid },
-        { option: newOption },
-        admin,
-      ),
-    ).rejects.toThrow('Cannot add more than 1 option to items with variants disabled');
-  });
-
-  test('cannot add different metadata types to an item', async () => {
+  test('cannot be added to an item with variants enabled if it has a different option type', async () => {
     const conn = await DatabaseConnection.get();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [metadata] = MerchFactory.optionMetadataWith({ type: 'COLOR' });
@@ -458,5 +431,59 @@ describe('merch item options', () => {
         admin,
       ),
     ).rejects.toThrow('Merch item cannot have multiple option types');
+  });
+
+  test('can be added to an item with variants disabled if it has 0 options', async () => {
+    const conn = await DatabaseConnection.get();
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [metadata, newMetadata] = MerchFactory.createOptionMetadata(2);
+    const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
+    const [merchItem] = MerchFactory.itemsWith({
+      hasVariantsEnabled: false,
+      options: [option],
+    });
+    const [merchCollection] = MerchFactory.collectionsWith({
+      items: [merchItem],
+    });
+
+    await new PortalState()
+      .createUsers([admin])
+      .createMerch([merchCollection])
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    await merchStoreController.deleteMerchItemOption({ uuid: option.uuid }, admin);
+    await merchStoreController.createMerchItemOption({ uuid: merchItem.uuid }, { option: newOption }, admin);
+    const merchItemResponse = await merchStoreController.getOneMerchItem({ uuid: merchItem.uuid }, admin);
+
+    expect(merchItemResponse.item.options).toHaveLength(1);
+    expect(merchItemResponse.item.options[0]).toStrictEqual(newOption.getPublicMerchItemOption(true));
+  });
+
+  test('cannot be added to an item with variants disabled if it has at least 1 option', async () => {
+    const conn = await DatabaseConnection.get();
+    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const [metadata, newMetadata] = MerchFactory.createOptionMetadata(2);
+    const [option, newOption] = MerchFactory.optionsWith({ metadata }, { metadata: newMetadata });
+    const [merchItem] = MerchFactory.itemsWith({
+      hasVariantsEnabled: false,
+      options: [option],
+    });
+    const [merchCollection] = MerchFactory.collectionsWith({
+      items: [merchItem],
+    });
+
+    await new PortalState()
+      .createUsers([admin])
+      .createMerch([merchCollection])
+      .write();
+
+    await expect(
+      ControllerFactory.merchStore(conn).createMerchItemOption(
+        { uuid: merchItem.uuid },
+        { option: newOption },
+        admin,
+      ),
+    ).rejects.toThrow('Cannot add more than 1 option to items with variants disabled');
   });
 });

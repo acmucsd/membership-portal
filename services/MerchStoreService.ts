@@ -220,10 +220,9 @@ export default class MerchStoreService {
 
       // Check that only the first option's type matches the option type to be added,
       // since all other options must have same type as the first, based on prior validation.
-      //
-      // Note: options[0] could be undefined here since an item is allowed to have 0 options if it is hidden.
       const hasDifferentOptionTypeThanOtherOptions = merchItem.hasVariantsEnabled
-          && merchItem.options[0]?.metadata.type !== option.metadata.type;
+          && merchItem.options.length > 0
+          && merchItem.options[0].metadata.type !== option.metadata.type;
       if (hasDifferentOptionTypeThanOtherOptions) throw new UserError('Merch item cannot have multiple option types');
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
