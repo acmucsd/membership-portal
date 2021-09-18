@@ -8,6 +8,7 @@ import { OrderModel } from './OrderModel';
 import { OrderItemModel } from './OrderItemModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
 import { FeedbackModel } from './FeedbackModel';
+import { OrderPickupEventModel } from './OrderPickupEventModel';
 
 export const models = [
   UserModel,
@@ -20,4 +21,5 @@ export const models = [
   MerchandiseItemOptionModel,
   OrderModel,
   OrderItemModel,
+  OrderPickupEventModel,
 ];

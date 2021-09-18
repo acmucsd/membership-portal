@@ -241,3 +241,9 @@ export interface MerchItemOptionAndQuantity {
   option: string;
   quantity: number;
 }
+
+export interface OrderPickupEvent {
+  start: Date;
+  end: Date;
+  details: string;
+}
