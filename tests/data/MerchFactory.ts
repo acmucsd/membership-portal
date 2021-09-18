@@ -1,6 +1,7 @@
 import * as faker from 'faker';
 import { MerchItemOptionMetadata } from 'types';
 import { v4 as uuid } from 'uuid';
+import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
@@ -31,6 +32,10 @@ export class MerchFactory {
     const type = faker.datatype.hexaDecimal(10);
     const substitutes = Array(n).fill({ type });
     return MerchFactory.optionMetadataWith(...substitutes);
+  }
+
+  public static createOrderPickupEvents(n: number): OrderPickupEventModel[] {
+    return FactoryUtils.create(n, MerchFactory.fakeOrderPickupEvent);
   }
 
   public static collectionsWith(...substitutes: Partial<MerchandiseCollectionModel>[]): MerchandiseCollectionModel[] {
@@ -107,6 +112,18 @@ export class MerchFactory {
       value: faker.datatype.hexaDecimal(10),
       position: FactoryUtils.getRandomNumber(1, 10),
     };
+  }
+
+  public static fakeOrderPickupEvent(substitute?: Partial<OrderPickupEventModel>): OrderPickupEventModel {
+    const [start, end] = FactoryUtils.getRandomTimeInterval();
+    const fake = OrderPickupEventModel.create({
+      uuid: uuid(),
+      title: faker.datatype.hexaDecimal(10),
+      description: faker.lorem.sentences(2),
+      start,
+      end,
+    });
+    return OrderPickupEventModel.merge(fake, substitute);
   }
 
   private static randomPrice(): number {

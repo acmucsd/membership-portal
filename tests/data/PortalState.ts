@@ -1,6 +1,7 @@
 import * as rfdc from 'rfdc';
 import { flatten } from 'underscore';
 import * as moment from 'moment';
+import { OrderPickupEventModel } from 'models/OrderPickupEventModel';
 import { AttendanceModel } from '../../models/AttendanceModel';
 import { EventModel } from '../../models/EventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
@@ -24,6 +25,8 @@ export class PortalState {
 
   merch: MerchandiseCollectionModel[] = [];
 
+  orderPickupEvents: OrderPickupEventModel[] = [];
+
   orders: OrderModel[] = [];
 
   feedback: FeedbackModel[] = [];
@@ -35,6 +38,7 @@ export class PortalState {
     this.attendances = rfdc()(state.attendances);
     this.activities = rfdc()(state.activities);
     this.merch = rfdc()(state.merch);
+    this.orderPickupEvents = rfdc()(state.orderPickupEvents);
     this.orders = rfdc()(state.orders);
     this.feedback = rfdc()(state.feedback);
     return this;
@@ -48,6 +52,7 @@ export class PortalState {
       this.attendances = await txn.save(this.attendances);
       this.activities = await txn.save(this.activities);
       this.merch = await txn.save(this.merch);
+      this.orderPickupEvents = await txn.save(this.orderPickupEvents);
       this.orders = await txn.save(this.orders);
       this.feedback = await txn.save(this.feedback);
     });
@@ -109,7 +114,14 @@ export class PortalState {
     return this;
   }
 
-  public orderMerch(user: UserModel, order: MerchItemOptionAndQuantity[]): PortalState {
+  public createOrderPickupEvents(pickupEvents: OrderPickupEventModel[]): PortalState {
+    this.orderPickupEvents = this.orderPickupEvents.concat(pickupEvents);
+    return this;
+  }
+
+  public orderMerch(user: UserModel,
+    order: MerchItemOptionAndQuantity[],
+    pickupEvent: OrderPickupEventModel): PortalState {
     const totalCost = order.reduce((sum, m) => m.option.getPrice() * m.quantity, 0);
     user.credits -= totalCost;
 
@@ -118,6 +130,7 @@ export class PortalState {
     this.orders.push(OrderModel.create({
       user,
       totalCost,
+      pickupEvent,
       items: flatten(order.map(({ option, quantity }) => Array(quantity).fill(OrderItemModel.create({
         option,
         salePriceAtPurchase: option.getPrice(),

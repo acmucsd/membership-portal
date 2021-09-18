@@ -46,6 +46,7 @@ describe('sample test', () => {
         options: [affordableOption],
       }),
     });
+    const merchPickupEvent = MerchFactory.fakeOrderPickupEvent();
     const feedback = FeedbackFactory.create(1);
 
     const state = new PortalState()
@@ -54,7 +55,8 @@ describe('sample test', () => {
       .createMerch(merch)
       .attendEvents([user1], [event], false)
       .createUsers([user2])
-      .orderMerch(user1, [{ option: affordableOption, quantity: 1 }])
+      .createOrderPickupEvents([merchPickupEvent])
+      .orderMerch(user1, [{ option: affordableOption, quantity: 1 }], merchPickupEvent)
       .submitFeedback(user1, feedback);
 
     await state.write();
