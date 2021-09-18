@@ -244,7 +244,8 @@ export interface MerchItemOptionAndQuantity {
 }
 
 export interface OrderPickupEvent {
+  title: string;
   start: Date;
   end: Date;
-  details: string;
+  description: string;
 }
