@@ -229,6 +229,10 @@ export class PlaceMerchOrderRequest implements IPlaceMerchOrderRequest {
   @ValidateNested()
   @IsDefined()
   order: MerchItemOptionAndQuantity[];
+
+  @IsDefined()
+  @IsUUID()
+  pickupEvent: string;
 }
 
 export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {

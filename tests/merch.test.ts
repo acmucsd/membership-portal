@@ -64,6 +64,7 @@ describe('archived merch collections', () => {
       items: [item],
       archived: false,
     });
+    const orderPickupEvent = MerchFactory.fakeOrderPickupEvent();
     const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
     const [user] = UserFactory.with({
       accessType: UserAccessType.STANDARD,
@@ -73,6 +74,7 @@ describe('archived merch collections', () => {
     await new PortalState()
       .createUsers([admin, user])
       .createMerch([collection])
+      .createOrderPickupEvents([orderPickupEvent])
       .write();
 
     const collectionEdit = {
@@ -85,11 +87,15 @@ describe('archived merch collections', () => {
 
     await merchStoreController.editMerchCollection({ uuid: collection.uuid }, collectionEdit, admin);
 
-    await expect(merchStoreController.placeMerchOrder({
-      order: [
-        { option: option.uuid, quantity: 1 },
-      ],
-    }, user)).rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
+    await expect(merchStoreController.placeMerchOrder(
+      {
+        order: [
+          { option: option.uuid, quantity: 1 },
+        ],
+        pickupEvent: orderPickupEvent.uuid,
+      },
+      user,
+    )).rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
   });
 });
 

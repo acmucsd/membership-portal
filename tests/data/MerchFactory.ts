@@ -57,6 +57,10 @@ export class MerchFactory {
     });
   }
 
+  public static orderPickupEventsWith(...substitutes: Partial<OrderPickupEventModel>[]): OrderPickupEventModel[] {
+    return substitutes.map((sub) => MerchFactory.fakeOrderPickupEvent(sub));
+  }
+
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
     const fake = MerchandiseCollectionModel.create({
       uuid: uuid(),
