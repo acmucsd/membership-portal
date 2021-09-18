@@ -36,22 +36,22 @@ describe('sample test', () => {
   test('data is persisted', async () => {
     const conn = await DatabaseConnection.get();
     const [user1, user2] = UserFactory.create(2);
-    const [event] = EventFactory.with({ attendanceCode: 'attend-me' });
-    const [affordableOption] = MerchFactory.optionsWith({
+    const event = EventFactory.fake({ attendanceCode: 'attend-me' });
+    const affordableOption = MerchFactory.fakeOption({
       price: (event.pointValue * 100) - 10,
       discountPercentage: 0,
     });
-    const merch = MerchFactory.collectionsWith({
-      items: MerchFactory.itemsWith({
+    const merch = MerchFactory.fakeCollection({
+      items: [MerchFactory.fakeItem({
         options: [affordableOption],
-      }),
+      })],
     });
     const feedback = FeedbackFactory.create(1);
 
     const state = new PortalState()
       .createUsers([user1])
       .createEvents([event])
-      .createMerch(merch)
+      .createMerch([merch])
       .attendEvents([user1], [event], false)
       .createUsers([user2])
       .orderMerch(user1, [{ option: affordableOption, quantity: 1 }])
