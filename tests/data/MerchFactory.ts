@@ -32,6 +32,8 @@ export class MerchFactory {
       picture: faker.image.cats(),
       description: faker.lorem.sentences(2),
       hasVariantsEnabled,
+      monthlyLimit: FactoryUtils.getRandomNumber(1, 5),
+      lifetimeLimit: FactoryUtils.getRandomNumber(6, 10),
     });
 
     // merging arrays returns a union of fake.items and substitute.items so only create
