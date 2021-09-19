@@ -1,6 +1,7 @@
 import * as rfdc from 'rfdc';
 import { flatten } from 'underscore';
 import * as moment from 'moment';
+import { MerchandiseItemModel } from 'models/MerchandiseItemModel';
 import { AttendanceModel } from '../../models/AttendanceModel';
 import { EventModel } from '../../models/EventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
@@ -12,6 +13,7 @@ import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionMo
 import { OrderItemModel } from '../../models/OrderItemModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
 import { DatabaseConnection } from './DatabaseConnection';
+import { MerchFactory } from '.';
 
 export class PortalState {
   users: UserModel[] = [];
@@ -53,7 +55,7 @@ export class PortalState {
     });
   }
 
-  public createUsers(users: UserModel[]): PortalState {
+  public createUsers(...users: UserModel[]): PortalState {
     for (let u = 0; u < users.length; u += 1) {
       const user = users[u];
       user.email = user.email.toLowerCase();
@@ -71,14 +73,30 @@ export class PortalState {
     return this;
   }
 
-  public createEvents(events: EventModel[]): PortalState {
+  public createEvents(...events: EventModel[]): PortalState {
     this.events = this.events.concat(events);
     return this;
   }
 
-  public createMerch(merch: MerchandiseCollectionModel[]): PortalState {
+  public createMerchCollections(...merch: MerchandiseCollectionModel[]): PortalState {
     this.merch = this.merch.concat(merch);
     return this;
+  }
+
+  public createMerchItem(item: MerchandiseItemModel): PortalState {
+    const collectionWithItem = MerchFactory.fakeCollection({ items: [item] });
+    return this.createMerchCollections(collectionWithItem);
+  }
+
+  public createMerchItemOption(option: MerchandiseItemOptionModel): PortalState {
+    const collectionWithOption = MerchFactory.fakeCollection({
+      items: [
+        MerchFactory.fakeItem({
+          options: [option],
+        }),
+      ],
+    });
+    return this.createMerchCollections(collectionWithOption);
   }
 
   public attendEvents(users: UserModel[], events: EventModel[], includesStaff = false): PortalState {

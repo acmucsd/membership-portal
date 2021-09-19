@@ -24,10 +24,6 @@ export class UserFactory {
     return FactoryUtils.create(n, UserFactory.fake);
   }
 
-  public static with(...substitutes: Partial<UserModel>[]): UserModel[] {
-    return substitutes.map((sub) => UserModel.merge(UserFactory.fake(), sub));
-  }
-
   public static fake(substitute?: Partial<UserModel>): UserModel {
     const fake = UserModel.create({
       uuid: uuid(),

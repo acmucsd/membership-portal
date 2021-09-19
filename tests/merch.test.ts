@@ -27,8 +27,8 @@ describe('editing merch collections', () => {
     const collection = MerchFactory.fakeCollection();
 
     await new PortalState()
-      .createUsers([admin, member])
-      .createMerch([collection])
+      .createUsers(admin, member)
+      .createMerchCollections(collection)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -53,8 +53,8 @@ describe('archived merch collections', () => {
     const collection = MerchFactory.fakeCollection({ archived: true });
 
     await new PortalState()
-      .createUsers([admin, member])
-      .createMerch([collection])
+      .createUsers(admin, member)
+      .createMerchCollections(collection)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -81,8 +81,8 @@ describe('archived merch collections', () => {
     });
 
     await new PortalState()
-      .createUsers([admin, member])
-      .createMerch([collection])
+      .createUsers(admin, member)
+      .createMerchCollections(collection)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -104,8 +104,8 @@ describe('merch items with no options', () => {
     const item = MerchFactory.fakeItem({ hidden: true });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -136,8 +136,8 @@ describe('merch items with no options', () => {
     const item = MerchFactory.fakeItem({ hidden: false });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -167,8 +167,8 @@ describe('merch items with no options', () => {
     });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const params = { uuid: item.uuid };
@@ -182,12 +182,11 @@ describe('merch item edits', () => {
   test('succeeds when item fields are updated', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const collection = MerchFactory.fakeCollection();
-    const item = collection.items[0];
+    const item = MerchFactory.fakeItem();
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([collection])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -214,8 +213,8 @@ describe('merch item edits', () => {
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -248,12 +247,12 @@ describe('merch item edits', () => {
 
   test('fails when updated options have multiple types', async () => {
     const conn = await DatabaseConnection.get();
-    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     // change only one option's type to a different one
@@ -269,11 +268,10 @@ describe('merch item edits', () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
-    const collection = MerchFactory.fakeCollection({ items: [item] });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([collection])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -306,8 +304,8 @@ describe('merch item option variants', () => {
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const params = { uuid: item.uuid };
@@ -322,8 +320,8 @@ describe('merch item option variants', () => {
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: false });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -342,8 +340,8 @@ describe('merch item options', () => {
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -371,8 +369,8 @@ describe('merch item options', () => {
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const optionWithDifferentType = MerchFactory.fakeOptionWithType(faker.datatype.hexaDecimal(10));
@@ -392,8 +390,8 @@ describe('merch item options', () => {
     });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -420,8 +418,8 @@ describe('merch item options', () => {
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: false });
 
     await new PortalState()
-      .createUsers([admin])
-      .createMerch([MerchFactory.fakeCollection({ items: [item] })])
+      .createUsers(admin)
+      .createMerchItem(item)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
