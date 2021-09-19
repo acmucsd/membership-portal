@@ -143,9 +143,8 @@ export default class MerchStoreService {
 
   private static allOptionsHaveValidMetadata(options: MerchItemOption[]): boolean {
     return options
-      .every((o) => !!o.price && o.price >= 0
-      && !!o.quantity && o.quantity >= 0
-      && !!o.metadata?.position && !!o.metadata?.position && o.metadata?.value);
+      .every((o) => !!o.metadata
+      && !!o.metadata?.type && !!o.metadata?.position && o.metadata?.value);
   }
 
   private static hasMultipleOptionTypes(options: MerchItemOption[]): boolean {
