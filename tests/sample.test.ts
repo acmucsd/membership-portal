@@ -68,8 +68,8 @@ describe('sample test', () => {
     const activityTypes = activities.map((a) => a.type);
     expect(activityTypes).toStrictEqual([
       ActivityType.ACCOUNT_CREATE,
-      ActivityType.ATTEND_EVENT,
       ActivityType.ACCOUNT_CREATE,
+      ActivityType.ATTEND_EVENT,
       ActivityType.ORDER_MERCHANDISE,
       ActivityType.SUBMIT_FEEDBACK,
     ]);

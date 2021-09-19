@@ -25,7 +25,7 @@ export class MerchFactory {
   }
 
   public static fakeItem(substitute?: Partial<MerchandiseItemModel>): MerchandiseItemModel {
-    const hasVariantsEnabled = substitute.hasVariantsEnabled ?? FactoryUtils.getRandomBoolean();
+    const hasVariantsEnabled = substitute?.hasVariantsEnabled ?? FactoryUtils.getRandomBoolean();
     const fake = MerchandiseItemModel.create({
       uuid: uuid(),
       itemName: faker.datatype.hexaDecimal(10),
