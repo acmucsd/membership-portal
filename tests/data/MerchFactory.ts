@@ -36,7 +36,7 @@ export class MerchFactory {
       lifetimeLimit: FactoryUtils.getRandomNumber(6, 10),
     });
 
-    // merging arrays returns a union of fake.items and substitute.items so only create
+    // merging arrays returns a union of fake.options and substitute.options so only create
     // fake.options if the substitute doesn't provide any
     if (!substitute?.options) {
       const numOptions = hasVariantsEnabled ? FactoryUtils.getRandomNumber(3, 5) : 1;
