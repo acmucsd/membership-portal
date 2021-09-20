@@ -1,0 +1,10 @@
+{
+  "editor.codeActionsOnSave": [
+    "source.fixAll.eslint"
+  ],
+  "files.exclude": {
+    "**/.git": true,
+    "**/build": true,
+    "**/node_modules": true,
+  }
+}

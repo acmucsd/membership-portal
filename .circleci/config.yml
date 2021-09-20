@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:12.18.3
+      - image: circleci/node:14.17.6
     steps:
       - checkout
       - run:
@@ -12,7 +12,7 @@ jobs:
           command: npm run build
   lint:
     docker:
-      - image: circleci/node:12.18.3
+      - image: circleci/node:14.17.6
     steps:
       - checkout
       - restore_cache:
@@ -27,7 +27,7 @@ jobs:
           command: npm run lint
   test:
     docker:
-      - image: circleci/node:12.18.3
+      - image: circleci/node:14.17.6
         environment:
           RDS_HOST: localhost
           RDS_DATABASE: membership_portal
