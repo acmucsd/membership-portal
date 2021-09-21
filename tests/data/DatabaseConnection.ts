@@ -15,6 +15,7 @@ export class DatabaseConnection {
         password: Config.database.pass,
         database: Config.database.name,
         entities,
+        logging: false,
       });
     }
     return DatabaseConnection.conn;

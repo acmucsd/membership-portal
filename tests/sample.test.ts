@@ -36,26 +36,20 @@ describe('sample test', () => {
   test('data is persisted', async () => {
     const conn = await DatabaseConnection.get();
     const [user1, user2] = UserFactory.create(2);
-    const [event] = EventFactory.with({ attendanceCode: 'attend-me' });
-    const [affordableOption] = MerchFactory.optionsWith({
+    const event = EventFactory.fake({ attendanceCode: 'attend-me' });
+    const affordableOption = MerchFactory.fakeOption({
       price: (event.pointValue * 100) - 10,
       discountPercentage: 0,
     });
-    const merch = MerchFactory.collectionsWith({
-      items: MerchFactory.itemsWith({
-        options: [affordableOption],
-      }),
-    });
-    const feedback = FeedbackFactory.create(1);
+    const feedback = FeedbackFactory.fake();
 
     const state = new PortalState()
-      .createUsers([user1])
-      .createEvents([event])
-      .createMerch(merch)
+      .createUsers(user1, user2)
+      .createEvents(event)
+      .createMerchItemOption(affordableOption)
       .attendEvents([user1], [event], false)
-      .createUsers([user2])
       .orderMerch(user1, [{ option: affordableOption, quantity: 1 }])
-      .submitFeedback(user1, feedback);
+      .submitFeedback(user1, [feedback]);
 
     await state.write();
 
@@ -74,8 +68,8 @@ describe('sample test', () => {
     const activityTypes = activities.map((a) => a.type);
     expect(activityTypes).toStrictEqual([
       ActivityType.ACCOUNT_CREATE,
-      ActivityType.ATTEND_EVENT,
       ActivityType.ACCOUNT_CREATE,
+      ActivityType.ATTEND_EVENT,
       ActivityType.ORDER_MERCHANDISE,
       ActivityType.SUBMIT_FEEDBACK,
     ]);

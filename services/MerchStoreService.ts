@@ -4,7 +4,6 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment';
-import { MerchItemOption } from '../api/validators/MerchStoreRequests';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,
@@ -16,6 +15,7 @@ import {
   MerchCollection,
   MerchCollectionEdit,
   MerchItem,
+  MerchItemOption,
   MerchItemOptionAndQuantity,
   MerchItemEdit,
   PublicMerchItemOption,
@@ -133,12 +133,19 @@ export default class MerchStoreService {
     if (!item.hasVariantsEnabled && item.options.length > 1) {
       throw new UserError('Merch items with variants disabled cannot have multiple options');
     }
+    if (item.hasVariantsEnabled && !MerchStoreService.allOptionsHaveValidMetadata(item.options)) {
+      throw new UserError('Merch options for items with variants enabled must have valid metadata');
+    }
     if (item.hasVariantsEnabled && MerchStoreService.hasMultipleOptionTypes(item.options)) {
       throw new UserError('Merch items cannot have multiple option types');
     }
   }
 
-  private static hasMultipleOptionTypes(options: MerchItemOption[]) {
+  private static allOptionsHaveValidMetadata(options: MerchItemOption[]): boolean {
+    return options.every((o) => !!o.metadata);
+  }
+
+  private static hasMultipleOptionTypes(options: MerchItemOption[]): boolean {
     const optionTypes = new Set(options.map((option) => option.metadata.type));
     return optionTypes.size > 1;
   }
@@ -211,19 +218,12 @@ export default class MerchStoreService {
     return this.transactions.readWrite(async (txn) => {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Merch item not found');
-      if (!merchItem.hasVariantsEnabled && merchItem.options.length > 0) {
-        throw new UserError('Cannot add more than 1 option to items with variants disabled');
-      }
-
-      // Check that only the first option's type matches the option type to be added,
-      // since all other options must have same type as the first, based on prior validation.
-      const hasDifferentOptionTypeThanOtherOptions = merchItem.hasVariantsEnabled
-          && merchItem.options.length > 0
-          && merchItem.options[0].metadata.type !== option.metadata.type;
-      if (hasDifferentOptionTypeThanOtherOptions) throw new UserError('Merch item cannot have multiple option types');
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const createdOption = MerchandiseItemOptionModel.create({ ...option, item: merchItem });
+      merchItem.options.push(createdOption);
+      MerchStoreService.verifyItemHasValidOptions(merchItem);
+
       const upsertedOption = await merchItemOptionRepository.upsertMerchItemOption(createdOption);
       return upsertedOption.getPublicMerchItemOption();
     });
