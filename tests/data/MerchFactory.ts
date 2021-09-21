@@ -1,6 +1,7 @@
 import * as faker from 'faker';
 import { MerchItemOptionMetadata } from 'types';
 import { v4 as uuid } from 'uuid';
+import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
@@ -75,6 +76,18 @@ export class MerchFactory {
       ...fake,
       ...sub,
     };
+  }
+
+  public static fakeOrderPickupEvent(substitute?: Partial<OrderPickupEventModel>): OrderPickupEventModel {
+    const [start, end] = FactoryUtils.getRandomTimeInterval();
+    const fake = OrderPickupEventModel.create({
+      uuid: uuid(),
+      title: faker.datatype.hexaDecimal(10),
+      description: faker.lorem.sentences(2),
+      start,
+      end,
+    });
+    return OrderPickupEventModel.merge(fake, substitute);
   }
 
   private static createOptions(n: number): MerchandiseItemOptionModel[] {

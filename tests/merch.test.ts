@@ -71,6 +71,7 @@ describe('archived merch collections', () => {
     const conn = await DatabaseConnection.get();
     const collection = MerchFactory.fakeCollection({ archived: true });
     const option = collection.items[0].options[0];
+    const orderPickupEvent = MerchFactory.fakeOrderPickupEvent();
     const admin = UserFactory.fake({
       accessType: UserAccessType.ADMIN,
       credits: option.price,
@@ -83,11 +84,13 @@ describe('archived merch collections', () => {
     await new PortalState()
       .createUsers(admin, member)
       .createMerchCollections(collection)
+      .createOrderPickupEvents(orderPickupEvent)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
+      pickupEvent: orderPickupEvent.uuid,
     };
 
     await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, admin))

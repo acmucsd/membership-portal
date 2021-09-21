@@ -180,6 +180,7 @@ export interface PublicOrder {
   user: Uuid;
   totalCost: number;
   orderedAt: Date;
+  pickupEvent: PublicOrderPickupEvent;
   items: PublicOrderItem[];
 }
 
@@ -303,4 +304,12 @@ export interface SubmitFeedbackResponse extends ApiResponse {
 
 export interface UpdateFeedbackStatusResponse extends ApiResponse {
   feedback: PublicFeedback;
+}
+
+export interface PublicOrderPickupEvent {
+  uuid: Uuid;
+  title: string;
+  start: Date;
+  end: Date;
+  description: string;
 }
