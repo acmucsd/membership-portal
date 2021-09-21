@@ -470,7 +470,7 @@ async function seed(): Promise<void> {
   MERCH_COLLECTION_2.items = [MERCH_ITEM_3, MERCH_ITEM_4, MERCH_ITEM_5];
 
   await new PortalState()
-    .createUsers([
+    .createUsers(
       ADMIN,
       STAFF_AI,
       STAFF_GENERAL,
@@ -479,15 +479,15 @@ async function seed(): Promise<void> {
       MEMBER_SOPHOMORE,
       MEMBER_JUNIOR,
       MEMBER_SENIOR,
-    ])
-    .createEvents([
+    )
+    .createEvents(
       PAST_AI_WORKSHOP_1,
       PAST_HACK_WORKSHOP,
       PAST_ACM_SOCIAL_1,
       PAST_AI_WORKSHOP_2,
       PAST_ACM_PANEL,
       PAST_ACM_SOCIAL_2,
-    ])
+    )
     .attendEvents([
       STAFF_AI,
       STAFF_GENERAL,
@@ -528,11 +528,11 @@ async function seed(): Promise<void> {
       MEMBER_JUNIOR,
       MEMBER_SENIOR,
     ], [PAST_ACM_SOCIAL_2], true)
-    .createEvents([
+    .createEvents(
       ONGOING_ACM_SOCIAL_1,
       ONGOING_ACM_SOCIAL_2,
       ONGOING_HACK_WORKSHOP,
-    ])
+    )
     .attendEvents([
       STAFF_GENERAL,
       MEMBER_FRESHMAN,
@@ -544,15 +544,15 @@ async function seed(): Promise<void> {
       MEMBER_SOPHOMORE,
       MEMBER_JUNIOR,
     ], [ONGOING_ACM_SOCIAL_2], true)
-    .createEvents([
+    .createEvents(
       FUTURE_AI_SOCIAL,
       FUTURE_HACK_WORKSHOP_1,
       FUTURE_HACK_WORKSHOP_2,
-    ])
-    .createMerch([
+    )
+    .createMerchCollections(
       MERCH_COLLECTION_1,
       MERCH_COLLECTION_2,
-    ])
+    )
     .write();
 }
 

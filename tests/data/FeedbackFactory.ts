@@ -7,15 +7,15 @@ export class FeedbackFactory {
     return FactoryUtils.create(n, FeedbackFactory.fake);
   }
 
-  public static with(...substitutes: Partial<Feedback>[]): Feedback[] {
-    return substitutes.map((sub) => ({ ...FeedbackFactory.fake(), ...sub }));
-  }
-
-  public static fake(): Feedback {
-    return {
+  public static fake(substitute?: Partial<Feedback>): Feedback {
+    const fake = {
       title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.words(100),
       type: FeedbackFactory.randomFeedbackType(),
+    };
+    return {
+      ...fake,
+      ...substitute,
     };
   }
 

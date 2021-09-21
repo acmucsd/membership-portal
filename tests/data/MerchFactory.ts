@@ -8,6 +8,7 @@ import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionMo
 import FactoryUtils from './FactoryUtils';
 
 export class MerchFactory {
+<<<<<<< HEAD
   public static createCollections(n: number): MerchandiseCollectionModel[] {
     return FactoryUtils.create(n, MerchFactory.fakeCollection);
   }
@@ -61,6 +62,8 @@ export class MerchFactory {
     return substitutes.map((sub) => MerchFactory.fakeOrderPickupEvent(sub));
   }
 
+=======
+>>>>>>> master
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
     const fake = MerchandiseCollectionModel.create({
       uuid: uuid(),
@@ -69,34 +72,36 @@ export class MerchFactory {
       themeColorHex: faker.internet.color(),
     });
 
-    const fakeModel = MerchandiseCollectionModel.merge(fake, substitute);
-    // set the items array if substitute does not provide items, since BaseEntity.merge also merges arrays,
-    // so fakeModel.items array would have both substitute and fake items if items
-    // are created in the MerchandiseItemModel.create() call.
-    if (!fakeModel.items) fakeModel.items = MerchFactory.createItems(FactoryUtils.getRandomNumber(1, 5));
-    // explicitly set the item.collection field for all collection's items since it is required to be non-null
-    fakeModel.items.map((item) => ({ ...item, collection: fake }));
-    return fakeModel;
+    // merging arrays returns a union of fake.items and substitute.items, so only create
+    // fake.items if the substitute doesn't provide any
+    if (!substitute?.items) {
+      const numItems = FactoryUtils.getRandomNumber(1, 5);
+      fake.items = FactoryUtils.create(numItems, () => MerchFactory.fakeItem({ collection: fake }));
+    }
+    return MerchandiseCollectionModel.merge(fake, substitute);
   }
 
   public static fakeItem(substitute?: Partial<MerchandiseItemModel>): MerchandiseItemModel {
-    const hasVariantsEnabled = FactoryUtils.getRandomBoolean();
-    const numOptions = hasVariantsEnabled ? FactoryUtils.getRandomNumber(1, 5) : 1;
+    const hasVariantsEnabled = substitute?.hasVariantsEnabled ?? FactoryUtils.getRandomBoolean();
     const fake = MerchandiseItemModel.create({
       uuid: uuid(),
       itemName: faker.datatype.hexaDecimal(10),
       picture: faker.image.cats(),
       description: faker.lorem.sentences(2),
       hasVariantsEnabled,
+      monthlyLimit: FactoryUtils.getRandomNumber(1, 5),
+      lifetimeLimit: FactoryUtils.getRandomNumber(6, 10),
     });
-    const fakeModel = MerchandiseItemModel.merge(fake, substitute);
-    // set the options array if substitute does not provide options, since BaseEntity.merge also merges arrays,
-    // so fakeModel.options array would have both substitute and fake items if items
-    // are created in the MerchandiseItemModel.create() call.
-    if (!fakeModel.options) fakeModel.options = MerchFactory.createOptions(numOptions);
-    // explicitly set the option.item field for all item's options since it is required to be non-null
-    fakeModel.options.map((option) => ({ ...option, item: fakeModel }));
-    return fakeModel;
+
+    // merging arrays returns a union of fake.options and substitute.options so only create
+    // fake.options if the substitute doesn't provide any
+    if (!substitute?.options) {
+      const numOptions = hasVariantsEnabled ? FactoryUtils.getRandomNumber(3, 5) : 1;
+      fake.options = MerchFactory
+        .createOptions(numOptions)
+        .map((option) => MerchandiseItemOptionModel.merge(option, { item: fake }));
+    }
+    return MerchandiseItemModel.merge(fake, substitute);
   }
 
   public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {
@@ -110,12 +115,31 @@ export class MerchFactory {
     return MerchandiseItemOptionModel.merge(fake, substitute);
   }
 
-  public static fakeOptionMetadata(): MerchItemOptionMetadata {
-    return {
+  public static fakeOptionWithType(type: string) {
+    return MerchFactory.fakeOption({
+      metadata: MerchFactory.fakeOptionMetadata({ type }),
+    });
+  }
+
+  public static fakeOptionMetadata(substitute?: Partial<MerchItemOptionMetadata>): MerchItemOptionMetadata {
+    const fake = {
       type: faker.datatype.hexaDecimal(10),
       value: faker.datatype.hexaDecimal(10),
       position: FactoryUtils.getRandomNumber(1, 10),
     };
+    const sub = substitute ?? {};
+    return {
+      ...fake,
+      ...sub,
+    };
+  }
+
+  private static createOptions(n: number): MerchandiseItemOptionModel[] {
+    if (n === 1) return [MerchFactory.fakeOption()];
+
+    // create multiple options with consistent types
+    const type = faker.datatype.hexaDecimal(10);
+    return FactoryUtils.create(n, () => MerchFactory.fakeOptionWithType(type));
   }
 
   public static fakeOrderPickupEvent(substitute?: Partial<OrderPickupEventModel>): OrderPickupEventModel {

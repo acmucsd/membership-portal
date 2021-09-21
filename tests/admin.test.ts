@@ -20,12 +20,12 @@ describe('retroactive attendance submission', () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(3);
     const emails = users.map((user) => user.email);
-    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [event] = EventFactory.create(1);
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const event = EventFactory.fake();
 
     await new PortalState()
-      .createUsers([...users, admin])
-      .createEvents([event])
+      .createUsers(...users, admin)
+      .createEvents(event)
       .write();
 
     const userController = ControllerFactory.user(conn);
@@ -55,17 +55,14 @@ describe('retroactive attendance submission', () => {
 
   test('does not log activity, attendance, and points for users who already attended', async () => {
     const conn = await DatabaseConnection.get();
-    const [user] = UserFactory.create(1);
-    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [event] = EventFactory.create(1);
+    const member = UserFactory.fake();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const event = EventFactory.fake();
 
     await new PortalState()
-      // Create users at beginning of time to ensure that account creation time does not
-      // end up after event attendance time, causing the order guarantee for activities
-      // below to fail.
-      .createUsers([user, admin])
-      .createEvents([event])
-      .attendEvents([user], [event])
+      .createUsers(member, admin)
+      .createEvents(event)
+      .attendEvents([member], [event])
       .write();
 
     const adminController = ControllerFactory.admin(conn);
@@ -73,19 +70,19 @@ describe('retroactive attendance submission', () => {
     const attendanceController = ControllerFactory.attendance(conn);
 
     await adminController.submitAttendanceForUsers(
-      { users: [user.email], event: event.uuid },
+      { users: [member.email], event: event.uuid },
       admin,
     );
 
-    const userResponse = await userController.getUser({ uuid: user.uuid }, admin);
-    expect(userResponse.user.points).toEqual(user.points);
+    const userResponse = await userController.getUser({ uuid: member.uuid }, admin);
+    expect(userResponse.user.points).toEqual(member.points);
 
-    const attendanceResponse = await attendanceController.getAttendancesForCurrentUser(user);
+    const attendanceResponse = await attendanceController.getAttendancesForCurrentUser(member);
     expect(attendanceResponse.attendances).toHaveLength(1);
     expect(attendanceResponse.attendances[0].event.uuid).toEqual(event.uuid);
     expect(attendanceResponse.attendances[0].asStaff).toEqual(false);
 
-    const activityResponse = await userController.getCurrentUserActivityStream(user);
+    const activityResponse = await userController.getCurrentUserActivityStream(member);
     expect(activityResponse.activity).toHaveLength(2);
     expect(activityResponse.activity[1].description).toBeNull();
     expect(activityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
@@ -94,36 +91,39 @@ describe('retroactive attendance submission', () => {
 
   test('logs proper activity and point rewards for staff attendance', async () => {
     const conn = await DatabaseConnection.get();
-    const [user] = UserFactory.create(1);
-    const [staffUser] = UserFactory.with({ accessType: UserAccessType.STAFF });
-    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [event] = EventFactory.with({ requiresStaff: true, staffPointBonus: 10 });
+    const member = UserFactory.fake();
+    const staff = UserFactory.fake({ accessType: UserAccessType.STAFF });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const event = EventFactory.fake({
+      requiresStaff: true,
+      staffPointBonus: 10,
+    });
 
     await new PortalState()
-      .createUsers([user, staffUser, admin])
-      .createEvents([event])
+      .createUsers(member, staff, admin)
+      .createEvents(event)
       .write();
 
     const adminController = ControllerFactory.admin(conn);
     const userController = ControllerFactory.user(conn);
     const request: SubmitAttendanceForUsersRequest = {
-      users: [user.email, staffUser.email],
+      users: [member.email, staff.email],
       event: event.uuid,
       asStaff: true,
     };
 
     await adminController.submitAttendanceForUsers(request, admin);
 
-    const userResponse = await userController.getUser({ uuid: user.uuid }, admin);
+    const userResponse = await userController.getUser({ uuid: member.uuid }, admin);
     expect(userResponse.user.points).toEqual(event.pointValue);
 
-    const staffUserResponse = await userController.getUser({ uuid: staffUser.uuid }, admin);
+    const staffUserResponse = await userController.getUser({ uuid: staff.uuid }, admin);
     expect(staffUserResponse.user.points).toEqual(event.pointValue + event.staffPointBonus);
 
-    const activityResponse = await userController.getCurrentUserActivityStream(user);
+    const activityResponse = await userController.getCurrentUserActivityStream(member);
     expect(activityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT);
 
-    const staffActivityResponse = await userController.getCurrentUserActivityStream(staffUser);
+    const staffActivityResponse = await userController.getCurrentUserActivityStream(staff);
     expect(staffActivityResponse.activity[1].type).toEqual(ActivityType.ATTEND_EVENT_AS_STAFF);
   });
 });
@@ -133,10 +133,10 @@ describe('email retrieval', () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(5);
     const emails = users.map((user) => user.email.toLowerCase());
-    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
     await new PortalState()
-      .createUsers([...users, admin])
+      .createUsers(...users, admin)
       .write();
 
     const response = await ControllerFactory.admin(conn).getAllEmails(admin);
@@ -149,10 +149,10 @@ describe('bonus points submission', () => {
     const conn = await DatabaseConnection.get();
     const [userNotGettingBonus, ...users] = UserFactory.create(5);
     const emails = users.map((user) => user.email.toLowerCase());
-    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
     await new PortalState()
-      .createUsers([...users, userNotGettingBonus, admin])
+      .createUsers(...users, userNotGettingBonus, admin)
       .write();
 
     const bonus = {
