@@ -132,7 +132,7 @@ export class PortalState {
     return this;
   }
 
-  public createOrderPickupEvents(pickupEvents: OrderPickupEventModel[]): PortalState {
+  public createOrderPickupEvents(...pickupEvents: OrderPickupEventModel[]): PortalState {
     this.orderPickupEvents = this.orderPickupEvents.concat(pickupEvents);
     return this;
   }

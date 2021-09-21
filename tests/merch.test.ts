@@ -71,35 +71,26 @@ describe('archived merch collections', () => {
     const conn = await DatabaseConnection.get();
     const collection = MerchFactory.fakeCollection({ archived: true });
     const option = collection.items[0].options[0];
+    const orderPickupEvent = MerchFactory.fakeOrderPickupEvent();
     const admin = UserFactory.fake({
       accessType: UserAccessType.ADMIN,
       credits: option.price,
     });
-<<<<<<< HEAD
-    const orderPickupEvent = MerchFactory.fakeOrderPickupEvent();
-    const [admin] = UserFactory.with({ accessType: UserAccessType.ADMIN });
-    const [user] = UserFactory.with({
-=======
     const member = UserFactory.fake({
->>>>>>> master
       accessType: UserAccessType.STANDARD,
       credits: option.price,
     });
 
     await new PortalState()
-<<<<<<< HEAD
-      .createUsers([admin, user])
-      .createMerch([collection])
-      .createOrderPickupEvents([orderPickupEvent])
-=======
       .createUsers(admin, member)
       .createMerchCollections(collection)
->>>>>>> master
+      .createOrderPickupEvents(orderPickupEvent)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
+      pickupEvent: orderPickupEvent.uuid,
     };
 
     await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, admin))
@@ -138,20 +129,8 @@ describe('merch items with no options', () => {
       await merchStoreController.createMerchItemOption(itemParams, createMerchItemOptionRequest, admin);
     }
 
-<<<<<<< HEAD
-    await expect(merchStoreController.placeMerchOrder(
-      {
-        order: [
-          { option: option.uuid, quantity: 1 },
-        ],
-        pickupEvent: orderPickupEvent.uuid,
-      },
-      user,
-    )).rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
-=======
     getMerchItemResponse = await merchStoreController.getOneMerchItem(itemParams, admin);
     expect(getMerchItemResponse.item.options).toHaveLength(item.options.length);
->>>>>>> master
   });
 
   test('cannot delete all item options if the item is visible', async () => {

@@ -37,36 +37,21 @@ describe('sample test', () => {
     const conn = await DatabaseConnection.get();
     const [user1, user2] = UserFactory.create(2);
     const event = EventFactory.fake({ attendanceCode: 'attend-me' });
-    const affordableOption = MerchFactory.fakeOption({
+    const affordableMerchOption = MerchFactory.fakeOption({
       price: (event.pointValue * 100) - 10,
       discountPercentage: 0,
     });
-<<<<<<< HEAD
-    const merch = MerchFactory.collectionsWith({
-      items: MerchFactory.itemsWith({
-        options: [affordableOption],
-      }),
-    });
-    const merchPickupEvent = MerchFactory.fakeOrderPickupEvent();
-    const feedback = FeedbackFactory.create(1);
-=======
+    const orderPickupEvent = MerchFactory.fakeOrderPickupEvent();
     const feedback = FeedbackFactory.fake();
->>>>>>> master
 
     const state = new PortalState()
       .createUsers(user1, user2)
       .createEvents(event)
-      .createMerchItemOption(affordableOption)
+      .createMerchItemOption(affordableMerchOption)
       .attendEvents([user1], [event], false)
-<<<<<<< HEAD
-      .createUsers([user2])
-      .createOrderPickupEvents([merchPickupEvent])
-      .orderMerch(user1, [{ option: affordableOption, quantity: 1 }], merchPickupEvent)
-      .submitFeedback(user1, feedback);
-=======
-      .orderMerch(user1, [{ option: affordableOption, quantity: 1 }])
+      .createOrderPickupEvents(orderPickupEvent)
+      .orderMerch(user1, [{ option: affordableMerchOption, quantity: 1 }], orderPickupEvent)
       .submitFeedback(user1, [feedback]);
->>>>>>> master
 
     await state.write();
 
@@ -98,9 +83,9 @@ describe('sample test', () => {
 
     const [order] = await conn.manager.find(OrderModel, { relations: ['user', 'items'] });
     expect(order.user.uuid).toStrictEqual(user1.uuid);
-    expect(order.totalCost).toStrictEqual(affordableOption.price);
+    expect(order.totalCost).toStrictEqual(affordableMerchOption.price);
     expect(order.items).toHaveLength(1);
-    expect(order.items[0].option).toStrictEqual(affordableOption);
+    expect(order.items[0].option).toStrictEqual(affordableMerchOption);
     expect(user1.credits).toStrictEqual(10);
   });
 });

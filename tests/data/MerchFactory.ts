@@ -8,62 +8,6 @@ import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionMo
 import FactoryUtils from './FactoryUtils';
 
 export class MerchFactory {
-<<<<<<< HEAD
-  public static createCollections(n: number): MerchandiseCollectionModel[] {
-    return FactoryUtils.create(n, MerchFactory.fakeCollection);
-  }
-
-  public static createItems(n: number): MerchandiseItemModel[] {
-    return FactoryUtils.create(n, MerchFactory.fakeItem);
-  }
-
-  public static createOptions(n: number): MerchandiseItemOptionModel[] {
-    const options = FactoryUtils.create(n, MerchFactory.fakeOption);
-    if (n === 1) return options;
-
-    const type = faker.datatype.hexaDecimal(10);
-    return options.map((o) => {
-      [o.metadata] = MerchFactory.optionMetadataWith({ type });
-      return o;
-    });
-  }
-
-  public static createOptionMetadata(n: number): MerchItemOptionMetadata[] {
-    // metadata type has to be the same across all options by store behavior
-    const type = faker.datatype.hexaDecimal(10);
-    const substitutes = Array(n).fill({ type });
-    return MerchFactory.optionMetadataWith(...substitutes);
-  }
-
-  public static createOrderPickupEvents(n: number): OrderPickupEventModel[] {
-    return FactoryUtils.create(n, MerchFactory.fakeOrderPickupEvent);
-  }
-
-  public static collectionsWith(...substitutes: Partial<MerchandiseCollectionModel>[]): MerchandiseCollectionModel[] {
-    return substitutes.map((sub) => MerchFactory.fakeCollection(sub));
-  }
-
-  public static itemsWith(...substitutes: Partial<MerchandiseItemModel>[]): MerchandiseItemModel[] {
-    return substitutes.map((sub) => MerchFactory.fakeItem(sub));
-  }
-
-  public static optionsWith(...substitutes: Partial<MerchandiseItemOptionModel>[]): MerchandiseItemOptionModel[] {
-    return substitutes.map((sub) => MerchFactory.fakeOption(sub));
-  }
-
-  public static optionMetadataWith(...substitutes: Partial<MerchItemOptionMetadata>[]): MerchItemOptionMetadata[] {
-    return substitutes.map((sub) => {
-      const metadata = MerchFactory.fakeOptionMetadata();
-      return { ...metadata, ...sub };
-    });
-  }
-
-  public static orderPickupEventsWith(...substitutes: Partial<OrderPickupEventModel>[]): OrderPickupEventModel[] {
-    return substitutes.map((sub) => MerchFactory.fakeOrderPickupEvent(sub));
-  }
-
-=======
->>>>>>> master
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
     const fake = MerchandiseCollectionModel.create({
       uuid: uuid(),
@@ -134,14 +78,6 @@ export class MerchFactory {
     };
   }
 
-  private static createOptions(n: number): MerchandiseItemOptionModel[] {
-    if (n === 1) return [MerchFactory.fakeOption()];
-
-    // create multiple options with consistent types
-    const type = faker.datatype.hexaDecimal(10);
-    return FactoryUtils.create(n, () => MerchFactory.fakeOptionWithType(type));
-  }
-
   public static fakeOrderPickupEvent(substitute?: Partial<OrderPickupEventModel>): OrderPickupEventModel {
     const [start, end] = FactoryUtils.getRandomTimeInterval();
     const fake = OrderPickupEventModel.create({
@@ -152,6 +88,14 @@ export class MerchFactory {
       end,
     });
     return OrderPickupEventModel.merge(fake, substitute);
+  }
+
+  private static createOptions(n: number): MerchandiseItemOptionModel[] {
+    if (n === 1) return [MerchFactory.fakeOption()];
+
+    // create multiple options with consistent types
+    const type = faker.datatype.hexaDecimal(10);
+    return FactoryUtils.create(n, () => MerchFactory.fakeOptionWithType(type));
   }
 
   private static randomPrice(): number {
