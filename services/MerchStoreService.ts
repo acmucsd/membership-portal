@@ -292,7 +292,7 @@ export default class MerchStoreService {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
 
-      const totalCost = await this.verifyOrder(originalOrder,user);
+      const totalCost = await this.verifyOrder(originalOrder, user);
 
       const merchOrderRepository = Repositories.merchOrder(txn);
 
@@ -348,8 +348,8 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
-  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<number>{
-    const [verified,totalCost] = await this.transactions.readWrite(async (txn) => {
+  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<number> {
+    const totalOrderCost = await this.transactions.readWrite(async (txn) => {
       await user.reload();
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
@@ -410,10 +410,10 @@ export default class MerchStoreService {
       }, 0);
       if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
 
-      return [true,totalCost];
+      return totalCost;
     });
 
-    return totalCost;
+    return totalOrderCost;
   }
 
   public async updateOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[]): Promise<void> {

@@ -14,6 +14,7 @@ import {
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
+  ApiResponse,
   GetOneMerchCollectionResponse,
   GetAllMerchCollectionsResponse,
   CreateMerchCollectionResponse,
@@ -26,7 +27,6 @@ import {
   GetOneMerchOrderResponse,
   GetAllMerchOrdersResponse,
   PlaceMerchOrderResponse,
-  VerifyMerchOrderResponse,
   EditMerchOrderResponse,
   CreateMerchItemOptionResponse,
   DeleteMerchItemOptionResponse,
@@ -181,7 +181,7 @@ export class MerchStoreController {
 
   @Post('/order/verification')
   async verifyMerchOrder(@Body() verifyOrderRequest: VerifyMerchOrderRequest,
-    @AuthenticatedUser() user: UserModel): Promise<VerifyMerchOrderResponse> {
+    @AuthenticatedUser() user: UserModel): Promise<ApiResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const originalOrder = verifyOrderRequest.order.filter((oi) => oi.quantity > 0);
     const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
@@ -189,9 +189,9 @@ export class MerchStoreController {
     const numUniqueUuids = (new Set(originalOrder.map((oi) => oi.option))).size;
     if (originalOrder.length !== numUniqueUuids) throw new BadRequestError('There are duplicate items in this order');
 
-    const totalCost = await this.merchStoreService.verifyOrder(originalOrder,user);
+    await this.merchStoreService.verifyOrder(originalOrder, user);
 
-    return { error: null, totalCost };
+    return { error: null };
   }
 
   @Patch('/order')

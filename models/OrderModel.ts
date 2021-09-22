@@ -41,10 +41,8 @@ export class OrderModel extends BaseEntity {
       items: this.items.map((oi) => oi.getPublicOrderItem()),
     };
   }
-  public getItemsAndQuantity(): MerchItemOptionAndQuantity[] {
-    
 
-    
-    return []
+  public getItemsAndQuantity(): MerchItemOptionAndQuantity[] {
+    return [];
   }
 }
