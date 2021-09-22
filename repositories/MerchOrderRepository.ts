@@ -1,8 +1,9 @@
-import { EntityRepository } from 'typeorm';
+import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { Uuid } from '../types';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import { OrderItemModel } from '../models/OrderItemModel';
+import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(OrderModel)
@@ -60,5 +61,42 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
   public async hasOptionBeenOrdered(option: Uuid): Promise<boolean> {
     const count = await this.repository.count({ where: { option } });
     return count > 0;
+  }
+}
+
+@EntityRepository(OrderPickupEventModel)
+export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventModel> {
+  public async getPastPickupEvents(): Promise<OrderPickupEventModel[]> {
+    return this.getBaseFindQuery()
+      .where('"end" < :now')
+      .setParameter('now', new Date())
+      .getMany();
+  }
+
+  public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
+    return this.getBaseFindQuery()
+      .where('"end" >= :now')
+      .setParameter('now', new Date())
+      .getMany();
+  }
+
+  public async findByUuid(uuid: Uuid): Promise<OrderPickupEventModel> {
+    return this.getBaseFindQuery().where({ uuid }).getOne();
+  }
+
+  public async upsertPickupEvent(pickupEvent: OrderPickupEventModel,
+    changes?: Partial<OrderPickupEventModel>): Promise<OrderPickupEventModel> {
+    if (changes) pickupEvent = OrderPickupEventModel.merge(pickupEvent, changes);
+    return this.repository.save(pickupEvent);
+  }
+
+  public async deletePickupEvent(pickupEvent: OrderPickupEventModel): Promise<OrderPickupEventModel> {
+    return this.repository.remove(pickupEvent);
+  }
+
+  private getBaseFindQuery(): SelectQueryBuilder<OrderPickupEventModel> {
+    return this.repository
+      .createQueryBuilder('orderPickupEvent')
+      .leftJoinAndSelect('orderPickupEvent.orders', 'orders');
   }
 }

@@ -312,4 +312,5 @@ export interface PublicOrderPickupEvent {
   start: Date;
   end: Date;
   description: string;
+  orders?: PublicOrder[];
 }

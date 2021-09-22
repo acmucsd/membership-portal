@@ -3,7 +3,7 @@ import { UserRepository } from './UserRepository';
 import { FeedbackRepository } from './FeedbackRepository';
 import { AttendanceRepository } from './AttendanceRepository';
 import { EventRepository } from './EventRepository';
-import { MerchOrderRepository, OrderItemRepository } from './MerchOrderRepository';
+import { MerchOrderRepository, OrderItemRepository, OrderPickupEventRepository } from './MerchOrderRepository';
 import { MerchCollectionRepository, MerchItemRepository, MerchItemOptionRepository } from './MerchStoreRepository';
 import { ActivityRepository } from './ActivityRepository';
 import { LeaderboardRepository } from './LeaderboardRepository';
@@ -31,6 +31,10 @@ export default class Repositories {
 
   public static merchOrderItem(transactionalEntityManager: EntityManager): OrderItemRepository {
     return transactionalEntityManager.getCustomRepository(OrderItemRepository);
+  }
+
+  public static merchOrderPickupEvent(transactionalEntityManager: EntityManager): OrderPickupEventRepository {
+    return transactionalEntityManager.getCustomRepository(OrderPickupEventRepository);
   }
 
   public static merchStoreCollection(transactionalEntityManager: EntityManager): MerchCollectionRepository {

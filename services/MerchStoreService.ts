@@ -19,6 +19,9 @@ import {
   MerchItemOptionAndQuantity,
   MerchItemEdit,
   PublicMerchItemOption,
+  PublicOrderPickupEvent,
+  OrderPickupEvent,
+  OrderPickupEventEdit,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
@@ -28,6 +31,7 @@ import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
+import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 
 @Service()
 export default class MerchStoreService {
@@ -456,5 +460,54 @@ export default class MerchStoreService {
       requestedQuantitiesByMerchItem.set(item, requestedQuantitiesByMerchItem.get(item) + quantityRequested);
     }
     return requestedQuantitiesByMerchItem;
+  }
+
+  public async getPastPickupEvents(canSeeOrders = false): Promise<PublicOrderPickupEvent[]> {
+    const pickupEvents = await this.transactions.readOnly(async (txn) => Repositories
+      .merchOrderPickupEvent(txn)
+      .getPastPickupEvents());
+    return pickupEvents.map((e) => e.getPublicOrderPickupEvent(canSeeOrders));
+  }
+
+  public async getFuturePickupEvents(canSeeOrders = false): Promise<PublicOrderPickupEvent[]> {
+    const pickupEvents = await this.transactions.readOnly(async (txn) => Repositories
+      .merchOrderPickupEvent(txn)
+      .getFuturePickupEvents());
+    return pickupEvents.map((e) => e.getPublicOrderPickupEvent(canSeeOrders));
+  }
+
+  public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<PublicOrderPickupEvent> {
+    return this.transactions.readWrite(async (txn) => {
+      if (pickupEvent.start >= pickupEvent.end) {
+        throw new UserError('Order pickup event start time must come before the end time');
+      }
+      const createdPickupEvent = await Repositories.merchOrderPickupEvent(txn)
+        .upsertPickupEvent(OrderPickupEventModel.create(pickupEvent));
+      return createdPickupEvent.getPublicOrderPickupEvent();
+    });
+  }
+
+  public async editOrderPickupEvent(uuid: Uuid, changes: OrderPickupEventEdit): Promise<PublicOrderPickupEvent> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
+      const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
+      const updatedPickupEvent = OrderPickupEventModel.merge(pickupEvent, changes);
+      if (updatedPickupEvent.start >= updatedPickupEvent.end) {
+        throw new UserError('Order pickup event start time must come before the end time');
+      }
+      const upsertedPickupEvent = await orderPickupEventRepository.upsertPickupEvent(updatedPickupEvent);
+      return upsertedPickupEvent.getPublicOrderPickupEvent();
+    });
+  }
+
+  public async deleteOrderPickupEvent(uuid: Uuid): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
+      const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
+      if (pickupEvent.orders.length > 0) {
+        throw new UserError('Cannot delete an order pickup event that has orders assigned to it');
+      }
+      await orderPickupEventRepository.deletePickupEvent(pickupEvent);
+    });
   }
 }
