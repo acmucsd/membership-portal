@@ -233,6 +233,10 @@ export interface PlaceMerchOrderResponse extends ApiResponse {
   order: PublicOrder;
 }
 
+export interface VerifyMerchOrderResponse extends ApiResponse {
+  totalCost: number;
+}
+
 export interface EditMerchOrderResponse extends ApiResponse {}
 
 // USER

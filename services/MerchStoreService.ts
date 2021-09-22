@@ -291,6 +291,68 @@ export default class MerchStoreService {
       await user.reload();
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
+
+      const totalCost = await this.verifyOrder(originalOrder,user);
+
+      const merchOrderRepository = Repositories.merchOrder(txn);
+
+      // if all checks pass, the order is placed
+      const createdOrder = await merchOrderRepository.createMerchOrder(OrderModel.create({
+        user,
+        totalCost,
+        items: flatten(originalOrder.map((optionAndQuantity) => {
+          const option = itemOptions.get(optionAndQuantity.option);
+          const quantityRequested = optionAndQuantity.quantity;
+          return Array(quantityRequested).fill(OrderItemModel.create({
+            option,
+            salePriceAtPurchase: option.getPrice(),
+            discountPercentageAtPurchase: option.discountPercentage,
+          }));
+        })),
+      }));
+
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity({
+        user,
+        type: ActivityType.ORDER_MERCHANDISE,
+        description: `Order ${createdOrder.uuid}`,
+      });
+
+      await Promise.all(originalOrder.map(async (optionAndQuantity) => {
+        const option = itemOptions.get(optionAndQuantity.option);
+        const updatedQuantity = option.quantity - optionAndQuantity.quantity;
+        return merchItemOptionRepository.upsertMerchItemOption(option, { quantity: updatedQuantity });
+      }));
+
+      const userRepository = Repositories.user(txn);
+      userRepository.upsertUser(user, { credits: user.credits - totalCost });
+
+      return [createdOrder, itemOptions];
+    });
+
+    const orderConfirmation = {
+      items: originalOrder.map((oi) => {
+        const option = merchItemOptions.get(oi.option);
+        const { item } = option;
+        return {
+          ...item,
+          quantityRequested: oi.quantity,
+          salePrice: option.getPrice(),
+          total: oi.quantity * option.getPrice(),
+        };
+      }),
+      totalCost: order.totalCost,
+    };
+    this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
+
+    return order.getPublicOrder();
+  }
+
+  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<number>{
+    const [verified,totalCost] = await this.transactions.readWrite(async (txn) => {
+      await user.reload();
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
       if (itemOptions.size !== originalOrder.length) {
         const requestedItems = originalOrder.map((oi) => oi.option);
         const foundItems = Array.from(itemOptions.values())
@@ -348,56 +410,10 @@ export default class MerchStoreService {
       }, 0);
       if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
 
-      // if all checks pass, the order is placed
-      const createdOrder = await merchOrderRepository.createMerchOrder(OrderModel.create({
-        user,
-        totalCost,
-        items: flatten(originalOrder.map((optionAndQuantity) => {
-          const option = itemOptions.get(optionAndQuantity.option);
-          const quantityRequested = optionAndQuantity.quantity;
-          return Array(quantityRequested).fill(OrderItemModel.create({
-            option,
-            salePriceAtPurchase: option.getPrice(),
-            discountPercentageAtPurchase: option.discountPercentage,
-          }));
-        })),
-      }));
-
-      const activityRepository = Repositories.activity(txn);
-      await activityRepository.logActivity({
-        user,
-        type: ActivityType.ORDER_MERCHANDISE,
-        description: `Order ${createdOrder.uuid}`,
-      });
-
-      await Promise.all(originalOrder.map(async (optionAndQuantity) => {
-        const option = itemOptions.get(optionAndQuantity.option);
-        const updatedQuantity = option.quantity - optionAndQuantity.quantity;
-        return merchItemOptionRepository.upsertMerchItemOption(option, { quantity: updatedQuantity });
-      }));
-
-      const userRepository = Repositories.user(txn);
-      userRepository.upsertUser(user, { credits: user.credits - totalCost });
-
-      return [createdOrder, itemOptions];
+      return [true,totalCost];
     });
 
-    const orderConfirmation = {
-      items: originalOrder.map((oi) => {
-        const option = merchItemOptions.get(oi.option);
-        const { item } = option;
-        return {
-          ...item,
-          quantityRequested: oi.quantity,
-          salePrice: option.getPrice(),
-          total: oi.quantity * option.getPrice(),
-        };
-      }),
-      totalCost: order.totalCost,
-    };
-    this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
-
-    return order.getPublicOrder();
+    return totalCost;
   }
 
   public async updateOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[]): Promise<void> {

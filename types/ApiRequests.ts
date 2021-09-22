@@ -176,6 +176,10 @@ export interface PlaceMerchOrderRequest {
   order: MerchItemOptionAndQuantity[];
 }
 
+export interface VerifyMerchOrderRequest {
+  order: MerchItemOptionAndQuantity[];
+}
+
 export interface FulfillMerchOrderRequest {
   items: OrderItemFulfillmentUpdate[];
 }

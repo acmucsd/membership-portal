@@ -231,6 +231,13 @@ export class PlaceMerchOrderRequest implements IPlaceMerchOrderRequest {
   order: MerchItemOptionAndQuantity[];
 }
 
+export class VerifyMerchOrderRequest implements IPlaceMerchOrderRequest {
+  @Type(() => MerchItemOptionAndQuantity)
+  @ValidateNested()
+  @IsDefined()
+  order: MerchItemOptionAndQuantity[];
+}
+
 export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {
   @Type(() => OrderItemFulfillmentUpdate)
   @ValidateNested()
