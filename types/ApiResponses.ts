@@ -314,3 +314,17 @@ export interface PublicOrderPickupEvent {
   description: string;
   orders?: PublicOrder[];
 }
+
+export interface GetOrderPickupEventsResponse extends ApiResponse {
+  pickupEvents: PublicOrderPickupEvent[];
+}
+
+export interface CreateOrderPickupEventResponse extends ApiResponse {
+  pickupEvent: PublicOrderPickupEvent;
+}
+
+export interface EditOrderPickupEventResponse extends ApiResponse {
+  pickupEvent: PublicOrderPickupEvent;
+}
+
+export interface DeleteOrderPickupEventResponse extends ApiResponse {}

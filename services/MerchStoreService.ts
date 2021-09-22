@@ -487,7 +487,7 @@ export default class MerchStoreService {
     });
   }
 
-  public async editOrderPickupEvent(uuid: Uuid, changes: OrderPickupEventEdit): Promise<PublicOrderPickupEvent> {
+  public async editPickupEvent(uuid: Uuid, changes: OrderPickupEventEdit): Promise<PublicOrderPickupEvent> {
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
@@ -500,7 +500,7 @@ export default class MerchStoreService {
     });
   }
 
-  public async deleteOrderPickupEvent(uuid: Uuid): Promise<void> {
+  public async deletePickupEvent(uuid: Uuid): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);

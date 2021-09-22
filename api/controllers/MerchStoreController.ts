@@ -29,6 +29,9 @@ import {
   EditMerchOrderResponse,
   CreateMerchItemOptionResponse,
   DeleteMerchItemOptionResponse,
+  CreateOrderPickupEventResponse,
+  GetOrderPickupEventsResponse,
+  DeleteOrderPickupEventResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -42,6 +45,8 @@ import {
   PlaceMerchOrderRequest,
   FulfillMerchOrderRequest,
   CreateMerchItemOptionRequest,
+  CreateOrderPickupEventRequest,
+  EditOrderPickupEventRequest,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
 
@@ -186,6 +191,46 @@ export class MerchStoreController {
       throw new BadRequestError('There are duplicate order items');
     }
     await this.merchStoreService.updateOrderItems(fulfillOrderRequest.items);
+    return { error: null };
+  }
+
+  @Get('/pickupEvent/past')
+  async getPastPickupEvents(@AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventsResponse> {
+    const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
+    const pickupEvents = await this.merchStoreService.getPastPickupEvents(canSeePickupEventOrders);
+    return { error: null, pickupEvents };
+  }
+
+  @Get('/pickupEvent/future')
+  async getFuturePickupEvents(@AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventsResponse> {
+    const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
+    const pickupEvents = await this.merchStoreService.getFuturePickupEvents(canSeePickupEventOrders);
+    return { error: null, pickupEvents };
+  }
+
+  @Post('/pickupEvent')
+  async createPickupEvent(@Body() createOrderPickupEventRequest: CreateOrderPickupEventRequest,
+    @AuthenticatedUser() user: UserModel): Promise<CreateOrderPickupEventResponse> {
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
+    const pickupEvent = await this.merchStoreService.createPickupEvent(createOrderPickupEventRequest.pickupEvent);
+    return { error: null, pickupEvent };
+  }
+
+  @Patch('/pickupEvent/:uuid')
+  async editPickupEvent(@Params() params: UuidParam,
+    @Body() editOrderPickupEventRequest: EditOrderPickupEventRequest,
+    @AuthenticatedUser() user: UserModel): Promise<CreateOrderPickupEventResponse> {
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
+    const pickupEvent = await this.merchStoreService.editPickupEvent(params.uuid,
+      editOrderPickupEventRequest.pickupEvent);
+    return { error: null, pickupEvent };
+  }
+
+  @Delete('/pickupEvent/:uuid')
+  async deletePickupEvent(@Params() params: UuidParam,
+    @AuthenticatedUser() user: UserModel): Promise<DeleteOrderPickupEventResponse> {
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
+    await this.merchStoreService.deletePickupEvent(params.uuid);
     return { error: null };
   }
 }
