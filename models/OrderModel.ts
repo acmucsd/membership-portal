@@ -42,7 +42,4 @@ export class OrderModel extends BaseEntity {
     };
   }
 
-  public getItemsAndQuantity(): MerchItemOptionAndQuantity[] {
-    return [];
-  }
 }

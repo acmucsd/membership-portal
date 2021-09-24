@@ -14,7 +14,6 @@ import {
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
-  ApiResponse,
   GetOneMerchCollectionResponse,
   GetAllMerchCollectionsResponse,
   CreateMerchCollectionResponse,
@@ -27,9 +26,11 @@ import {
   GetOneMerchOrderResponse,
   GetAllMerchOrdersResponse,
   PlaceMerchOrderResponse,
+  VerifyMerchOrderResponse,
   EditMerchOrderResponse,
   CreateMerchItemOptionResponse,
   DeleteMerchItemOptionResponse,
+  MerchItemOptionAndQuantity,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -169,25 +170,18 @@ export class MerchStoreController {
   @Post('/order')
   async placeMerchOrder(@Body() placeOrderRequest: PlaceMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<PlaceMerchOrderResponse> {
-    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const originalOrder = placeOrderRequest.order.filter((oi) => oi.quantity > 0);
-    const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
-    if (orderIsEmpty) throw new UserError('There are no items in this order');
-    const numUniqueUuids = (new Set(originalOrder.map((oi) => oi.option))).size;
-    if (originalOrder.length !== numUniqueUuids) throw new BadRequestError('There are duplicate items in this order');
+    
+    const originalOrder = this.verifyMerchOrderRequest(placeOrderRequest.order,user);
+
     const order = await this.merchStoreService.placeOrder(originalOrder, user);
     return { error: null, order };
   }
 
   @Post('/order/verification')
   async verifyMerchOrder(@Body() verifyOrderRequest: VerifyMerchOrderRequest,
-    @AuthenticatedUser() user: UserModel): Promise<ApiResponse> {
-    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const originalOrder = verifyOrderRequest.order.filter((oi) => oi.quantity > 0);
-    const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
-    if (orderIsEmpty) throw new UserError('There are no items in this order');
-    const numUniqueUuids = (new Set(originalOrder.map((oi) => oi.option))).size;
-    if (originalOrder.length !== numUniqueUuids) throw new BadRequestError('There are duplicate items in this order');
+    @AuthenticatedUser() user: UserModel): Promise<VerifyMerchOrderResponse> {
+
+    const originalOrder = this.verifyMerchOrderRequest(verifyOrderRequest.order,user);
 
     await this.merchStoreService.verifyOrder(originalOrder, user);
 
@@ -204,5 +198,16 @@ export class MerchStoreController {
     }
     await this.merchStoreService.updateOrderItems(fulfillOrderRequest.items);
     return { error: null };
+  }
+
+  private verifyMerchOrderRequest(orderRequest:MerchItemOptionAndQuantity[], user:UserModel):MerchItemOptionAndQuantity[]{
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
+    const originalOrder = orderRequest.filter((oi) => oi.quantity > 0);
+    const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
+    if (orderIsEmpty) throw new UserError('There are no items in this order');
+    const numUniqueUuids = (new Set(originalOrder.map((oi) => oi.option))).size;
+    if (originalOrder.length !== numUniqueUuids) throw new BadRequestError('There are duplicate items in this order');
+
+    return originalOrder;
   }
 }

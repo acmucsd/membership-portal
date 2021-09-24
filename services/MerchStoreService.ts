@@ -349,7 +349,7 @@ export default class MerchStoreService {
   }
 
   public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<number> {
-    const totalOrderCost = await this.transactions.readWrite(async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       await user.reload();
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
@@ -412,8 +412,6 @@ export default class MerchStoreService {
 
       return totalCost;
     });
-
-    return totalOrderCost;
   }
 
   public async updateOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[]): Promise<void> {
