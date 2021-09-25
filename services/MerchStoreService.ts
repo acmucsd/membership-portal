@@ -292,7 +292,9 @@ export default class MerchStoreService {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
 
-      const totalCost = await this.verifyOrder(originalOrder, user);
+      await this.verifyOrder(originalOrder, user);
+
+      const totalCost = this.getTotalCost(originalOrder,itemOptions);
 
       const merchOrderRepository = Repositories.merchOrder(txn);
 
@@ -403,11 +405,7 @@ export default class MerchStoreService {
       }
 
       // checks that the user has enough credits to place order
-      const totalCost = originalOrder.reduce((sum, o) => {
-        const option = itemOptions.get(o.option);
-        const quantityRequested = o.quantity;
-        return sum + (option.getPrice() * quantityRequested);
-      }, 0);
+      const totalCost = this.getTotalCost(originalOrder,itemOptions);
       if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
 
       return totalCost;
@@ -470,5 +468,13 @@ export default class MerchStoreService {
       requestedQuantitiesByMerchItem.set(item, requestedQuantitiesByMerchItem.get(item) + quantityRequested);
     }
     return requestedQuantitiesByMerchItem;
+  }
+
+  private getTotalCost(order:MerchItemOptionAndQuantity[],itemOptions:Map<string,MerchandiseItemOptionModel>):number{
+    return order.reduce((sum, o) => {
+      const option = itemOptions.get(o.option);
+      const quantityRequested = o.quantity;
+      return sum + (option.getPrice() * quantityRequested);
+    }, 0);
   }
 }
