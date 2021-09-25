@@ -196,9 +196,11 @@ export class MerchStoreController {
 
   @Get('/order/pickup/future')
   async getFuturePickupEvents(@AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventsResponse> {
+    const pickupEvents = await this.merchStoreService.getFuturePickupEvents();
     const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
-    const pickupEvents = await this.merchStoreService.getFuturePickupEvents(canSeePickupEventOrders);
-    return { error: null, pickupEvents };
+    const publicPickupEvents = pickupEvents.map((pickupEvent) => pickupEvent
+      .getPublicOrderPickupEvent(canSeePickupEventOrders));
+    return { error: null, pickupEvents: publicPickupEvents };
   }
 
   @Post('/order/pickup')
@@ -206,7 +208,7 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<CreateOrderPickupEventResponse> {
     if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     const pickupEvent = await this.merchStoreService.createPickupEvent(createOrderPickupEventRequest.pickupEvent);
-    return { error: null, pickupEvent };
+    return { error: null, pickupEvent: pickupEvent.getPublicOrderPickupEvent() };
   }
 
   @Patch('/order/pickup/:uuid')
@@ -216,7 +218,7 @@ export class MerchStoreController {
     if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     const pickupEvent = await this.merchStoreService.editPickupEvent(params.uuid,
       editOrderPickupEventRequest.pickupEvent);
-    return { error: null, pickupEvent };
+    return { error: null, pickupEvent: pickupEvent.getPublicOrderPickupEvent() };
   }
 
   @Delete('/order/pickup/:uuid')

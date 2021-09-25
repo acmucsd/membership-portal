@@ -19,7 +19,6 @@ import {
   MerchItemOptionAndQuantity,
   MerchItemEdit,
   PublicMerchItemOption,
-  PublicOrderPickupEvent,
   OrderPickupEvent,
   OrderPickupEventEdit,
 } from '../types';
@@ -462,25 +461,23 @@ export default class MerchStoreService {
     return requestedQuantitiesByMerchItem;
   }
 
-  public async getFuturePickupEvents(canSeeOrders = false): Promise<PublicOrderPickupEvent[]> {
-    const pickupEvents = await this.transactions.readOnly(async (txn) => Repositories
+  public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
       .merchOrderPickupEvent(txn)
       .getFuturePickupEvents());
-    return pickupEvents.map((e) => e.getPublicOrderPickupEvent(canSeeOrders));
   }
 
-  public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<PublicOrderPickupEvent> {
+  public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<OrderPickupEventModel> {
     return this.transactions.readWrite(async (txn) => {
       if (pickupEvent.start >= pickupEvent.end) {
         throw new UserError('Order pickup event start time must come before the end time');
       }
-      const createdPickupEvent = await Repositories.merchOrderPickupEvent(txn)
+      return Repositories.merchOrderPickupEvent(txn)
         .upsertPickupEvent(OrderPickupEventModel.create(pickupEvent));
-      return createdPickupEvent.getPublicOrderPickupEvent();
     });
   }
 
-  public async editPickupEvent(uuid: Uuid, changes: OrderPickupEventEdit): Promise<PublicOrderPickupEvent> {
+  public async editPickupEvent(uuid: Uuid, changes: OrderPickupEventEdit): Promise<OrderPickupEventModel> {
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
@@ -488,8 +485,7 @@ export default class MerchStoreService {
       if (updatedPickupEvent.start >= updatedPickupEvent.end) {
         throw new UserError('Order pickup event start time must come before the end time');
       }
-      const upsertedPickupEvent = await orderPickupEventRepository.upsertPickupEvent(updatedPickupEvent);
-      return upsertedPickupEvent.getPublicOrderPickupEvent();
+      return orderPickupEventRepository.upsertPickupEvent(updatedPickupEvent);
     });
   }
 
