@@ -194,21 +194,14 @@ export class MerchStoreController {
     return { error: null };
   }
 
-  @Get('/pickupEvent/past')
-  async getPastPickupEvents(@AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventsResponse> {
-    const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
-    const pickupEvents = await this.merchStoreService.getPastPickupEvents(canSeePickupEventOrders);
-    return { error: null, pickupEvents };
-  }
-
-  @Get('/pickupEvent/future')
+  @Get('/order/pickup/future')
   async getFuturePickupEvents(@AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventsResponse> {
     const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
     const pickupEvents = await this.merchStoreService.getFuturePickupEvents(canSeePickupEventOrders);
     return { error: null, pickupEvents };
   }
 
-  @Post('/pickupEvent')
+  @Post('/order/pickup')
   async createPickupEvent(@Body() createOrderPickupEventRequest: CreateOrderPickupEventRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateOrderPickupEventResponse> {
     if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
@@ -216,7 +209,7 @@ export class MerchStoreController {
     return { error: null, pickupEvent };
   }
 
-  @Patch('/pickupEvent/:uuid')
+  @Patch('/order/pickup/:uuid')
   async editPickupEvent(@Params() params: UuidParam,
     @Body() editOrderPickupEventRequest: EditOrderPickupEventRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateOrderPickupEventResponse> {
@@ -226,7 +219,7 @@ export class MerchStoreController {
     return { error: null, pickupEvent };
   }
 
-  @Delete('/pickupEvent/:uuid')
+  @Delete('/order/pickup/:uuid')
   async deletePickupEvent(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<DeleteOrderPickupEventResponse> {
     if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();

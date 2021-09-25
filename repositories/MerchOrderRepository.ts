@@ -66,13 +66,6 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
 
 @EntityRepository(OrderPickupEventModel)
 export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventModel> {
-  public async getPastPickupEvents(): Promise<OrderPickupEventModel[]> {
-    return this.getBaseFindQuery()
-      .where('"end" < :now')
-      .setParameter('now', new Date())
-      .getMany();
-  }
-
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
     return this.getBaseFindQuery()
       .where('"end" >= :now')

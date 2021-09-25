@@ -462,13 +462,6 @@ export default class MerchStoreService {
     return requestedQuantitiesByMerchItem;
   }
 
-  public async getPastPickupEvents(canSeeOrders = false): Promise<PublicOrderPickupEvent[]> {
-    const pickupEvents = await this.transactions.readOnly(async (txn) => Repositories
-      .merchOrderPickupEvent(txn)
-      .getPastPickupEvents());
-    return pickupEvents.map((e) => e.getPublicOrderPickupEvent(canSeeOrders));
-  }
-
   public async getFuturePickupEvents(canSeeOrders = false): Promise<PublicOrderPickupEvent[]> {
     const pickupEvents = await this.transactions.readOnly(async (txn) => Repositories
       .merchOrderPickupEvent(txn)
