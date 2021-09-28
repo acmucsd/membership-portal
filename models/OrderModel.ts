@@ -30,7 +30,12 @@ export class OrderModel extends BaseEntity {
   @Index('recent_orders_index')
   orderedAt: Date;
 
-  @ManyToOne((type) => OrderPickupEventModel, (pickupEvent) => pickupEvent.orders, { eager: true, nullable: false })
+  // pickupEvent can be null, but only through deletion of the pickup event.
+  // Orders are still required to be placed with the pickupEvent field not null,
+  // since all orders should either have a pickup event, or no pickup event but with status PICKUP_CANCELLED.
+  @ManyToOne((type) => OrderPickupEventModel,
+    (pickupEvent) => pickupEvent.orders,
+    { eager: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'pickupEvent' })
   @Index('orders_by_pickupEvent_index')
   pickupEvent: OrderPickupEventModel;
@@ -44,7 +49,7 @@ export class OrderModel extends BaseEntity {
       user: this.user.uuid,
       totalCost: this.totalCost,
       orderedAt: this.orderedAt,
-      pickupEvent: this.pickupEvent.getPublicOrderPickupEvent(),
+      pickupEvent: this.pickupEvent?.getPublicOrderPickupEvent(),
       items: this.items.map((oi) => oi.getPublicOrderItem()),
     };
   }
