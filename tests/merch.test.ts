@@ -1,6 +1,8 @@
 import * as faker from 'faker';
+import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
 import { zip } from 'underscore';
+import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
@@ -436,5 +438,111 @@ describe('merch item options', () => {
     expect(getMerchItemResponse.item.options).toHaveLength(1);
     expect(getMerchItemResponse.item.options[0])
       .toStrictEqual(item.options[0].getPublicMerchItemOption(true));
+  });
+});
+
+describe('merch order pickup events', () => {
+  test('GET /order/pickup/future returns pickup events that haven\'t ended yet', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const pastPickupEvent = MerchFactory.fakeOrderPickupEvent({
+      start: moment().subtract(2, 'hour').toDate(),
+      end: moment().subtract(1, 'hour').toDate(),
+    });
+    const ongoingPickupEvent = MerchFactory.fakeOrderPickupEvent({
+      start: moment().subtract(30, 'minutes').toDate(),
+      end: moment().add(30, 'minutes').toDate(),
+    });
+    const futurePickupEvent = MerchFactory.fakeOrderPickupEvent({
+      start: moment().add(1, 'hour').toDate(),
+      end: moment().add(2, 'hour').toDate(),
+    });
+
+    await new PortalState()
+      .createUsers(admin)
+      .createOrderPickupEvents(pastPickupEvent, ongoingPickupEvent, futurePickupEvent)
+      .write();
+
+    const getFuturePickupEventsResponse = await ControllerFactory.merchStore(conn).getFuturePickupEvents(admin);
+    expect(getFuturePickupEventsResponse.pickupEvents).toEqual(
+      expect.arrayContaining([
+        ongoingPickupEvent.getPublicOrderPickupEvent(true),
+        futurePickupEvent.getPublicOrderPickupEvent(true),
+      ]),
+    );
+  });
+
+  test('POST /order/pickup persists pickup event on proper input', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const pickupEvent = MerchFactory.fakeOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(admin)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    await merchStoreController.createPickupEvent({ pickupEvent }, admin);
+
+    const [persistedPickupEvent] = await conn.manager.find(OrderPickupEventModel, { relations: ['orders'] });
+    expect(persistedPickupEvent).toStrictEqual(pickupEvent);
+  });
+
+  test('POST /order/pickup fails when pickup event start date is later than end date', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const pickupEvent = MerchFactory.fakeOrderPickupEvent({
+      start: moment().add(1, 'hour').toDate(),
+      end: moment().subtract(1, 'hour').toDate(),
+    });
+
+    await new PortalState()
+      .createUsers(admin)
+      .write();
+
+    await expect(ControllerFactory.merchStore(conn).createPickupEvent({ pickupEvent }, admin))
+      .rejects
+      .toThrow('Order pickup event start time must come before the end time');
+  });
+
+  test('PATCH /order/pickup/:uuid properly updates pickup event with valid edits', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const pickupEvent = MerchFactory.fakeOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(admin)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const editPickupEventRequest = { pickupEvent: { title: faker.datatype.hexaDecimal(10) } };
+    await ControllerFactory.merchStore(conn)
+      .editPickupEvent({ uuid: pickupEvent.uuid }, editPickupEventRequest, admin);
+
+    const [persistedPickupEvent] = await conn.manager.find(OrderPickupEventModel, { relations: ['orders'] });
+    expect(persistedPickupEvent.uuid).toEqual(pickupEvent.uuid);
+    expect(persistedPickupEvent.title).toEqual(editPickupEventRequest.pickupEvent.title);
+  });
+
+  test('PATCH /order/pickup/:uuid fails when pickup event edit\'s start date is later than end date', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const pickupEvent = MerchFactory.fakeOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(admin)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const editPickupEventRequest = {
+      pickupEvent: {
+        start: moment().add(1, 'hour').toDate(),
+        end: moment().subtract(1, 'hour').toDate(),
+      },
+    };
+    await expect(ControllerFactory.merchStore(conn)
+      .editPickupEvent({ uuid: pickupEvent.uuid }, editPickupEventRequest, admin))
+      .rejects
+      .toThrow('Order pickup event start time must come before the end time');
   });
 });
