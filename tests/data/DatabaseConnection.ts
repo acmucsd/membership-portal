@@ -30,6 +30,7 @@ export class DatabaseConnection {
     await conn.transaction(async (txn) => {
       const tableNames = [
         'Activities',
+        'OrderPickupEvents',
         'OrderItems',
         'Orders',
         'MerchandiseItemOptions',
@@ -38,6 +39,7 @@ export class DatabaseConnection {
         'Attendances',
         'Users',
         'Events',
+        'Feedback',
       ];
       await Promise.all(tableNames.map((t) => txn.query(`DELETE FROM "${t}"`)));
     });
