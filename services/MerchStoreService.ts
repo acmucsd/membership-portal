@@ -489,6 +489,9 @@ export default class MerchStoreService {
     });
   }
 
+  /**
+   * TODO: Rewrite deletePickupEvent as per spec: https://github.com/acmucsd/membership-portal/issues/204
+   */
   public async deletePickupEvent(uuid: Uuid): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);

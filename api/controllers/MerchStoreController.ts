@@ -31,7 +31,6 @@ import {
   DeleteMerchItemOptionResponse,
   CreateOrderPickupEventResponse,
   GetOrderPickupEventsResponse,
-  DeleteOrderPickupEventResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -219,13 +218,5 @@ export class MerchStoreController {
     const pickupEvent = await this.merchStoreService.editPickupEvent(params.uuid,
       editOrderPickupEventRequest.pickupEvent);
     return { error: null, pickupEvent: pickupEvent.getPublicOrderPickupEvent() };
-  }
-
-  @Delete('/order/pickup/:uuid')
-  async deletePickupEvent(@Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel): Promise<DeleteOrderPickupEventResponse> {
-    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
-    await this.merchStoreService.deletePickupEvent(params.uuid);
-    return { error: null };
   }
 }
