@@ -174,6 +174,7 @@ export interface CreateMerchItemOptionRequest {
 
 export interface PlaceMerchOrderRequest {
   order: MerchItemOptionAndQuantity[];
+  pickupEvent: Uuid;
 }
 
 export interface VerifyMerchOrderRequest {
@@ -244,4 +245,11 @@ export interface OrderItemFulfillmentUpdate {
 export interface MerchItemOptionAndQuantity {
   option: string;
   quantity: number;
+}
+
+export interface OrderPickupEvent {
+  title: string;
+  start: Date;
+  end: Date;
+  description: string;
 }
