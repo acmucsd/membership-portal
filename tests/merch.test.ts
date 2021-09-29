@@ -516,8 +516,8 @@ describe('merch order pickup events', () => {
       .write();
 
     const editPickupEventRequest = { pickupEvent: { title: faker.datatype.hexaDecimal(10) } };
-    await ControllerFactory.merchStore(conn)
-      .editPickupEvent({ uuid: pickupEvent.uuid }, editPickupEventRequest, admin);
+    const params = { uuid: pickupEvent.uuid };
+    await ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, admin);
 
     const [persistedPickupEvent] = await conn.manager.find(OrderPickupEventModel, { relations: ['orders'] });
     expect(persistedPickupEvent.uuid).toEqual(pickupEvent.uuid);
