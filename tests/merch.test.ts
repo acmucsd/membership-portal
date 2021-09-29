@@ -540,8 +540,8 @@ describe('merch order pickup events', () => {
         end: moment().subtract(1, 'hour').toDate(),
       },
     };
-    await expect(ControllerFactory.merchStore(conn)
-      .editPickupEvent({ uuid: pickupEvent.uuid }, editPickupEventRequest, admin))
+    const params = { uuid: pickupEvent.uuid };
+    await expect(ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, admin))
       .rejects
       .toThrow('Order pickup event start time must come before the end time');
   });
