@@ -27,6 +27,7 @@ import {
   GetAllMerchOrdersResponse,
   PlaceMerchOrderResponse,
   EditMerchOrderResponse,
+  FulfillMerchOrderResponse,
   CreateMerchItemOptionResponse,
   DeleteMerchItemOptionResponse,
 } from '../../types';
@@ -41,6 +42,7 @@ import {
   EditMerchItemRequest,
   PlaceMerchOrderRequest,
   FulfillMerchOrderRequest,
+  EditMerchOrderRequest,
   CreateMerchItemOptionRequest,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
@@ -178,14 +180,24 @@ export class MerchStoreController {
   }
 
   @Patch('/order')
-  async editMerchOrder(@Body() fulfillOrderRequest: FulfillMerchOrderRequest,
+  async editMerchOrder(@Body() editOrderRequest: EditMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<EditMerchOrderResponse> {
+    //TODO: add changing for the pickup orders
+    if(!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    await this.merchStoreService.editOrder(user.uuid,editOrderRequest.status);
+    
+    return { error: null };
+  }
+
+  @Post('/order/:uuid/fulfillment')
+  async fulfillMerchOrder(@Params() uuidParam: UuidParam, @Body() fulfillOrderRequest: FulfillMerchOrderRequest,
+    @AuthenticatedUser() user: UserModel): Promise<FulfillMerchOrderResponse> {
     if (!PermissionsService.canFulfillMerchOrders(user)) throw new ForbiddenError();
     const numUniqueUuids = (new Set(fulfillOrderRequest.items.map((oi) => oi.uuid))).size;
     if (fulfillOrderRequest.items.length !== numUniqueUuids) {
       throw new BadRequestError('There are duplicate order items');
     }
-    await this.merchStoreService.updateOrderItems(fulfillOrderRequest.items);
+    await this.merchStoreService.fulfillOrderItems(fulfillOrderRequest.items, uuidParam.uuid);
     return { error: null };
   }
 }

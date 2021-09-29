@@ -8,6 +8,7 @@ import {
   CreateMerchItemOptionRequest as ICreateMerchItemOptionRequest,
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
+  EditMerchOrderRequest as IEditMerchOrderRequest,
   MerchItemOptionAndQuantity as IMerchItemOptionAndQuantity,
   OrderItemFulfillmentUpdate as IOrderItemFulfillmentUpdate,
   MerchCollection as IMerchCollection,
@@ -17,6 +18,7 @@ import {
   MerchItemOption as IMerchItemOption,
   MerchItemOptionEdit as IMerchItemOptionEdit,
   MerchItemOptionMetadata as IMerchItemOptionMetadata,
+  OrderStatus,
 } from '../../types';
 
 export class MerchCollection implements IMerchCollection {
@@ -240,4 +242,10 @@ export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {
   @ValidateNested()
   @IsDefined()
   items: OrderItemFulfillmentUpdate[];
+}
+
+export class EditMerchOrderRequest implements IEditMerchOrderRequest {
+  // TODO: add variables for handling store pickup date changes
+  uuid: string;
+  status?:OrderStatus;
 }

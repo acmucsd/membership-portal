@@ -57,3 +57,10 @@ export enum FeedbackStatus {
   ACKNOWLEDGED = 'ACKNOWLEDGED',
   IGNORED = 'IGNORED',
 }
+
+export enum OrderStatus {
+  PLACED = "PLACED",
+  MISSED = "MISSED",
+  CANCELLED = "CANCELLED",
+  FULFILLED = "FULFILLED",
+}

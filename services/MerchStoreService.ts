@@ -19,6 +19,7 @@ import {
   MerchItemOptionAndQuantity,
   MerchItemEdit,
   PublicMerchItemOption,
+  OrderStatus,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
@@ -28,6 +29,7 @@ import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
+import { MerchOrderRepository } from 'repositories/MerchOrderRepository';
 
 @Service()
 export default class MerchStoreService {
@@ -400,7 +402,7 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
-  public async updateOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[]): Promise<void> {
+  public async fulfillOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[], orderUuid: Uuid): Promise<void> {
     const updates = new Map<string, OrderItemFulfillmentUpdate>();
     for (let i = 0; i < fulfillmentUpdates.length; i += 1) {
       const oi = fulfillmentUpdates[i];
@@ -408,26 +410,43 @@ export default class MerchStoreService {
       updates.set(oi.uuid, oi);
     }
     await this.transactions.readWrite(async (txn) => {
-      const orderItemRepository = Repositories.merchOrderItem(txn);
-      const orderItems = await orderItemRepository.batchFindByUuid(Array.from(fulfillmentUpdates.map((oi) => oi.uuid)));
-      if (orderItems.size !== fulfillmentUpdates.length) {
+      const orderRepository = Repositories.merchOrder(txn);
+      const order = await orderRepository.findByUuid(orderUuid);
+      const { items } = order;
+      if (items.length !== fulfillmentUpdates.length) {
         throw new NotFoundError('Missing some order items');
       }
 
       const toBeFulfilled = fulfillmentUpdates
         .filter((oi) => oi.fulfilled)
         .map((oi) => oi.uuid);
-      const alreadyFulfilled = Array.from(orderItems.values())
+      const alreadyFulfilled = Array.from(items.values())
         .filter((oi) => oi.fulfilled)
         .map((oi) => oi.uuid);
       if (intersection(toBeFulfilled, alreadyFulfilled).length > 0) {
         throw new UserError('At least one order item marked to be fulfilled has already been fulfilled');
       }
 
-      await Promise.all(Array.from(orderItems.values()).map((oi) => {
+      const orderItemRepository = Repositories.merchOrderItem(txn);
+      await Promise.all(Array.from(items.values()).map((oi) => {
         const { fulfilled, notes } = updates.get(oi.uuid);
         return orderItemRepository.fulfillOrderItem(oi, fulfilled, notes);
       }));
+
+      if(orderItems.size > 0){
+
+        const orderRepository = Repositories.merchOrder(txn);
+
+        await orderRepository.fulfillOrder(order);
+      }
+    });
+  }
+
+  public async editOrder(uuid:string, status?:OrderStatus){
+    //TODO: handle order pickup date changes
+    await this.transactions.readWrite(async (txn) => {
+      const orderRespository = Repositories.merchOrder(txn);
+      
     });
   }
 

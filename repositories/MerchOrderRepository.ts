@@ -4,6 +4,7 @@ import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { BaseRepository } from './BaseRepository';
+import { OrderStatus } from 'types/Enums';
 
 @EntityRepository(OrderModel)
 export class MerchOrderRepository extends BaseRepository<OrderModel> {
@@ -21,6 +22,24 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
 
   public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
     return this.repository.find({ user });
+  }
+
+  public async fulfillOrder(order:OrderModel): Promise<OrderModel> {
+    if(order.status != OrderStatus.FULFILLED){
+      let fulfilled = true;
+      order.items.forEach(item => {
+        if(!item.fulfilled){
+          fulfilled = false;
+        }
+      });
+      
+      if(fulfilled){
+        order.status = OrderStatus.FULFILLED;
+        return this.repository.save(order);
+      }
+      
+    }
+    return order;
   }
 }
 

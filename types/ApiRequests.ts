@@ -1,4 +1,4 @@
-import { FeedbackStatus, FeedbackType } from './Enums';
+import { FeedbackStatus, FeedbackType, OrderStatus } from './Enums';
 import { Uuid } from '.';
 
 // REQUEST TYPES
@@ -179,6 +179,11 @@ export interface PlaceMerchOrderRequest {
 
 export interface FulfillMerchOrderRequest {
   items: OrderItemFulfillmentUpdate[];
+}
+
+export interface EditMerchOrderRequest {
+  uuid: string
+  status?: OrderStatus;
 }
 
 export interface MerchCollection {
