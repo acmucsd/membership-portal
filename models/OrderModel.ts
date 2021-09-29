@@ -8,7 +8,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Uuid, PublicOrder, MerchItemOptionAndQuantity } from '../types';
+import { Uuid, PublicOrder } from '../types';
 import { UserModel } from './UserModel';
 import { OrderItemModel } from './OrderItemModel';
 
@@ -41,5 +41,4 @@ export class OrderModel extends BaseEntity {
       items: this.items.map((oi) => oi.getPublicOrderItem()),
     };
   }
-
 }

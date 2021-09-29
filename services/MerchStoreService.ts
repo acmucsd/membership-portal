@@ -288,13 +288,12 @@ export default class MerchStoreService {
    */
   public async placeOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<PublicOrder> {
     const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
-      await user.reload();
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
 
-      await this.verifyOrder(originalOrder, user);
+      await this.verifyOrderWithTransaction(originalOrder, user, txn);
 
-      const totalCost = this.getTotalCost(originalOrder,itemOptions);
+      const totalCost = this.getTotalCost(originalOrder, itemOptions);
 
       const merchOrderRepository = Repositories.merchOrder(txn);
 
@@ -350,65 +349,69 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
-  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<number> {
-    return this.transactions.readWrite(async (txn) => {
-      await user.reload();
-      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-      const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
-      if (itemOptions.size !== originalOrder.length) {
-        const requestedItems = originalOrder.map((oi) => oi.option);
-        const foundItems = Array.from(itemOptions.values())
-          .filter((o) => !o.item.hidden)
-          .map((o) => o.uuid);
-        const missingItems = difference(requestedItems, foundItems);
-        throw new NotFoundError(`The following items were not found: ${missingItems}`);
-      }
-
-      // Checks that hidden items were not ordered
-      const hiddenItems = Array.from(itemOptions.values())
-        .filter((o) => o.item.hidden)
+  private async verifyOrderWithTransaction(originalOrder: MerchItemOptionAndQuantity[],
+    user: UserModel,
+    txn: EntityManager): Promise<void> {
+    await user.reload();
+    const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+    const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
+    if (itemOptions.size !== originalOrder.length) {
+      const requestedItems = originalOrder.map((oi) => oi.option);
+      const foundItems = Array.from(itemOptions.values())
+        .filter((o) => !o.item.hidden)
         .map((o) => o.uuid);
+      const missingItems = difference(requestedItems, foundItems);
+      throw new NotFoundError(`The following items were not found: ${missingItems}`);
+    }
 
-      if (hiddenItems.length !== 0) {
-        throw new UserError(`Not allowed to order: ${hiddenItems}`);
+    // Checks that hidden items were not ordered
+    const hiddenItems = Array.from(itemOptions.values())
+      .filter((o) => o.item.hidden)
+      .map((o) => o.uuid);
+
+    if (hiddenItems.length !== 0) {
+      throw new UserError(`Not allowed to order: ${hiddenItems}`);
+    }
+
+    // checks that the user hasn't exceeded monthly/lifetime purchase limits
+    const merchOrderRepository = Repositories.merchOrder(txn);
+    const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersForUser(user);
+    const oneMonthAgo = new Date(moment().subtract('months', 1).unix());
+    const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
+    const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, lifetimePurchaseHistory);
+    const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, pastMonthPurchaseHistory);
+    // aggregate requested quantities by item
+    const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
+      .countItemRequestedQuantities(originalOrder, itemOptions)
+      .entries());
+    for (let i = 0; i < requestedQuantitiesByMerchItem.length; i += 1) {
+      const [item, quantityRequested] = requestedQuantitiesByMerchItem[i];
+      if (!!item.lifetimeLimit && lifetimeItemOrderCounts.get(item) + quantityRequested > item.lifetimeLimit) {
+        throw new UserError(`This order exceeds the lifetime limit for ${item.itemName}`);
       }
-
-      // checks that the user hasn't exceeded monthly/lifetime purchase limits
-      const merchOrderRepository = Repositories.merchOrder(txn);
-      const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersForUser(user);
-      const oneMonthAgo = new Date(moment().subtract('months', 1).unix());
-      const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
-      const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, lifetimePurchaseHistory);
-      const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, pastMonthPurchaseHistory);
-      // aggregate requested quantities by item
-      const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
-        .countItemRequestedQuantities(originalOrder, itemOptions)
-        .entries());
-      for (let i = 0; i < requestedQuantitiesByMerchItem.length; i += 1) {
-        const [item, quantityRequested] = requestedQuantitiesByMerchItem[i];
-        if (!!item.lifetimeLimit && lifetimeItemOrderCounts.get(item) + quantityRequested > item.lifetimeLimit) {
-          throw new UserError(`This order exceeds the lifetime limit for ${item.itemName}`);
-        }
-        if (!!item.monthlyLimit && pastMonthItemOrderCounts.get(item) + quantityRequested > item.monthlyLimit) {
-          throw new UserError(`This order exceeds the monthly limit for ${item.itemName}`);
-        }
+      if (!!item.monthlyLimit && pastMonthItemOrderCounts.get(item) + quantityRequested > item.monthlyLimit) {
+        throw new UserError(`This order exceeds the monthly limit for ${item.itemName}`);
       }
+    }
 
-      // checks that enough units of requested item options are in stock
-      for (let i = 0; i < originalOrder.length; i += 1) {
-        const optionAndQuantity = originalOrder[i];
-        const option = itemOptions.get(optionAndQuantity.option);
-        const quantityRequested = optionAndQuantity.quantity;
-        if (option.quantity < quantityRequested) {
-          throw new UserError(`There aren't enough units of ${option.item.itemName} in stock`);
-        }
+    // checks that enough units of requested item options are in stock
+    for (let i = 0; i < originalOrder.length; i += 1) {
+      const optionAndQuantity = originalOrder[i];
+      const option = itemOptions.get(optionAndQuantity.option);
+      const quantityRequested = optionAndQuantity.quantity;
+      if (option.quantity < quantityRequested) {
+        throw new UserError(`There aren't enough units of ${option.item.itemName} in stock`);
       }
+    }
 
-      // checks that the user has enough credits to place order
-      const totalCost = this.getTotalCost(originalOrder,itemOptions);
-      if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
+    // checks that the user has enough credits to place order
+    const totalCost = this.getTotalCost(originalOrder, itemOptions);
+    if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
+  }
 
-      return totalCost;
+  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      this.verifyOrderWithTransaction(originalOrder, user, txn);
     });
   }
 
@@ -470,7 +473,7 @@ export default class MerchStoreService {
     return requestedQuantitiesByMerchItem;
   }
 
-  private getTotalCost(order:MerchItemOptionAndQuantity[],itemOptions:Map<string,MerchandiseItemOptionModel>):number{
+  private getTotalCost(order:MerchItemOptionAndQuantity[], itemOptions:Map<string, MerchandiseItemOptionModel>):number {
     return order.reduce((sum, o) => {
       const option = itemOptions.get(o.option);
       const quantityRequested = o.quantity;
