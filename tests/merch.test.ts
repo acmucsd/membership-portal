@@ -464,12 +464,11 @@ describe('merch order pickup events', () => {
       .write();
 
     const getFuturePickupEventsResponse = await ControllerFactory.merchStore(conn).getFuturePickupEvents(admin);
-    expect(getFuturePickupEventsResponse.pickupEvents).toEqual(
-      expect.arrayContaining([
+    expect(getFuturePickupEventsResponse.pickupEvents)
+      .toEqual(expect.arrayContaining([
         ongoingPickupEvent.getPublicOrderPickupEvent(true),
         futurePickupEvent.getPublicOrderPickupEvent(true),
-      ]),
-    );
+      ]));
   });
 
   test('POST /order/pickup persists pickup event on proper input', async () => {
