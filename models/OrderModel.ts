@@ -33,12 +33,14 @@ export class OrderModel extends BaseEntity {
   // pickupEvent can be null, but only through deletion of the pickup event.
   // Orders are still required to be placed with the pickupEvent field not null,
   // since all orders should either have a pickup event, or no pickup event but with status PICKUP_CANCELLED.
-  @ManyToOne((type) => OrderPickupEventModel, (pickupEvent) => pickupEvent.orders, { eager: true })
+  @ManyToOne((type) => OrderPickupEventModel,
+    (pickupEvent) => pickupEvent.orders,
+    { eager: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'pickupEvent' })
   @Index('orders_by_pickupEvent_index')
   pickupEvent: OrderPickupEventModel;
 
-  @OneToMany((type) => OrderItemModel, (item) => item.order, { cascade: true, eager: true })
+  @OneToMany((type) => OrderItemModel, (item) => item.order, { cascade: true, eager: true, nullable: true })
   items: OrderItemModel[];
 
   public getPublicOrder(): PublicOrder {

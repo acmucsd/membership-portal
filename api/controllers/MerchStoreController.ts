@@ -177,7 +177,7 @@ export class MerchStoreController {
     if (orderIsEmpty) throw new UserError('There are no items in this order');
     const numUniqueUuids = (new Set(originalOrder.map((oi) => oi.option))).size;
     if (originalOrder.length !== numUniqueUuids) throw new BadRequestError('There are duplicate items in this order');
-    const order = await this.merchStoreService.placeOrder(originalOrder, user);
+    const order = await this.merchStoreService.placeOrder(originalOrder, user, placeOrderRequest.pickupEvent);
     return { error: null, order };
   }
 

@@ -2,6 +2,7 @@ import * as faker from 'faker';
 import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
 import { zip } from 'underscore';
+import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchItemEdit, UserAccessType } from '../types';
@@ -490,15 +491,15 @@ describe('merch order pickup events', () => {
   test('POST /order/pickup fails when pickup event start date is later than end date', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const pickupEvent = MerchFactory.fakeOrderPickupEvent({
-      start: moment().add(1, 'hour').toDate(),
-      end: moment().subtract(1, 'hour').toDate(),
-    });
 
     await new PortalState()
       .createUsers(admin)
       .write();
 
+    const pickupEvent = MerchFactory.fakeOrderPickupEvent({
+      start: moment().add(1, 'hour').toDate(),
+      end: moment().subtract(1, 'hour').toDate(),
+    });
     await expect(ControllerFactory.merchStore(conn).createPickupEvent({ pickupEvent }, admin))
       .rejects
       .toThrow('Order pickup event start time must come before the end time');
@@ -543,5 +544,24 @@ describe('merch order pickup events', () => {
     await expect(ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, admin))
       .rejects
       .toThrow('Order pickup event start time must come before the end time');
+  });
+
+  test('placing an order with a pickup event properly sets the pickup event\'s order', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const option = MerchFactory.fakeOption();
+    const pickupEvent = MerchFactory.fakeOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItemOption(option)
+      .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
+      .write();
+
+    const [persistedOrder] = await conn.manager.find(OrderModel);
+    const [persistedPickupEvent] = await conn.manager.find(OrderPickupEventModel, { relations: ['orders'] });
+    expect(persistedPickupEvent.orders).toHaveLength(1);
+    expect(persistedPickupEvent.orders[0]).toStrictEqual(persistedOrder);
   });
 });

@@ -284,12 +284,15 @@ export default class MerchStoreService {
    *    - the user wouldn't reach monthly or lifetime limits for any item if this order is placed
    *    - the requested item options are in stock
    *    - the user has enough credits to place the order
+   *    - the pickup event specified exists and is at least 2 days before starting
    *
    * @param originalOrder the order containing item options and their quantities
    * @param user user placing the order
    * @returns the finalized order, including sale price, discount, and fulfillment details
    */
-  public async placeOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<PublicOrder> {
+  public async placeOrder(originalOrder: MerchItemOptionAndQuantity[],
+    user: UserModel,
+    pickupEventUuid: Uuid): Promise<PublicOrder> {
     const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
       await user.reload();
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
@@ -350,6 +353,16 @@ export default class MerchStoreService {
         return sum + (option.getPrice() * quantityRequested);
       }, 0);
       if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
+
+      // Verify the requested pickup event exists,
+      // and that the order is placed at least 2 days before the pickup event starts
+      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
+      if (!pickupEvent) {
+        throw new NotFoundError('Pickup event requested is not found');
+      }
+      if (new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate()) {
+        throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
+      }
 
       // if all checks pass, the order is placed
       const createdOrder = await merchOrderRepository.createMerchOrder(OrderModel.create({
@@ -468,13 +481,12 @@ export default class MerchStoreService {
   }
 
   public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<OrderPickupEventModel> {
-    return this.transactions.readWrite(async (txn) => {
-      if (pickupEvent.start >= pickupEvent.end) {
-        throw new UserError('Order pickup event start time must come before the end time');
-      }
-      return Repositories.merchOrderPickupEvent(txn)
-        .upsertPickupEvent(OrderPickupEventModel.create(pickupEvent));
-    });
+    if (pickupEvent.start >= pickupEvent.end) {
+      throw new UserError('Order pickup event start time must come before the end time');
+    }
+    return this.transactions.readWrite(async (txn) => Repositories
+      .merchOrderPickupEvent(txn)
+      .upsertPickupEvent(OrderPickupEventModel.create(pickupEvent)));
   }
 
   public async editPickupEvent(uuid: Uuid, changes: OrderPickupEventEdit): Promise<OrderPickupEventModel> {
