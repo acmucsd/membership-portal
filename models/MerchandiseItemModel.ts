@@ -32,7 +32,7 @@ export class MerchandiseItemModel extends BaseEntity {
   @Column('integer', { nullable: true })
   lifetimeLimit: number;
 
-  @Column('boolean', { default: false })
+  @Column('boolean', { default: true })
   hidden: boolean;
 
   @Column('boolean', { default: false })

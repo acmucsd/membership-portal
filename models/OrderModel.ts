@@ -11,6 +11,7 @@ import {
 import { Uuid, PublicOrder } from '../types';
 import { UserModel } from './UserModel';
 import { OrderItemModel } from './OrderItemModel';
+import { OrderPickupEventModel } from './OrderPickupEventModel';
 
 @Entity('Orders')
 export class OrderModel extends BaseEntity {
@@ -29,6 +30,11 @@ export class OrderModel extends BaseEntity {
   @Index('recent_orders_index')
   orderedAt: Date;
 
+  @ManyToOne((type) => OrderPickupEventModel, (pickupEvent) => pickupEvent.orders, { eager: true, nullable: false })
+  @JoinColumn({ name: 'pickupEvent' })
+  @Index('orders_by_pickupEvent_index')
+  pickupEvent: OrderPickupEventModel;
+
   @OneToMany((type) => OrderItemModel, (item) => item.order, { cascade: true, eager: true })
   items: OrderItemModel[];
 
@@ -38,6 +44,7 @@ export class OrderModel extends BaseEntity {
       user: this.user.uuid,
       totalCost: this.totalCost,
       orderedAt: this.orderedAt,
+      pickupEvent: this.pickupEvent.getPublicOrderPickupEvent(),
       items: this.items.map((oi) => oi.getPublicOrderItem()),
     };
   }
