@@ -499,6 +499,8 @@ export default class MerchStoreService {
       if (pickupEvent.orders.length > 0) {
         throw new UserError('Cannot delete an order pickup event that has orders assigned to it');
       }
+      // Manually set all the orders' pickup events to null before deleting event
+      pickupEvent.orders.map((order) => OrderModel.merge(order, { pickupEvent: null }));
       await orderPickupEventRepository.deletePickupEvent(pickupEvent);
     });
   }
