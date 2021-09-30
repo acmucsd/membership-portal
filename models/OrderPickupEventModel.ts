@@ -23,13 +23,15 @@ export class OrderPickupEventModel extends BaseEntity {
   @JoinColumn({ name: 'order' })
   orders: OrderModel[];
 
-  public getPublicOrderPickupEvent(): PublicOrderPickupEvent {
-    return {
+  public getPublicOrderPickupEvent(canSeeOrders = false): PublicOrderPickupEvent {
+    const pickupEvent: PublicOrderPickupEvent = {
       uuid: this.uuid,
       title: this.title,
       start: this.start,
       end: this.end,
       description: this.description,
     };
+    if (canSeeOrders) pickupEvent.orders = this.orders.map((order) => order.getPublicOrder());
+    return pickupEvent;
   }
 }
