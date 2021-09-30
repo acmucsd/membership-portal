@@ -13,7 +13,6 @@ export class AddOrderPickupEventField1631941813500 implements MigrationInterface
       columnNames: ['pickupEvent'],
       referencedTableName: 'OrderPickupEvents',
       referencedColumnNames: ['uuid'],
-      onDelete: 'SET NULL',
     }));
     await queryRunner.createIndex(TABLE_NAME, new TableIndex({
       name: 'orders_by_pickupEvent_index',
