@@ -105,9 +105,9 @@
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Hi <%= firstName %>,</p>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">The pickup event for your order on the ACM membership portal has passed:</p>
                                         <p>Pickup event:</p>
-                                            <p><%= pickupEvent.title %></p>
-                                            <p><small>From <%= pickupEvent.start %> to <%= pickupEvent.end %></small></p>
-                                            <p><small><%= pickupEvent.description %></small></p>
+                                            <p><%= order.pickupEvent.title %></p>
+                                            <p><small>From <%= order.pickupEvent.start %> to <%= order.pickupEvent.end %></small></p>
+                                            <p><small><%= order.pickupEvent.description %></small></p>
                                         <p>Order:</p>
                                             <% for(var i=0; i < order.items.length; i++) { %>
                                                                 <p><%= order.items[i].itemName %></p>
