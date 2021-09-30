@@ -32,6 +32,7 @@ import {
   DeleteMerchItemOptionResponse,
   CreateOrderPickupEventResponse,
   GetOrderPickupEventsResponse,
+  OrderStatus,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -183,13 +184,16 @@ export class MerchStoreController {
     return { error: null, order };
   }
 
-  @Patch('/order')
+  @Patch('/order/:uuid')
   async editMerchOrder(@Body() editOrderRequest: EditMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<EditMerchOrderResponse> {
-    //TODO: add changing for the pickup orders
-    if(!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    await this.merchStoreService.editOrder(user.uuid,editOrderRequest.status);
-    
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
+    const { status } = editOrderRequest.order;
+    // members are only allowed to cancel orders. store admins can perform any operation
+    if (status && status != OrderStatus.CANCELLED && !PermissionsService.canEditMerchStore(user)) {
+      throw new ForbiddenError('A member can only cancel orders');
+    } 
+    await this.merchStoreService.editOrder(editOrderRequest.order, user);
     return { error: null };
   }
 
