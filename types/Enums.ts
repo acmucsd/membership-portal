@@ -60,7 +60,8 @@ export enum FeedbackStatus {
 
 export enum OrderStatus {
   PLACED = "PLACED",
-  MISSED = "MISSED",
   CANCELLED = "CANCELLED",
   FULFILLED = "FULFILLED",
+  PICKUP_MISSED = "PICKUP_MISSED",
+  PICKUP_CANCELLED = "PICKUP_CANCELLED",
 }

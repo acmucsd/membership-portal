@@ -33,6 +33,7 @@ import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { MerchOrderRepository } from '../repositories/MerchOrderRepository';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
+import { MerchOrderEdit } from 'api/validators/MerchStoreRequests';
 
 @Service()
 export default class MerchStoreService {
@@ -367,7 +368,7 @@ export default class MerchStoreService {
       }
 
       // if all checks pass, the order is placed
-      const createdOrder = await merchOrderRepository.createMerchOrder(OrderModel.create({
+      const createdOrder = await merchOrderRepository.upsertMerchOrder(OrderModel.create({
         user,
         totalCost,
         items: flatten(originalOrder.map((optionAndQuantity) => {
@@ -379,6 +380,7 @@ export default class MerchStoreService {
             discountPercentageAtPurchase: option.discountPercentage,
           }));
         })),
+        pickupEvent,
       }));
 
       const activityRepository = Repositories.activity(txn);
@@ -412,12 +414,27 @@ export default class MerchStoreService {
         };
       }),
       totalCost: order.totalCost,
+      pickupEvent: {
+        ...order.pickupEvent,
+        start: moment(order.pickupEvent.start).format('HH:mm'),
+        end: moment(order.pickupEvent.start).format('HH:mm')
+      }
     };
     this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
 
     return order.getPublicOrder();
   }
 
+    private static createOrderEmailInfo(order: OrderModel, itemOptions: Map<string, MerchandiseItemOptionModel>) {
+    
+  }
+
+  /**
+   * Process fulfillment updates for all order items of an order.
+   * If all items get fulfilled after this update, then the order is considered fulfilled.
+   * @param fulfillmentUpdates fulfillment updates for order. This should be an array of every order item for an order.
+   * @param orderUuid order uuid
+   */
   public async fulfillOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[], orderUuid: Uuid): Promise<void> {
     const updates = new Map<string, OrderItemFulfillmentUpdate>();
     for (let i = 0; i < fulfillmentUpdates.length; i += 1) {
@@ -425,12 +442,13 @@ export default class MerchStoreService {
       oi.fulfilled = Boolean(oi.fulfilled);
       updates.set(oi.uuid, oi);
     }
-    await this.transactions.readWrite(async (txn) => {
+
+    return this.transactions.readWrite(async (txn) => {
       const orderRepository = Repositories.merchOrder(txn);
       const order = await orderRepository.findByUuid(orderUuid);
       const { items } = order;
       if (items.length !== fulfillmentUpdates.length) {
-        throw new NotFoundError('Missing some order items');
+        throw new NotFoundError('Missing some order items for the order in the request');
       }
 
       const toBeFulfilled = fulfillmentUpdates
@@ -444,25 +462,43 @@ export default class MerchStoreService {
       }
 
       const orderItemRepository = Repositories.merchOrderItem(txn);
-      await Promise.all(Array.from(items.values()).map((oi) => {
+      const fulfilledItems = await Promise.all(Array.from(items.values()).map((oi) => {
         const { fulfilled, notes } = updates.get(oi.uuid);
         return orderItemRepository.fulfillOrderItem(oi, fulfilled, notes);
       }));
 
-      if(orderItems.size > 0){
-
-        const orderRepository = Repositories.merchOrder(txn);
-
-        await orderRepository.fulfillOrder(order);
+      const isEntireOrderFulfilled = fulfilledItems.every((item) => item.fulfilled);
+      if (isEntireOrderFulfilled) {
+        await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
       }
     });
   }
 
-  public async editOrder(uuid:string, status?:OrderStatus){
-    //TODO: handle order pickup date changes
-    await this.transactions.readWrite(async (txn) => {
+  public async editOrder(orderEdit: MerchOrderEdit, user: UserModel): Promise<OrderModel> {
+    return this.transactions.readWrite(async (txn) => {
       const orderRespository = Repositories.merchOrder(txn);
-      
+      const order = await orderRespository.findByUuid(orderEdit.uuid);
+      if (!order) throw new NotFoundError('Order not found');
+      if (!user.isAdmin() && order.user != user) throw new ForbiddenError('Member cannot cancel other members orders');
+
+      const { status, pickupEvent } = orderEdit;
+      if (status) {
+        await orderRespository.upsertMerchOrder(order, { status });
+
+        const orderCancellationInfo = {
+
+        }
+        switch (status) {
+          case OrderStatus.CANCELLED:
+            await this.emailService.sendOrderCancellation();
+            break;
+          case OrderStatus.PICKUP_MISSED:
+            await this.emailService.sendOrderPickupMissed();
+            break;
+        }
+      }
+
+      return null;
     });
   }
 

@@ -1,6 +1,9 @@
+import { MerchandiseItemOptionModel } from 'models/MerchandiseItemOptionModel';
+import { OrderModel } from '../../models/OrderModel';
 import { EventModel } from '../../models/EventModel';
 import { UserModel } from '../../models/UserModel';
 import { ActivityScope, ActivityType } from '../Enums';
+import { OrderPickupEventModel } from 'models/OrderPickupEventModel';
 
 export type Attendance = {
   user: UserModel,
