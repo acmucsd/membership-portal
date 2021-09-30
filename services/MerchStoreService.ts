@@ -20,6 +20,8 @@ import {
   MerchItemEdit,
   PublicMerchItemOption,
   OrderStatus,
+  OrderPickupEvent,
+  OrderPickupEventEdit,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
@@ -29,7 +31,8 @@ import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
-import { MerchOrderRepository } from 'repositories/MerchOrderRepository';
+import { MerchOrderRepository } from '../repositories/MerchOrderRepository';
+import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 
 @Service()
 export default class MerchStoreService {
@@ -283,12 +286,15 @@ export default class MerchStoreService {
    *    - the user wouldn't reach monthly or lifetime limits for any item if this order is placed
    *    - the requested item options are in stock
    *    - the user has enough credits to place the order
+   *    - the pickup event specified exists and is at least 2 days before starting
    *
    * @param originalOrder the order containing item options and their quantities
    * @param user user placing the order
    * @returns the finalized order, including sale price, discount, and fulfillment details
    */
-  public async placeOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<PublicOrder> {
+  public async placeOrder(originalOrder: MerchItemOptionAndQuantity[],
+    user: UserModel,
+    pickupEventUuid: Uuid): Promise<PublicOrder> {
     const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
       await user.reload();
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
@@ -349,6 +355,16 @@ export default class MerchStoreService {
         return sum + (option.getPrice() * quantityRequested);
       }, 0);
       if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
+
+      // Verify the requested pickup event exists,
+      // and that the order is placed at least 2 days before the pickup event starts
+      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
+      if (!pickupEvent) {
+        throw new NotFoundError('Pickup event requested is not found');
+      }
+      if (new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate()) {
+        throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
+      }
 
       // if all checks pass, the order is placed
       const createdOrder = await merchOrderRepository.createMerchOrder(OrderModel.create({
@@ -475,5 +491,48 @@ export default class MerchStoreService {
       requestedQuantitiesByMerchItem.set(item, requestedQuantitiesByMerchItem.get(item) + quantityRequested);
     }
     return requestedQuantitiesByMerchItem;
+  }
+
+  public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .merchOrderPickupEvent(txn)
+      .getFuturePickupEvents());
+  }
+
+  public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<OrderPickupEventModel> {
+    if (pickupEvent.start >= pickupEvent.end) {
+      throw new UserError('Order pickup event start time must come before the end time');
+    }
+    return this.transactions.readWrite(async (txn) => Repositories
+      .merchOrderPickupEvent(txn)
+      .upsertPickupEvent(OrderPickupEventModel.create(pickupEvent)));
+  }
+
+  public async editPickupEvent(uuid: Uuid, changes: OrderPickupEventEdit): Promise<OrderPickupEventModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
+      const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
+      const updatedPickupEvent = OrderPickupEventModel.merge(pickupEvent, changes);
+      if (updatedPickupEvent.start >= updatedPickupEvent.end) {
+        throw new UserError('Order pickup event start time must come before the end time');
+      }
+      return orderPickupEventRepository.upsertPickupEvent(updatedPickupEvent);
+    });
+  }
+
+  /**
+   * TODO: Rewrite deletePickupEvent as per spec: https://github.com/acmucsd/membership-portal/issues/204
+   */
+  public async deletePickupEvent(uuid: Uuid): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
+      const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
+      if (pickupEvent.orders.length > 0) {
+        throw new UserError('Cannot delete an order pickup event that has orders assigned to it');
+      }
+      // Manually set all the orders' pickup events to null before deleting event
+      pickupEvent.orders.map((order) => OrderModel.merge(order, { pickupEvent: null }));
+      await orderPickupEventRepository.deletePickupEvent(pickupEvent);
+    });
   }
 }

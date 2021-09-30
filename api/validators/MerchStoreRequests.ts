@@ -1,4 +1,14 @@
-import { Allow, IsNotEmpty, Min, Max, IsDefined, IsUUID, ValidateNested, IsHexColor } from 'class-validator';
+import {
+  Allow,
+  IsNotEmpty,
+  Min,
+  Max,
+  IsDefined,
+  IsUUID,
+  ValidateNested,
+  IsHexColor,
+  IsDateString,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   CreateMerchCollectionRequest as ICreateMerchCollectionRequest,
@@ -9,6 +19,8 @@ import {
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
   EditMerchOrderRequest as IEditMerchOrderRequest,
+  CreateOrderPickupEventRequest as ICreateOrderPickupEventRequest,
+  EditOrderPickupEventRequest as IEditOrderPickupEventRequest,
   MerchItemOptionAndQuantity as IMerchItemOptionAndQuantity,
   OrderItemFulfillmentUpdate as IOrderItemFulfillmentUpdate,
   MerchCollection as IMerchCollection,
@@ -19,6 +31,8 @@ import {
   MerchItemOptionEdit as IMerchItemOptionEdit,
   MerchItemOptionMetadata as IMerchItemOptionMetadata,
   OrderStatus,
+  OrderPickupEvent as IOrderPickupEvent,
+  OrderPickupEventEdit as IOrderPickupEventEdit,
 } from '../../types';
 
 export class MerchCollection implements IMerchCollection {
@@ -191,6 +205,37 @@ export class OrderItemFulfillmentUpdate implements IOrderItemFulfillmentUpdate {
   notes?: string;
 }
 
+export class OrderPickupEvent implements IOrderPickupEvent {
+  @IsDefined()
+  @IsNotEmpty()
+  title: string;
+
+  @IsDefined()
+  @IsDateString()
+  start: Date;
+
+  @IsDefined()
+  @IsDateString()
+  end: Date;
+
+  @IsNotEmpty()
+  description: string;
+}
+
+export class OrderPickupEventEdit implements IOrderPickupEventEdit {
+  @IsNotEmpty()
+  title?: string;
+
+  @IsDateString()
+  start?: Date;
+
+  @IsDateString()
+  end?: Date;
+
+  @IsNotEmpty()
+  description?: string;
+}
+
 export class CreateMerchCollectionRequest implements ICreateMerchCollectionRequest {
   @Type(() => MerchCollection)
   @ValidateNested()
@@ -244,8 +289,24 @@ export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {
   items: OrderItemFulfillmentUpdate[];
 }
 
+<<<<<<< HEAD
 export class EditMerchOrderRequest implements IEditMerchOrderRequest {
   // TODO: add variables for handling store pickup date changes
   uuid: string;
   status?:OrderStatus;
 }
+=======
+export class CreateOrderPickupEventRequest implements ICreateOrderPickupEventRequest {
+  @Type(() => OrderPickupEvent)
+  @ValidateNested()
+  @IsDefined()
+  pickupEvent: OrderPickupEvent;
+}
+
+export class EditOrderPickupEventRequest implements IEditOrderPickupEventRequest {
+  @Type(() => OrderPickupEventEdit)
+  @ValidateNested()
+  @IsDefined()
+  pickupEvent: OrderPickupEventEdit;
+}
+>>>>>>> master

@@ -104,6 +104,11 @@ export class PortalState {
     return this.createMerchCollections(collectionWithOption);
   }
 
+  public createOrderPickupEvents(...pickupEvents: OrderPickupEventModel[]): PortalState {
+    this.orderPickupEvents = this.orderPickupEvents.concat(pickupEvents);
+    return this;
+  }
+
   public attendEvents(users: UserModel[], events: EventModel[], includesStaff = false): PortalState {
     for (let e = 0; e < events.length; e += 1) {
       const event = events[e];
@@ -129,11 +134,6 @@ export class PortalState {
         }));
       }
     }
-    return this;
-  }
-
-  public createOrderPickupEvents(...pickupEvents: OrderPickupEventModel[]): PortalState {
-    this.orderPickupEvents = this.orderPickupEvents.concat(pickupEvents);
     return this;
   }
 

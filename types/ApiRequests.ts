@@ -254,3 +254,13 @@ export interface OrderPickupEvent {
   end: Date;
   description: string;
 }
+
+export interface OrderPickupEventEdit extends Partial<OrderPickupEvent> {}
+
+export interface CreateOrderPickupEventRequest {
+  pickupEvent: OrderPickupEvent;
+}
+
+export interface EditOrderPickupEventRequest {
+  pickupEvent: OrderPickupEventEdit;
+}

@@ -6,6 +6,7 @@ export class AddOrderPickupEventField1631941813500 implements MigrationInterface
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(TABLE_NAME, new TableColumn({
       name: 'pickupEvent',
+      isNullable: true,
       type: 'uuid',
     }));
     await queryRunner.createForeignKey(TABLE_NAME, new TableForeignKey({

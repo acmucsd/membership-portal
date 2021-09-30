@@ -59,4 +59,12 @@ export default class PermissionsService {
   public static canFulfillMerchOrders(user: UserModel) {
     return user.isAdmin();
   }
+
+  public static canSeePickupEventOrders(user: UserModel) {
+    return user.isAdmin();
+  }
+
+  public static canManagePickupEvents(user: UserModel) {
+    return user.isAdmin();
+  }
 }
