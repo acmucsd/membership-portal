@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Order Confirmation</title>
+    <title>Order Pickup Missed</title>
     <style>
         /* -------------------------------------
             INLINED WITH htmlemail.io/inline
@@ -103,16 +103,22 @@
                                 <tr>
                                     <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Hi <%= firstName %>,</p>
-                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your merch order on the ACM membership portal has been placed:</p>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">The pickup event for your order on the ACM membership portal has passed:</p>
+                                        <p>Pickup event:</p>
+                                            <p><%= pickupEvent.title %></p>
+                                            <p><small>From <%= pickupEvent.start %> to <%= pickupEvent.end %></small></p>
+                                            <p><small><%= pickupEvent.description %></small></p>
+                                        <p>Order:</p>
                                             <% for(var i=0; i < order.items.length; i++) { %>
                                                                 <p><%= order.items[i].itemName %></p>
                                                                 <p><small><%= order.items[i].salePrice %> x <%= order.items[i].quantityRequested %> = <%= order.items[i].total %></small></p>
                                             <% } %>
-                                                <h1><%= order.totalCost %></h1>
-                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your pickup event details are below:</p>
-                                                                <p><%= pickupEvent.title %></p>
-                                                                <p><small>From <%= pickupEvent.start %> to <%= pickupEvent.end %></small></p>
-                                                                <p><small><%= pickupEvent.description %></small></p>
+                                            <h1><%= order.totalCost %></h1>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Please reschedule a pickup time for your order. If you are not able to schedule a pickup time
+                                          before the end of the quarter, then your order will be cancelled and fully refunded to your account.
+
+                                          You can reschedule here: https://members.acmucsd.com/
+                                        </p>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Regards, <br />ACM UCSD</p>
                                     </td>
                                 </tr>
