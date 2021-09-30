@@ -10,7 +10,7 @@ import {
   IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsValidOrderStatus } from 'api/decorators/Validators';
+import { IsValidOrderStatus } from '../decorators/Validators';
 import {
   CreateMerchCollectionRequest as ICreateMerchCollectionRequest,
   EditMerchCollectionRequest as IEditMerchCollectionRequest,
