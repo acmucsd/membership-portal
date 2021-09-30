@@ -16,6 +16,12 @@ export default class EmailService {
 
   private static readonly orderConfirmationTemplate = EmailService.readTemplate('orderConfirmation.ejs');
 
+  private static readonly orderCancellationTemplate = EmailService.readTemplate('orderCancellation.ejs');
+
+  private static readonly orderPickupMissedTemplate = EmailService.readTemplate('orderPickupMissed.ejs');
+
+  private static readonly orderPickupCancelledTemplate = EmailService.readTemplate('orderPickupCancelled.ejs');
+
   constructor() {
     this.mailer.setApiKey(Config.email.apiKey);
   }
@@ -74,18 +80,41 @@ export default class EmailService {
         to: email,
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store Order Cancellation',
-        html: ejs.render(EmailService.orderConfirmationTemplate, { firstName, order }),
+        html: ejs.render(EmailService.orderCancellationTemplate, { firstName, order }),
       };
       await this.sendEmail(data);
     } catch (error) {
-      log.warn(`Failed to send order confirmation email to ${email}`, { error });
+      log.warn(`Failed to send order cancellation email to ${email}`, { error });
     }
   }
 
-  public async sendOrderPickupMissed(email: string, firstName: string, order: OrderInfo) {}
+  public async sendOrderPickupMissed(email: string, firstName: string, order: OrderInfo) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Merch Store Order Pickup Missed',
+        html: ejs.render(EmailService.orderPickupMissedTemplate, { firstName, order }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send order pickup missed email to ${email}`, { error });
+    }
+  }
 
-  public async sendOrderPickupCancelled(email: string, firstName: string, order: OrderInfo) {}
-
+  public async sendOrderPickupCancelled(email: string, firstName: string, order: OrderInfo) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Merch Store Order Pickup Event Cancelled',
+        html: ejs.render(EmailService.orderPickupCancelledTemplate, { firstName, order }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send order pickup cancelled email to ${email}`, { error });
+    }
+  }
 
   private static readTemplate(filename: string): string {
     return fs.readFileSync(path.join(__dirname, `../templates/${filename}`), 'utf-8');
@@ -115,5 +144,5 @@ export interface OrderPickupEventInfo {
 export interface OrderInfo {
   items: OrderLineItem[];
   totalCost: number;
-  pickupEvent?: OrderPickupEventInfo;
+  pickupEvent: OrderPickupEventInfo;
 }

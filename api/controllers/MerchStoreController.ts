@@ -185,27 +185,31 @@ export class MerchStoreController {
   }
 
   @Patch('/order/:uuid')
-  async editMerchOrder(@Body() editOrderRequest: EditMerchOrderRequest,
+  async editMerchOrder(@Params() params: UuidParam,
+    @Body() editOrderRequest: EditMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<EditMerchOrderResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const { status } = editOrderRequest.order;
+    const { status, pickupEvent } = editOrderRequest.order;
+    // status and pickup event are not allowed to be updated at the same time,
+    // since they are not logically related, and thus should never have to be updated at the same request
+    if (status && pickupEvent) throw new UserError('Only status or pickupEvent can be updated at once, not both');
     // members are only allowed to cancel orders. store admins can perform any operation
-    if (status && status != OrderStatus.CANCELLED && !PermissionsService.canEditMerchStore(user)) {
-      throw new ForbiddenError('A member can only cancel orders');
-    } 
-    await this.merchStoreService.editOrder(editOrderRequest.order, user);
+    if (status && status !== OrderStatus.CANCELLED && !PermissionsService.canEditMerchStore(user)) {
+      throw new ForbiddenError('Members can only cancel orders');
+    }
+    await this.merchStoreService.editOrder(params.uuid, editOrderRequest.order, user);
     return { error: null };
   }
 
   @Post('/order/:uuid/fulfillment')
-  async fulfillMerchOrder(@Params() uuidParam: UuidParam, @Body() fulfillOrderRequest: FulfillMerchOrderRequest,
+  async fulfillMerchOrder(@Params() params: UuidParam, @Body() fulfillOrderRequest: FulfillMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<FulfillMerchOrderResponse> {
     if (!PermissionsService.canFulfillMerchOrders(user)) throw new ForbiddenError();
     const numUniqueUuids = (new Set(fulfillOrderRequest.items.map((oi) => oi.uuid))).size;
     if (fulfillOrderRequest.items.length !== numUniqueUuids) {
       throw new BadRequestError('There are duplicate order items');
     }
-    await this.merchStoreService.fulfillOrderItems(fulfillOrderRequest.items, uuidParam.uuid);
+    await this.merchStoreService.fulfillOrderItems(fulfillOrderRequest.items, params.uuid);
     return { error: null };
   }
 

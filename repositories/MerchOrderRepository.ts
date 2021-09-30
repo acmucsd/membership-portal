@@ -5,7 +5,6 @@ import { UserModel } from '../models/UserModel';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { BaseRepository } from './BaseRepository';
-import { OrderStatus } from 'types/Enums';
 
 @EntityRepository(OrderModel)
 export class MerchOrderRepository extends BaseRepository<OrderModel> {

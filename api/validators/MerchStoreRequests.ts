@@ -10,6 +10,7 @@ import {
   IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsValidOrderStatus } from 'api/decorators/Validators';
 import {
   CreateMerchCollectionRequest as ICreateMerchCollectionRequest,
   EditMerchCollectionRequest as IEditMerchCollectionRequest,
@@ -35,7 +36,6 @@ import {
   OrderPickupEventEdit as IOrderPickupEventEdit,
   OrderStatus,
 } from '../../types';
-import { IsValidOrderStatus } from 'api/decorators/Validators';
 
 export class MerchCollection implements IMerchCollection {
   @IsDefined()
@@ -239,10 +239,6 @@ export class OrderPickupEventEdit implements IOrderPickupEventEdit {
 }
 
 export class MerchOrderEdit implements IMerchOrderEdit {
-  @IsDefined()
-  @IsUUID()
-  uuid: string;
-
   @IsValidOrderStatus()
   status?: OrderStatus;
 
@@ -307,7 +303,7 @@ export class EditMerchOrderRequest implements IEditMerchOrderRequest {
   @Type(() => MerchOrderEdit)
   @ValidateNested()
   @IsDefined()
-  order: MerchOrderEdit
+  order: MerchOrderEdit;
 }
 
 export class CreateOrderPickupEventRequest implements ICreateOrderPickupEventRequest {

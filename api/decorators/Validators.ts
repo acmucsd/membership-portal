@@ -142,7 +142,9 @@ export function IsValidFeedbackStatus(validationOptions?: ValidationOptions) {
 @ValidatorConstraint()
 class OrderStatusValidator implements ValidatorConstraintInterface {
   validate(orderStatus: OrderStatus): boolean {
-    return Object.values(OrderStatus).includes(orderStatus) && orderStatus !== OrderStatus.PLACED;
+    return Object.values(OrderStatus).includes(orderStatus)
+      && orderStatus !== OrderStatus.PLACED
+      && orderStatus !== OrderStatus.FULFILLED;
   }
 
   defaultMessage(): string {

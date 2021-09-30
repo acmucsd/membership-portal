@@ -4,6 +4,8 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment';
+import { MerchOrderEdit } from 'api/validators/MerchStoreRequests';
+import { OrderItemPriceAndQuantity } from 'types/internal';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,
@@ -31,9 +33,7 @@ import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel
 import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
-import { MerchOrderRepository } from '../repositories/MerchOrderRepository';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
-import { MerchOrderEdit } from 'api/validators/MerchStoreRequests';
 
 @Service()
 export default class MerchStoreService {
@@ -417,16 +417,113 @@ export default class MerchStoreService {
       pickupEvent: {
         ...order.pickupEvent,
         start: moment(order.pickupEvent.start).format('HH:mm'),
-        end: moment(order.pickupEvent.start).format('HH:mm')
-      }
+        end: moment(order.pickupEvent.start).format('HH:mm'),
+      },
     };
     this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
 
     return order.getPublicOrder();
   }
 
-    private static createOrderEmailInfo(order: OrderModel, itemOptions: Map<string, MerchandiseItemOptionModel>) {
-    
+  /**
+   * Edit a merch order's status or pickup event. If the status is being edited,
+   * the user who placed the order can only cancel the order, while the admin can mark
+   * it as missed.
+   *
+   * If the pickup event of the order is changed, then it must be changed to a pickup event that's
+   * at least 2 days in the future.
+   *
+   * @param uuid order uuid
+   * @param orderEdit order edits
+   * @param user user requesting the edit
+   * @returns the edited order
+   */
+  public async editOrder(uuid: Uuid, orderEdit: MerchOrderEdit, user: UserModel): Promise<OrderModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderRespository = Repositories.merchOrder(txn);
+      const order = await orderRespository.findByUuid(uuid);
+      if (!order) throw new NotFoundError('Order not found');
+      if (!user.isAdmin() && order.user !== user) throw new ForbiddenError('Member cannot cancel other members orders');
+
+      const { status, pickupEvent: pickupEventUuid } = orderEdit;
+      if (status) {
+        const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status });
+
+        // maps an item option to its price at purchase and quantity ordered by the user
+        const optionPricesAndQuantities = MerchStoreService.getOptionPriceAndQuantitiesFromOrder(order);
+        const itemOptionsOrdered = Array.from(optionPricesAndQuantities.keys());
+        const itemOptionByUuid = await Repositories
+          .merchStoreItemOption(txn)
+          .batchFindByUuid(itemOptionsOrdered);
+
+        const orderUpdateInfo = {
+          items: itemOptionsOrdered.map((option) => {
+            const { item } = itemOptionByUuid.get(option);
+            const { quantity, price } = optionPricesAndQuantities.get(option);
+            return {
+              ...item,
+              quantityRequested: quantity,
+              salePrice: price,
+              total: quantity * price,
+            };
+          }),
+          totalCost: order.totalCost,
+          pickupEvent: {
+            ...order.pickupEvent,
+            start: moment(order.pickupEvent.start).format('HH:mm'),
+            end: moment(order.pickupEvent.start).format('HH:mm'),
+          },
+        };
+
+        // send email confirmation
+        switch (status) {
+          case OrderStatus.CANCELLED:
+            await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+            break;
+          case OrderStatus.PICKUP_MISSED:
+            await this.emailService.sendOrderPickupMissed(user.email, user.firstName, orderUpdateInfo);
+            break;
+          default:
+            // status can only be CANCELLED or PICKUP_MISSED due to controller validation, so default case can be empty
+            break;
+        }
+        return upsertedOrder;
+      }
+      // verify the requested pickup event exists,
+      // and that the order is placed at least 2 days before the pickup event starts
+      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
+      if (!pickupEvent) {
+        throw new NotFoundError('Pickup event requested is not found');
+      }
+      if (new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate()) {
+        throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
+      }
+      return orderRespository.upsertMerchOrder(order, { pickupEvent });
+    });
+  }
+
+  /**
+   * Maps an item's option to its price at purchase and quantity ordered by the user
+   * @param order order
+   * @returns map of item option to its price at purchase and quantity ordered by the user
+   */
+  private static getOptionPriceAndQuantitiesFromOrder(order: OrderModel): Map<string, OrderItemPriceAndQuantity> {
+    const optionToPriceAndQuantity = new Map<string, OrderItemPriceAndQuantity>();
+    order.items.forEach((oi) => {
+      const { uuid } = oi.option;
+      if (optionToPriceAndQuantity.has(oi.option.uuid)) {
+        optionToPriceAndQuantity.set(uuid, {
+          quantity: optionToPriceAndQuantity.get(uuid).quantity + 1,
+          price: optionToPriceAndQuantity.get(uuid).price,
+        });
+      } else {
+        optionToPriceAndQuantity.set(uuid, {
+          quantity: 1,
+          price: oi.salePriceAtPurchase,
+        });
+      }
+    });
+    return optionToPriceAndQuantity;
   }
 
   /**
@@ -471,34 +568,6 @@ export default class MerchStoreService {
       if (isEntireOrderFulfilled) {
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
       }
-    });
-  }
-
-  public async editOrder(orderEdit: MerchOrderEdit, user: UserModel): Promise<OrderModel> {
-    return this.transactions.readWrite(async (txn) => {
-      const orderRespository = Repositories.merchOrder(txn);
-      const order = await orderRespository.findByUuid(orderEdit.uuid);
-      if (!order) throw new NotFoundError('Order not found');
-      if (!user.isAdmin() && order.user != user) throw new ForbiddenError('Member cannot cancel other members orders');
-
-      const { status, pickupEvent } = orderEdit;
-      if (status) {
-        await orderRespository.upsertMerchOrder(order, { status });
-
-        const orderCancellationInfo = {
-
-        }
-        switch (status) {
-          case OrderStatus.CANCELLED:
-            await this.emailService.sendOrderCancellation();
-            break;
-          case OrderStatus.PICKUP_MISSED:
-            await this.emailService.sendOrderPickupMissed();
-            break;
-        }
-      }
-
-      return null;
     });
   }
 

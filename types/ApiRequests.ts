@@ -237,7 +237,6 @@ export interface MerchItemEdit extends Partial<CommonMerchItemProperties> {
 }
 
 export interface MerchOrderEdit {
-  uuid: Uuid;
   status?: OrderStatus;
   pickupEvent?: Uuid;
 }

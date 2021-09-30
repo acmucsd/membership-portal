@@ -1,9 +1,6 @@
-import { MerchandiseItemOptionModel } from 'models/MerchandiseItemOptionModel';
-import { OrderModel } from '../../models/OrderModel';
 import { EventModel } from '../../models/EventModel';
 import { UserModel } from '../../models/UserModel';
 import { ActivityScope, ActivityType } from '../Enums';
-import { OrderPickupEventModel } from 'models/OrderPickupEventModel';
 
 export type Attendance = {
   user: UserModel,
@@ -34,4 +31,9 @@ export const ActivityTypeToScope = {
   [ActivityType.ACCOUNT_RESET_PASS]: ActivityScope.HIDDEN,
   [ActivityType.ACCOUNT_RESET_PASS_REQUEST]: ActivityScope.HIDDEN,
   [ActivityType.ACCOUNT_UPDATE_INFO]: ActivityScope.HIDDEN,
+};
+
+export type OrderItemPriceAndQuantity = {
+  price: number,
+  quantity: number,
 };
