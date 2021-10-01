@@ -448,33 +448,7 @@ export default class MerchStoreService {
       const { status, pickupEvent: pickupEventUuid } = orderEdit;
       if (status) {
         const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status });
-
-        // maps an item option to its price at purchase and quantity ordered by the user
-        const optionPricesAndQuantities = MerchStoreService.getOptionPriceAndQuantitiesFromOrder(order);
-        const itemOptionsOrdered = Array.from(optionPricesAndQuantities.keys());
-        const itemOptionByUuid = await Repositories
-          .merchStoreItemOption(txn)
-          .batchFindByUuid(itemOptionsOrdered);
-
-        const orderUpdateInfo = {
-          items: itemOptionsOrdered.map((option) => {
-            const { item } = itemOptionByUuid.get(option);
-            const { quantity, price } = optionPricesAndQuantities.get(option);
-            return {
-              ...item,
-              quantityRequested: quantity,
-              salePrice: price,
-              total: quantity * price,
-            };
-          }),
-          totalCost: order.totalCost,
-          pickupEvent: {
-            ...order.pickupEvent,
-            start: moment(order.pickupEvent.start).format('HH:mm'),
-            end: moment(order.pickupEvent.start).format('HH:mm'),
-          },
-        };
-
+        const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, txn);
         // send email confirmation
         switch (status) {
           case OrderStatus.CANCELLED:
@@ -529,6 +503,41 @@ export default class MerchStoreService {
 
   private static async refundUser(user: UserModel, credits: number, txn: EntityManager): Promise<UserModel> {
     return Repositories.user(txn).upsertUser(user, { credits: user.credits + credits });
+  }
+
+  /**
+   * Builds an order update info object to be sent in emails, based on the order.
+   * @param order order
+   * @param txn transaction
+   * @returns order update info for email
+   */
+  private static async buildOrderUpdateInfo(order: OrderModel, txn: EntityManager) {
+    // maps an item option to its price at purchase and quantity ordered by the user
+    const optionPricesAndQuantities = MerchStoreService.getOptionPriceAndQuantitiesFromOrder(order);
+    const itemOptionsOrdered = Array.from(optionPricesAndQuantities.keys());
+    const itemOptionByUuid = await Repositories
+      .merchStoreItemOption(txn)
+      .batchFindByUuid(itemOptionsOrdered);
+
+    const orderUpdateInfo = {
+      items: itemOptionsOrdered.map((option) => {
+        const { item } = itemOptionByUuid.get(option);
+        const { quantity, price } = optionPricesAndQuantities.get(option);
+        return {
+          ...item,
+          quantityRequested: quantity,
+          salePrice: price,
+          total: quantity * price,
+        };
+      }),
+      totalCost: order.totalCost,
+      pickupEvent: {
+        ...order.pickupEvent,
+        start: moment(order.pickupEvent.start).format('HH:mm'),
+        end: moment(order.pickupEvent.start).format('HH:mm'),
+      },
+    };
+    return orderUpdateInfo;
   }
 
   /**
@@ -631,16 +640,24 @@ export default class MerchStoreService {
   }
 
   /**
-   * TODO: Rewrite deletePickupEvent as per spec: https://github.com/acmucsd/membership-portal/issues/204
+   * Deletes a pickup event. Before deletion, all orders for the pickup event will
+   * have emails sent out to the users who've placed the order.
    */
   public async deletePickupEvent(uuid: Uuid): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
+      const orderRepository = Repositories.merchOrder(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
       if (pickupEvent.orders.length > 0) {
         throw new UserError('Cannot delete an order pickup event that has orders assigned to it');
       }
-      // Manually set all the orders' pickup events to null before deleting event
+      // email order cancellation for order, update order status, and set pickupEvent to null before deleting
+      pickupEvent.orders.forEach(async (order) => {
+        const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, txn);
+        const { user } = order;
+        await this.emailService.sendOrderPickupCancelled(user.email, user.firstName, orderUpdateInfo);
+        await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_CANCELLED, pickupEvent: null });
+      });
       pickupEvent.orders.map((order) => OrderModel.merge(order, { pickupEvent: null }));
       await orderPickupEventRepository.deletePickupEvent(pickupEvent);
     });
