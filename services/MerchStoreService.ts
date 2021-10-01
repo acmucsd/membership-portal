@@ -449,9 +449,11 @@ export default class MerchStoreService {
       if (status) {
         const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status });
         const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, txn);
-        // send email confirmation
         switch (status) {
           case OrderStatus.CANCELLED:
+            if (new Date() > moment(order.pickupEvent.start).subtract(2, 'days').toDate()) {
+              throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
+            }
             await MerchStoreService.refundUser(user, order.totalCost, txn);
             await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
             break;
