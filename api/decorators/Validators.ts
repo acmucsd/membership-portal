@@ -140,7 +140,7 @@ export function IsValidFeedbackStatus(validationOptions?: ValidationOptions) {
 }
 
 @ValidatorConstraint()
-class OrderStatusValidator implements ValidatorConstraintInterface {
+class OrderStatusEditValidator implements ValidatorConstraintInterface {
   validate(orderStatus: OrderStatus): boolean {
     return Object.values(OrderStatus).includes(orderStatus)
       && orderStatus !== OrderStatus.PLACED
@@ -149,6 +149,22 @@ class OrderStatusValidator implements ValidatorConstraintInterface {
 
   defaultMessage(): string {
     return 'Order status must be one of [\'PICKUP_MISSED\', \'CANCELLED\', \'PICKUP_CANCELLED\']';
+  }
+}
+
+export function IsValidOrderStatusEdit(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(OrderStatusEditValidator, validationOptions);
+}
+
+@ValidatorConstraint()
+class OrderStatusValidator implements ValidatorConstraintInterface {
+  validate(orderStatus: OrderStatus): boolean {
+    return Object.values(OrderStatus).includes(orderStatus);
+  }
+
+  defaultMessage(): string {
+    return 'Order status must be one of [\'PLACED\', \'FULFILLED\', \'PICKUP_MISSED\', '
+      + '\'CANCELLED\', \'PICKUP_CANCELLED\']';
   }
 }
 

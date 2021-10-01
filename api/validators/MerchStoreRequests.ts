@@ -10,7 +10,7 @@ import {
   IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsValidOrderStatus } from '../decorators/Validators';
+import { IsValidOrderStatus, IsValidOrderStatusEdit } from '../decorators/Validators';
 import {
   CreateMerchCollectionRequest as ICreateMerchCollectionRequest,
   EditMerchCollectionRequest as IEditMerchCollectionRequest,
@@ -35,6 +35,7 @@ import {
   OrderPickupEvent as IOrderPickupEvent,
   OrderPickupEventEdit as IOrderPickupEventEdit,
   OrderStatus,
+  GetOrderQueryParams as IGetOrderQueryParams,
 } from '../../types';
 
 export class MerchCollection implements IMerchCollection {
@@ -239,7 +240,7 @@ export class OrderPickupEventEdit implements IOrderPickupEventEdit {
 }
 
 export class MerchOrderEdit implements IMerchOrderEdit {
-  @IsValidOrderStatus()
+  @IsValidOrderStatusEdit()
   status?: OrderStatus;
 
   @IsUUID()
@@ -318,4 +319,9 @@ export class EditOrderPickupEventRequest implements IEditOrderPickupEventRequest
   @ValidateNested()
   @IsDefined()
   pickupEvent: OrderPickupEventEdit;
+}
+
+export class GetOrderQueryParams implements IGetOrderQueryParams {
+  @IsValidOrderStatus()
+  status?: OrderStatus;
 }

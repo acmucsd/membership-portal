@@ -267,13 +267,13 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
-  public async getAllOrders(user: UserModel, canSeeAllOrders = false): Promise<PublicOrder[]> {
+  public async getAllOrders(user: UserModel, status?: OrderStatus, canSeeAllOrders = false): Promise<PublicOrder[]> {
     const orders = await this.transactions.readOnly(async (txn) => {
       const merchOrderRepository = Repositories.merchOrder(txn);
       if (canSeeAllOrders) {
-        return merchOrderRepository.getAllOrdersForAllUsers();
+        return merchOrderRepository.getAllOrdersForAllUsers(status);
       }
-      return merchOrderRepository.getAllOrdersForUser(user);
+      return merchOrderRepository.getAllOrdersForUser(user, status);
     });
     return orders.map((o) => o.getPublicOrder());
   }

@@ -10,6 +10,7 @@ import {
   ForbiddenError,
   NotFoundError,
   BadRequestError,
+  QueryParams,
 } from 'routing-controllers';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
@@ -49,6 +50,7 @@ import {
   CreateMerchItemOptionRequest,
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
+  GetOrderQueryParams,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
 
@@ -164,10 +166,11 @@ export class MerchStoreController {
   }
 
   @Get('/order')
-  async getAllMerchOrders(@AuthenticatedUser() user: UserModel): Promise<GetAllMerchOrdersResponse> {
+  async getAllMerchOrders(@QueryParams() filters: GetOrderQueryParams,
+    @AuthenticatedUser() user: UserModel): Promise<GetAllMerchOrdersResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const canSeeAllOrders = PermissionsService.canSeeAllMerchOrders(user);
-    const orders = await this.merchStoreService.getAllOrders(user, canSeeAllOrders);
+    const orders = await this.merchStoreService.getAllOrders(user, filters.status, canSeeAllOrders);
     return { error: null, orders };
   }
 

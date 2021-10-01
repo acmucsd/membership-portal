@@ -1,5 +1,5 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
-import { Uuid } from '../types';
+import { OrderStatus, Uuid } from '../types';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import { OrderItemModel } from '../models/OrderItemModel';
@@ -12,11 +12,17 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
     return this.repository.findOne(uuid);
   }
 
-  public async getAllOrdersForAllUsers(): Promise<OrderModel[]> {
+  public async getAllOrdersForAllUsers(status?: OrderStatus): Promise<OrderModel[]> {
+    if (status) {
+      return this.repository.find({ status });
+    }
     return this.repository.find();
   }
 
-  public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
+  public async getAllOrdersForUser(user: UserModel, status?: OrderStatus): Promise<OrderModel[]> {
+    if (status) {
+      return this.repository.find({ user, status });
+    }
     return this.repository.find({ user });
   }
 
