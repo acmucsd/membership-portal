@@ -478,6 +478,7 @@ export default class MerchStoreService {
         // send email confirmation
         switch (status) {
           case OrderStatus.CANCELLED:
+            await MerchStoreService.refundUser(user, order.totalCost, txn);
             await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
             break;
           case OrderStatus.PICKUP_MISSED:
@@ -524,6 +525,10 @@ export default class MerchStoreService {
       }
     });
     return optionToPriceAndQuantity;
+  }
+
+  private static async refundUser(user: UserModel, credits: number, txn: EntityManager): Promise<UserModel> {
+    return Repositories.user(txn).upsertUser(user, { credits: user.credits + credits });
   }
 
   /**
