@@ -484,7 +484,7 @@ export default class MerchStoreService {
    * @param order order
    * @returns map of item option to its price at purchase and quantity ordered by the user
    */
-  private static getOptionPriceAndQuantitiesFromOrder(order: OrderModel): Map<string, OrderItemPriceAndQuantity> {
+  private static getPriceAndQuantityByOption(order: OrderModel): Map<Uuid, OrderItemPriceAndQuantity> {
     const optionToPriceAndQuantity = new Map<string, OrderItemPriceAndQuantity>();
     order.items.forEach((oi) => {
       const { uuid } = oi.option;
