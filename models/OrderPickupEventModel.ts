@@ -19,6 +19,9 @@ export class OrderPickupEventModel extends BaseEntity {
   @Column('text')
   description: string;
 
+  @Column('integer')
+  orderLimit: number;
+
   @OneToMany((type) => OrderModel, (order) => order.pickupEvent, { nullable: false })
   @JoinColumn({ name: 'order' })
   orders: OrderModel[];

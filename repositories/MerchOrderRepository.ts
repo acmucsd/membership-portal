@@ -67,9 +67,14 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
 @EntityRepository(OrderPickupEventModel)
 export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventModel> {
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
+    const currentOrderCount = await this.repository.createQueryBuilder('orderPickupEvent')
+      .innerJoinAndSelect('orderPickupEvent.orders', 'orders')
+      .getCount();
     return this.getBaseFindQuery()
       .where('"end" >= :now')
+      .andWhere(':orderCount <= "orderLimit"')
       .setParameter('now', new Date())
+      .setParameter('orderCount', currentOrderCount)
       .getMany();
   }
 
