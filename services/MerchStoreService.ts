@@ -521,7 +521,7 @@ export default class MerchStoreService {
       .merchStoreItemOption(txn)
       .batchFindByUuid(itemOptionsOrdered);
 
-    const orderUpdateInfo = {
+    return {
       items: itemOptionsOrdered.map((option) => {
         const { item } = itemOptionByUuid.get(option);
         const { quantity, price } = optionPricesAndQuantities.get(option);
