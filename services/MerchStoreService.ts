@@ -293,7 +293,7 @@ export default class MerchStoreService {
 
       await this.verifyOrderWithTransaction(originalOrder, user, txn);
 
-      const totalCost = this.getTotalCost(originalOrder, itemOptions);
+      const totalCost = MerchStoreService.totalCost(originalOrder, itemOptions);
 
       const merchOrderRepository = Repositories.merchOrder(txn);
 
@@ -349,6 +349,12 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
+  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      this.verifyOrderWithTransaction(originalOrder, user, txn);
+    });
+  }
+  
   private async verifyOrderWithTransaction(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
     txn: EntityManager): Promise<void> {
@@ -405,14 +411,8 @@ export default class MerchStoreService {
     }
 
     // checks that the user has enough credits to place order
-    const totalCost = this.getTotalCost(originalOrder, itemOptions);
+    const totalCost = MerchStoreService.totalCost(originalOrder, itemOptions);
     if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
-  }
-
-  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
-    return this.transactions.readWrite(async (txn) => {
-      this.verifyOrderWithTransaction(originalOrder, user, txn);
-    });
   }
 
   public async updateOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[]): Promise<void> {
@@ -473,7 +473,7 @@ export default class MerchStoreService {
     return requestedQuantitiesByMerchItem;
   }
 
-  private getTotalCost(order:MerchItemOptionAndQuantity[], itemOptions:Map<string, MerchandiseItemOptionModel>):number {
+  private static totalCost(order:MerchItemOptionAndQuantity[], itemOptions:Map<string, MerchandiseItemOptionModel>):number {
     return order.reduce((sum, o) => {
       const option = itemOptions.get(o.option);
       const quantityRequested = o.quantity;

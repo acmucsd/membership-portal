@@ -180,10 +180,19 @@ export class MerchStoreController {
   async verifyMerchOrder(@Body() verifyOrderRequest: VerifyMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<VerifyMerchOrderResponse> {
     const originalOrder = this.verifyMerchOrderRequest(verifyOrderRequest.order, user);
-
     await this.merchStoreService.verifyOrder(originalOrder, user);
-
     return { error: null };
+  }
+
+  private verifyMerchOrderRequest(orderRequest:MerchItemOptionAndQuantity[],
+    user:UserModel):MerchItemOptionAndQuantity[] {
+    const originalOrder = orderRequest.filter((oi) => oi.quantity > 0);
+    const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
+    if (orderIsEmpty) throw new UserError('There are no items in this order');
+    const numUniqueUuids = (new Set(originalOrder.map((oi) => oi.option))).size;
+    if (originalOrder.length !== numUniqueUuids) throw new BadRequestError('There are duplicate items in this order');
+
+    return originalOrder;
   }
 
   @Patch('/order')
@@ -196,17 +205,5 @@ export class MerchStoreController {
     }
     await this.merchStoreService.updateOrderItems(fulfillOrderRequest.items);
     return { error: null };
-  }
-
-  private verifyMerchOrderRequest(orderRequest:MerchItemOptionAndQuantity[],
-    user:UserModel):MerchItemOptionAndQuantity[] {
-    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const originalOrder = orderRequest.filter((oi) => oi.quantity > 0);
-    const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
-    if (orderIsEmpty) throw new UserError('There are no items in this order');
-    const numUniqueUuids = (new Set(originalOrder.map((oi) => oi.option))).size;
-    if (originalOrder.length !== numUniqueUuids) throw new BadRequestError('There are duplicate items in this order');
-
-    return originalOrder;
   }
 }
