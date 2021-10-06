@@ -205,7 +205,7 @@ export class MerchStoreController {
     const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
     if (orderIsEmpty) throw new UserError('There are no items in this order');
     const numUniqueUuids = (new Set(originalOrder.map((oi) => oi.option))).size;
-    if (originalOrder.length !== numUniqueUuids) throw new BadRequestError('There are duplicate items in this order');
+    if (originalOrder.length !== numUniqueUuids) throw new UserError('There are duplicate items in this order');
 
     return originalOrder;
   }
