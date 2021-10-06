@@ -285,6 +285,7 @@ export default class MerchStoreService {
    *    - the requested item options are in stock
    *    - the user has enough credits to place the order
    *    - the pickup event specified exists and is at least 2 days before starting
+   *    - the pickup event is not at or above the current order limit
    *
    * @param originalOrder the order containing item options and their quantities
    * @param user user placing the order
@@ -362,6 +363,13 @@ export default class MerchStoreService {
       }
       if (new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate()) {
         throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
+      }
+
+      // Verify that this order would not set the pickup event's order count
+      // over the order limit
+      const currentOrderCount = pickupEvent.orders.length;
+      if (currentOrderCount >= pickupEvent.orderLimit) {
+        throw new UserError('Cannot place order with a fully-booked pickup event');
       }
 
       // if all checks pass, the order is placed
@@ -496,6 +504,10 @@ export default class MerchStoreService {
       const updatedPickupEvent = OrderPickupEventModel.merge(pickupEvent, changes);
       if (updatedPickupEvent.start >= updatedPickupEvent.end) {
         throw new UserError('Order pickup event start time must come before the end time');
+      }
+      const currentOrderCount = pickupEvent.orders.length;
+      if (updatedPickupEvent.orderLimit < currentOrderCount) {
+        throw new UserError('Order pickup event cannot have its order limit lower than the current number of orders booked in it');
       }
       return orderPickupEventRepository.upsertPickupEvent(updatedPickupEvent);
     });
