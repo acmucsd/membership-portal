@@ -370,7 +370,7 @@ export default class MerchStoreService {
       this.verifyOrderWithTransaction(originalOrder, user, txn);
     });
   }
-  
+
   private async verifyOrderWithTransaction(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
     txn: EntityManager): Promise<void> {
@@ -489,14 +489,15 @@ export default class MerchStoreService {
     return requestedQuantitiesByMerchItem;
   }
 
-  private static totalCost(order:MerchItemOptionAndQuantity[], itemOptions:Map<string, MerchandiseItemOptionModel>):number {
+  private static totalCost(order:MerchItemOptionAndQuantity[],
+    itemOptions:Map<string, MerchandiseItemOptionModel>):number {
     return order.reduce((sum, o) => {
       const option = itemOptions.get(o.option);
       const quantityRequested = o.quantity;
       return sum + (option.getPrice() * quantityRequested);
     }, 0);
   }
-  
+
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
     return this.transactions.readOnly(async (txn) => Repositories
       .merchOrderPickupEvent(txn)
