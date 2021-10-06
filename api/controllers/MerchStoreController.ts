@@ -224,12 +224,11 @@ export class MerchStoreController {
 
   @Get('/cart')
   async getCart(@Body() getCartRequest:GetCartRequest, @AuthenticatedUser() user: UserModel): Promise<GetCartResponse> {
-    if(PermissionsService.canAccessMerchStore(user)){
+    if (PermissionsService.canAccessMerchStore(user)) {
       throw new ForbiddenError();
     }
     const items = await this.merchStoreService.getCartItems(getCartRequest.items);
-  
+
     return { error: null, items };
   }
 }
-
