@@ -188,7 +188,7 @@ export class MerchStoreController {
   }
 
   private verifyMerchOrderRequest(orderRequest: MerchItemOptionAndQuantity[],
-    user: UserModel):MerchItemOptionAndQuantity[] {
+    user: UserModel): MerchItemOptionAndQuantity[] {
     const originalOrder = orderRequest.filter((oi) => oi.quantity > 0);
     const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
     if (orderIsEmpty) throw new UserError('There are no items in this order');
