@@ -488,7 +488,7 @@ export default class MerchStoreService {
     const optionToPriceAndQuantity = new Map<string, OrderItemPriceAndQuantity>();
     order.items.forEach((oi) => {
       const { uuid } = oi.option;
-      if (optionToPriceAndQuantity.has(oi.option.uuid)) {
+      if (optionToPriceAndQuantity.has(uuid)) {
         optionToPriceAndQuantity.set(uuid, {
           quantity: optionToPriceAndQuantity.get(uuid).quantity + 1,
           price: optionToPriceAndQuantity.get(uuid).price,
