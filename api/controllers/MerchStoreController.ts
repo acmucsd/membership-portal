@@ -175,7 +175,6 @@ export class MerchStoreController {
   async placeMerchOrder(@Body() placeOrderRequest: PlaceMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<PlaceMerchOrderResponse> {
     const originalOrder = this.verifyMerchOrderRequest(placeOrderRequest.order, user);
-
     const order = await this.merchStoreService.placeOrder(originalOrder, user, placeOrderRequest.pickupEvent);
     return { error: null, order };
   }
