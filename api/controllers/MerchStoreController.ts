@@ -31,6 +31,7 @@ import {
   DeleteMerchItemOptionResponse,
   CreateOrderPickupEventResponse,
   GetOrderPickupEventsResponse,
+  GetCartResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -46,6 +47,7 @@ import {
   CreateMerchItemOptionRequest,
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
+  GetCartRequest,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
 
@@ -219,4 +221,15 @@ export class MerchStoreController {
       editOrderPickupEventRequest.pickupEvent);
     return { error: null, pickupEvent: pickupEvent.getPublicOrderPickupEvent() };
   }
+
+  @Get('/cart')
+  async getCart(@Body() getCartRequest:GetCartRequest, @AuthenticatedUser() user: UserModel): Promise<GetCartResponse> {
+    if(PermissionsService.canAccessMerchStore(user)){
+      throw new ForbiddenError();
+    }
+    const items = await this.merchStoreService.getCartItems(getCartRequest.items);
+  
+    return { error: null, items };
+  }
 }
+

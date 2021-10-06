@@ -1,5 +1,6 @@
 import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
+import { MerchandiseItemOptionModel } from 'models/MerchandiseItemOptionModel';
 
 // RESPONSE TYPES
 
@@ -236,6 +237,10 @@ export interface PlaceMerchOrderResponse extends ApiResponse {
 
 export interface EditMerchOrderResponse extends ApiResponse {}
 
+export interface GetCartResponse extends ApiResponse {
+  items: Map<string,MerchandiseItemOptionModel>;
+}
+
 // USER
 
 export interface PublicActivity {
@@ -328,3 +333,4 @@ export interface EditOrderPickupEventResponse extends ApiResponse {
 }
 
 export interface DeleteOrderPickupEventResponse extends ApiResponse {}
+

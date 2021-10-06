@@ -259,3 +259,7 @@ export interface CreateOrderPickupEventRequest {
 export interface EditOrderPickupEventRequest {
   pickupEvent: OrderPickupEventEdit;
 }
+
+export interface GetCartRequest{
+  items:string[];
+}

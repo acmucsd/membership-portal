@@ -31,6 +31,7 @@ import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 @Service()
 export default class MerchStoreService {
@@ -514,6 +515,13 @@ export default class MerchStoreService {
       // Manually set all the orders' pickup events to null before deleting event
       pickupEvent.orders.map((order) => OrderModel.merge(order, { pickupEvent: null }));
       await orderPickupEventRepository.deletePickupEvent(pickupEvent);
+    });
+  }
+
+  public async getCartItems(items: string[]): Promise<Map<string,MerchandiseItemOptionModel>>{
+    return this.transactions.readWrite(async (txn) => {
+      const merchItemRepository = Repositories.merchStoreItemOption(txn);
+      return merchItemRepository.batchFindByUuid(items);
     });
   }
 }
