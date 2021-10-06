@@ -234,6 +234,8 @@ export interface PlaceMerchOrderResponse extends ApiResponse {
   order: PublicOrder;
 }
 
+export interface VerifyMerchOrderResponse extends ApiResponse {}
+
 export interface EditMerchOrderResponse extends ApiResponse {}
 
 // USER

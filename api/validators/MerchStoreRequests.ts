@@ -17,6 +17,7 @@ import {
   EditMerchItemRequest as IEditMerchItemRequest,
   CreateMerchItemOptionRequest as ICreateMerchItemOptionRequest,
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
+  VerifyMerchOrderRequest as IVerifyMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
   CreateOrderPickupEventRequest as ICreateOrderPickupEventRequest,
   EditOrderPickupEventRequest as IEditOrderPickupEventRequest,
@@ -278,6 +279,13 @@ export class PlaceMerchOrderRequest implements IPlaceMerchOrderRequest {
   @IsDefined()
   @IsUUID()
   pickupEvent: string;
+}
+
+export class VerifyMerchOrderRequest implements IVerifyMerchOrderRequest {
+  @Type(() => MerchItemOptionAndQuantity)
+  @ValidateNested()
+  @IsDefined()
+  order: MerchItemOptionAndQuantity[];
 }
 
 export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {
