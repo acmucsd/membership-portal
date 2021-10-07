@@ -86,6 +86,7 @@ export class MerchFactory {
       description: faker.lorem.sentences(2),
       start,
       end,
+      orderLimit: faker.datatype.number({ min: 1, max: 5 }),
       orders: [],
     });
     return OrderPickupEventModel.merge(fake, substitute);

@@ -564,4 +564,66 @@ describe('merch order pickup events', () => {
     expect(persistedPickupEvent.orders).toHaveLength(1);
     expect(persistedPickupEvent.orders[0]).toStrictEqual(persistedOrder);
   });
+
+  test('placing an order with a pickup event that has reached the order limit fails', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const option = MerchFactory.fakeOption();
+    const pickupEvent = MerchFactory.fakeOrderPickupEvent();
+
+    new PortalState()
+      .createUsers(member)
+      .createMerchItemOption(option)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const placeMerchOrderRequest = {
+      order: [{ option: option.uuid, quantity: 1 }],
+      pickupEvent: pickupEvent.uuid,
+    };
+    for (let i = 0; i < pickupEvent.orderLimit; i += 1) {
+      await merchStoreController.placeMerchOrder(placeMerchOrderRequest, member);
+    }
+
+    await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, member))
+      .rejects
+      .toThrow('Cannot place order with a fully-booked pickup event');
+  });
+
+  test('PATCH /order/pickup/:uuid fails if the order limit is decreased below the number of orders', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const member = UserFactory.fake();
+    const option = MerchFactory.fakeOption();
+    const pickupEvent = MerchFactory.fakeOrderPickupEvent({
+      orderLimit: 3,
+    });
+
+    new PortalState()
+      .createUsers(admin, member)
+      .createMerchItemOption(option)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const placeMerchOrderRequest = {
+      order: [{ option: option.uuid, quantity: 1 }],
+      pickupEvent: pickupEvent.uuid,
+    };
+
+    for (let i = 0; i < pickupEvent.orderLimit; i += 1) {
+      await merchStoreController.placeMerchOrder(placeMerchOrderRequest, member);
+    }
+
+    const editPickupEventRequest = {
+      pickupEvent: {
+        orderLimit: 2,
+      },
+    };
+    const params = { uuid: pickupEvent.uuid };
+    await expect(ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, admin))
+      .rejects
+      .toThrow('Pickup event cannot have order limit lower than the number of orders booked in it');
+  });
 });
