@@ -507,7 +507,7 @@ export default class MerchStoreService {
       }
       const currentOrderCount = pickupEvent.orders.length;
       if (updatedPickupEvent.orderLimit < currentOrderCount) {
-        throw new UserError('Order pickup event cannot have its order limit lower than the current number of orders booked in it');
+        throw new UserError('Pickup event cannot have order limit lower than the number of orders booked in it');
       }
       return orderPickupEventRepository.upsertPickupEvent(updatedPickupEvent);
     });
