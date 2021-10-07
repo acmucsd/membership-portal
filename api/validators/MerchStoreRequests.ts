@@ -218,6 +218,10 @@ export class OrderPickupEvent implements IOrderPickupEvent {
 
   @IsNotEmpty()
   description: string;
+
+  @IsDefined()
+  @Min(1)
+  orderLimit: number;
 }
 
 export class OrderPickupEventEdit implements IOrderPickupEventEdit {
@@ -232,6 +236,9 @@ export class OrderPickupEventEdit implements IOrderPickupEventEdit {
 
   @IsNotEmpty()
   description?: string;
+
+  @Min(1)
+  orderLimit: number;
 }
 
 export class CreateMerchCollectionRequest implements ICreateMerchCollectionRequest {
