@@ -238,7 +238,7 @@ export class OrderPickupEventEdit implements IOrderPickupEventEdit {
   description?: string;
 
   @Min(1)
-  orderLimit: number;
+  orderLimit?: number;
 }
 
 export class CreateMerchCollectionRequest implements ICreateMerchCollectionRequest {
