@@ -571,10 +571,11 @@ describe('merch order pickup events', () => {
     const option = MerchFactory.fakeOption();
     const pickupEvent = MerchFactory.fakeOrderPickupEvent();
 
-    new PortalState()
+    await new PortalState()
       .createUsers(member)
       .createMerchItemOption(option)
       .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -582,7 +583,8 @@ describe('merch order pickup events', () => {
       order: [{ option: option.uuid, quantity: 1 }],
       pickupEvent: pickupEvent.uuid,
     };
-    for (let i = 0; i < pickupEvent.orderLimit; i += 1) {
+
+    for (let i = 1; i < pickupEvent.orderLimit; i += 1) {
       await merchStoreController.placeMerchOrder(placeMerchOrderRequest, member);
     }
 
@@ -600,10 +602,11 @@ describe('merch order pickup events', () => {
       orderLimit: 3,
     });
 
-    new PortalState()
+    await new PortalState()
       .createUsers(admin, member)
       .createMerchItemOption(option)
       .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
@@ -612,7 +615,7 @@ describe('merch order pickup events', () => {
       pickupEvent: pickupEvent.uuid,
     };
 
-    for (let i = 0; i < pickupEvent.orderLimit; i += 1) {
+    for (let i = 1; i < pickupEvent.orderLimit; i += 1) {
       await merchStoreController.placeMerchOrder(placeMerchOrderRequest, member);
     }
 
