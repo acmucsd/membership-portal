@@ -180,8 +180,6 @@ async function seed(): Promise<void> {
     ...general,
     location: 'WLH 2001',
     ...EventFactory.ongoing(90, 30),
-    start: FactoryUtils.roundToHalfHour(moment().subtract(90, 'minutes')),
-    end: FactoryUtils.roundToHalfHour(moment().add(30, 'minutes')),
     attendanceCode: '1ife',
     ...unstaffed,
   });
