@@ -1,7 +1,6 @@
 import * as moment from 'moment';
 import { UserAccessType } from '../types';
 import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
-import FactoryUtils from './data/FactoryUtils';
 
 function getGraduationYear(n: number) {
   return moment().year() + n;
