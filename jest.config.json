@@ -1,6 +1,6 @@
 {
 	"transform": {
-        "^.+\\.ts$": "ts-jest"
+        	"^.+\\.ts$": "ts-jest"
 	},
 	"modulePaths": ["<rootDir>/src"],
 	"testRegex": "tests/.*\\.tests?\\.ts$",
