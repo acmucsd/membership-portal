@@ -434,6 +434,8 @@ export default class MerchStoreService {
       const order = await orderRespository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
       if (order.user !== user) throw new ForbiddenError('Cannot edit the order of a different user');
+      if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot modify pickup for inactive orders');
+
       const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
       if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
       if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
@@ -443,9 +445,13 @@ export default class MerchStoreService {
     });
   }
 
+  private static isInactiveOrder(order: OrderModel): boolean {
+    return order.status === OrderStatus.FULFILLED || order.status === OrderStatus.CANCELLED;
+  }
+
   /**
-   * Marks an order as missed. Only admins can mark orders as missed, which
-   * would take place after a pickup event is concluded.
+   * Marks an order as missed. An order can be marked as missed only if it's previous status was PLACED,
+   * and its associated pickup event has already passed. Only admins can mark orders as missed
    * @param uuid order uuid
    * @returns updated order
    */
@@ -454,6 +460,12 @@ export default class MerchStoreService {
       const orderRespository = Repositories.merchOrder(txn);
       const order = await orderRespository.findByUuid(uuid);
       if (!order) throw new NotFoundError('Order not found');
+      if (order.status !== OrderStatus.PLACED) {
+        throw new UserError('Cannot mark an order as missed if it\'s already been cancelled, missed, or fulfilled');
+      }
+      // compare with start date and not end date so that store admins can mark orders
+      // as missed during the event and not necessarily limited to after the event
+      // (e.g. in the case where the event ends early)
       if (new Date() < moment(order.pickupEvent.start).toDate()) {
         throw new NotFoundError('Cannot mark an order as missed if its pickup event hasn\'t started yet');
       }
@@ -478,7 +490,8 @@ export default class MerchStoreService {
       if (!user.isAdmin() && order.user !== user) {
         throw new ForbiddenError('Member cannot cancel other members orders');
       }
-      if (new Date() > moment(order.pickupEvent.start).subtract(2, 'days').toDate()) {
+      if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot cancel an inactive order');
+      if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
         throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
       }
       const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
@@ -568,6 +581,8 @@ export default class MerchStoreService {
     return this.transactions.readWrite(async (txn) => {
       const orderRepository = Repositories.merchOrder(txn);
       const order = await orderRepository.findByUuid(orderUuid);
+      if (!order) throw new NotFoundError('Order not found');
+      if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot fulfill items of an inactive order');
       const { items } = order;
       if (items.length !== fulfillmentUpdates.length) {
         throw new NotFoundError('Missing some order items for the order in the request');
