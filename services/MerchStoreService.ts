@@ -279,7 +279,7 @@ export default class MerchStoreService {
 
   /**
    * Places an order with the list of options and their quantities for the given user.
-   * The order needs to match all order verification constraints defined in validateOrderUnderTransaction()
+   * The order needs to match all order verification constraints defined in verifyOrderUnderTransaction()
    *
    * @param originalOrder the order containing item options and their quantities
    * @param user user placing the order
@@ -291,10 +291,19 @@ export default class MerchStoreService {
     const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
-      await this.validateOrderUnderTransaction(originalOrder, pickupEventUuid, user, txn);
+      await this.verifyOrderUnderTransaction(originalOrder, user, txn);
+
+      // Verify the requested pickup event exists,
+      // and that the order is placed at least 2 days before the pickup event starts
+      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
+      if (!pickupEvent) {
+        throw new NotFoundError('Pickup event requested is not found');
+      }
+      if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
+        throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
+      }
 
       const totalCost = MerchStoreService.totalCost(originalOrder, itemOptions);
-      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
       const merchOrderRepository = Repositories.merchOrder(txn);
 
       // if all checks pass, the order is placed
@@ -355,9 +364,9 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
-  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], pickupEvent: Uuid, user: UserModel): Promise<void> {
+  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
-      this.validateOrderUnderTransaction(originalOrder, pickupEvent, user, txn);
+      this.verifyOrderUnderTransaction(originalOrder, user, txn);
     });
   }
 
@@ -368,14 +377,12 @@ export default class MerchStoreService {
    *  - the user wouldn't reach monthly or lifetime limits for any item if this order is placed
    *  - the requested item options are in stock
    *  - the user has enough credits to place the order
-   *  - the pickup event specified exists and is at least 2 days before starting
-   * @param originalOrder 
-   * @param pickupEventUuid 
-   * @param user 
-   * @param txn 
+   * @param originalOrder
+   * @param pickupEventUuid
+   * @param user
+   * @param txn
    */
-  private async validateOrderUnderTransaction(originalOrder: MerchItemOptionAndQuantity[],
-    pickupEventUuid: Uuid,
+  private async verifyOrderUnderTransaction(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
     txn: EntityManager): Promise<void> {
     await user.reload();
@@ -428,16 +435,6 @@ export default class MerchStoreService {
       if (option.quantity < quantityRequested) {
         throw new UserError(`There aren't enough units of ${option.item.itemName} in stock`);
       }
-    }
-
-    // Verify the requested pickup event exists,
-    // and that the order is placed at least 2 days before the pickup event starts
-    const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
-    if (!pickupEvent) {
-      throw new NotFoundError('Pickup event requested is not found');
-    }
-    if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
-      throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
     }
 
     // checks that the user has enough credits to place order
