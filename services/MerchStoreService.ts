@@ -537,7 +537,7 @@ export default class MerchStoreService {
    */
   private static async buildOrderUpdateInfo(order: OrderModel, txn: EntityManager) {
     // maps an item option to its price at purchase and quantity ordered by the user
-    const optionPricesAndQuantities = MerchStoreService.getOptionPriceAndQuantitiesFromOrder(order);
+    const optionPricesAndQuantities = MerchStoreService.getPriceAndQuantityByOption(order);
     const itemOptionsOrdered = Array.from(optionPricesAndQuantities.keys());
     const itemOptionByUuid = await Repositories
       .merchStoreItemOption(txn)
@@ -561,7 +561,6 @@ export default class MerchStoreService {
         end: moment(order.pickupEvent.start).format('HH:mm'),
       },
     };
-    return orderUpdateInfo;
   }
 
   /**
