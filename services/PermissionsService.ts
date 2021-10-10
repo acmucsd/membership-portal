@@ -56,7 +56,7 @@ export default class PermissionsService {
     return user.isAdmin();
   }
 
-  public static canFulfillMerchOrders(user: UserModel) {
+  public static canManageMerchOrders(user: UserModel) {
     return user.isAdmin();
   }
 

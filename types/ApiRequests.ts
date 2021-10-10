@@ -181,8 +181,8 @@ export interface FulfillMerchOrderRequest {
   items: OrderItemFulfillmentUpdate[];
 }
 
-export interface EditMerchOrderRequest {
-  order: MerchOrderEdit;
+export interface EditMerchOrderPickupRequest {
+  pickupEvent: Uuid;
 }
 
 export interface MerchCollection {
@@ -237,8 +237,7 @@ export interface MerchItemEdit extends Partial<CommonMerchItemProperties> {
 }
 
 export interface MerchOrderEdit {
-  status?: OrderStatus;
-  pickupEvent?: Uuid;
+  pickupEvent: Uuid;
 }
 
 export interface OrderItemFulfillmentUpdate {

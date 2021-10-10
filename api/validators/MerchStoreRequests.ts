@@ -10,7 +10,7 @@ import {
   IsDateString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsValidOrderStatus, IsValidOrderStatusEdit } from '../decorators/Validators';
+import { IsValidOrderStatus } from '../decorators/Validators';
 import {
   CreateMerchCollectionRequest as ICreateMerchCollectionRequest,
   EditMerchCollectionRequest as IEditMerchCollectionRequest,
@@ -19,7 +19,7 @@ import {
   CreateMerchItemOptionRequest as ICreateMerchItemOptionRequest,
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
-  EditMerchOrderRequest as IEditMerchOrderRequest,
+  EditMerchOrderPickupRequest as IEditMerchOrderPickupRequest,
   CreateOrderPickupEventRequest as ICreateOrderPickupEventRequest,
   EditOrderPickupEventRequest as IEditOrderPickupEventRequest,
   MerchItemOptionAndQuantity as IMerchItemOptionAndQuantity,
@@ -240,11 +240,8 @@ export class OrderPickupEventEdit implements IOrderPickupEventEdit {
 }
 
 export class MerchOrderEdit implements IMerchOrderEdit {
-  @IsValidOrderStatusEdit()
-  status?: OrderStatus;
-
   @IsUUID()
-  pickupEvent?: string;
+  pickupEvent: string;
 }
 
 export class CreateMerchCollectionRequest implements ICreateMerchCollectionRequest {
@@ -300,11 +297,10 @@ export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {
   items: OrderItemFulfillmentUpdate[];
 }
 
-export class EditMerchOrderRequest implements IEditMerchOrderRequest {
-  @Type(() => MerchOrderEdit)
-  @ValidateNested()
+export class EditMerchOrderPickupRequest implements IEditMerchOrderPickupRequest {
   @IsDefined()
-  order: MerchOrderEdit;
+  @IsUUID()
+  pickupEvent: string;
 }
 
 export class CreateOrderPickupEventRequest implements ICreateOrderPickupEventRequest {

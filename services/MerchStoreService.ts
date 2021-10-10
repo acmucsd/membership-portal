@@ -4,7 +4,6 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment';
-import { MerchOrderEdit } from 'api/validators/MerchStoreRequests';
 import { OrderItemPriceAndQuantity } from 'types/internal';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
@@ -363,7 +362,7 @@ export default class MerchStoreService {
       if (!pickupEvent) {
         throw new NotFoundError('Pickup event requested is not found');
       }
-      if (new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate()) {
+      if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
         throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
       }
 
@@ -425,57 +424,67 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
+  private static isLessThanTwoDaysBeforePickupEvent(pickupEvent: OrderPickupEventModel): boolean {
+    return new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate();
+  }
+
+  public async editMerchOrderPickup(orderUuid: Uuid, pickupEventUuid: Uuid, user: UserModel): Promise<OrderModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderRespository = Repositories.merchOrder(txn);
+      const order = await orderRespository.findByUuid(orderUuid);
+      if (!order) throw new NotFoundError('Order not found');
+      if (order.user !== user) throw new ForbiddenError('Cannot edit the order of a different user');
+      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
+      if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
+      if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
+        throw new UserError('Cannot change order pickup to an event that starts in less than 2 days');
+      }
+      return orderRespository.upsertMerchOrder(order, { pickupEvent });
+    });
+  }
+
   /**
-   * Edit a merch order's status or pickup event. If the status is being edited,
-   * the user who placed the order can only cancel the order, while the admin can mark
-   * it as missed.
-   *
-   * If the pickup event of the order is changed, then it must be changed to a pickup event that's
-   * at least 2 days in the future.
-   *
+   * Marks an order as missed. Only admins can mark orders as missed, which
+   * would take place after a pickup event is concluded.
    * @param uuid order uuid
-   * @param orderEdit order edits
-   * @param user user requesting the edit
-   * @returns the edited order
+   * @returns updated order
    */
-  public async editOrder(uuid: Uuid, orderEdit: MerchOrderEdit, user: UserModel): Promise<OrderModel> {
+  public async markOrderAsMissed(uuid: Uuid): Promise<OrderModel> {
     return this.transactions.readWrite(async (txn) => {
       const orderRespository = Repositories.merchOrder(txn);
       const order = await orderRespository.findByUuid(uuid);
       if (!order) throw new NotFoundError('Order not found');
-      if (!user.isAdmin() && order.user !== user) throw new ForbiddenError('Member cannot cancel other members orders');
+      if (new Date() < moment(order.pickupEvent.start).toDate()) {
+        throw new NotFoundError('Cannot mark an order as missed if its pickup event hasn\'t started yet');
+      }
+      const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_MISSED });
+      const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(upsertedOrder, txn);
+      const { user } = order;
+      await this.emailService.sendOrderPickupMissed(user.email, user.firstName, orderUpdateInfo);
+      return upsertedOrder;
+    });
+  }
 
-      const { status, pickupEvent: pickupEventUuid } = orderEdit;
-      if (status) {
-        const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status });
-        const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, txn);
-        switch (status) {
-          case OrderStatus.CANCELLED:
-            if (new Date() > moment(order.pickupEvent.start).subtract(2, 'days').toDate()) {
-              throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
-            }
-            await MerchStoreService.refundUser(user, order.totalCost, txn);
-            await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
-            break;
-          case OrderStatus.PICKUP_MISSED:
-            await this.emailService.sendOrderPickupMissed(user.email, user.firstName, orderUpdateInfo);
-            break;
-          default:
-            // status can only be CANCELLED or PICKUP_MISSED due to controller validation, so default case can be empty
-            break;
-        }
-        return upsertedOrder;
+  /**
+   * Cancels a merch order, refunding the user of its credits if the user is the one who cancelled the order.
+   * @param uuid order uuid
+   * @param user user cancelling the order
+   */
+  public async cancelMerchOrder(uuid: Uuid, user: UserModel): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderRespository = Repositories.merchOrder(txn);
+      const order = await orderRespository.findByUuid(uuid);
+      if (!order) throw new NotFoundError('Order not found');
+      if (!user.isAdmin() && order.user !== user) {
+        throw new ForbiddenError('Member cannot cancel other members orders');
       }
-      // verify the requested pickup event exists,
-      // and that the order is placed at least 2 days before the pickup event starts
-      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
-      if (!pickupEvent) {
-        throw new NotFoundError('Pickup event requested is not found');
+      if (new Date() > moment(order.pickupEvent.start).subtract(2, 'days').toDate()) {
+        throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
       }
-      if (new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate()) {
-        throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
-      }
-      return orderRespository.upsertMerchOrder(order, { pickupEvent });
+      const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
+      await MerchStoreService.refundUser(order.user, order.totalCost, txn);
+      const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(upsertedOrder, txn);
+      await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
     });
   }
 
