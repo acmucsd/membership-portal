@@ -1,6 +1,9 @@
-import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
+import * as faker from 'faker';
+import { anyString, instance, mock, verify, when } from 'ts-mockito';
+import { UserAccessType } from '../types';
+import EmailService from '../services/EmailService';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
+import { DatabaseConnection, PortalState, UserFactory } from './data';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -16,7 +19,47 @@ afterAll(async () => {
 });
 
 describe('account registration', () => {
-  test('user can register a new account', async () => {});
+  test('user can register a new account', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+
+    await new PortalState()
+      .createUsers(admin)
+      .write();
+
+    const emailService: EmailService = mock(EmailService);
+    const emailInstance = instance(emailService);
+    const authController = ControllerFactory.auth(conn, emailInstance);
+    const user = {
+      email: 'acm@ucsd.edu',
+      firstName: 'ACM',
+      lastName: 'UCSD',
+      password: 'password',
+      major: UserFactory.major(),
+      graduationYear: UserFactory.graduationYear(),
+    };
+    const registerRequest = { user };
+    when(emailService.sendEmailVerification(anyString(), anyString(), anyString()))
+      .thenReturn(Promise.resolve());
+    const registerResponse = await authController.register(registerRequest, faker.datatype.hexaDecimal(10));
+
+    const params = { uuid: registerResponse.user.uuid };
+    const getUserResponse = await ControllerFactory.user(conn).getUser(params, admin);
+    expect(getUserResponse.user).toStrictEqual({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      major: user.major,
+      graduationYear: user.graduationYear,
+      bio: null,
+      points: 0,
+      uuid: registerResponse.user.uuid,
+      profilePicture: null,
+    });
+
+    verify(emailService.sendEmailVerification(anyString(), anyString(), anyString()))
+      .called();
+  });
+
   test('user cannot register with duplicate email address', async () => {});
 });
 

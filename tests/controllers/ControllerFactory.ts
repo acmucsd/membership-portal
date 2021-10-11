@@ -68,11 +68,10 @@ export class ControllerFactory {
     return ControllerFactory.attendanceController;
   }
 
-  public static auth(conn: Connection): AuthController {
+  public static auth(conn: Connection, emailService: EmailService): AuthController {
     if (!ControllerFactory.authController) {
       const userAccountService = new UserAccountService(conn.manager);
       const userAuthService = new UserAuthService(conn.manager);
-      const emailService = new EmailService();
       ControllerFactory.authController = new AuthController(userAccountService, userAuthService, emailService);
     }
     return ControllerFactory.authController;
