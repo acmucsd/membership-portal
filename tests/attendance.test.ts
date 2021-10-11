@@ -1,4 +1,5 @@
 import * as faker from 'faker';
+import { ForbiddenError } from 'routing-controllers';
 import { ActivityType, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
@@ -35,7 +36,7 @@ describe('attendance', () => {
 
     // throws permissions error for member
     await expect(attendanceController.getAttendancesForEvent(params, member))
-      .rejects.toThrow();
+      .rejects.toThrow(ForbiddenError);
 
     // returns all attendances for admin
     const getAttendancesForEventResponse = await attendanceController.getAttendancesForEvent(params, admin);
