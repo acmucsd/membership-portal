@@ -30,4 +30,9 @@ export default class FactoryUtils {
     const end = moment(start.valueOf()).add(duration, 'minutes');
     return [new Date(start.valueOf()), new Date(end.valueOf())];
   }
+
+  public static roundToHalfHour(date: moment.Moment): Date {
+    const HALF_HOUR_IN_MILLISECONDS = moment.duration(30, 'minutes').asMilliseconds();
+    return new Date(Math.round(date.valueOf() / HALF_HOUR_IN_MILLISECONDS) * HALF_HOUR_IN_MILLISECONDS);
+  }
 }
