@@ -526,12 +526,14 @@ export default class MerchStoreService {
    */
   private static getPriceAndQuantityByOption(order: OrderModel): Map<Uuid, OrderItemPriceAndQuantity> {
     const optionToPriceAndQuantity = new Map<string, OrderItemPriceAndQuantity>();
-    order.items.forEach((oi) => {
+    for (let i = 0; i < order.items.length; i += 1) {
+      const oi = order.items[i];
       const { uuid } = oi.option;
       if (optionToPriceAndQuantity.has(uuid)) {
+        const { price, quantity } = optionToPriceAndQuantity.get(uuid);
         optionToPriceAndQuantity.set(uuid, {
-          quantity: optionToPriceAndQuantity.get(uuid).quantity + 1,
-          price: optionToPriceAndQuantity.get(uuid).price,
+          quantity: quantity + 1,
+          price,
         });
       } else {
         optionToPriceAndQuantity.set(uuid, {
@@ -539,7 +541,7 @@ export default class MerchStoreService {
           price: oi.salePriceAtPurchase,
         });
       }
-    });
+    }
     return optionToPriceAndQuantity;
   }
 
