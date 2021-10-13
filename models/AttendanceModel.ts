@@ -40,8 +40,8 @@ export class AttendanceModel extends BaseEntity {
 
   public getPublicAttendance(): PublicAttendance {
     return {
-      user: this.user?.getPublicProfile(),
-      event: this.event?.getPublicEvent(),
+      user: this.user.getPublicProfile(),
+      event: this.event.getPublicEvent(),
       timestamp: this.timestamp,
       asStaff: this.asStaff,
       feedback: this.feedback,

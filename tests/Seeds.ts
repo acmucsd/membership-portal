@@ -2,11 +2,6 @@ import * as moment from 'moment';
 import { UserAccessType } from '../types';
 import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
 
-function roundToHalfHour(date: moment.Moment): Date {
-  const HALF_HOUR_IN_MILLISECONDS = moment.duration(30, 'minutes').asMilliseconds();
-  return new Date(Math.round(date.valueOf() / HALF_HOUR_IN_MILLISECONDS) * HALF_HOUR_IN_MILLISECONDS);
-}
-
 function getGraduationYear(n: number) {
   return moment().year() + n;
 }
@@ -89,11 +84,6 @@ async function seed(): Promise<void> {
   const hack = { committee: 'Hack' };
   const ai = { committee: 'AI' };
 
-  const daysAgo = (n: number) => ({
-    start: roundToHalfHour(moment().subtract(n, 'days').hour(11)),
-    end: roundToHalfHour(moment().subtract(n, 'days').hour(13)),
-  });
-
   const PAST_AI_WORKSHOP_1 = EventFactory.fake({
     title: 'AI: Intro to Neural Nets',
     description: `Artificial neural networks (ANNs), usually simply called
@@ -103,7 +93,7 @@ async function seed(): Promise<void> {
     which loosely model the neurons in a biological brain.`,
     ...ai,
     location: 'Qualcomm Room',
-    ...daysAgo(6),
+    ...EventFactory.daysBefore(6),
     attendanceCode: 'galaxybrain',
     ...staffed,
   });
@@ -117,7 +107,7 @@ async function seed(): Promise<void> {
     language" in the Stack Overflow Developer Survey every year since 2016.`,
     ...hack,
     location: 'Qualcomm Room',
-    ...daysAgo(5),
+    ...EventFactory.daysBefore(5),
     attendanceCode: 'ferris',
     ...staffed,
   });
@@ -130,7 +120,7 @@ async function seed(): Promise<void> {
     a common ingredient in numerous Mexican cuisine dishes.`,
     ...general,
     location: 'Taco Stand',
-    ...daysAgo(4),
+    ...EventFactory.daysBefore(4),
     attendanceCode: 'tac0',
     ...unstaffed,
   });
@@ -145,7 +135,7 @@ async function seed(): Promise<void> {
     access to heterogeneous data.`,
     ...ai,
     location: 'Qualcomm Room',
-    ...daysAgo(3),
+    ...EventFactory.daysBefore(3),
     attendanceCode: '4ggregate',
     ...staffed,
   });
@@ -159,7 +149,7 @@ async function seed(): Promise<void> {
     Pliny the Younger, Aelian and Cosmas Indicopleustes.`,
     ...general,
     location: 'PC East Ballroom',
-    ...daysAgo(2),
+    ...EventFactory.daysBefore(2),
     attendanceCode: 'sfsummer',
     ...unstaffed,
   });
@@ -174,7 +164,7 @@ async function seed(): Promise<void> {
     also focus on sea otters, various birds, and tunas.`,
     ...general,
     location: 'Qualcomm Room',
-    ...daysAgo(1),
+    ...EventFactory.daysBefore(1),
     attendanceCode: 'm0ssy',
     ...staffed,
   });
@@ -188,8 +178,7 @@ async function seed(): Promise<void> {
     constitute a comprehensive survey of animal and plant life on Earth.`,
     ...general,
     location: 'WLH 2001',
-    start: roundToHalfHour(moment().subtract(90, 'minutes')),
-    end: roundToHalfHour(moment().add(30, 'minutes')),
+    ...EventFactory.ongoing(90, 30),
     attendanceCode: '1ife',
     ...unstaffed,
   });
@@ -203,8 +192,7 @@ async function seed(): Promise<void> {
     of what it cost to get an NBA expansion team at the time.`,
     ...general,
     location: 'RIMAC',
-    start: roundToHalfHour(moment().subtract(30, 'minutes')),
-    end: roundToHalfHour(moment().add(90, 'minutes')),
+    ...EventFactory.ongoing(30, 90),
     attendanceCode: 'k0be',
     ...unstaffed,
   });
@@ -218,8 +206,7 @@ async function seed(): Promise<void> {
     malicious and accidental exceptions.`,
     ...hack,
     location: 'Hack Discord, channel #smart-contracts',
-    start: roundToHalfHour(moment().subtract(45, 'minutes')),
-    end: roundToHalfHour(moment().add(45, 'minutes')),
+    ...EventFactory.ongoing(45, 45),
     attendanceCode: 'd3fi',
     ...staffed,
   });
@@ -235,7 +222,7 @@ async function seed(): Promise<void> {
     transpose into a Scheveningen).`,
     ...ai,
     location: 'Qualcomm Room',
-    ...daysAgo(-1),
+    ...EventFactory.daysAfter(1),
     attendanceCode: 'd33pblue',
     ...unstaffed,
   });
@@ -250,7 +237,7 @@ async function seed(): Promise<void> {
     Flink's runtime supports the execution of iterative algorithms natively.`,
     ...hack,
     location: 'Qualcomm Room',
-    ...daysAgo(-2),
+    ...EventFactory.daysAfter(2),
     attendanceCode: 'sp4rk',
     ...staffed,
   });
@@ -263,7 +250,7 @@ async function seed(): Promise<void> {
     workflows.`,
     ...hack,
     location: 'Qualcomm Room',
-    ...daysAgo(-3),
+    ...EventFactory.daysAfter(3),
     attendanceCode: 'f0rk',
     ...staffed,
   });
