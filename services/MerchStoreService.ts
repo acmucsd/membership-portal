@@ -542,7 +542,7 @@ export default class MerchStoreService {
   }
 
   public async getCartItems(items: string[]): Promise<Map<string, MerchandiseItemOptionModel>> {
-    return this.transactions.readWrite(async (txn) => {
+    return this.transactions.readOnly(async (txn) => {
       const merchItemRepository = Repositories.merchStoreItemOption(txn);
       return merchItemRepository.batchFindByUuid(items);
     });
