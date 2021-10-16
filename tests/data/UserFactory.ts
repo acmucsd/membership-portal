@@ -6,6 +6,8 @@ import { UserModel } from '../../models/UserModel';
 import FactoryUtils from './FactoryUtils';
 
 export class UserFactory {
+  public static readonly PASSWORD_RAW = 'password';
+
   // hash of the string "password"
   private static readonly PASSWORD_HASH = '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG';
 
