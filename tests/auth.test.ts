@@ -1,4 +1,5 @@
 import * as jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
 import { NotFoundError } from 'routing-controllers';
 import { anyString, instance, mock, verify, when } from 'ts-mockito';
 import { Config } from '../config';
@@ -198,14 +199,14 @@ describe('resending email verification', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(anyString(), anyString(), anyString()))
+    when(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
     await authController.resendEmailVerification(params);
 
     member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
-    verify(emailService.sendEmailVerification(anyString(), anyString(), anyString()))
+    verify(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
       .called();
   });
 
@@ -225,11 +226,99 @@ describe('resending email verification', () => {
 });
 
 describe('password reset', () => {
-  test('user can reset password correctly', async () => {});
-  test('user cannot reset password with incorrect code', async () => {});
+  test('user can reset password correctly', async () => {
+    const conn = await DatabaseConnection.get();
+    const accessCode = FactoryUtils.randomHexString();
+    let member = UserFactory.fake({
+      state: UserState.PENDING,
+      accessCode,
+    });
+
+    await new PortalState()
+      .createUsers(member)
+      .write();
+
+    const emailService = mock(EmailService);
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const params = { accessCode };
+    const newPassword = 'new-password';
+    const passwordResetRequest = { user: {
+      newPassword,
+      confirmPassword: newPassword,
+    } };
+    await authController.resetPassword(params, passwordResetRequest, FactoryUtils.randomHexString());
+
+    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    expect(member.state).toEqual(UserState.ACTIVE);
+    const passwordMatches = await bcrypt.compare(newPassword, member.hash);
+    expect(passwordMatches).toBeTruthy();
+    expect(member.accessCode).toBeNull();
+  });
+
+  test('user cannot reset password with incorrect code', async () => {
+    const conn = await DatabaseConnection.get();
+    const accessCode = FactoryUtils.randomHexString();
+    let member = UserFactory.fake({
+      state: UserState.PENDING,
+      accessCode,
+    });
+
+    await new PortalState()
+      .createUsers(member)
+      .write();
+
+    const emailService = mock(EmailService);
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const params = { accessCode };
+    const newPassword = 'new-password';
+    const passwordResetRequest = { user: {
+      newPassword,
+      confirmPassword: newPassword,
+    } };
+    await authController.resetPassword(params, passwordResetRequest, FactoryUtils.randomHexString());
+
+    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    expect(member.state).toEqual(UserState.ACTIVE);
+    const passwordMatches = await bcrypt.compare(newPassword, member.hash);
+    expect(passwordMatches).toBeTruthy();
+    expect(member.accessCode).toBeNull();
+  });
 });
 
 describe('resending password reset email', () => {
-  test('email is resent and user state is correctly updated', async () => {});
-  test('throws if request has unregistered email address', async () => {});
+  test('email is resent and user state is correctly updated', async () => {
+    const conn = await DatabaseConnection.get();
+    let member = UserFactory.fake();
+
+    await new PortalState()
+      .createUsers(member)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendPasswordReset(member.email, member.firstName, anyString()));
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const params = { email: member.email };
+    await authController.sendPasswordResetEmail(params, FactoryUtils.randomHexString());
+
+    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    expect(member.state).toEqual(UserState.PASSWORD_RESET);
+
+    verify(emailService.sendPasswordReset(member.email, member.firstName, member.accessCode))
+      .called();
+  });
+
+  test('throws if request has unregistered email address', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendPasswordReset(member.email, member.firstName, anyString()));
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const params = { email: member.email };
+    await expect(authController.sendPasswordResetEmail(params, FactoryUtils.randomHexString()))
+      .rejects.toThrow(NotFoundError);
+
+    verify(emailService.sendPasswordReset(member.email, member.firstName, anyString()))
+      .never();
+  });
 });
