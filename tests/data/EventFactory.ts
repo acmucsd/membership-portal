@@ -1,4 +1,5 @@
 import * as faker from 'faker';
+import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { EventModel } from '../../models/EventModel';
 import FactoryUtils from './FactoryUtils';
@@ -37,6 +38,27 @@ export class EventFactory {
       staffPointBonus: EventFactory.randomPointValue(),
     });
     return EventModel.merge(fake, substitute);
+  }
+
+  public static ongoing(start = 45, end = 45): Partial<EventModel> {
+    return {
+      start: FactoryUtils.roundToHalfHour(moment().subtract(start, 'minutes')),
+      end: FactoryUtils.roundToHalfHour(moment().add(end, 'minutes')),
+    };
+  }
+
+  public static daysBefore(n: number): Partial<EventModel> {
+    return {
+      start: FactoryUtils.roundToHalfHour(moment().subtract(n, 'days').hour(11)),
+      end: FactoryUtils.roundToHalfHour(moment().subtract(n, 'days').hour(13)),
+    };
+  }
+
+  public static daysAfter(n: number): Partial<EventModel> {
+    return {
+      start: FactoryUtils.roundToHalfHour(moment().add(n, 'days').hour(11)),
+      end: FactoryUtils.roundToHalfHour(moment().add(n, 'days').hour(13)),
+    };
   }
 
   private static randomPointValue(): number {
