@@ -355,13 +355,17 @@ export default class MerchStoreService {
       totalCost: order.totalCost,
       pickupEvent: {
         ...order.pickupEvent,
-        start: moment(order.pickupEvent.start).format('HH:mm'),
-        end: moment(order.pickupEvent.start).format('HH:mm'),
+        start: MerchStoreService.dateToHumanReadableDateString(order.pickupEvent.start),
+        end: MerchStoreService.dateToHumanReadableDateString(order.pickupEvent.end),
       },
     };
     this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
 
     return order.getPublicOrder();
+  }
+
+  private static dateToHumanReadableDateString(date: Date): string {
+    return moment(date).format('MMMM d, HH:mm');
   }
 
   public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
@@ -448,8 +452,8 @@ export default class MerchStoreService {
 
   public async editMerchOrderPickup(orderUuid: Uuid, pickupEventUuid: Uuid, user: UserModel): Promise<OrderModel> {
     return this.transactions.readWrite(async (txn) => {
-      const orderRespository = Repositories.merchOrder(txn);
-      const order = await orderRespository.findByUuid(orderUuid);
+      const orderRepository = Repositories.merchOrder(txn);
+      const order = await orderRepository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
       if (order.user !== user) throw new ForbiddenError('Cannot edit the order of a different user');
       if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot modify pickup for inactive orders');
@@ -459,7 +463,7 @@ export default class MerchStoreService {
       if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
         throw new UserError('Cannot change order pickup to an event that starts in less than 2 days');
       }
-      return orderRespository.upsertMerchOrder(order, { pickupEvent });
+      return orderRepository.upsertMerchOrder(order, { pickupEvent });
     });
   }
 
@@ -577,8 +581,8 @@ export default class MerchStoreService {
       totalCost: order.totalCost,
       pickupEvent: {
         ...order.pickupEvent,
-        start: moment(order.pickupEvent.start).format('HH:mm'),
-        end: moment(order.pickupEvent.start).format('HH:mm'),
+        start: MerchStoreService.dateToHumanReadableDateString(order.pickupEvent.start),
+        end: MerchStoreService.dateToHumanReadableDateString(order.pickupEvent.end),
       },
     };
   }
@@ -705,14 +709,15 @@ export default class MerchStoreService {
       if (pickupEvent.orders.length > 0) {
         throw new UserError('Cannot delete an order pickup event that has orders assigned to it');
       }
-      // email order cancellation for order, update order status, and set pickupEvent to null before deleting
-      pickupEvent.orders.forEach(async (order) => {
+      // concurrently email the order cancellation email and update order status for every order
+      // then set pickupEvent to null before deleting from table
+      await Promise.all(pickupEvent.orders.map(async (order) => {
         const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, txn);
         const { user } = order;
         await this.emailService.sendOrderPickupCancelled(user.email, user.firstName, orderUpdateInfo);
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_CANCELLED, pickupEvent: null });
-      });
-      pickupEvent.orders.map((order) => OrderModel.merge(order, { pickupEvent: null }));
+        return OrderModel.merge(order, { pickupEvent: null });
+      }));
       await orderPickupEventRepository.deletePickupEvent(pickupEvent);
     });
   }

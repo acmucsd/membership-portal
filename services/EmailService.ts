@@ -66,7 +66,11 @@ export default class EmailService {
         to: email,
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store Order Confirmation',
-        html: ejs.render(EmailService.orderConfirmationTemplate, { firstName, order, pickupEvent: order.pickupEvent }),
+        html: ejs.render(EmailService.orderConfirmationTemplate, {
+          firstName,
+          order,
+          pickupEvent: order.pickupEvent,
+        }),
       };
       await this.sendEmail(data);
     } catch (error) {
