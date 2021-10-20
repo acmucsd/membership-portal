@@ -20,7 +20,27 @@ afterAll(async () => {
 });
 
 describe('merch orders', () => {
-  test('ordering items from archived collections is not allowed', async () => {
+  test('members can place orders on merch items if they\'re in stock and can afford them', async () => {
+
+  });
+
+  test('members can cancel orders that they\'ve placed and receive a full refund to their order', async () => {
+
+  });
+
+  test('admins can fulfill parts of a member\'s order', async () => {
+
+  });
+
+  test('admins can fulfill entire orders if every item of a member\'s order is fulfilled', async () => {
+
+  });
+
+  test('members cannot fulfill orders', async () => {
+
+  });
+
+  test('members cannot order items from archived collections', async () => {
     const conn = await DatabaseConnection.get();
     const collection = MerchFactory.fakeCollection({ archived: true });
     const option = collection.items[0].options[0];
@@ -54,7 +74,7 @@ describe('merch orders', () => {
 });
 
 describe('merch order pickup events', () => {
-  test('GET /order/pickup/future returns pickup events that haven\'t ended yet', async () => {
+  test('future pickup events can be retrieved', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const pastPickupEvent = MerchFactory.fakeOrderPickupEvent({
@@ -83,7 +103,7 @@ describe('merch order pickup events', () => {
       ]));
   });
 
-  test('POST /order/pickup persists pickup event on proper input', async () => {
+  test('pickup events can be created on valid input', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const pickupEvent = MerchFactory.fakeOrderPickupEvent();
@@ -99,7 +119,7 @@ describe('merch order pickup events', () => {
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
   });
 
-  test('POST /order/pickup fails when pickup event start date is later than end date', async () => {
+  test('pickup event creation fails if start date is later than end date', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
@@ -116,7 +136,7 @@ describe('merch order pickup events', () => {
       .toThrow('Order pickup event start time must come before the end time');
   });
 
-  test('PATCH /order/pickup/:uuid properly updates pickup event with valid edits', async () => {
+  test('pickup events can be edited on valid input', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const pickupEvent = MerchFactory.fakeOrderPickupEvent();
@@ -135,7 +155,7 @@ describe('merch order pickup events', () => {
     expect(persistedPickupEvent.title).toEqual(editPickupEventRequest.pickupEvent.title);
   });
 
-  test('PATCH /order/pickup/:uuid fails when pickup event edit\'s start date is later than end date', async () => {
+  test('pickup event update fails when pickup event edit\'s start date is later than end date', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const pickupEvent = MerchFactory.fakeOrderPickupEvent();
@@ -174,5 +194,13 @@ describe('merch order pickup events', () => {
     const [persistedPickupEvent] = await conn.manager.find(OrderPickupEventModel, { relations: ['orders'] });
     expect(persistedPickupEvent.orders).toHaveLength(1);
     expect(persistedPickupEvent.orders[0]).toStrictEqual(persistedOrder);
+  });
+
+  test('cancelling a pickup event refunds every order for that event to the respective user', async () => {
+
+  });
+
+  test('members can reschedule their pickup event if they miss the event', async () => {
+
   });
 });
