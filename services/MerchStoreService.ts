@@ -1,4 +1,4 @@
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
@@ -36,13 +36,13 @@ import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 
 @Service()
 export default class MerchStoreService {
-  @Inject()
   private emailService: EmailService;
 
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
+  constructor(@InjectManager() entityManager: EntityManager, emailService: EmailService) {
     this.transactions = new TransactionsManager(entityManager);
+    this.emailService = emailService;
   }
 
   public async findCollectionByUuid(uuid: Uuid, canSeeSeeHiddenItems = false): Promise<PublicMerchCollection> {
@@ -413,7 +413,7 @@ export default class MerchStoreService {
     // checks that the user hasn't exceeded monthly/lifetime purchase limits
     const merchOrderRepository = Repositories.merchOrder(txn);
     const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersForUser(user);
-    const oneMonthAgo = new Date(moment().subtract('months', 1).unix());
+    const oneMonthAgo = new Date(moment().subtract(1, 'month').unix());
     const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
     const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, lifetimePurchaseHistory);
     const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, pastMonthPurchaseHistory);

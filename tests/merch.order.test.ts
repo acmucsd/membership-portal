@@ -1,8 +1,10 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
+import { mock, when, anything, instance } from 'ts-mockito';
+import EmailService from '../services/EmailService';
 import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
-import { UserAccessType } from '../types';
+import { UserAccessType, OrderStatus } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 
@@ -21,7 +23,52 @@ afterAll(async () => {
 
 describe('merch orders', () => {
   test('members can place orders on merch items if they\'re in stock and can afford them', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const affordableOption1 = MerchFactory.fakeOption({
+      quantity: 1,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const affordableOption2 = MerchFactory.fakeOption({
+      quantity: 1,
+      price: 3000,
+      discountPercentage: 0,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItemOption(affordableOption1)
+      .createMerchItemOption(affordableOption2)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+    const order = [
+      {
+        option: affordableOption1.uuid,
+        quantity: 1,
+      },
+      {
+        option: affordableOption2.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const placeMerchOrderResponse = await ControllerFactory
+      .merchStore(conn, instance(emailService))
+      .placeMerchOrder(placeMerchOrderRequest, member);
+    const placedOrder = placeMerchOrderResponse.order;
+
+    expect(placedOrder.items).toHaveLength(2);
+    expect(placedOrder.status).toStrictEqual(OrderStatus.PLACED);
+    expect(member.credits).toEqual(5000);
   });
 
   test('members can cancel orders that they\'ve placed and receive a full refund to their order', async () => {
@@ -44,7 +91,7 @@ describe('merch orders', () => {
     const conn = await DatabaseConnection.get();
     const collection = MerchFactory.fakeCollection({ archived: true });
     const option = collection.items[0].options[0];
-    const orderPickupEvent = MerchFactory.fakeOrderPickupEvent();
+    const orderPickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
     const admin = UserFactory.fake({
       accessType: UserAccessType.ADMIN,
       credits: option.price,
@@ -181,7 +228,7 @@ describe('merch order pickup events', () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const option = MerchFactory.fakeOption();
-    const pickupEvent = MerchFactory.fakeOrderPickupEvent();
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
       .createUsers(member)
