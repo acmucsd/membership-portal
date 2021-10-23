@@ -71,11 +71,10 @@ describe('account registration', () => {
 
   test('user cannot register with duplicate email address', async () => {
     const conn = await DatabaseConnection.get();
-    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const member = UserFactory.fake();
 
     await new PortalState()
-      .createUsers(admin, member)
+      .createUsers(member)
       .write();
 
     const user = {
