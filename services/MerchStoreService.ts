@@ -491,7 +491,8 @@ export default class MerchStoreService {
         throw new NotFoundError('Cannot mark an order as missed if its pickup event hasn\'t started yet');
       }
       const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_MISSED });
-      const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(upsertedOrder, txn);
+      const orderUpdateInfo = await MerchStoreService
+        .buildOrderUpdateInfo(upsertedOrder, upsertedOrder.pickupEvent, txn);
       const { user } = order;
       await this.emailService.sendOrderPickupMissed(user.email, user.firstName, orderUpdateInfo);
       return upsertedOrder;
@@ -517,7 +518,8 @@ export default class MerchStoreService {
       }
       const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
       await MerchStoreService.refundUser(user, order.totalCost, txn);
-      const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(upsertedOrder, txn);
+      const orderUpdateInfo = await MerchStoreService
+        .buildOrderUpdateInfo(upsertedOrder, upsertedOrder.pickupEvent, txn);
       await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
     });
   }
@@ -558,7 +560,8 @@ export default class MerchStoreService {
    * @param txn transaction
    * @returns order update info for email
    */
-  private static async buildOrderUpdateInfo(order: OrderModel, txn: EntityManager) {
+  private static async buildOrderUpdateInfo(order: OrderModel, pickupEvent: OrderPickupEventModel,
+    txn: EntityManager) {
     // maps an item option to its price at purchase and quantity ordered by the user
     const optionPricesAndQuantities = MerchStoreService.getPriceAndQuantityByOption(order);
     const itemOptionsOrdered = Array.from(optionPricesAndQuantities.keys());
@@ -579,9 +582,9 @@ export default class MerchStoreService {
       }),
       totalCost: order.totalCost,
       pickupEvent: {
-        ...order.pickupEvent,
-        start: MerchStoreService.dateToHumanReadableDateString(order.pickupEvent.start),
-        end: MerchStoreService.dateToHumanReadableDateString(order.pickupEvent.end),
+        ...pickupEvent,
+        start: MerchStoreService.dateToHumanReadableDateString(pickupEvent.start),
+        end: MerchStoreService.dateToHumanReadableDateString(pickupEvent.end),
       },
     };
   }
@@ -705,13 +708,10 @@ export default class MerchStoreService {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       const orderRepository = Repositories.merchOrder(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
-      if (pickupEvent.orders.length > 0) {
-        throw new UserError('Cannot delete an order pickup event that has orders assigned to it');
-      }
       // concurrently email the order cancellation email and update order status for every order
       // then set pickupEvent to null before deleting from table
       await Promise.all(pickupEvent.orders.map(async (order) => {
-        const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, txn);
+        const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, pickupEvent, txn);
         const { user } = order;
         await this.emailService.sendOrderPickupCancelled(user.email, user.firstName, orderUpdateInfo);
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_CANCELLED, pickupEvent: null });

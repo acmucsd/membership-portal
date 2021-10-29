@@ -1,6 +1,7 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
-import { mock, when, anything, instance, verify } from 'ts-mockito';
+import { mock, when, anything, instance, verify, anyString } from 'ts-mockito';
+import { ForbiddenError } from 'routing-controllers';
 import EmailService from '../services/EmailService';
 import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
@@ -92,7 +93,9 @@ describe('merch orders', () => {
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
       .thenResolve();
-    
+    when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
+      .thenResolve();
+
     // place order
     const order = [
       {
@@ -104,11 +107,11 @@ describe('merch orders', () => {
       order,
       pickupEvent: pickupEvent.uuid,
     };
-    const merchController = ControllerFactory.merchStore(conn, instance(emailService))
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
 
     // cancel order
-    const uuid = placedOrderResponse.order.uuid;
+    const { uuid } = placedOrderResponse.order;
     await merchController.cancelMerchOrder({ uuid }, member);
 
     // get order, making sure state was updated and user has been refunded
@@ -118,19 +121,239 @@ describe('merch orders', () => {
     expect(cancelledOrder.status).toEqual(OrderStatus.CANCELLED);
     expect(member.credits).toEqual(10000);
     verify(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
-      .called()
+      .called();
+  });
+
+  test('members cannot cancel other members\' orders', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const otherMember = UserFactory.fake();
+    const affordableOption = MerchFactory.fakeOption({
+      quantity: 1,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItemOption(affordableOption)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // place order
+    const order = [
+      {
+        option: affordableOption.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+
+    // cancel order
+    const { uuid } = placedOrderResponse.order;
+    expect(merchController.cancelMerchOrder({ uuid }, otherMember))
+      .rejects
+      .toThrow('Member cannot cancel other members\' orders');
   });
 
   test('admins can fulfill parts of a member\'s order', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const affordableOption1 = MerchFactory.fakeOption({
+      quantity: 1,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const affordableOption2 = MerchFactory.fakeOption({
+      quantity: 1,
+      price: 3000,
+      discountPercentage: 0,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItemOption(affordableOption1)
+      .createMerchItemOption(affordableOption2)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // place order
+    const order = [
+      {
+        option: affordableOption1.uuid,
+        quantity: 1,
+      },
+      {
+        option: affordableOption2.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+
+    // fulfill a single item in an order
+    const placedOrder = placedOrderResponse.order;
+    const uuidParams = { uuid: placedOrder.uuid };
+    const fulfillMerchOrderItemsRequest = {
+      items: [
+        {
+          uuid: placedOrder.items[0].uuid,
+          fulfilled: true,
+        },
+        {
+          uuid: placedOrder.items[1].uuid,
+          fulfilled: false,
+        },
+      ],
+    };
+    await merchController.fulfillMerchOrderItems(uuidParams, fulfillMerchOrderItemsRequest, admin);
+
+    const getOrderResponse = await merchController.getOneMerchOrder(uuidParams, member);
+    const partiallyFulfilledOrder = getOrderResponse.order;
+
+    // order status should not be FULFILLED because entire order isn't fulfilled
+    expect(partiallyFulfilledOrder.status).toEqual(OrderStatus.PLACED);
+    expect(partiallyFulfilledOrder.items.some((item) => item.fulfilled)).toBeTruthy();
+    expect(partiallyFulfilledOrder.items.every((item) => item.fulfilled)).toBeFalsy();
   });
 
   test('admins can fulfill entire orders if every item of a member\'s order is fulfilled', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const affordableOption1 = MerchFactory.fakeOption({
+      quantity: 1,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const affordableOption2 = MerchFactory.fakeOption({
+      quantity: 1,
+      price: 3000,
+      discountPercentage: 0,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItemOption(affordableOption1)
+      .createMerchItemOption(affordableOption2)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // place order
+    const order = [
+      {
+        option: affordableOption1.uuid,
+        quantity: 1,
+      },
+      {
+        option: affordableOption2.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+
+    // fulfill all items in order
+    const placedOrder = placedOrderResponse.order;
+    const uuidParams = { uuid: placedOrder.uuid };
+    const fulfillMerchOrderItemsRequest = {
+      items: [
+        {
+          uuid: placedOrder.items[0].uuid,
+          fulfilled: true,
+        },
+        {
+          uuid: placedOrder.items[1].uuid,
+          fulfilled: true,
+        },
+      ],
+    };
+    await merchController.fulfillMerchOrderItems(uuidParams, fulfillMerchOrderItemsRequest, admin);
+
+    const getOrderResponse = await merchController.getOneMerchOrder(uuidParams, member);
+    const fulfilledOrder = getOrderResponse.order;
+
+    expect(fulfilledOrder.status).toEqual(OrderStatus.FULFILLED);
+    expect(fulfilledOrder.items[0].fulfilled).toBeTruthy();
+    expect(fulfilledOrder.items[1].fulfilled).toBeTruthy();
   });
 
   test('members cannot fulfill orders', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const affordableOption = MerchFactory.fakeOption({
+      quantity: 1,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItemOption(affordableOption)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // place order
+    const order = [
+      {
+        option: affordableOption.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+
+    // attempt to fulfill the member's own order
+    const placedOrder = placedOrderResponse.order;
+    const uuidParams = { uuid: placedOrder.uuid };
+    const fulfillMerchOrderItemsRequest = {
+      items: [
+        {
+          uuid: placedOrder.items[0].uuid,
+          fulfilled: true,
+        },
+      ],
+    };
+    expect(merchController.fulfillMerchOrderItems(uuidParams, fulfillMerchOrderItemsRequest, member))
+      .rejects.toThrow(ForbiddenError);
   });
 
   test('members cannot order items from archived collections', async () => {
@@ -289,8 +512,61 @@ describe('merch order pickup events', () => {
     expect(persistedPickupEvent.orders[0]).toStrictEqual(persistedOrder);
   });
 
-  test('cancelling a pickup event refunds every order for that event to the respective user', async () => {
+  test('cancelling a pickup event sends emails to every user asking to reschedule', async () => {
+    const conn = await DatabaseConnection.get();
+    const member1 = UserFactory.fake({ credits: 10000 });
+    const member2 = UserFactory.fake({ credits: 10000 });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const affordableOption = MerchFactory.fakeOption({
+      quantity: 2,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
+    await new PortalState()
+      .createUsers(member1, member2)
+      .createMerchItemOption(affordableOption)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anyString(), anyString(), anything()))
+      .thenResolve();
+    when(emailService.sendOrderPickupCancelled(anyString(), anyString(), anything()))
+      .thenResolve();
+
+    // place order
+    const order = [
+      {
+        option: affordableOption.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placedOrder1 = await merchController.placeMerchOrder(placeMerchOrderRequest, member1);
+    const placedOrder2 = await merchController.placeMerchOrder(placeMerchOrderRequest, member2);
+
+    // delete pickup event
+    const { uuid } = pickupEvent;
+    await merchController.deletePickupEvent({ uuid }, admin);
+
+    verify(emailService.sendOrderPickupCancelled(member1.email, member1.firstName, anything()))
+      .called();
+    verify(emailService.sendOrderPickupCancelled(member2.email, member2.firstName, anything()))
+      .called();
+
+    const order1Request = { uuid: placedOrder1.order.uuid };
+    const order1Response = await merchController.getOneMerchOrder(order1Request, member1);
+    expect(order1Response.order.status).toEqual(OrderStatus.PICKUP_CANCELLED);
+
+    const order2Request = { uuid: placedOrder2.order.uuid };
+    const order2Response = await merchController.getOneMerchOrder(order2Request, member2);
+    expect(order2Response.order.status).toEqual(OrderStatus.PICKUP_CANCELLED);
   });
 
   test('members can reschedule their pickup event if they miss the event', async () => {
