@@ -336,8 +336,7 @@ export default class MerchStoreService {
       }));
 
       const userRepository = Repositories.user(txn);
-      userRepository.upsertUser(user, { credits: user.credits - totalCost });
-
+      await userRepository.upsertUser(user, { credits: user.credits - totalCost });
       return [createdOrder, itemOptions];
     });
 
@@ -509,15 +508,15 @@ export default class MerchStoreService {
       const orderRespository = Repositories.merchOrder(txn);
       const order = await orderRespository.findByUuid(uuid);
       if (!order) throw new NotFoundError('Order not found');
-      if (!user.isAdmin() && order.user !== user) {
-        throw new ForbiddenError('Member cannot cancel other members orders');
+      if (!user.isAdmin() && order.user.uuid !== user.uuid) {
+        throw new ForbiddenError('Member cannot cancel other members\' orders');
       }
       if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot cancel an inactive order');
       if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
         throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
       }
       const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
-      await MerchStoreService.refundUser(order.user, order.totalCost, txn);
+      await MerchStoreService.refundUser(user, order.totalCost, txn);
       const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(upsertedOrder, txn);
       await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
     });
@@ -549,8 +548,8 @@ export default class MerchStoreService {
     return optionToPriceAndQuantity;
   }
 
-  private static async refundUser(user: UserModel, credits: number, txn: EntityManager): Promise<UserModel> {
-    return Repositories.user(txn).upsertUser(user, { credits: user.credits + credits });
+  private static async refundUser(user: UserModel, refund: number, txn: EntityManager): Promise<UserModel> {
+    return Repositories.user(txn).upsertUser(user, { credits: user.credits + refund });
   }
 
   /**

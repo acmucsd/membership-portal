@@ -1,6 +1,6 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
-import { mock, when, anything, instance } from 'ts-mockito';
+import { mock, when, anything, instance, verify } from 'ts-mockito';
 import EmailService from '../services/EmailService';
 import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
@@ -69,10 +69,56 @@ describe('merch orders', () => {
     expect(placedOrder.items).toHaveLength(2);
     expect(placedOrder.status).toStrictEqual(OrderStatus.PLACED);
     expect(member.credits).toEqual(5000);
+    verify(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .called();
   });
 
   test('members can cancel orders that they\'ve placed and receive a full refund to their order', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const affordableOption = MerchFactory.fakeOption({
+      quantity: 1,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItemOption(affordableOption)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+    
+    // place order
+    const order = [
+      {
+        option: affordableOption.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService))
+    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+
+    // cancel order
+    const uuid = placedOrderResponse.order.uuid;
+    await merchController.cancelMerchOrder({ uuid }, member);
+
+    // get order, making sure state was updated and user has been refunded
+    const cancelledOrderResponse = await merchController.getOneMerchOrder({ uuid }, member);
+    const cancelledOrder = cancelledOrderResponse.order;
+
+    expect(cancelledOrder.status).toEqual(OrderStatus.CANCELLED);
+    expect(member.credits).toEqual(10000);
+    verify(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
+      .called()
   });
 
   test('admins can fulfill parts of a member\'s order', async () => {
