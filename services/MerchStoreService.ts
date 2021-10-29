@@ -365,7 +365,7 @@ export default class MerchStoreService {
   }
 
   private static dateToHumanReadableDateString(date: Date): string {
-    return moment(date).format('MMMM d, HH:mm');
+    return moment(date).format('MMMM d, H:mm A');
   }
 
   public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
