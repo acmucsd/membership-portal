@@ -102,7 +102,7 @@ export class MerchFactory {
     const duration = FactoryUtils.getRandomNumber(30, 180, 30);
     const start = moment().add(daysAhead, 'days').toDate();
     const end = moment(start).add(duration, 'minutes').toDate();
-    return MerchFactory.fakeOrderPickupEvent({ start, end });
+    return MerchFactory.fakeOrderPickupEvent({ start, end, ...substitute });
   }
 
   private static createOptions(n: number): MerchandiseItemOptionModel[] {

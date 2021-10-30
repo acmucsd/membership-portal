@@ -22,6 +22,8 @@ export default class EmailService {
 
   private static readonly orderPickupCancelledTemplate = EmailService.readTemplate('orderPickupCancelled.ejs');
 
+  private static readonly orderPickupUpdatedTemplate = EmailService.readTemplate('orderPickupUpdated.ejs');
+
   constructor() {
     this.mailer.setApiKey(Config.email.apiKey);
   }
@@ -65,7 +67,7 @@ export default class EmailService {
       const data = {
         to: email,
         from: Config.email.user,
-        subject: 'ACM UCSD Merch Store Order Confirmation',
+        subject: 'ACM UCSD Merch Store - Order Confirmation',
         html: ejs.render(EmailService.orderConfirmationTemplate, {
           firstName,
           order,
@@ -83,7 +85,7 @@ export default class EmailService {
       const data = {
         to: email,
         from: Config.email.user,
-        subject: 'ACM UCSD Merch Store Order Cancellation',
+        subject: 'ACM UCSD Merch Store - Order Cancellation',
         html: ejs.render(EmailService.orderCancellationTemplate, { firstName, order }),
       };
       await this.sendEmail(data);
@@ -97,7 +99,7 @@ export default class EmailService {
       const data = {
         to: email,
         from: Config.email.user,
-        subject: 'ACM UCSD Merch Store Order Pickup Missed',
+        subject: 'ACM UCSD Merch Store - Order Pickup Missed',
         html: ejs.render(EmailService.orderPickupMissedTemplate, { firstName, order }),
       };
       await this.sendEmail(data);
@@ -111,12 +113,26 @@ export default class EmailService {
       const data = {
         to: email,
         from: Config.email.user,
-        subject: 'ACM UCSD Merch Store Order Pickup Event Cancelled',
+        subject: 'ACM UCSD Merch Store - Order Pickup Event Cancelled',
         html: ejs.render(EmailService.orderPickupCancelledTemplate, { firstName, order }),
       };
       await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send order pickup cancelled email to ${email}`, { error });
+    }
+  }
+
+  public async sendOrderPickupUpdated(email: string, firstName: string, order: OrderInfo) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Merch Store - Order Pickup Event Updated',
+        html: ejs.render(EmailService.orderPickupUpdatedTemplate, { firstName, order }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send order pickup update email to ${email}`, { error });
     }
   }
 

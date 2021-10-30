@@ -107,7 +107,7 @@
                                             <p>Pickup event:</p>
                                                 <p><%= order.pickupEvent.title %></p>
                                                 <p><small>From <%= order.pickupEvent.start %> to <%= order.pickupEvent.end %></small></p>
-                                                <p><small><%= order.pickupEvent.description %></small></p>
+                                                <p><small>Description: <%= order.pickupEvent.description %></small></p>
                                             <p>Order:</p>
                                                 <% for(var i=0; i < order.items.length; i++) { %>
                                                                     <p><%= order.items[i].itemName %></p>

@@ -454,7 +454,7 @@ export default class MerchStoreService {
       const orderRepository = Repositories.merchOrder(txn);
       const order = await orderRepository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
-      if (order.user !== user) throw new ForbiddenError('Cannot edit the order of a different user');
+      if (order.user.uuid !== user.uuid) throw new ForbiddenError('Cannot edit the order of a different user');
       if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot modify pickup for inactive orders');
 
       const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
@@ -462,6 +462,8 @@ export default class MerchStoreService {
       if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
         throw new UserError('Cannot change order pickup to an event that starts in less than 2 days');
       }
+      const orderInfo = await MerchStoreService.buildOrderUpdateInfo(order, pickupEvent, txn);
+      await this.emailService.sendOrderPickupUpdated(user.email, user.firstName, orderInfo);
       return orderRepository.upsertMerchOrder(order, { pickupEvent });
     });
   }
