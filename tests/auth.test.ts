@@ -205,7 +205,7 @@ describe('resending email verification', () => {
     await authController.resendEmailVerification(params);
 
     member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
-    verify(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
+    verify(emailService.sendEmailVerification(member.email, member.firstName, member.accessCode))
       .called();
   });
 
