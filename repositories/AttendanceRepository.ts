@@ -10,7 +10,7 @@ import { Attendance } from '../types/internal';
 export class AttendanceRepository extends BaseRepository<AttendanceModel> {
   public async getAttendancesForUser(user: UserModel): Promise<AttendanceModel[]> {
     return this.repository.find({
-      relations: ['event'],
+      relations: ['user', 'event'],
       where: { user },
       order: { timestamp: 'ASC' },
     });
@@ -18,7 +18,7 @@ export class AttendanceRepository extends BaseRepository<AttendanceModel> {
 
   public async getAttendancesForEvent(event: Uuid): Promise<AttendanceModel[]> {
     return this.repository.find({
-      relations: ['user'],
+      relations: ['user', 'event'],
       where: { event },
     });
   }

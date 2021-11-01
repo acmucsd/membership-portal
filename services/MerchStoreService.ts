@@ -295,65 +295,14 @@ export default class MerchStoreService {
     user: UserModel,
     pickupEventUuid: Uuid): Promise<PublicOrder> {
     const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
-      await user.reload();
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
-      if (itemOptions.size !== originalOrder.length) {
-        const requestedItems = originalOrder.map((oi) => oi.option);
-        const foundItems = Array.from(itemOptions.values())
-          .filter((o) => !o.item.hidden)
-          .map((o) => o.uuid);
-        const missingItems = difference(requestedItems, foundItems);
-        throw new NotFoundError(`The following items were not found: ${missingItems}`);
-      }
 
-      // Checks that hidden items were not ordered
-      const hiddenItems = Array.from(itemOptions.values())
-        .filter((o) => o.item.hidden)
-        .map((o) => o.uuid);
+      await this.verifyOrderWithTransaction(originalOrder, user, txn);
 
-      if (hiddenItems.length !== 0) {
-        throw new UserError(`Not allowed to order: ${hiddenItems}`);
-      }
+      const totalCost = MerchStoreService.totalCost(originalOrder, itemOptions);
 
-      // checks that the user hasn't exceeded monthly/lifetime purchase limits
       const merchOrderRepository = Repositories.merchOrder(txn);
-      const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersForUser(user);
-      const oneMonthAgo = new Date(moment().subtract('months', 1).unix());
-      const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
-      const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, lifetimePurchaseHistory);
-      const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, pastMonthPurchaseHistory);
-      // aggregate requested quantities by item
-      const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
-        .countItemRequestedQuantities(originalOrder, itemOptions)
-        .entries());
-      for (let i = 0; i < requestedQuantitiesByMerchItem.length; i += 1) {
-        const [item, quantityRequested] = requestedQuantitiesByMerchItem[i];
-        if (!!item.lifetimeLimit && lifetimeItemOrderCounts.get(item) + quantityRequested > item.lifetimeLimit) {
-          throw new UserError(`This order exceeds the lifetime limit for ${item.itemName}`);
-        }
-        if (!!item.monthlyLimit && pastMonthItemOrderCounts.get(item) + quantityRequested > item.monthlyLimit) {
-          throw new UserError(`This order exceeds the monthly limit for ${item.itemName}`);
-        }
-      }
-
-      // checks that enough units of requested item options are in stock
-      for (let i = 0; i < originalOrder.length; i += 1) {
-        const optionAndQuantity = originalOrder[i];
-        const option = itemOptions.get(optionAndQuantity.option);
-        const quantityRequested = optionAndQuantity.quantity;
-        if (option.quantity < quantityRequested) {
-          throw new UserError(`There aren't enough units of ${option.item.itemName} in stock`);
-        }
-      }
-
-      // checks that the user has enough credits to place order
-      const totalCost = originalOrder.reduce((sum, o) => {
-        const option = itemOptions.get(o.option);
-        const quantityRequested = o.quantity;
-        return sum + (option.getPrice() * quantityRequested);
-      }, 0);
-      if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
 
       // Verify the requested pickup event exists,
       // and that the order is placed at least 2 days before the pickup event starts
@@ -424,6 +373,72 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
+  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      this.verifyOrderWithTransaction(originalOrder, user, txn);
+    });
+  }
+
+  private async verifyOrderWithTransaction(originalOrder: MerchItemOptionAndQuantity[],
+    user: UserModel,
+    txn: EntityManager): Promise<void> {
+    await user.reload();
+    const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+    const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
+    if (itemOptions.size !== originalOrder.length) {
+      const requestedItems = originalOrder.map((oi) => oi.option);
+      const foundItems = Array.from(itemOptions.values())
+        .filter((o) => !o.item.hidden)
+        .map((o) => o.uuid);
+      const missingItems = difference(requestedItems, foundItems);
+      throw new NotFoundError(`The following items were not found: ${missingItems}`);
+    }
+
+    // Checks that hidden items were not ordered
+    const hiddenItems = Array.from(itemOptions.values())
+      .filter((o) => o.item.hidden)
+      .map((o) => o.uuid);
+
+    if (hiddenItems.length !== 0) {
+      throw new UserError(`Not allowed to order: ${hiddenItems}`);
+    }
+
+    // checks that the user hasn't exceeded monthly/lifetime purchase limits
+    const merchOrderRepository = Repositories.merchOrder(txn);
+    const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersForUser(user);
+    const oneMonthAgo = new Date(moment().subtract('months', 1).unix());
+    const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
+    const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, lifetimePurchaseHistory);
+    const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, pastMonthPurchaseHistory);
+    // aggregate requested quantities by item
+    const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
+      .countItemRequestedQuantities(originalOrder, itemOptions)
+      .entries());
+    for (let i = 0; i < requestedQuantitiesByMerchItem.length; i += 1) {
+      const [item, quantityRequested] = requestedQuantitiesByMerchItem[i];
+      if (!!item.lifetimeLimit && lifetimeItemOrderCounts.get(item) + quantityRequested > item.lifetimeLimit) {
+        throw new UserError(`This order exceeds the lifetime limit for ${item.itemName}`);
+      }
+      if (!!item.monthlyLimit && pastMonthItemOrderCounts.get(item) + quantityRequested > item.monthlyLimit) {
+        throw new UserError(`This order exceeds the monthly limit for ${item.itemName}`);
+      }
+    }
+
+    // checks that enough units of requested item options are in stock
+    for (let i = 0; i < originalOrder.length; i += 1) {
+      const optionAndQuantity = originalOrder[i];
+      const option = itemOptions.get(optionAndQuantity.option);
+      const quantityRequested = optionAndQuantity.quantity;
+      if (option.quantity < quantityRequested) {
+        throw new UserError(`There aren't enough units of ${option.item.itemName} in stock`);
+      }
+    }
+
+    // checks that the user has enough credits to place order
+    const totalCost = MerchStoreService.totalCost(originalOrder, itemOptions);
+    if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
+  }
+
   public async updateOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[]): Promise<void> {
     const updates = new Map<string, OrderItemFulfillmentUpdate>();
     for (let i = 0; i < fulfillmentUpdates.length; i += 1) {
@@ -480,6 +495,15 @@ export default class MerchStoreService {
       requestedQuantitiesByMerchItem.set(item, requestedQuantitiesByMerchItem.get(item) + quantityRequested);
     }
     return requestedQuantitiesByMerchItem;
+  }
+
+  private static totalCost(order:MerchItemOptionAndQuantity[],
+    itemOptions:Map<string, MerchandiseItemOptionModel>):number {
+    return order.reduce((sum, o) => {
+      const option = itemOptions.get(o.option);
+      const quantityRequested = o.quantity;
+      return sum + (option.getPrice() * quantityRequested);
+    }, 0);
   }
 
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {

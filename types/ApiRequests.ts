@@ -177,6 +177,10 @@ export interface PlaceMerchOrderRequest {
   pickupEvent: Uuid;
 }
 
+export interface VerifyMerchOrderRequest {
+  order: MerchItemOptionAndQuantity[];
+}
+
 export interface FulfillMerchOrderRequest {
   items: OrderItemFulfillmentUpdate[];
 }
