@@ -1,4 +1,5 @@
 import * as faker from 'faker';
+import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
 import { ActivityType, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
@@ -86,6 +87,56 @@ describe('attendance', () => {
     expect(attendance.event.uuid).toEqual(event.uuid);
   });
 
+  test('members can attend events 30 minutes before the event starts at the earliest', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const event = EventFactory.fake({
+      start: moment().add(20, 'minutes').toDate(),
+      end: moment().add(2, 'hours').add(20, 'minutes').toDate(),
+    });
+
+    await new PortalState()
+      .createUsers(member)
+      .createEvents(event)
+      .write();
+
+    // attend event
+    const attendanceController = ControllerFactory.attendance(conn);
+    const attendEventRequest = { attendanceCode: event.attendanceCode };
+    await attendanceController.attendEvent(attendEventRequest, member);
+
+    // check attendances for user
+    const getAttendancesForUserResponse = await attendanceController.getAttendancesForCurrentUser(member);
+    const attendance = getAttendancesForUserResponse.attendances[0];
+    expect(attendance.user.uuid).toEqual(member.uuid);
+    expect(attendance.event.uuid).toEqual(event.uuid);
+  });
+
+  test('members can attend events up to 30 minutes after the event ends', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const event = EventFactory.fake({
+      start: moment().subtract(2, 'hours').subtract(20, 'minutes').toDate(),
+      end: moment().subtract(20, 'minutes').toDate(),
+    });
+
+    await new PortalState()
+      .createUsers(member)
+      .createEvents(event)
+      .write();
+
+    // attend event
+    const attendanceController = ControllerFactory.attendance(conn);
+    const attendEventRequest = { attendanceCode: event.attendanceCode };
+    await attendanceController.attendEvent(attendEventRequest, member);
+
+    // check attendances for user
+    const getAttendancesForUserResponse = await attendanceController.getAttendancesForCurrentUser(member);
+    const attendance = getAttendancesForUserResponse.attendances[0];
+    expect(attendance.user.uuid).toEqual(member.uuid);
+    expect(attendance.event.uuid).toEqual(event.uuid);
+  });
+
   test('throws if invalid attendance code', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
@@ -101,7 +152,7 @@ describe('attendance', () => {
       .rejects.toThrow('Oh no! That code didn\'t work.');
   });
 
-  test('throws if attendance code entered before event', async () => {
+  test('throws if attendance code entered more than 30 minutes before event', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const event = EventFactory.fake(EventFactory.daysAfter(1));
@@ -113,10 +164,10 @@ describe('attendance', () => {
 
     const attendEventRequest = { attendanceCode: event.attendanceCode };
     await expect(ControllerFactory.attendance(conn).attendEvent(attendEventRequest, member))
-      .rejects.toThrow('You can only enter the attendance code during the event!');
+      .rejects.toThrow('This event is not currently accepting attendances!');
   });
 
-  test('throws if attendance code entered after event', async () => {
+  test('throws if attendance code entered more than 30 minutes after event', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const event = EventFactory.fake(EventFactory.daysBefore(1));
@@ -128,7 +179,7 @@ describe('attendance', () => {
 
     const attendEventRequest = { attendanceCode: event.attendanceCode };
     await expect(ControllerFactory.attendance(conn).attendEvent(attendEventRequest, member))
-      .rejects.toThrow('You can only enter the attendance code during the event!');
+      .rejects.toThrow('This event is not currently accepting attendances!');
   });
 
   test('throws if member has already attended event', async () => {

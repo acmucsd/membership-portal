@@ -38,7 +38,7 @@ export default class AttendanceService {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByAttendanceCode(attendanceCode);
       if (!event) throw new NotFoundError('Oh no! That code didn\'t work.');
-      if (!event.isOngoing()) throw new UserError('You can only enter the attendance code during the event!');
+      if (!event.isAcceptingAttendances()) throw new UserError('This event is not currently accepting attendances!');
 
       const hasAlreadyAttended = await Repositories.attendance(txn).hasUserAttendedEvent(user, event);
       if (hasAlreadyAttended) throw new UserError('You have already attended this event');
