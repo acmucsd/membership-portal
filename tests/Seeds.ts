@@ -55,6 +55,7 @@ async function seed(): Promise<void> {
     accessType: UserAccessType.STANDARD,
     firstName: 'Steven',
     lastName: 'Steiner',
+    points: 675,
     graduationYear: getGraduationYear(4),
   });
   const MEMBER_SOPHOMORE = UserFactory.fake({
@@ -455,6 +456,17 @@ async function seed(): Promise<void> {
   });
   MERCH_ITEM_5.options = [MERCH_ITEM_5_MEDIUM, MERCH_ITEM_5_LARGE];
   MERCH_COLLECTION_2.items = [MERCH_ITEM_3, MERCH_ITEM_4, MERCH_ITEM_5];
+  const ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
+    title: 'Example Order Pickup Event',
+    description: 'This is a test event to pickup orders from.',
+    orderLimit: 10,
+  });
+
+  const OTHER_ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
+    title: 'Example Other Order Pickup Event',
+    description: 'This is another test event to pickup orders from.',
+    orderLimit: 10,
+  });
 
   await new PortalState()
     .createUsers(
@@ -540,6 +552,10 @@ async function seed(): Promise<void> {
       MERCH_COLLECTION_1,
       MERCH_COLLECTION_2,
     )
+    .createOrderPickupEvents(ORDER_PICKUP_EVENT, OTHER_ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], OTHER_ORDER_PICKUP_EVENT)
     .write();
 }
 

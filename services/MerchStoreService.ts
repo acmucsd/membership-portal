@@ -406,7 +406,7 @@ export default class MerchStoreService {
     // checks that the user hasn't exceeded monthly/lifetime purchase limits
     const merchOrderRepository = Repositories.merchOrder(txn);
     const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersForUser(user);
-    const oneMonthAgo = new Date(moment().subtract('months', 1).unix());
+    const oneMonthAgo = new Date(moment().subtract(1, 'months').unix());
     const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
     const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, lifetimePurchaseHistory);
     const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, pastMonthPurchaseHistory);

@@ -549,11 +549,16 @@ describe('merch order pickup events', () => {
   test('placing an order with a pickup event properly sets the pickup event\'s order', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
-    const option = MerchFactory.fakeOption();
+    const item = MerchFactory.fakeItem();
+    const option = MerchFactory.fakeOption({
+      item,
+      price: 100,
+    });
     const pickupEvent = MerchFactory.fakeOrderPickupEvent();
 
     await new PortalState()
       .createUsers(member)
+      .createMerchItem(item)
       .createMerchItemOption(option)
       .createOrderPickupEvents(pickupEvent)
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
@@ -567,14 +572,30 @@ describe('merch order pickup events', () => {
 
   test('placing an order with a pickup event that has reached the order limit fails', async () => {
     const conn = await DatabaseConnection.get();
-    const member = UserFactory.fake();
-    const option = MerchFactory.fakeOption();
-    const pickupEvent = MerchFactory.fakeOrderPickupEvent();
+    const member = UserFactory.fake({
+      points: 100,
+    });
+    const item = MerchFactory.fakeItem({
+      hidden: false,
+      monthlyLimit: 100,
+    });
+    const option = MerchFactory.fakeOption({
+      item,
+      quantity: 10,
+      price: 10,
+    });
+    const pickupEvent = MerchFactory.fakeOrderPickupEvent({
+      start: moment().add(3, 'days').toDate(),
+      end: moment().add(4, 'days').toDate(),
+      orderLimit: 2,
+    });
 
     await new PortalState()
       .createUsers(member)
+      .createMerchItem(item)
       .createMerchItemOption(option)
       .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
@@ -583,10 +604,6 @@ describe('merch order pickup events', () => {
       order: [{ option: option.uuid, quantity: 1 }],
       pickupEvent: pickupEvent.uuid,
     };
-
-    for (let i = 1; i < pickupEvent.orderLimit; i += 1) {
-      await merchStoreController.placeMerchOrder(placeMerchOrderRequest, member);
-    }
 
     await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, member))
       .rejects
@@ -596,32 +613,32 @@ describe('merch order pickup events', () => {
   test('PATCH /order/pickup/:uuid fails if the order limit is decreased below the number of orders', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const member = UserFactory.fake();
-    const option = MerchFactory.fakeOption();
+    const member = UserFactory.fake({
+      points: 100,
+    });
+    const item = MerchFactory.fakeItem({ hidden: false });
+    const option = MerchFactory.fakeOption({
+      item,
+      price: 10,
+    });
     const pickupEvent = MerchFactory.fakeOrderPickupEvent({
-      orderLimit: 3,
+      start: moment().add(3, 'days').toDate(),
+      end: moment().add(4, 'days').toDate(),
+      orderLimit: 2,
     });
 
     await new PortalState()
       .createUsers(admin, member)
+      .createMerchItem(item)
       .createMerchItemOption(option)
       .createOrderPickupEvents(pickupEvent)
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
-
-    const merchStoreController = ControllerFactory.merchStore(conn);
-    const placeMerchOrderRequest = {
-      order: [{ option: option.uuid, quantity: 1 }],
-      pickupEvent: pickupEvent.uuid,
-    };
-
-    for (let i = 1; i < pickupEvent.orderLimit; i += 1) {
-      await merchStoreController.placeMerchOrder(placeMerchOrderRequest, member);
-    }
 
     const editPickupEventRequest = {
       pickupEvent: {
-        orderLimit: 2,
+        orderLimit: 1,
       },
     };
     const params = { uuid: pickupEvent.uuid };
