@@ -1,3 +1,4 @@
+import * as faker from 'faker';
 import * as moment from 'moment';
 
 export default class FactoryUtils {
@@ -34,5 +35,9 @@ export default class FactoryUtils {
   public static roundToHalfHour(date: moment.Moment): Date {
     const HALF_HOUR_IN_MILLISECONDS = moment.duration(30, 'minutes').asMilliseconds();
     return new Date(Math.round(date.valueOf() / HALF_HOUR_IN_MILLISECONDS) * HALF_HOUR_IN_MILLISECONDS);
+  }
+
+  public static randomHexString(): string {
+    return faker.datatype.hexaDecimal(10);
   }
 }

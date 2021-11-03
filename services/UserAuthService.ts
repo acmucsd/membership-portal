@@ -160,7 +160,7 @@ export default class UserAuthService {
     return splitHeader[1];
   }
 
-  private static isAuthToken(token: string | object): token is AuthToken {
+  public static isAuthToken(token: string | object): token is AuthToken {
     return typeof token === 'object' && 'uuid' in token;
   }
 
