@@ -313,5 +313,5 @@ export class EditOrderPickupEventRequest implements IEditOrderPickupEventRequest
 export class GetCartRequest implements IGetCartRequest {
   @IsDefined()
   @IsNotEmpty()
-  items:string[];
+  items: string[];
 }
