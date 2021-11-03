@@ -1,4 +1,3 @@
-import { MerchandiseItemOptionModel } from 'models/MerchandiseItemOptionModel';
 import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
 
