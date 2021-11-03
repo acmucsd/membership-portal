@@ -53,6 +53,7 @@ import {
   GetCartRequest,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
+import { difference } from 'underscore';
 
 @UseBefore(UserAuthentication)
 @JsonController('/merch')
@@ -241,7 +242,12 @@ export class MerchStoreController {
   async getCart(@Body() getCartRequest:GetCartRequest, @AuthenticatedUser() user: UserModel): Promise<GetCartResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const items = await this.merchStoreService.getCartItems(getCartRequest.items);
-    if (items.size !== getCartRequest.items.length) throw new UserError('Item Not Found');
+    const foundItems = Array.from(items.values())
+        .map((o) => o.uuid);
+    if (foundItems !== getCartRequest.items){
+      const missingItems = difference(getCartRequest.items, foundItems);
+      throw new NotFoundError(`The following items were not found: ${missingItems}`);
+    }
     return { error: null, items };
   }
 }
