@@ -264,6 +264,6 @@ export interface EditOrderPickupEventRequest {
   pickupEvent: OrderPickupEventEdit;
 }
 
-export interface GetCartRequest{
-  items:string[];
+export interface GetCartRequest {
+  items: string[];
 }
