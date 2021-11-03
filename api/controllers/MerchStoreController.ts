@@ -11,6 +11,7 @@ import {
   NotFoundError,
   BadRequestError,
 } from 'routing-controllers';
+import { difference } from 'underscore';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
@@ -53,7 +54,6 @@ import {
   GetCartRequest,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
-import { difference } from 'underscore';
 
 @UseBefore(UserAuthentication)
 @JsonController('/merch')
@@ -243,8 +243,8 @@ export class MerchStoreController {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const items = await this.merchStoreService.getCartItems(getCartRequest.items);
     const foundItems = Array.from(items.values())
-        .map((o) => o.uuid);
-    if (foundItems !== getCartRequest.items){
+      .map((o) => o.uuid);
+    if (foundItems !== getCartRequest.items) {
       const missingItems = difference(getCartRequest.items, foundItems);
       throw new NotFoundError(`The following items were not found: ${missingItems}`);
     }
