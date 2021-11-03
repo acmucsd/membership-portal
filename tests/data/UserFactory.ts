@@ -6,6 +6,8 @@ import { UserModel } from '../../models/UserModel';
 import FactoryUtils from './FactoryUtils';
 
 export class UserFactory {
+  public static readonly PASSWORD_RAW = 'password';
+
   // hash of the string "password"
   private static readonly PASSWORD_HASH = '$2b$10$WNZRaGHvj3blWAtosHrSDeH4wuSkpwmEVq4obpKr4nujs4XavIgmG';
 
@@ -33,11 +35,19 @@ export class UserFactory {
       hash: UserFactory.PASSWORD_HASH,
       accessType: UserAccessType.STANDARD,
       state: UserState.ACTIVE,
-      graduationYear: FactoryUtils.getRandomNumber(moment().year(), moment().year() + 6),
-      major: FactoryUtils.pickRandomValue(UserFactory.MAJORS),
+      graduationYear: UserFactory.graduationYear(),
+      major: UserFactory.major(),
       points: 0,
       credits: 0,
     });
     return UserModel.merge(fake, substitute);
+  }
+
+  public static graduationYear(): number {
+    return FactoryUtils.getRandomNumber(moment().year(), moment().year() + 6);
+  }
+
+  public static major(): string {
+    return FactoryUtils.pickRandomValue(UserFactory.MAJORS);
   }
 }
