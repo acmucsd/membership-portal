@@ -38,8 +38,12 @@ export default class AttendanceService {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByAttendanceCode(attendanceCode);
       if (!event) throw new NotFoundError('Oh no! That code didn\'t work.');
-      if (event.isTooEarlyToAttendEvent()) throw new UserError('This event hasn\'t started yet, please wait to check in.');
-      if (event.isTooLateToAttendEvent()) throw new UserError('This event has ended and is no longer accepting attendances');
+      if (event.isTooEarlyToAttendEvent()) {
+        throw new UserError('This event hasn\'t started yet, please wait to check in.');
+      }
+      if (event.isTooLateToAttendEvent()) {
+        throw new UserError('This event has ended and is no longer accepting attendances');
+      }
 
       const hasAlreadyAttended = await Repositories.attendance(txn).hasUserAttendedEvent(user, event);
       if (hasAlreadyAttended) throw new UserError('You have already attended this event');
