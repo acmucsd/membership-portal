@@ -85,7 +85,7 @@ export class EventModel extends BaseEntity {
     const thirtyMinutesBeforeStartOfEvent = moment(this.start).subtract(30, 'minutes').toDate();
     return now < thirtyMinutesBeforeStartOfEvent;
   }
-  
+ 
   public isTooLateToAttendEvent(): boolean {
     const now = new Date();
     const thirtyMinutesAfterEndOfEvent = moment(this.end).add(30, 'minutes').toDate();
