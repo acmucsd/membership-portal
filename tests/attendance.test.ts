@@ -164,7 +164,7 @@ describe('attendance', () => {
 
     const attendEventRequest = { attendanceCode: event.attendanceCode };
     await expect(ControllerFactory.attendance(conn).attendEvent(attendEventRequest, member))
-      .rejects.toThrow('This event is not currently accepting attendances!');
+      .rejects.toThrow('This event hasn\'t started yet, please wait to check in.');
   });
 
   test('throws if attendance code entered more than 30 minutes after event', async () => {
@@ -179,7 +179,7 @@ describe('attendance', () => {
 
     const attendEventRequest = { attendanceCode: event.attendanceCode };
     await expect(ControllerFactory.attendance(conn).attendEvent(attendEventRequest, member))
-      .rejects.toThrow('This event is not currently accepting attendances!');
+      .rejects.toThrow('This event has ended and is no longer accepting attendances');
   });
 
   test('throws if member has already attended event', async () => {
