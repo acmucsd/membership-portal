@@ -179,7 +179,7 @@ export interface PublicOrder {
   uuid: Uuid;
   user: Uuid;
   totalCost: number;
-  status:string;
+  status: string;
   orderedAt: Date;
   pickupEvent: PublicOrderPickupEvent;
   items: PublicOrderItem[];

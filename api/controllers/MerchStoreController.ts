@@ -220,7 +220,7 @@ export class MerchStoreController {
     return { error: null, order };
   }
 
-  @Post('/order/:uuid/miss')
+  @Post('/order/:uuid/missed')
   async markOrderAsMissed(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel) {
     if (!PermissionsService.canManageMerchOrders(user)) throw new ForbiddenError();
     const order = await this.merchStoreService.markOrderAsMissed(params.uuid);
