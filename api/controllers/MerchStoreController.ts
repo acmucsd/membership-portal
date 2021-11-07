@@ -181,7 +181,7 @@ export class MerchStoreController {
   @Post('/order')
   async placeMerchOrder(@Body() placeOrderRequest: PlaceMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<PlaceMerchOrderResponse> {
-    const originalOrder = this.verifyMerchOrderRequest(placeOrderRequest.order, user);
+    const originalOrder = this.validateMerchOrderRequest(placeOrderRequest.order, user);
     const order = await this.merchStoreService.placeOrder(originalOrder, user, placeOrderRequest.pickupEvent);
     return { error: null, order };
   }
@@ -189,12 +189,12 @@ export class MerchStoreController {
   @Post('/order/verification')
   async verifyMerchOrder(@Body() verifyOrderRequest: VerifyMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<VerifyMerchOrderResponse> {
-    const originalOrder = this.verifyMerchOrderRequest(verifyOrderRequest.order, user);
-    await this.merchStoreService.verifyOrder(originalOrder, user);
+    const originalOrder = this.validateMerchOrderRequest(verifyOrderRequest.order, user);
+    await this.merchStoreService.validateOrder(originalOrder, user);
     return { error: null };
   }
 
-  private verifyMerchOrderRequest(orderRequest: MerchItemOptionAndQuantity[],
+  private validateMerchOrderRequest(orderRequest: MerchItemOptionAndQuantity[],
     user: UserModel): MerchItemOptionAndQuantity[] {
     const originalOrder = orderRequest.filter((oi) => oi.quantity > 0);
     const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;

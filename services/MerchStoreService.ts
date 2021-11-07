@@ -291,7 +291,7 @@ export default class MerchStoreService {
     const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
-      await this.verifyOrderUnderTransaction(originalOrder, user, txn);
+      await this.validateOrderUnderTxn(originalOrder, user, txn);
 
       // Verify the requested pickup event exists,
       // and that the order is placed at least 2 days before the pickup event starts
@@ -367,9 +367,9 @@ export default class MerchStoreService {
     return moment(date).format('MMMM d, H:mm A');
   }
 
-  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
+  public async validateOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
-      this.verifyOrderUnderTransaction(originalOrder, user, txn);
+      this.validateOrderUnderTxn(originalOrder, user, txn);
     });
   }
 
@@ -385,7 +385,7 @@ export default class MerchStoreService {
    * @param user
    * @param txn
    */
-  private async verifyOrderUnderTransaction(originalOrder: MerchItemOptionAndQuantity[],
+  private async validateOrderUnderTxn(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
     txn: EntityManager): Promise<void> {
     await user.reload();
