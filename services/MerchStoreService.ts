@@ -169,12 +169,9 @@ export default class MerchStoreService {
       if (itemEdit.hidden === false && item.options.length === 0) {
         throw new UserError('Item cannot be set to visible if it has 0 options.');
       }
-
       const { options, collection: updatedCollection, ...changes } = itemEdit;
-
       if (options) {
         const optionUpdatesByUuid = new Map(options.map((option) => [option.uuid, option]));
-
         item.options.map((currentOption) => {
           if (!optionUpdatesByUuid.has(currentOption.uuid)) return;
           const optionUpdate = optionUpdatesByUuid.get(currentOption.uuid);
@@ -195,7 +192,6 @@ export default class MerchStoreService {
           .findByUuid(updatedCollection);
         if (!collection) throw new NotFoundError('Merch collection not found');
       }
-
       return merchItemRepository.upsertMerchItem(updatedItem);
     });
   }
@@ -519,10 +515,25 @@ export default class MerchStoreService {
         throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
       }
       const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
-      await MerchStoreService.refundUser(user, order.totalCost, txn);
+
+      // refund only the items that haven't been fulfilled yet
+      const unfulfilledItems = order.items.filter((item) => !item.fulfilled);
+      const refundValue = unfulfilledItems.reduce((refund, item) => refund + item.salePriceAtPurchase, 0);
+      await MerchStoreService.refundUser(user, refundValue, txn);
+
+      // build email with only the unfulfilled items
+      const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: unfulfilledItems });
       const orderUpdateInfo = await MerchStoreService
-        .buildOrderUpdateInfo(upsertedOrder, upsertedOrder.pickupEvent, txn);
+        .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
       await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+
+      // restock items that were cancelled
+      const optionsToRestock = unfulfilledItems.map((item) => item.option);
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      await Promise.all(optionsToRestock.map((option) => {
+        const quantityUpdate = { quantity: option.quantity + 1 };
+        return merchItemOptionRepository.upsertMerchItemOption(option, quantityUpdate);
+      }));
     });
   }
 
@@ -598,25 +609,15 @@ export default class MerchStoreService {
    * @param orderUuid order uuid
    */
   public async fulfillOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[], orderUuid: Uuid): Promise<void> {
-    const updates = new Map<string, OrderItemFulfillmentUpdate>();
-    for (let i = 0; i < fulfillmentUpdates.length; i += 1) {
-      const oi = fulfillmentUpdates[i];
-      oi.fulfilled = Boolean(oi.fulfilled);
-      updates.set(oi.uuid, oi);
-    }
-
     return this.transactions.readWrite(async (txn) => {
       const orderRepository = Repositories.merchOrder(txn);
       const order = await orderRepository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
-      if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot fulfill items of an inactive order');
-      const { items } = order;
-      if (items.length !== fulfillmentUpdates.length) {
-        throw new NotFoundError('Missing some order items for the order in the request');
+      if (MerchStoreService.isInactiveOrder(order)) {
+        throw new UserError('Cannot fulfill items of an order that has already been marked as fulfilled or cancelled');
       }
-
+      const { items } = order;
       const toBeFulfilled = fulfillmentUpdates
-        .filter((oi) => oi.fulfilled)
         .map((oi) => oi.uuid);
       const alreadyFulfilled = Array.from(items.values())
         .filter((oi) => oi.fulfilled)
@@ -625,15 +626,18 @@ export default class MerchStoreService {
         throw new UserError('At least one order item marked to be fulfilled has already been fulfilled');
       }
 
+      const itemUpdatesByUuid = new Map(fulfillmentUpdates.map((update) => [update.uuid, update]));
       const orderItemRepository = Repositories.merchOrderItem(txn);
       const fulfilledItems = await Promise.all(Array.from(items.values()).map((oi) => {
-        const { fulfilled, notes } = updates.get(oi.uuid);
-        return orderItemRepository.fulfillOrderItem(oi, fulfilled, notes);
+        const { notes } = itemUpdatesByUuid.get(oi.uuid);
+        return orderItemRepository.fulfillOrderItem(oi, notes);
       }));
 
       const isEntireOrderFulfilled = fulfilledItems.every((item) => item.fulfilled);
       if (isEntireOrderFulfilled) {
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
+      } else if (order.status === OrderStatus.PLACED) {
+        await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PARTIALLY_FULFILLED });
       }
     });
   }

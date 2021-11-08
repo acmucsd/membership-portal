@@ -203,9 +203,6 @@ export class OrderItemFulfillmentUpdate implements IOrderItemFulfillmentUpdate {
   uuid: string;
 
   @Allow()
-  fulfilled?: boolean;
-
-  @Allow()
   notes?: string;
 }
 

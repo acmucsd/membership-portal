@@ -39,11 +39,9 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
     return new Map(items.map((i) => [i.uuid, i]));
   }
 
-  public async fulfillOrderItem(orderItem: OrderItemModel, fulfilled?: boolean, notes?: string) {
-    if (fulfilled) {
-      orderItem.fulfilled = true;
-      orderItem.fulfilledAt = new Date();
-    }
+  public async fulfillOrderItem(orderItem: OrderItemModel, notes?: string) {
+    orderItem.fulfilled = true;
+    orderItem.fulfilledAt = new Date();
     if (notes) orderItem.notes = notes;
     return this.repository.save(orderItem);
   }

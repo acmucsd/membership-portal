@@ -246,7 +246,6 @@ export interface MerchOrderEdit {
 
 export interface OrderItemFulfillmentUpdate {
   uuid: string;
-  fulfilled?: boolean;
   notes?: string;
 }
 
