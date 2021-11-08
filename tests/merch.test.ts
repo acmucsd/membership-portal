@@ -584,11 +584,7 @@ describe('merch order pickup events', () => {
       quantity: 10,
       price: 10,
     });
-    const pickupEvent = MerchFactory.fakeOrderPickupEvent({
-      start: moment().add(3, 'days').toDate(),
-      end: moment().add(4, 'days').toDate(),
-      orderLimit: 2,
-    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ orderLimit: 2 });
 
     await new PortalState()
       .createUsers(member)
@@ -621,11 +617,7 @@ describe('merch order pickup events', () => {
       item,
       price: 10,
     });
-    const pickupEvent = MerchFactory.fakeOrderPickupEvent({
-      start: moment().add(3, 'days').toDate(),
-      end: moment().add(4, 'days').toDate(),
-      orderLimit: 2,
-    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ orderLimit: 2 });
 
     await new PortalState()
       .createUsers(admin, member)

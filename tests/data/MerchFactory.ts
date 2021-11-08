@@ -1,5 +1,6 @@
 import * as faker from 'faker';
 import { MerchItemOptionMetadata } from 'types';
+import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
@@ -90,6 +91,15 @@ export class MerchFactory {
       orders: [],
     });
     return OrderPickupEventModel.merge(fake, substitute);
+  }
+
+  public static fakeFutureOrderPickupEvent(substitute?: Partial<OrderPickupEventModel>): OrderPickupEventModel {
+    // guarantee that start and end are 2 days after current time so that orders can be placed
+    const daysAhead = FactoryUtils.getRandomNumber(3, 10);
+    const duration = FactoryUtils.getRandomNumber(30, 180, 30);
+    const start = moment().add(daysAhead, 'days').toDate();
+    const end = moment(start).add(duration, 'minutes').toDate();
+    return MerchFactory.fakeOrderPickupEvent({ start, end, ...substitute });
   }
 
   private static createOptions(n: number): MerchandiseItemOptionModel[] {
