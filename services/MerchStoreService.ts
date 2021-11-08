@@ -318,7 +318,7 @@ export default class MerchStoreService {
       // over the order limit
       const currentOrderCount = pickupEvent.orders.length;
       if (currentOrderCount >= pickupEvent.orderLimit) {
-        throw new UserError('Cannot place order with a fully-booked pickup event');
+        throw new UserError('This merch pickup event is full! Please choose a different pickup event');
       }
 
       // if all checks pass, the order is placed
