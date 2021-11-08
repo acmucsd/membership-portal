@@ -636,8 +636,6 @@ export default class MerchStoreService {
       const isEntireOrderFulfilled = fulfilledItems.every((item) => item.fulfilled);
       if (isEntireOrderFulfilled) {
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
-      } else if (order.status === OrderStatus.PLACED) {
-        await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PARTIALLY_FULFILLED });
       }
     });
   }
