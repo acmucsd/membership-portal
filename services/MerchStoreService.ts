@@ -626,14 +626,15 @@ export default class MerchStoreService {
         throw new UserError('At least one order item marked to be fulfilled has already been fulfilled');
       }
 
+      // fulfill all items in request and set entire order status as fulfilled if all items were fulfilled
       const itemUpdatesByUuid = new Map(fulfillmentUpdates.map((update) => [update.uuid, update]));
       const orderItemRepository = Repositories.merchOrderItem(txn);
-      const fulfilledItems = await Promise.all(Array.from(items.values()).map((oi) => {
+      const updatedItems = await Promise.all(Array.from(items.values()).map((oi) => {
+        if (!itemUpdatesByUuid.has(oi.uuid)) return oi;
         const { notes } = itemUpdatesByUuid.get(oi.uuid);
         return orderItemRepository.fulfillOrderItem(oi, notes);
       }));
-
-      const isEntireOrderFulfilled = fulfilledItems.every((item) => item.fulfilled);
+      const isEntireOrderFulfilled = updatedItems.every((item) => item.fulfilled);
       if (isEntireOrderFulfilled) {
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
       }

@@ -213,22 +213,17 @@ describe('merch orders', () => {
 
     // fulfill a single item in an order
     const placedOrder = placedOrderResponse.order;
-    const uuidParams = { uuid: placedOrder.uuid };
+    const orderParams = { uuid: placedOrder.uuid };
     const fulfillMerchOrderItemsRequest = {
       items: [
         {
           uuid: placedOrder.items[0].uuid,
-          fulfilled: true,
-        },
-        {
-          uuid: placedOrder.items[1].uuid,
-          fulfilled: false,
         },
       ],
     };
-    await merchController.fulfillMerchOrderItems(uuidParams, fulfillMerchOrderItemsRequest, admin);
+    await merchController.fulfillMerchOrderItems(orderParams, fulfillMerchOrderItemsRequest, admin);
 
-    const getOrderResponse = await merchController.getOneMerchOrder(uuidParams, member);
+    const getOrderResponse = await merchController.getOneMerchOrder(orderParams, member);
     const partiallyFulfilledOrder = getOrderResponse.order;
 
     // order status should not be FULFILLED because entire order isn't fulfilled
@@ -289,11 +284,9 @@ describe('merch orders', () => {
       items: [
         {
           uuid: placedOrder.items[0].uuid,
-          fulfilled: true,
         },
         {
           uuid: placedOrder.items[1].uuid,
-          fulfilled: true,
         },
       ],
     };
