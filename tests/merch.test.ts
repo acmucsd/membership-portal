@@ -573,7 +573,12 @@ describe('merch order pickup events', () => {
   test('placing an order with a pickup event that has reached the order limit fails', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake({ points: 100 });
+    const item = MerchFactory.fakeItem({
+      hidden: false,
+      monthlyLimit: 100,
+    });
     const option = MerchFactory.fakeOption({
+      item,
       quantity: 10,
       price: 10,
     });
@@ -581,6 +586,7 @@ describe('merch order pickup events', () => {
 
     await new PortalState()
       .createUsers(member)
+      .createMerchItem(item)
       .createMerchItemOption(option)
       .createOrderPickupEvents(pickupEvent)
       // orderMerch() needs to be called separately so as to create separate orders
@@ -597,7 +603,7 @@ describe('merch order pickup events', () => {
 
     await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, member))
       .rejects
-      .toThrow('Cannot place order with a fully-booked pickup event');
+      .toThrow('This merch pickup event is full! Please choose a different pickup event');
   });
 
   test('PATCH /order/pickup/:uuid fails if the order limit is decreased below the number of orders', async () => {
