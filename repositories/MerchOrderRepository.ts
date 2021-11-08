@@ -69,9 +69,7 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
     return this.getBaseFindQuery()
       .where('"end" >= :now')
-      .andWhere(':orderCount <= "orderLimit"')
       .setParameter('now', new Date())
-      .setParameter('orderCount', 0)
       .getMany();
   }
 
