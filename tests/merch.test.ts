@@ -572,15 +572,8 @@ describe('merch order pickup events', () => {
 
   test('placing an order with a pickup event that has reached the order limit fails', async () => {
     const conn = await DatabaseConnection.get();
-    const member = UserFactory.fake({
-      points: 100,
-    });
-    const item = MerchFactory.fakeItem({
-      hidden: false,
-      monthlyLimit: 100,
-    });
+    const member = UserFactory.fake({ points: 100 });
     const option = MerchFactory.fakeOption({
-      item,
       quantity: 10,
       price: 10,
     });
@@ -588,9 +581,10 @@ describe('merch order pickup events', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItem(item)
       .createMerchItemOption(option)
       .createOrderPickupEvents(pickupEvent)
+      // orderMerch() needs to be called separately so as to create separate orders
+      // for the provided pickup event.
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
@@ -609,21 +603,16 @@ describe('merch order pickup events', () => {
   test('PATCH /order/pickup/:uuid fails if the order limit is decreased below the number of orders', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const member = UserFactory.fake({
-      points: 100,
-    });
-    const item = MerchFactory.fakeItem({ hidden: false });
-    const option = MerchFactory.fakeOption({
-      item,
-      price: 10,
-    });
+    const member = UserFactory.fake({ points: 100 });
+    const option = MerchFactory.fakeOption({ price: 10 });
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ orderLimit: 2 });
 
     await new PortalState()
       .createUsers(admin, member)
-      .createMerchItem(item)
       .createMerchItemOption(option)
       .createOrderPickupEvents(pickupEvent)
+      // orderMerch() needs to be called separately so as to create separate orders
+      // for the provided pickup event.
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
