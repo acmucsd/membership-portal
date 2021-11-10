@@ -543,11 +543,9 @@ export default class MerchStoreService {
 
   public async getCartItems(items: string[]): Promise<Map<string, PublicMerchItemOption>> {
     return this.transactions.readOnly(async (txn) => {
-      const merchItemRepository = Repositories.merchStoreItemOption(txn);
-      const itemModels = await merchItemRepository.batchFindByUuid(items);
-      const publicItems = new Map<string, PublicMerchItemOption>();
-      itemModels.forEach(((v, k) => publicItems.set(k, v.getPublicMerchItemOption(false))));
-      return publicItems;
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const itemOptionModels = await merchItemOptionRepository.batchFindByUuid(items);
+      return new Map(items.map((option) => [option, itemOptionModels.get(option).getPublicMerchItemOption(false)]));
     });
   }
 }
