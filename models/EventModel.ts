@@ -1,3 +1,4 @@
+import * as moment from 'moment';
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { PublicEvent, Uuid } from '../types';
 import { AttendanceModel } from './AttendanceModel';
@@ -79,8 +80,15 @@ export class EventModel extends BaseEntity {
     return publicEvent;
   }
 
-  public isOngoing(): boolean {
+  public isTooEarlyToAttendEvent(): boolean {
     const now = new Date();
-    return now >= this.start && now <= this.end;
+    const thirtyMinutesBeforeStartOfEvent = moment(this.start).subtract(30, 'minutes').toDate();
+    return now < thirtyMinutesBeforeStartOfEvent;
+  }
+
+  public isTooLateToAttendEvent(): boolean {
+    const now = new Date();
+    const thirtyMinutesAfterEndOfEvent = moment(this.end).add(30, 'minutes').toDate();
+    return now > thirtyMinutesAfterEndOfEvent;
   }
 }
