@@ -47,7 +47,7 @@ describe('sample test', () => {
     const state = new PortalState()
       .createUsers(user1, user2)
       .createEvents(event)
-      .createMerchItemOption(affordableMerchOption)
+      .createMerchItemOptions(affordableMerchOption)
       .attendEvents([user1], [event], false)
       .createOrderPickupEvents(orderPickupEvent)
       .orderMerch(user1, [{ option: affordableMerchOption, quantity: 1 }], orderPickupEvent)

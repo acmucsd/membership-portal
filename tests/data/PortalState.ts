@@ -93,11 +93,11 @@ export class PortalState {
     return this.createMerchCollections(collectionWithItem);
   }
 
-  public createMerchItemOption(option: MerchandiseItemOptionModel): PortalState {
+  public createMerchItemOptions(...options: MerchandiseItemOptionModel[]): PortalState {
     const collectionWithOption = MerchFactory.fakeCollection({
       items: [
         MerchFactory.fakeItem({
-          options: [option],
+          options: options,
         }),
       ],
     });

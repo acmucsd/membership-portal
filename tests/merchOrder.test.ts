@@ -40,8 +40,8 @@ describe('merch orders', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOption(affordableOption1)
-      .createMerchItemOption(affordableOption2)
+      .createMerchItemOptions(affordableOption1)
+      .createMerchItemOptions(affordableOption2)
       .createOrderPickupEvents(pickupEvent)
       .write();
 
@@ -86,7 +86,7 @@ describe('merch orders', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOption(affordableOption)
+      .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent)
       .write();
 
@@ -124,6 +124,59 @@ describe('merch orders', () => {
       .called();
   });
 
+  test('members can cancel partially fulfilled orders and obtain partial refunds', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const affordableOption = MerchFactory.fakeOption({
+      quantity: 2,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItemOptions(affordableOption)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+    when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // place order
+    const orderRequest = [
+      {
+        option: affordableOption.uuid,
+        quantity: 2,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order: orderRequest,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+
+    // fulfill a single item
+    const order = placedOrderResponse.order.uuid;
+    const fulfillOrderParams = { uuid: order };
+    const orderItem = placedOrderResponse.order.items[0].uuid;
+    const fulfillmentUpdate = { uuid: orderItem, notes: faker.datatype.hexaDecimal(10) };
+    const itemsToFulfill = { items: [fulfillmentUpdate] }; 
+    await merchController.fulfillMerchOrderItems(fulfillOrderParams, itemsToFulfill, admin);
+
+    // cancel the order
+    const { uuid } = placedOrderResponse.order;
+    await merchController.cancelMerchOrder({ uuid }, member);
+
+    // make sure user has only been refunded 1 option worth of points
+    expect(member.credits).toEqual(8000);
+  });
+
   test('members cannot cancel other members\' orders', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake({ credits: 10000 });
@@ -137,7 +190,7 @@ describe('merch orders', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOption(affordableOption)
+      .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent)
       .write();
 
@@ -184,8 +237,8 @@ describe('merch orders', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOption(affordableOption1)
-      .createMerchItemOption(affordableOption2)
+      .createMerchItemOptions(affordableOption1)
+      .createMerchItemOptions(affordableOption2)
       .createOrderPickupEvents(pickupEvent)
       .write();
 
@@ -250,8 +303,8 @@ describe('merch orders', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOption(affordableOption1)
-      .createMerchItemOption(affordableOption2)
+      .createMerchItemOptions(affordableOption1)
+      .createMerchItemOptions(affordableOption2)
       .createOrderPickupEvents(pickupEvent)
       .write();
 
@@ -312,7 +365,7 @@ describe('merch orders', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOption(affordableOption)
+      .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent)
       .write();
 
@@ -494,7 +547,7 @@ describe('merch order pickup events', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOption(option)
+      .createMerchItemOptions(option)
       .createOrderPickupEvents(pickupEvent)
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
@@ -519,7 +572,7 @@ describe('merch order pickup events', () => {
 
     await new PortalState()
       .createUsers(member1, member2)
-      .createMerchItemOption(affordableOption)
+      .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent)
       .write();
 
@@ -575,7 +628,7 @@ describe('merch order pickup events', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOption(affordableOption)
+      .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent)
       .write();
 
@@ -630,7 +683,7 @@ describe('merch order pickup events', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOption(affordableOption)
+      .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent, anotherPickupEvent)
       .write();
 
@@ -681,7 +734,7 @@ describe('merch order pickup events', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOption(affordableOption)
+      .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent, moreRecentPickupEvent)
       .write();
 
