@@ -133,11 +133,16 @@ describe('merch orders', () => {
       price: 2000,
       discountPercentage: 0,
     });
+    const item = MerchFactory.fakeItem({
+      monthlyLimit: 5,
+      lifetimeLimit: 5,
+      options: [affordableOption],
+    });
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
       .createUsers(member)
-      .createMerchItemOptions(affordableOption)
+      .createMerchItem(item)
       .createOrderPickupEvents(pickupEvent)
       .write();
 
@@ -166,7 +171,7 @@ describe('merch orders', () => {
     const fulfillOrderParams = { uuid: order };
     const orderItem = placedOrderResponse.order.items[0].uuid;
     const fulfillmentUpdate = { uuid: orderItem, notes: faker.datatype.hexaDecimal(10) };
-    const itemsToFulfill = { items: [fulfillmentUpdate] }; 
+    const itemsToFulfill = { items: [fulfillmentUpdate] };
     await merchController.fulfillMerchOrderItems(fulfillOrderParams, itemsToFulfill, admin);
 
     // cancel the order
@@ -432,6 +437,65 @@ describe('merch orders', () => {
       .rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
     await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, member))
       .rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
+  });
+
+  test('admins can cancel all pending orders for all users', async () => {
+    const conn = await DatabaseConnection.get();
+    const member1 = UserFactory.fake({ credits: 10000 });
+    const member2 = UserFactory.fake({ credits: 10000 });
+    const member3 = UserFactory.fake({ credits: 10000 });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const affordableOption = MerchFactory.fakeOption({
+      quantity: 10,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const merchItem = MerchFactory.fakeItem({
+      monthlyLimit: 20,
+      lifetimeLimit: 20,
+      options: [affordableOption],
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    const order = [{ option: affordableOption, quantity: 1 }];
+
+    await new PortalState()
+      .createUsers(member1, member2, member3, admin)
+      .createMerchItem(merchItem)
+      .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member1, order, pickupEvent)
+      .orderMerch(member2, order, pickupEvent)
+      .orderMerch(member3, order, pickupEvent)
+      .write();
+
+    // fulfill one order, leaving the other two as pending
+    const order1 = await conn.manager.findOne(OrderModel, { user: member1 }, { relations: ['items'] });
+    const merchController = ControllerFactory.merchStore(conn);
+    const itemsToFulfill = order1.items.map((item) => ({ uuid: item.uuid }));
+    const fulfillmentParams = { uuid: order1.uuid };
+    const fulfillmentRequest = { items: itemsToFulfill };
+    await merchController.fulfillMerchOrderItems(fulfillmentParams, fulfillmentRequest, admin);
+
+    await merchController.cancelAllPendingMerchOrders(admin);
+
+    // refresh points
+    await member1.reload();
+    await member2.reload();
+    await member3.reload();
+
+    // member who's order is fulfilled shouldn't get refunded
+    expect(member1.credits).toEqual(8000);
+    expect(member2.credits).toEqual(10000);
+    expect(member3.credits).toEqual(10000);
+
+    const fulfilledOrder = await conn.manager.findOne(OrderModel, { user: member1 }, { relations: ['items'] });
+    expect(fulfilledOrder.status).toEqual(OrderStatus.FULFILLED);
+
+    const cancelledOrder1 = await conn.manager.findOne(OrderModel, { user: member2 }, { relations: ['items'] });
+    expect(cancelledOrder1.status).toEqual(OrderStatus.CANCELLED);
+
+    const cancelledOrder2 = await conn.manager.findOne(OrderModel, { user: member3 }, { relations: ['items'] });
+    expect(cancelledOrder2.status).toEqual(OrderStatus.CANCELLED);
   });
 });
 

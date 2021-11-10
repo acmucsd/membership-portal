@@ -333,3 +333,5 @@ export interface EditOrderPickupEventResponse extends ApiResponse {
 }
 
 export interface DeleteOrderPickupEventResponse extends ApiResponse {}
+
+export interface CancelAllPendingOrdersResponse extends ApiResponse {}

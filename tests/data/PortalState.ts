@@ -97,7 +97,7 @@ export class PortalState {
     const collectionWithOption = MerchFactory.fakeCollection({
       items: [
         MerchFactory.fakeItem({
-          options: options,
+          options,
         }),
       ],
     });

@@ -37,6 +37,7 @@ import {
   GetOrderPickupEventsResponse,
   DeleteOrderPickupEventResponse,
   EditOrderPickupEventResponse,
+  CancelAllPendingOrdersResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -235,6 +236,13 @@ export class MerchStoreController {
       throw new BadRequestError('There are duplicate order items');
     }
     await this.merchStoreService.fulfillOrderItems(fulfillOrderRequest.items, params.uuid);
+    return { error: null };
+  }
+
+  @Post('/order/cleanup')
+  async cancelAllPendingMerchOrders(@AuthenticatedUser() user: UserModel): Promise<CancelAllPendingOrdersResponse> {
+    if (!PermissionsService.canCancelAllPendingOrders(user)) throw new ForbiddenError();
+    await this.merchStoreService.cancelAllPendingOrders();
     return { error: null };
   }
 

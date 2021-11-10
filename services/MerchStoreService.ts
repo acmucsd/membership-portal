@@ -514,27 +514,32 @@ export default class MerchStoreService {
       if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
         throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
       }
-      const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
-
-      // refund only the items that haven't been fulfilled yet
-      const unfulfilledItems = order.items.filter((item) => !item.fulfilled);
-      const refundValue = unfulfilledItems.reduce((refund, item) => refund + item.salePriceAtPurchase, 0);
-      await MerchStoreService.refundUser(user, refundValue, txn);
-
-      // build email with only the unfulfilled items
-      const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: unfulfilledItems });
-      const orderUpdateInfo = await MerchStoreService
-        .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
-      await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
-
-      // restock items that were cancelled
-      const optionsToRestock = unfulfilledItems.map((item) => item.option);
-      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-      await Promise.all(optionsToRestock.map((option) => {
-        const quantityUpdate = { quantity: option.quantity + 1 };
-        return merchItemOptionRepository.upsertMerchItemOption(option, quantityUpdate);
-      }));
+      await this.refundAndConfirmOrderCancellation(order, user, txn);
     });
+  }
+
+  private async refundAndConfirmOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {
+    const orderRepository = Repositories.merchOrder(txn);
+    const upsertedOrder = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
+
+    // refund only the items that haven't been fulfilled yet
+    const unfulfilledItems = order.items.filter((item) => !item.fulfilled);
+    const refundValue = unfulfilledItems.reduce((refund, item) => refund + item.salePriceAtPurchase, 0);
+    await MerchStoreService.refundUser(user, refundValue, txn);
+
+    // build email with only the unfulfilled items
+    const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: unfulfilledItems });
+    const orderUpdateInfo = await MerchStoreService
+      .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
+    await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+
+    // restock items that were cancelled
+    const optionsToRestock = unfulfilledItems.map((item) => item.option);
+    const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+    await Promise.all(optionsToRestock.map((option) => {
+      const quantityUpdate = { quantity: option.quantity + 1 };
+      return merchItemOptionRepository.upsertMerchItemOption(option, quantityUpdate);
+    }));
   }
 
   /**
@@ -675,6 +680,14 @@ export default class MerchStoreService {
       const quantityRequested = o.quantity;
       return sum + (option.getPrice() * quantityRequested);
     }, 0);
+  }
+
+  public async cancelAllPendingOrders(): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      const merchOrderRepository = Repositories.merchOrder(txn);
+      const pendingOrders = await merchOrderRepository.getAllOrdersForAllUsers(OrderStatus.PLACED);
+      await Promise.all(pendingOrders.map((order) => this.refundAndConfirmOrderCancellation(order, order.user, txn)));
+    });
   }
 
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
