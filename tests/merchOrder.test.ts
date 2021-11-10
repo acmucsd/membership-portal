@@ -69,6 +69,8 @@ describe('merch orders', () => {
 
     expect(placedOrder.items).toHaveLength(2);
     expect(placedOrder.status).toStrictEqual(OrderStatus.PLACED);
+
+    await member.reload();
     expect(member.credits).toEqual(5000);
     verify(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
       .called();
@@ -119,6 +121,8 @@ describe('merch orders', () => {
     const cancelledOrder = cancelledOrderResponse.order;
 
     expect(cancelledOrder.status).toEqual(OrderStatus.CANCELLED);
+
+    await member.reload();
     expect(member.credits).toEqual(10000);
     verify(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
       .called();
@@ -179,6 +183,7 @@ describe('merch orders', () => {
     await merchController.cancelMerchOrder({ uuid }, member);
 
     // make sure user has only been refunded 1 option worth of points
+    await member.reload();
     expect(member.credits).toEqual(8000);
   });
 
