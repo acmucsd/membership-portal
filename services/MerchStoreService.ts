@@ -369,7 +369,7 @@ export default class MerchStoreService {
       }),
       totalCost: order.totalCost,
     };
-    // this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
+    this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
 
     return order.getPublicOrder();
   }
