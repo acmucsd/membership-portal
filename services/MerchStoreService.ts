@@ -294,7 +294,7 @@ export default class MerchStoreService {
   public async placeOrder(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
     pickupEventUuid: Uuid): Promise<PublicOrder> {
-    const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
+    const [order] = await this.transactions.readWrite(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
 
