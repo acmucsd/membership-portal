@@ -739,9 +739,13 @@ export default class MerchStoreService {
     if (pickupEvent.start >= pickupEvent.end) {
       throw new UserError('Order pickup event start time must come before the end time');
     }
+    const pickupEventModel = OrderPickupEventModel.create(pickupEvent);
+    if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEventModel)) {
+      throw new NotFoundError('Cannot create a pickup event that starts in less than 2 days');
+    }
     return this.transactions.readWrite(async (txn) => Repositories
       .merchOrderPickupEvent(txn)
-      .upsertPickupEvent(OrderPickupEventModel.create(pickupEvent)));
+      .upsertPickupEvent(pickupEventModel));
   }
 
   public async editPickupEvent(uuid: Uuid, changes: OrderPickupEventEdit): Promise<OrderPickupEventModel> {
