@@ -505,7 +505,7 @@ describe('merch orders', () => {
 });
 
 describe('merch order pickup events', () => {
-  test('future pickup events can be retrieved', async () => {
+  test('past and future pickup events can be retrieved', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const pastPickupEvent = MerchFactory.fakeOrderPickupEvent({
@@ -526,11 +526,19 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pastPickupEvent, ongoingPickupEvent, futurePickupEvent)
       .write();
 
-    const getFuturePickupEventsResponse = await ControllerFactory.merchStore(conn).getFuturePickupEvents(admin);
+    const merchStoreController = ControllerFactory.merchStore(conn);
+
+    const getFuturePickupEventsResponse = await merchStoreController.getFuturePickupEvents(admin);
     expect(getFuturePickupEventsResponse.pickupEvents)
       .toEqual(expect.arrayContaining([
         ongoingPickupEvent.getPublicOrderPickupEvent(true),
         futurePickupEvent.getPublicOrderPickupEvent(true),
+      ]));
+
+    const getPastPickupEventsResponse = await merchStoreController.getPastPickupEvents(admin);
+    expect(getPastPickupEventsResponse.pickupEvents)
+      .toEqual(expect.arrayContaining([
+        pastPickupEvent.getPublicOrderPickupEvent(true),
       ]));
   });
 

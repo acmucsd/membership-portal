@@ -246,6 +246,15 @@ export class MerchStoreController {
     return { error: null };
   }
 
+  @Get('/order/pickup/past')
+  async getPastPickupEvents(@AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventsResponse> {
+    const pickupEvents = await this.merchStoreService.getPastPickupEvents();
+    const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
+    const publicPickupEvents = pickupEvents.map((pickupEvent) => pickupEvent
+      .getPublicOrderPickupEvent(canSeePickupEventOrders));
+    return { error: null, pickupEvents: publicPickupEvents };
+  }
+
   @Get('/order/pickup/future')
   async getFuturePickupEvents(@AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventsResponse> {
     const pickupEvents = await this.merchStoreService.getFuturePickupEvents();

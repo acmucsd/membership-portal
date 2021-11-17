@@ -723,6 +723,12 @@ export default class MerchStoreService {
     });
   }
 
+  public async getPastPickupEvents(): Promise<OrderPickupEventModel[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .merchOrderPickupEvent(txn)
+      .getPastPickupEvents());
+  }
+
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
     return this.transactions.readOnly(async (txn) => Repositories
       .merchOrderPickupEvent(txn)
