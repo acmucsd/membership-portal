@@ -145,7 +145,7 @@ describe('merch orders', () => {
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
-      .createUsers(member)
+      .createUsers(member, admin)
       .createMerchItem(item)
       .createOrderPickupEvents(pickupEvent)
       .write();
@@ -199,7 +199,7 @@ describe('merch orders', () => {
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
-      .createUsers(member)
+      .createUsers(member, otherMember)
       .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent)
       .write();
@@ -226,7 +226,7 @@ describe('merch orders', () => {
     const { uuid } = placedOrderResponse.order;
     expect(merchController.cancelMerchOrder({ uuid }, otherMember))
       .rejects
-      .toThrow('Member cannot cancel other members\' orders');
+      .toThrow('Members cannot cancel other members\' orders');
   });
 
   test('admins can fulfill parts of a member\'s order', async () => {
@@ -246,7 +246,7 @@ describe('merch orders', () => {
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
-      .createUsers(member)
+      .createUsers(member, admin)
       .createMerchItemOptions(affordableOption1)
       .createMerchItemOptions(affordableOption2)
       .createOrderPickupEvents(pickupEvent)
@@ -312,7 +312,7 @@ describe('merch orders', () => {
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
-      .createUsers(member)
+      .createUsers(member, admin)
       .createMerchItemOptions(affordableOption1)
       .createMerchItemOptions(affordableOption2)
       .createOrderPickupEvents(pickupEvent)
@@ -640,7 +640,7 @@ describe('merch order pickup events', () => {
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
-      .createUsers(member1, member2)
+      .createUsers(member1, member2, admin)
       .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent)
       .write();
@@ -696,7 +696,7 @@ describe('merch order pickup events', () => {
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
-      .createUsers(member)
+      .createUsers(member, admin)
       .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent)
       .write();

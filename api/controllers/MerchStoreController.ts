@@ -223,7 +223,7 @@ export class MerchStoreController {
   @Post('/order/:uuid/missed')
   async markOrderAsMissed(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel) {
     if (!PermissionsService.canManageMerchOrders(user)) throw new ForbiddenError();
-    const order = await this.merchStoreService.markOrderAsMissed(params.uuid);
+    const order = await this.merchStoreService.markOrderAsMissed(params.uuid, user);
     return { error: null, order };
   }
 
@@ -235,14 +235,14 @@ export class MerchStoreController {
     if (fulfillOrderRequest.items.length !== numUniqueUuids) {
       throw new BadRequestError('There are duplicate order items');
     }
-    await this.merchStoreService.fulfillOrderItems(fulfillOrderRequest.items, params.uuid);
+    await this.merchStoreService.fulfillOrderItems(fulfillOrderRequest.items, params.uuid, user);
     return { error: null };
   }
 
   @Post('/order/cleanup')
   async cancelAllPendingMerchOrders(@AuthenticatedUser() user: UserModel): Promise<CancelAllPendingOrdersResponse> {
     if (!PermissionsService.canCancelAllPendingOrders(user)) throw new ForbiddenError();
-    await this.merchStoreService.cancelAllPendingOrders();
+    await this.merchStoreService.cancelAllPendingOrders(user);
     return { error: null };
   }
 

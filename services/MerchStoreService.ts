@@ -474,7 +474,7 @@ export default class MerchStoreService {
    * @param uuid order uuid
    * @returns updated order
    */
-  public async markOrderAsMissed(uuid: Uuid): Promise<OrderModel> {
+  public async markOrderAsMissed(uuid: Uuid, proxy: UserModel): Promise<OrderModel> {
     return this.transactions.readWrite(async (txn) => {
       const orderRespository = Repositories.merchOrder(txn);
       const order = await orderRespository.findByUuid(uuid);
@@ -493,6 +493,13 @@ export default class MerchStoreService {
         .buildOrderUpdateInfo(upsertedOrder, upsertedOrder.pickupEvent, txn);
       const { user } = order;
       await this.emailService.sendOrderPickupMissed(user.email, user.firstName, orderUpdateInfo);
+
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity({
+        user: proxy,
+        type: ActivityType.ORDER_MISSED,
+        description: `Order ${order.uuid} marked as missed for ${user.uuid}`,
+      });
       return upsertedOrder;
     });
   }
@@ -508,13 +515,20 @@ export default class MerchStoreService {
       const order = await orderRespository.findByUuid(uuid);
       if (!order) throw new NotFoundError('Order not found');
       if (!user.isAdmin() && order.user.uuid !== user.uuid) {
-        throw new ForbiddenError('Member cannot cancel other members\' orders');
+        throw new ForbiddenError('Members cannot cancel other members\' orders');
       }
       if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot cancel an inactive order');
       if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
         throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
       }
+      const customer = order.user;
       await this.refundAndConfirmOrderCancellation(order, user, txn);
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity({
+        user,
+        type: ActivityType.ORDER_CANCELLED,
+        description: `Order ${order.uuid} cancelled and refunded to ${customer.uuid} by ${user.uuid}`,
+      });
     });
   }
 
@@ -613,7 +627,8 @@ export default class MerchStoreService {
    * @param fulfillmentUpdates fulfillment updates for order. This should be an array of every order item for an order.
    * @param orderUuid order uuid
    */
-  public async fulfillOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[], orderUuid: Uuid): Promise<void> {
+  public async fulfillOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[], orderUuid: Uuid,
+    user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const orderRepository = Repositories.merchOrder(txn);
       const order = await orderRepository.findByUuid(orderUuid);
@@ -639,9 +654,22 @@ export default class MerchStoreService {
         const { notes } = itemUpdatesByUuid.get(oi.uuid);
         return orderItemRepository.fulfillOrderItem(oi, notes);
       }));
+      const activityRepository = Repositories.activity(txn);
+      const customer = order.user;
       const isEntireOrderFulfilled = updatedItems.every((item) => item.fulfilled);
       if (isEntireOrderFulfilled) {
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
+        await activityRepository.logActivity({
+          user,
+          type: ActivityType.ORDER_FULFILLED,
+          description: `Order ${order.uuid} completely fulfilled for user ${customer.uuid} by ${user.uuid}`,
+        });
+      } else {
+        await activityRepository.logActivity({
+          user,
+          type: ActivityType.ORDER_PARTIALLY_FULFILLED,
+          description: `Order ${order.uuid} partially fulfilled for user ${customer.uuid} by ${user.uuid}`,
+        });
       }
     });
   }
@@ -682,11 +710,16 @@ export default class MerchStoreService {
     }, 0);
   }
 
-  public async cancelAllPendingOrders(): Promise<void> {
+  public async cancelAllPendingOrders(user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const merchOrderRepository = Repositories.merchOrder(txn);
       const pendingOrders = await merchOrderRepository.getAllOrdersForAllUsers(OrderStatus.PLACED);
       await Promise.all(pendingOrders.map((order) => this.refundAndConfirmOrderCancellation(order, order.user, txn)));
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity({
+        user,
+        type: ActivityType.PENDING_ORDERS_CANCELLED,
+      });
     });
   }
 
