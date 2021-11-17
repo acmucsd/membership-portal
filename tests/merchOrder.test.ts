@@ -5,7 +5,7 @@ import { ForbiddenError } from 'routing-controllers';
 import EmailService from '../services/EmailService';
 import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
-import { UserAccessType, OrderStatus } from '../types';
+import { UserAccessType, OrderStatus, ActivityType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 
@@ -70,8 +70,16 @@ describe('merch orders', () => {
     expect(placedOrder.items).toHaveLength(2);
     expect(placedOrder.status).toStrictEqual(OrderStatus.PLACED);
 
+    // check credits have been deducted
     await member.reload();
     expect(member.credits).toEqual(5000);
+
+    // check order activity has been logged
+    const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
+    const orderPlacedActivity = memberActivityStream.activity[memberActivityStream.activity.length - 1];
+    expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_PLACED);
+
+    // check order confirmation email has been sent
     verify(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
       .called();
   });
@@ -119,9 +127,14 @@ describe('merch orders', () => {
     // get order, making sure state was updated and user has been refunded
     const cancelledOrderResponse = await merchController.getOneMerchOrder({ uuid }, member);
     const cancelledOrder = cancelledOrderResponse.order;
-
     expect(cancelledOrder.status).toEqual(OrderStatus.CANCELLED);
 
+    // check cancelled activity
+    const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
+    const orderPlacedActivity = memberActivityStream.activity[memberActivityStream.activity.length - 1];
+    expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_CANCELLED);
+    
+    // check credits
     await member.reload();
     expect(member.credits).toEqual(10000);
     verify(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
@@ -185,6 +198,11 @@ describe('merch orders', () => {
     // make sure user has only been refunded 1 option worth of points
     await member.reload();
     expect(member.credits).toEqual(8000);
+
+    // check cancelled activity
+    const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
+    const orderPlacedActivity = memberActivityStream.activity[memberActivityStream.activity.length - 1];
+    expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_CANCELLED);
   });
 
   test('members cannot cancel other members\' orders', async () => {
@@ -293,6 +311,12 @@ describe('merch orders', () => {
     expect(partiallyFulfilledOrder.status).toEqual(OrderStatus.PLACED);
     expect(partiallyFulfilledOrder.items.some((item) => item.fulfilled)).toBeTruthy();
     expect(partiallyFulfilledOrder.items.every((item) => item.fulfilled)).toBeFalsy();
+
+    // check fulfilled activity
+    const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
+    const orderPlacedActivity = memberActivityStream.activity[memberActivityStream.activity.length - 1];
+    expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_PARTIALLY_FULFILLED);
+    
   });
 
   test('admins can fulfill entire orders if every item of a member\'s order is fulfilled', async () => {
@@ -361,6 +385,11 @@ describe('merch orders', () => {
     expect(fulfilledOrder.status).toEqual(OrderStatus.FULFILLED);
     expect(fulfilledOrder.items[0].fulfilled).toBeTruthy();
     expect(fulfilledOrder.items[1].fulfilled).toBeTruthy();
+
+    // check fulfilled activity
+    const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
+    const orderPlacedActivity = memberActivityStream.activity[memberActivityStream.activity.length - 1];
+    expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_FULFILLED);
   });
 
   test('members cannot fulfill orders', async () => {
@@ -501,6 +530,11 @@ describe('merch orders', () => {
 
     const cancelledOrder2 = await conn.manager.findOne(OrderModel, { user: member3 }, { relations: ['items'] });
     expect(cancelledOrder2.status).toEqual(OrderStatus.CANCELLED);
+
+    // check pending order cancellation activity
+    const adminActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(admin);
+    const orderPlacedActivity = adminActivityStream.activity[adminActivityStream.activity.length - 1];
+    expect(orderPlacedActivity.type).toStrictEqual(ActivityType.PENDING_ORDERS_CANCELLED);
   });
 });
 

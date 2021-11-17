@@ -157,7 +157,7 @@ export class PortalState {
     }));
     this.activities.push(ActivityModel.create({
       user,
-      type: ActivityType.ORDER_MERCHANDISE,
+      type: ActivityType.ORDER_PLACED,
     }));
     return this;
   }

@@ -72,7 +72,7 @@ describe('sample test', () => {
       ActivityType.ACCOUNT_CREATE,
       ActivityType.ACCOUNT_CREATE,
       ActivityType.ATTEND_EVENT,
-      ActivityType.ORDER_MERCHANDISE,
+      ActivityType.ORDER_PLACED,
       ActivityType.SUBMIT_FEEDBACK,
     ]);
 

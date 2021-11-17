@@ -321,7 +321,7 @@ export default class MerchStoreService {
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
         user,
-        type: ActivityType.ORDER_MERCHANDISE,
+        type: ActivityType.ORDER_PLACED,
         description: `Order ${createdOrder.uuid}`,
       });
 
@@ -496,9 +496,9 @@ export default class MerchStoreService {
 
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
-        user: proxy,
+        user,
         type: ActivityType.ORDER_MISSED,
-        description: `Order ${order.uuid} marked as missed for ${user.uuid}`,
+        description: `Order ${order.uuid} marked as missed for ${user.uuid} by ${proxy.uuid}`,
       });
       return upsertedOrder;
     });
@@ -660,13 +660,13 @@ export default class MerchStoreService {
       if (isEntireOrderFulfilled) {
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
         await activityRepository.logActivity({
-          user,
+          user: customer,
           type: ActivityType.ORDER_FULFILLED,
           description: `Order ${order.uuid} completely fulfilled for user ${customer.uuid} by ${user.uuid}`,
         });
       } else {
         await activityRepository.logActivity({
-          user,
+          user: customer,
           type: ActivityType.ORDER_PARTIALLY_FULFILLED,
           description: `Order ${order.uuid} partially fulfilled for user ${customer.uuid} by ${user.uuid}`,
         });
