@@ -8,6 +8,7 @@ import {
   ValidateNested,
   IsHexColor,
   IsDateString,
+  ArrayNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsValidOrderStatus } from '../decorators/Validators';
@@ -160,6 +161,7 @@ export class MerchItem implements IMerchItem {
   @Type(() => MerchItemOption)
   @ValidateNested()
   @IsDefined()
+  @ArrayNotEmpty()
   options: MerchItemOption[];
 }
 
