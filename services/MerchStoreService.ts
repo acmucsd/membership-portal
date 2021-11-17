@@ -356,25 +356,27 @@ export default class MerchStoreService {
       return [createdOrder, itemOptions];
     });
 
-    const orderConfirmation = {
-      items: originalOrder.map((oi) => {
-        const option = merchItemOptions.get(oi.option);
-        const { item } = option;
-        return {
-          ...item,
-          quantityRequested: oi.quantity,
-          salePrice: option.getPrice(),
-          total: oi.quantity * option.getPrice(),
-        };
-      }),
-      totalCost: order.totalCost,
-    };
     // emailService is not mocked properly right now, so comment
     // such that tests may pass.
     //
     // Since the Order States PR contains the code necessary to fix
     // mocking the email service for MerchStoreService, once that PR
     // is merged, the comment will be removed.
+    //
+    // const orderConfirmation = {
+    //   items: originalOrder.map((oi) => {
+    //     const option = merchItemOptions.get(oi.option);
+    //     const { item } = option;
+    //     return {
+    //       ...item,
+    //       quantityRequested: oi.quantity,
+    //       salePrice: option.getPrice(),
+    //       total: oi.quantity * option.getPrice(),
+    //     };
+    //   }),
+    //   totalCost: order.totalCost,
+    // };
+    //
     // this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
 
     return order.getPublicOrder();
