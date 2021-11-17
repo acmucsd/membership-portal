@@ -133,7 +133,7 @@ describe('merch orders', () => {
     const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
     const orderPlacedActivity = memberActivityStream.activity[memberActivityStream.activity.length - 1];
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_CANCELLED);
-    
+
     // check credits
     await member.reload();
     expect(member.credits).toEqual(10000);
@@ -316,7 +316,6 @@ describe('merch orders', () => {
     const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
     const orderPlacedActivity = memberActivityStream.activity[memberActivityStream.activity.length - 1];
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_PARTIALLY_FULFILLED);
-    
   });
 
   test('admins can fulfill entire orders if every item of a member\'s order is fulfilled', async () => {

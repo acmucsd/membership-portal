@@ -77,7 +77,7 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
       .setParameter('now', new Date())
       .getMany();
   }
-  
+
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
     return this.getBaseFindQuery()
       .where('"end" >= :now')
