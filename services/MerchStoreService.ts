@@ -262,15 +262,16 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
-  public async getAllOrders(user: UserModel, status?: OrderStatus, canSeeAllOrders = false): Promise<PublicOrder[]> {
-    const orders = await this.transactions.readOnly(async (txn) => {
-      const merchOrderRepository = Repositories.merchOrder(txn);
-      if (canSeeAllOrders) {
-        return merchOrderRepository.getAllOrdersForAllUsers(status);
-      }
-      return merchOrderRepository.getAllOrdersForUser(user, status);
-    });
-    return orders.map((o) => o.getPublicOrder());
+  public async getAllOrdersForUser(user: UserModel, status?: OrderStatus): Promise<OrderModel[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .merchOrder(txn)
+      .getAllOrdersForUser(user, status));
+  }
+
+  public async getAllOrdersForAllUsers(status?: OrderStatus): Promise<OrderModel[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .merchOrder(txn)
+      .getAllOrdersForAllUsers(status));
   }
 
   /**
@@ -287,7 +288,7 @@ export default class MerchStoreService {
     const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
-      await this.validateOrderUnderTxn(originalOrder, user, txn);
+      await this.validateOrderInTransaction(originalOrder, user, txn);
 
       // Verify the requested pickup event exists,
       // and that the order is placed at least 2 days before the pickup event starts
@@ -350,8 +351,8 @@ export default class MerchStoreService {
       totalCost: order.totalCost,
       pickupEvent: {
         ...order.pickupEvent,
-        start: MerchStoreService.dateToHumanReadableDateString(order.pickupEvent.start),
-        end: MerchStoreService.dateToHumanReadableDateString(order.pickupEvent.end),
+        start: MerchStoreService.humanReadableDateString(order.pickupEvent.start),
+        end: MerchStoreService.humanReadableDateString(order.pickupEvent.end),
       },
     };
     this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
@@ -359,13 +360,13 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
-  private static dateToHumanReadableDateString(date: Date): string {
+  private static humanReadableDateString(date: Date): string {
     return moment(date).format('MMMM d, H:mm A');
   }
 
   public async validateOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
-      this.validateOrderUnderTxn(originalOrder, user, txn);
+      this.validateOrderInTransaction(originalOrder, user, txn);
     });
   }
 
@@ -376,12 +377,8 @@ export default class MerchStoreService {
    *  - the user wouldn't reach monthly or lifetime limits for any item if this order is placed
    *  - the requested item options are in stock
    *  - the user has enough credits to place the order
-   * @param originalOrder
-   * @param pickupEventUuid
-   * @param user
-   * @param txn
    */
-  private async validateOrderUnderTxn(originalOrder: MerchItemOptionAndQuantity[],
+  private async validateOrderInTransaction(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
     txn: EntityManager): Promise<void> {
     await user.reload();
@@ -506,13 +503,11 @@ export default class MerchStoreService {
 
   /**
    * Cancels a merch order, refunding the user of its credits if the user is the one who cancelled the order.
-   * @param uuid order uuid
-   * @param user user cancelling the order
    */
-  public async cancelMerchOrder(uuid: Uuid, user: UserModel): Promise<void> {
+  public async cancelMerchOrder(orderUuid: Uuid, user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const orderRespository = Repositories.merchOrder(txn);
-      const order = await orderRespository.findByUuid(uuid);
+      const order = await orderRespository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
       if (!user.isAdmin() && order.user.uuid !== user.uuid) {
         throw new ForbiddenError('Members cannot cancel other members\' orders');
@@ -541,7 +536,6 @@ export default class MerchStoreService {
     const refundValue = unfulfilledItems.reduce((refund, item) => refund + item.salePriceAtPurchase, 0);
     await MerchStoreService.refundUser(user, refundValue, txn);
 
-    // build email with only the unfulfilled items
     const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: unfulfilledItems });
     const orderUpdateInfo = await MerchStoreService
       .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
@@ -615,8 +609,8 @@ export default class MerchStoreService {
       totalCost: order.totalCost,
       pickupEvent: {
         ...pickupEvent,
-        start: MerchStoreService.dateToHumanReadableDateString(pickupEvent.start),
-        end: MerchStoreService.dateToHumanReadableDateString(pickupEvent.end),
+        start: MerchStoreService.humanReadableDateString(pickupEvent.start),
+        end: MerchStoreService.humanReadableDateString(pickupEvent.end),
       },
     };
   }

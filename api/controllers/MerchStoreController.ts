@@ -58,6 +58,7 @@ import {
   GetOrderQueryParams,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
+import { OrderModel } from '../../models/OrderModel';
 
 @UseBefore(UserAuthentication)
 @JsonController('/merch')
@@ -175,8 +176,13 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<GetAllMerchOrdersResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const canSeeAllOrders = PermissionsService.canSeeAllMerchOrders(user);
-    const orders = await this.merchStoreService.getAllOrders(user, filters.status, canSeeAllOrders);
-    return { error: null, orders };
+    let orders: OrderModel[];
+    if (canSeeAllOrders) {
+      orders = await this.merchStoreService.getAllOrdersForAllUsers(filters.status);
+    } else {
+      orders = await this.merchStoreService.getAllOrdersForUser(user, filters.status);
+    }
+    return { error: null, orders: orders.map((o) => o.getPublicOrder()) };
   }
 
   @Post('/order')
