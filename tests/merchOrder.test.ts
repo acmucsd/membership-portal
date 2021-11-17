@@ -578,7 +578,7 @@ describe('merch order pickup events', () => {
   test('pickup events can be created on valid input', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const pickupEvent = MerchFactory.fakeOrderPickupEvent();
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
       .createUsers(admin)
