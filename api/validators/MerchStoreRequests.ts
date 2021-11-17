@@ -11,7 +11,6 @@ import {
   ArrayNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsValidOrderStatus } from '../decorators/Validators';
 import {
   CreateMerchCollectionRequest as ICreateMerchCollectionRequest,
   EditMerchCollectionRequest as IEditMerchCollectionRequest,
@@ -36,7 +35,6 @@ import {
   MerchOrderEdit as IMerchOrderEdit,
   OrderPickupEvent as IOrderPickupEvent,
   OrderPickupEventEdit as IOrderPickupEventEdit,
-  OrderStatus,
 } from '../../types';
 
 export class MerchCollection implements IMerchCollection {

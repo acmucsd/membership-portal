@@ -1,4 +1,4 @@
-import { FeedbackStatus, FeedbackType, OrderStatus } from './Enums';
+import { FeedbackStatus, FeedbackType } from './Enums';
 import { Uuid } from '.';
 
 // REQUEST TYPES
