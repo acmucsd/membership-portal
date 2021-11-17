@@ -37,7 +37,6 @@ import {
   OrderPickupEvent as IOrderPickupEvent,
   OrderPickupEventEdit as IOrderPickupEventEdit,
   OrderStatus,
-  GetOrderQueryParams as IGetOrderQueryParams,
 } from '../../types';
 
 export class MerchCollection implements IMerchCollection {
@@ -322,9 +321,4 @@ export class EditOrderPickupEventRequest implements IEditOrderPickupEventRequest
   @ValidateNested()
   @IsDefined()
   pickupEvent: OrderPickupEventEdit;
-}
-
-export class GetOrderQueryParams implements IGetOrderQueryParams {
-  @IsValidOrderStatus()
-  status?: OrderStatus;
 }

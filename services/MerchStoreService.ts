@@ -262,16 +262,16 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
-  public async getAllOrdersForUser(user: UserModel, status?: OrderStatus): Promise<OrderModel[]> {
+  public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
     return this.transactions.readOnly(async (txn) => Repositories
       .merchOrder(txn)
-      .getAllOrdersForUser(user, status));
+      .getAllOrdersForUser(user));
   }
 
-  public async getAllOrdersForAllUsers(status?: OrderStatus): Promise<OrderModel[]> {
+  public async getAllOrdersForAllUsers(): Promise<OrderModel[]> {
     return this.transactions.readOnly(async (txn) => Repositories
       .merchOrder(txn)
-      .getAllOrdersForAllUsers(status));
+      .getAllOrdersForAllUsers());
   }
 
   /**

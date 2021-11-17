@@ -270,7 +270,3 @@ export interface CreateOrderPickupEventRequest {
 export interface EditOrderPickupEventRequest {
   pickupEvent: OrderPickupEventEdit;
 }
-
-export interface GetOrderQueryParams {
-  status?: OrderStatus;
-}

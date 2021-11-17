@@ -10,7 +10,6 @@ import {
   ForbiddenError,
   NotFoundError,
   BadRequestError,
-  QueryParams,
 } from 'routing-controllers';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
@@ -55,7 +54,6 @@ import {
   CreateMerchItemOptionRequest,
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
-  GetOrderQueryParams,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
 import { OrderModel } from '../../models/OrderModel';
@@ -171,16 +169,15 @@ export class MerchStoreController {
     return { error: null, order };
   }
 
-  @Get('/order')
-  async getAllMerchOrders(@QueryParams() filters: GetOrderQueryParams,
-    @AuthenticatedUser() user: UserModel): Promise<GetAllMerchOrdersResponse> {
+  @Get('/orders')
+  async getAllMerchOrders(@AuthenticatedUser() user: UserModel): Promise<GetAllMerchOrdersResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const canSeeAllOrders = PermissionsService.canSeeAllMerchOrders(user);
     let orders: OrderModel[];
     if (canSeeAllOrders) {
-      orders = await this.merchStoreService.getAllOrdersForAllUsers(filters.status);
+      orders = await this.merchStoreService.getAllOrdersForAllUsers();
     } else {
-      orders = await this.merchStoreService.getAllOrdersForUser(user, filters.status);
+      orders = await this.merchStoreService.getAllOrdersForUser(user);
     }
     return { error: null, orders: orders.map((o) => o.getPublicOrder()) };
   }

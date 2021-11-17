@@ -19,10 +19,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
     return this.repository.find();
   }
 
-  public async getAllOrdersForUser(user: UserModel, status?: OrderStatus): Promise<OrderModel[]> {
-    if (status) {
-      return this.repository.find({ user, status });
-    }
+  public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
     return this.repository.find({ user });
   }
 
