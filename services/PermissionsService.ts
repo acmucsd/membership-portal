@@ -56,7 +56,7 @@ export default class PermissionsService {
     return user.isAdmin();
   }
 
-  public static canFulfillMerchOrders(user: UserModel) {
+  public static canManageMerchOrders(user: UserModel) {
     return user.isAdmin();
   }
 
@@ -65,6 +65,10 @@ export default class PermissionsService {
   }
 
   public static canManagePickupEvents(user: UserModel) {
+    return user.isAdmin();
+  }
+
+  public static canCancelAllPendingOrders(user: UserModel) {
     return user.isAdmin();
   }
 }

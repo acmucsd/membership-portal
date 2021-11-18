@@ -1,5 +1,5 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
-import { Uuid } from '../types';
+import { OrderStatus, Uuid } from '../types';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import { OrderItemModel } from '../models/OrderItemModel';
@@ -8,20 +8,24 @@ import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(OrderModel)
 export class MerchOrderRepository extends BaseRepository<OrderModel> {
-  public async createMerchOrder(order: OrderModel): Promise<OrderModel> {
-    return this.repository.save(order);
-  }
-
   public async findByUuid(uuid: Uuid): Promise<OrderModel> {
     return this.repository.findOne(uuid);
   }
 
-  public async getAllOrdersForAllUsers(): Promise<OrderModel[]> {
+  public async getAllOrdersForAllUsers(status?: OrderStatus): Promise<OrderModel[]> {
+    if (status) {
+      return this.repository.find({ status });
+    }
     return this.repository.find();
   }
 
   public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
     return this.repository.find({ user });
+  }
+
+  public async upsertMerchOrder(order: OrderModel, changes?: Partial<OrderModel>): Promise<OrderModel> {
+    if (changes) order = OrderModel.merge(order, changes);
+    return this.repository.save(order);
   }
 }
 
@@ -32,11 +36,9 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
     return new Map(items.map((i) => [i.uuid, i]));
   }
 
-  public async fulfillOrderItem(orderItem: OrderItemModel, fulfilled?: boolean, notes?: string) {
-    if (fulfilled) {
-      orderItem.fulfilled = true;
-      orderItem.fulfilledAt = new Date();
-    }
+  public async fulfillOrderItem(orderItem: OrderItemModel, notes?: string) {
+    orderItem.fulfilled = true;
+    orderItem.fulfilledAt = new Date();
     if (notes) orderItem.notes = notes;
     return this.repository.save(orderItem);
   }
@@ -66,6 +68,13 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
 
 @EntityRepository(OrderPickupEventModel)
 export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventModel> {
+  public async getPastPickupEvents(): Promise<OrderPickupEventModel[]> {
+    return this.getBaseFindQuery()
+      .where('"end" < :now')
+      .setParameter('now', new Date())
+      .getMany();
+  }
+
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
     return this.getBaseFindQuery()
       .where('"end" >= :now')
@@ -88,6 +97,9 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
   private getBaseFindQuery(): SelectQueryBuilder<OrderPickupEventModel> {
     return this.repository
       .createQueryBuilder('orderPickupEvent')
-      .leftJoinAndSelect('orderPickupEvent.orders', 'orders');
+      .leftJoinAndSelect('orderPickupEvent.orders', 'order')
+      .leftJoinAndSelect('order.items', 'item')
+      .leftJoinAndSelect('order.user', 'user')
+      .leftJoinAndSelect('item.option', 'option');
   }
 }

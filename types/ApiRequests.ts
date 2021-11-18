@@ -185,6 +185,10 @@ export interface FulfillMerchOrderRequest {
   items: OrderItemFulfillmentUpdate[];
 }
 
+export interface EditMerchOrderPickupRequest {
+  pickupEvent: Uuid;
+}
+
 export interface MerchCollection {
   title: string;
   themeColorHex?: string;
@@ -236,9 +240,12 @@ export interface MerchItemEdit extends Partial<CommonMerchItemProperties> {
   options?: MerchItemOptionEdit[];
 }
 
+export interface MerchOrderEdit {
+  pickupEvent: Uuid;
+}
+
 export interface OrderItemFulfillmentUpdate {
   uuid: string;
-  fulfilled?: boolean;
   notes?: string;
 }
 
