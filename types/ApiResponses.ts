@@ -240,7 +240,7 @@ export interface VerifyMerchOrderResponse extends ApiResponse {}
 export interface EditMerchOrderResponse extends ApiResponse {}
 
 export interface GetCartResponse extends ApiResponse {
-  items: Map<string, PublicMerchItemOption>;
+  items: PublicMerchItemOption[];
 }
 export interface FulfillMerchOrderResponse extends ApiResponse {}
 

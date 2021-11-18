@@ -288,7 +288,7 @@ export class MerchStoreController {
       editOrderPickupEventRequest.pickupEvent);
     return { error: null, pickupEvent: pickupEvent.getPublicOrderPickupEvent() };
   }
-  
+
   @Delete('/order/pickup/:uuid')
   async deletePickupEvent(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
   Promise<DeleteOrderPickupEventResponse> {
@@ -298,16 +298,15 @@ export class MerchStoreController {
   }
 
   @Get('/store/cart')
-  async getCart(@QueryParams() getCartRequest:GetCartRequest,
+  async getCart(@QueryParams() getCartRequest: GetCartRequest,
     @AuthenticatedUser() user: UserModel): Promise<GetCartResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const items = await this.merchStoreService.getCartItems(getCartRequest.items);
-    const foundItems = Array.from(items.values())
-      .map((o) => o.uuid);
-    if (foundItems !== getCartRequest.items) {
-      const missingItems = difference(getCartRequest.items, foundItems);
+    const cartItems = await this.merchStoreService.getCartItems(getCartRequest.items);
+    const cartItemUuids = Array.from(cartItems.values()).map((o) => o.uuid);
+    if (cartItemUuids !== getCartRequest.items) {
+      const missingItems = difference(getCartRequest.items, cartItemUuids);
       throw new NotFoundError(`The following items were not found: ${missingItems}`);
     }
-    return { error: null, items };
+    return { error: null, items: cartItems.map((option) => option.getPublicMerchItemOption(true)) };
   }
 }

@@ -776,11 +776,11 @@ export default class MerchStoreService {
     });
   }
 
-  public async getCartItems(items: string[]): Promise<Map<string, PublicMerchItemOption>> {
+  public async getCartItems(options: string[]): Promise<MerchandiseItemOptionModel[]> {
     return this.transactions.readOnly(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-      const itemOptionModels = await merchItemOptionRepository.batchFindByUuid(items);
-      return new Map(items.map((option) => [option, itemOptionModels.get(option).getPublicMerchItemOption(false)]));
+      const itemOptionsByUuid = await merchItemOptionRepository.batchFindByUuid(options);
+      return options.map((option) => itemOptionsByUuid.get(option));
     });
   }
 }
