@@ -93,11 +93,11 @@ export class PortalState {
     return this.createMerchCollections(collectionWithItem);
   }
 
-  public createMerchItemOption(option: MerchandiseItemOptionModel): PortalState {
+  public createMerchItemOptions(...options: MerchandiseItemOptionModel[]): PortalState {
     const collectionWithOption = MerchFactory.fakeCollection({
       items: [
         MerchFactory.fakeItem({
-          options: [option],
+          options,
         }),
       ],
     });
@@ -157,7 +157,7 @@ export class PortalState {
     }));
     this.activities.push(ActivityModel.create({
       user,
-      type: ActivityType.ORDER_MERCHANDISE,
+      type: ActivityType.ORDER_PLACED,
     }));
     return this;
   }

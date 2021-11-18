@@ -179,6 +179,7 @@ export interface PublicOrder {
   uuid: Uuid;
   user: Uuid;
   totalCost: number;
+  status: string;
   orderedAt: Date;
   pickupEvent: PublicOrderPickupEvent;
   items: PublicOrderItem[];
@@ -241,6 +242,7 @@ export interface EditMerchOrderResponse extends ApiResponse {}
 export interface GetCartResponse extends ApiResponse {
   items: Map<string, PublicMerchItemOption>;
 }
+export interface FulfillMerchOrderResponse extends ApiResponse {}
 
 // USER
 
@@ -334,3 +336,5 @@ export interface EditOrderPickupEventResponse extends ApiResponse {
 }
 
 export interface DeleteOrderPickupEventResponse extends ApiResponse {}
+
+export interface CancelAllPendingOrdersResponse extends ApiResponse {}

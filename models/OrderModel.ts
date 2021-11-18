@@ -8,7 +8,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Uuid, PublicOrder } from '../types';
+import { Uuid, PublicOrder, OrderStatus } from '../types';
 import { UserModel } from './UserModel';
 import { OrderItemModel } from './OrderItemModel';
 import { OrderPickupEventModel } from './OrderPickupEventModel';
@@ -25,6 +25,9 @@ export class OrderModel extends BaseEntity {
 
   @Column('integer')
   totalCost: number;
+
+  @Column('varchar', { length: 255, default: OrderStatus.PLACED })
+  status: OrderStatus;
 
   @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)' })
   @Index('recent_orders_index')
@@ -46,6 +49,7 @@ export class OrderModel extends BaseEntity {
       uuid: this.uuid,
       user: this.user.uuid,
       totalCost: this.totalCost,
+      status: this.status,
       orderedAt: this.orderedAt,
       pickupEvent: this.pickupEvent?.getPublicOrderPickupEvent(),
       items: this.items.map((oi) => oi.getPublicOrderItem()),

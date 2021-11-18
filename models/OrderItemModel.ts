@@ -16,6 +16,7 @@ export class OrderItemModel extends BaseEntity {
   @JoinColumn({ name: 'option' })
   option: MerchandiseItemOptionModel;
 
+  // the price paid by the user at checkout
   @Column('integer')
   salePriceAtPurchase: number;
 

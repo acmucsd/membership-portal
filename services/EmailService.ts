@@ -16,6 +16,14 @@ export default class EmailService {
 
   private static readonly orderConfirmationTemplate = EmailService.readTemplate('orderConfirmation.ejs');
 
+  private static readonly orderCancellationTemplate = EmailService.readTemplate('orderCancellation.ejs');
+
+  private static readonly orderPickupMissedTemplate = EmailService.readTemplate('orderPickupMissed.ejs');
+
+  private static readonly orderPickupCancelledTemplate = EmailService.readTemplate('orderPickupCancelled.ejs');
+
+  private static readonly orderPickupUpdatedTemplate = EmailService.readTemplate('orderPickupUpdated.ejs');
+
   constructor() {
     this.mailer.setApiKey(Config.email.apiKey);
   }
@@ -54,17 +62,77 @@ export default class EmailService {
     }
   }
 
-  public async sendOrderConfirmation(email: string, firstName: string, order: OrderConfirmationInfo): Promise<void> {
+  public async sendOrderConfirmation(email: string, firstName: string, order: OrderInfo): Promise<void> {
     try {
       const data = {
         to: email,
         from: Config.email.user,
-        subject: 'ACM UCSD Merch Store Order Confirmation',
-        html: ejs.render(EmailService.orderConfirmationTemplate, { firstName, order }),
+        subject: 'ACM UCSD Merch Store - Order Confirmation',
+        html: ejs.render(EmailService.orderConfirmationTemplate, {
+          firstName,
+          order,
+          pickupEvent: order.pickupEvent,
+        }),
       };
       await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send order confirmation email to ${email}`, { error });
+    }
+  }
+
+  public async sendOrderCancellation(email: string, firstName: string, order: OrderInfo) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Merch Store - Order Cancellation',
+        html: ejs.render(EmailService.orderCancellationTemplate, { firstName, order }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send order cancellation email to ${email}`, { error });
+    }
+  }
+
+  public async sendOrderPickupMissed(email: string, firstName: string, order: OrderInfo) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Merch Store - Order Pickup Missed',
+        html: ejs.render(EmailService.orderPickupMissedTemplate, { firstName, order }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send order pickup missed email to ${email}`, { error });
+    }
+  }
+
+  public async sendOrderPickupCancelled(email: string, firstName: string, order: OrderInfo) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Merch Store - Order Pickup Event Cancelled',
+        html: ejs.render(EmailService.orderPickupCancelledTemplate, { firstName, order }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send order pickup cancelled email to ${email}`, { error });
+    }
+  }
+
+  public async sendOrderPickupUpdated(email: string, firstName: string, order: OrderInfo) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Merch Store - Order Pickup Event Updated',
+        html: ejs.render(EmailService.orderPickupUpdatedTemplate, { firstName, order }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send order pickup update email to ${email}`, { error });
     }
   }
 
@@ -77,7 +145,7 @@ export default class EmailService {
   }
 }
 
-export interface OrderConfirmationLineItem {
+export interface OrderLineItem {
   itemName: string;
   picture: string;
   description: string;
@@ -86,7 +154,15 @@ export interface OrderConfirmationLineItem {
   total: number;
 }
 
-export interface OrderConfirmationInfo {
-  items: OrderConfirmationLineItem[];
+export interface OrderPickupEventInfo {
+  title: string;
+  start: string;
+  end: string;
+  description: string;
+}
+
+export interface OrderInfo {
+  items: OrderLineItem[];
   totalCost: number;
+  pickupEvent: OrderPickupEventInfo;
 }
