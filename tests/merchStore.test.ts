@@ -437,7 +437,7 @@ describe('checkout cart', () => {
     const merchStoreController = ControllerFactory.merchStore(conn);
     const getCartResponse = await merchStoreController.getCartItems(params, member);
 
-    const { cart } = getCartResponse
+    const { cart } = getCartResponse;
 
     expect(cart).toHaveLength(3);
     expect(cart[0]).toStrictEqual(option1.getPublicCartMerchItemOption());
@@ -466,4 +466,4 @@ describe('checkout cart', () => {
     expect(merchStoreController.getCartItems(params, member))
       .rejects.toThrow(`The following items were not found: ${[invalidOptionUuid]}`);
   });
-})
+});
