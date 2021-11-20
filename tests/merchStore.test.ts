@@ -437,12 +437,12 @@ describe('checkout cart', () => {
     const merchStoreController = ControllerFactory.merchStore(conn);
     const getCartResponse = await merchStoreController.getCartItems(params, member);
 
-    const { items } = getCartResponse
+    const { cart } = getCartResponse
 
-    expect(items).toHaveLength(3);
-    expect(items[0]).toStrictEqual(option1.getPublicCartMerchItemOption());
-    expect(items[1]).toStrictEqual(option2.getPublicCartMerchItemOption());
-    expect(items[2]).toStrictEqual(option3.getPublicCartMerchItemOption());
+    expect(cart).toHaveLength(3);
+    expect(cart[0]).toStrictEqual(option1.getPublicCartMerchItemOption());
+    expect(cart[1]).toStrictEqual(option2.getPublicCartMerchItemOption());
+    expect(cart[2]).toStrictEqual(option3.getPublicCartMerchItemOption());
   });
 
   test('passing in item option uuids that do not exist throws an error', async () => {

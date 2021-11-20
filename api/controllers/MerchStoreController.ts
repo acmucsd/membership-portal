@@ -296,11 +296,11 @@ export class MerchStoreController {
     return { error: null };
   }
 
-  @Get('/store/cart')
+  @Get('/cart')
   async getCartItems(@QueryParams() getCartRequest: GetCartRequest,
     @AuthenticatedUser() user: UserModel): Promise<GetCartResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const cartItems = await this.merchStoreService.getCartItems(getCartRequest.items);
-    return { error: null, items: cartItems.map((option) => option.getPublicCartMerchItemOption()) };
+    return { error: null, cart: cartItems.map((option) => option.getPublicCartMerchItemOption()) };
   }
 }

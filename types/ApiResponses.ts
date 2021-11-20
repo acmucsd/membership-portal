@@ -255,7 +255,7 @@ export interface VerifyMerchOrderResponse extends ApiResponse {}
 export interface EditMerchOrderResponse extends ApiResponse {}
 
 export interface GetCartResponse extends ApiResponse {
-  items: PublicCartMerchItemOption[];
+  cart: PublicCartMerchItemOption[];
 }
 export interface FulfillMerchOrderResponse extends ApiResponse {}
 
