@@ -12,7 +12,6 @@ import {
   BadRequestError,
   QueryParams,
 } from 'routing-controllers';
-import { difference } from 'underscore';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
@@ -298,15 +297,10 @@ export class MerchStoreController {
   }
 
   @Get('/store/cart')
-  async getCart(@QueryParams() getCartRequest: GetCartRequest,
+  async getCartItems(@QueryParams() getCartRequest: GetCartRequest,
     @AuthenticatedUser() user: UserModel): Promise<GetCartResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const cartItems = await this.merchStoreService.getCartItems(getCartRequest.items);
-    const cartItemUuids = Array.from(cartItems.values()).map((o) => o.uuid);
-    if (cartItemUuids !== getCartRequest.items) {
-      const missingItems = difference(getCartRequest.items, cartItemUuids);
-      throw new NotFoundError(`The following items were not found: ${missingItems}`);
-    }
-    return { error: null, items: cartItems.map((option) => option.getPublicMerchItemOption(true)) };
+    return { error: null, items: cartItems.map((option) => option.getPublicCartMerchItemOption()) };
   }
 }

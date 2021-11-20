@@ -406,3 +406,60 @@ describe('merch item options', () => {
       .toStrictEqual(item.options[0].getPublicMerchItemOption(true));
   });
 });
+
+describe('checkout cart', () => {
+  test('passing in valid item option uuids returns the full options and their items', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const option1 = MerchFactory.fakeOption();
+    const option2 = MerchFactory.fakeOption();
+    const option3 = MerchFactory.fakeOption();
+    const options = [option1, option2, option3];
+
+    const itemForOptions1And2 = MerchFactory.fakeItem({ options: [option1, option2] });
+    const itemForOption3 = MerchFactory.fakeItem({ options: [option3] });
+
+    option1.item = itemForOptions1And2;
+    option2.item = itemForOptions1And2;
+    option3.item = itemForOption3;
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(itemForOptions1And2)
+      .createMerchItem(itemForOption3)
+      .write();
+
+    const params = { items: options.map((o) => o.uuid) };
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const getCartResponse = await merchStoreController.getCartItems(params, member);
+
+    const { items } = getCartResponse;
+
+    expect(items).toHaveLength(3);
+    expect(items[0]).toStrictEqual(option1.getPublicCartMerchItemOption());
+    expect(items[1]).toStrictEqual(option2.getPublicCartMerchItemOption());
+    expect(items[2]).toStrictEqual(option3.getPublicCartMerchItemOption());
+  });
+
+  test('passing in item option uuids that do not exist throws an error', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const option1 = MerchFactory.fakeOption();
+    const option2 = MerchFactory.fakeOption();
+    const options = [option1, option2];
+
+    const item = MerchFactory.fakeItem({ options: [option1, option2] });
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(item)
+      .write();
+
+    const validOptionUuids = options.map((o) => o.uuid);
+    const invalidOptionUuid = faker.datatype.uuid();
+    const params = { items: [...validOptionUuids, invalidOptionUuid] };
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    expect(merchStoreController.getCartItems(params, member))
+      .rejects.toThrow(`The following items were not found: ${[invalidOptionUuid]}`);
+  });
+});
