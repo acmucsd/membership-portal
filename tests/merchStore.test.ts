@@ -419,6 +419,10 @@ describe('checkout cart', () => {
     const itemForOptions1And2 = MerchFactory.fakeItem({ options: [option1, option2] });
     const itemForOption3 = MerchFactory.fakeItem({ options: [option3] });
 
+    // need to explicitly set option.item after calling fakeItem(),
+    // so that the item.options elements don't have circular references to
+    // the item, but the singular option objects here do
+    // (so that option.getPublicCartMerchItemOption() doesn't throw for undefined item)
     option1.item = itemForOptions1And2;
     option2.item = itemForOptions1And2;
     option3.item = itemForOption3;
@@ -433,7 +437,7 @@ describe('checkout cart', () => {
     const merchStoreController = ControllerFactory.merchStore(conn);
     const getCartResponse = await merchStoreController.getCartItems(params, member);
 
-    const { items } = getCartResponse;
+    const { items } = getCartResponse
 
     expect(items).toHaveLength(3);
     expect(items[0]).toStrictEqual(option1.getPublicCartMerchItemOption());
@@ -462,4 +466,4 @@ describe('checkout cart', () => {
     expect(merchStoreController.getCartItems(params, member))
       .rejects.toThrow(`The following items were not found: ${[invalidOptionUuid]}`);
   });
-});
+})
