@@ -41,13 +41,13 @@ export class MerchandiseItemModel extends BaseEntity {
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })
   options: MerchandiseItemOptionModel[];
 
-  public getPublicMerchItem(canSeeOptionQuantities = false): PublicMerchItem {
+  public getPublicMerchItem(): PublicMerchItem {
     const baseMerchItem: PublicMerchItem = {
       uuid: this.uuid,
       itemName: this.itemName,
       picture: this.picture,
       description: this.description,
-      options: this.options.map((o) => o.getPublicMerchItemOption(canSeeOptionQuantities)),
+      options: this.options.map((o) => o.getPublicMerchItemOption()),
       monthlyLimit: this.monthlyLimit,
       lifetimeLimit: this.lifetimeLimit,
       hasVariantsEnabled: this.hasVariantsEnabled,

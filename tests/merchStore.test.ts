@@ -68,6 +68,43 @@ describe('archived merch collections', () => {
   });
 });
 
+describe('merch items with options', () => {
+  test('monthly remaining and lifetime remaining values are properly set', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const optionMetadataType = faker.datatype.hexaDecimal(10);
+    const option1 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option2 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option3 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const item = MerchFactory.fakeItem({
+      options: [option1, option2, option3],
+      monthlyLimit: 5,
+      lifetimeLimit: 10,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(item)
+      .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, [
+        { option: option1, quantity: 1 },
+        { option: option2, quantity: 1 },
+        { option: option3, quantity: 1 },
+      ], pickupEvent)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const params = { uuid: item.uuid };
+    const getOneMerchItemResponse = await merchStoreController.getOneMerchItem(params, member);
+    const updatedItem = getOneMerchItemResponse.item;
+    console.log(updatedItem);
+
+    expect(updatedItem.monthlyRemaining).toEqual(2);
+    expect(updatedItem.lifetimeRemaining).toEqual(7);
+  });
+});
+
 describe('merch items with no options', () => {
   test('can delete all item options and add back options if the item is hidden', async () => {
     const conn = await DatabaseConnection.get();
@@ -262,7 +299,7 @@ describe('merch item edits', () => {
     await merchStoreController.editMerchItem(params, editMerchItemRequest, admin);
     const merchItemResponse = await merchStoreController.getOneMerchItem(params, admin);
 
-    const publicUpdatedOptions = updatedOptions.map((o) => o.getPublicMerchItemOption(true));
+    const publicUpdatedOptions = updatedOptions.map((o) => o.getPublicMerchItemOption());
     expect(merchItemResponse.item.options)
       .toEqual(expect.arrayContaining(publicUpdatedOptions));
   });
@@ -326,10 +363,10 @@ describe('merch item options', () => {
     const merchItemResponse = await merchStoreController.getOneMerchItem(params, admin);
 
     // verify that option was added
-    const existingPublicOptions = item.options.map((o) => o.getPublicMerchItemOption(true));
+    const existingPublicOptions = item.options.map((o) => o.getPublicMerchItemOption());
     const allOptions = [
       ...existingPublicOptions,
-      optionWithSameType.getPublicMerchItemOption(true),
+      optionWithSameType.getPublicMerchItemOption(),
     ];
     expect(merchItemResponse.item.options).toEqual(expect.arrayContaining(allOptions));
   });
@@ -380,7 +417,7 @@ describe('merch item options', () => {
     const merchItemResponse = await merchStoreController.getOneMerchItem(itemParams, admin);
     expect(merchItemResponse.item.options).toHaveLength(1);
     expect(merchItemResponse.item.options[0])
-      .toStrictEqual(optionWithDifferentType.getPublicMerchItemOption(true));
+      .toStrictEqual(optionWithDifferentType.getPublicMerchItemOption());
   });
 
   test('cannot add option to an item with variants disabled and an option', async () => {
@@ -403,6 +440,6 @@ describe('merch item options', () => {
     const getMerchItemResponse = await merchStoreController.getOneMerchItem(params, admin);
     expect(getMerchItemResponse.item.options).toHaveLength(1);
     expect(getMerchItemResponse.item.options[0])
-      .toStrictEqual(item.options[0].getPublicMerchItemOption(true));
+      .toStrictEqual(item.options[0].getPublicMerchItemOption());
   });
 });

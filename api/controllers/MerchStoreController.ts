@@ -111,8 +111,7 @@ export class MerchStoreController {
   async getOneMerchItem(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchItemResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const canSeeOptionQuantities = PermissionsService.canSeeOptionQuantities(user);
-    const item = await this.merchStoreService.findItemByUuid(params.uuid, canSeeOptionQuantities);
+    const item = await this.merchStoreService.findItemByUuid(params.uuid, user);
     return { error: null, item };
   }
 

@@ -45,14 +45,14 @@ export class MerchandiseItemOptionModel extends BaseEntity {
     return Math.round(this.price * (1 - (this.discountPercentage / 100)));
   }
 
-  public getPublicMerchItemOption(canSeeOptionQuantities = false): PublicMerchItemOption {
+  public getPublicMerchItemOption(): PublicMerchItemOption {
     const option: PublicMerchItemOption = {
       uuid: this.uuid,
       price: this.price,
       discountPercentage: this.discountPercentage,
       metadata: this.metadata,
+      quantity: this.quantity,
     };
-    if (canSeeOptionQuantities) option.quantity = this.quantity;
     return option;
   }
 }
