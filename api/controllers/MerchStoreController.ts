@@ -10,7 +10,6 @@ import {
   ForbiddenError,
   NotFoundError,
   BadRequestError,
-  QueryParams,
 } from 'routing-controllers';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
@@ -297,7 +296,7 @@ export class MerchStoreController {
   }
 
   @Get('/cart')
-  async getCartItems(@QueryParams() getCartRequest: GetCartRequest,
+  async getCartItems(@Body() getCartRequest: GetCartRequest,
     @AuthenticatedUser() user: UserModel): Promise<GetCartResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const cartItems = await this.merchStoreService.getCartItems(getCartRequest.items);
