@@ -1,9 +1,10 @@
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment';
+import { OrderItemPriceAndQuantity } from 'types/internal';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,
@@ -19,6 +20,7 @@ import {
   MerchItemOptionAndQuantity,
   MerchItemEdit,
   PublicMerchItemOption,
+  OrderStatus,
   OrderPickupEvent,
   OrderPickupEventEdit,
 } from '../types';
@@ -34,13 +36,13 @@ import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 
 @Service()
 export default class MerchStoreService {
-  @Inject()
   private emailService: EmailService;
 
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
+  constructor(@InjectManager() entityManager: EntityManager, emailService: EmailService) {
     this.transactions = new TransactionsManager(entityManager);
+    this.emailService = emailService;
   }
 
   public async findCollectionByUuid(uuid: Uuid, canSeeSeeHiddenItems = false): Promise<PublicMerchCollection> {
@@ -167,12 +169,9 @@ export default class MerchStoreService {
       if (itemEdit.hidden === false && item.options.length === 0) {
         throw new UserError('Item cannot be set to visible if it has 0 options.');
       }
-
       const { options, collection: updatedCollection, ...changes } = itemEdit;
-
       if (options) {
         const optionUpdatesByUuid = new Map(options.map((option) => [option.uuid, option]));
-
         item.options.map((currentOption) => {
           if (!optionUpdatesByUuid.has(currentOption.uuid)) return;
           const optionUpdate = optionUpdatesByUuid.get(currentOption.uuid);
@@ -193,7 +192,6 @@ export default class MerchStoreService {
           .findByUuid(updatedCollection);
         if (!collection) throw new NotFoundError('Merch collection not found');
       }
-
       return merchItemRepository.upsertMerchItem(updatedItem);
     });
   }
@@ -264,15 +262,16 @@ export default class MerchStoreService {
     return order.getPublicOrder();
   }
 
-  public async getAllOrders(user: UserModel, canSeeAllOrders = false): Promise<PublicOrder[]> {
-    const orders = await this.transactions.readOnly(async (txn) => {
-      const merchOrderRepository = Repositories.merchOrder(txn);
-      if (canSeeAllOrders) {
-        return merchOrderRepository.getAllOrdersForAllUsers();
-      }
-      return merchOrderRepository.getAllOrdersForUser(user);
-    });
-    return orders.map((o) => o.getPublicOrder());
+  public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .merchOrder(txn)
+      .getAllOrdersForUser(user));
+  }
+
+  public async getAllOrdersForAllUsers(): Promise<OrderModel[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .merchOrder(txn)
+      .getAllOrdersForAllUsers());
   }
 
   /**
@@ -286,6 +285,7 @@ export default class MerchStoreService {
    *    - the user has enough credits to place the order
    *    - the pickup event specified exists and is at least 2 days before starting
    *    - the pickup event is not at or above the current order limit
+   * The order needs to match all order verification constraints defined in verifyOrderUnderTransaction()
    *
    * @param originalOrder the order containing item options and their quantities
    * @param user user placing the order
@@ -294,15 +294,10 @@ export default class MerchStoreService {
   public async placeOrder(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
     pickupEventUuid: Uuid): Promise<PublicOrder> {
-    const [order] = await this.transactions.readWrite(async (txn) => {
+    const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
-
-      await this.verifyOrderWithTransaction(originalOrder, user, txn);
-
-      const totalCost = MerchStoreService.totalCost(originalOrder, itemOptions);
-
-      const merchOrderRepository = Repositories.merchOrder(txn);
+      await this.validateOrderInTransaction(originalOrder, user, txn);
 
       // Verify the requested pickup event exists,
       // and that the order is placed at least 2 days before the pickup event starts
@@ -310,7 +305,7 @@ export default class MerchStoreService {
       if (!pickupEvent) {
         throw new NotFoundError('Pickup event requested is not found');
       }
-      if (new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate()) {
+      if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
         throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
       }
 
@@ -320,12 +315,13 @@ export default class MerchStoreService {
       if (currentOrderCount >= pickupEvent.orderLimit) {
         throw new UserError('This merch pickup event is full! Please choose a different pickup event');
       }
+      const totalCost = MerchStoreService.totalCost(originalOrder, itemOptions);
+      const merchOrderRepository = Repositories.merchOrder(txn);
 
       // if all checks pass, the order is placed
-      const createdOrder = await merchOrderRepository.createMerchOrder(OrderModel.create({
+      const createdOrder = await merchOrderRepository.upsertMerchOrder(OrderModel.create({
         user,
         totalCost,
-        pickupEvent,
         items: flatten(originalOrder.map((optionAndQuantity) => {
           const option = itemOptions.get(optionAndQuantity.option);
           const quantityRequested = optionAndQuantity.quantity;
@@ -335,12 +331,13 @@ export default class MerchStoreService {
             discountPercentageAtPurchase: option.discountPercentage,
           }));
         })),
+        pickupEvent,
       }));
 
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
         user,
-        type: ActivityType.ORDER_MERCHANDISE,
+        type: ActivityType.ORDER_PLACED,
         description: `Order ${createdOrder.uuid}`,
       });
 
@@ -351,44 +348,52 @@ export default class MerchStoreService {
       }));
 
       const userRepository = Repositories.user(txn);
-      userRepository.upsertUser(user, { credits: user.credits - totalCost });
-
+      await userRepository.upsertUser(user, { credits: user.credits - totalCost });
       return [createdOrder, itemOptions];
     });
 
-    // emailService is not mocked properly right now, so comment
-    // such that tests may pass.
-    //
-    // Since the Order States PR contains the code necessary to fix
-    // mocking the email service for MerchStoreService, once that PR
-    // is merged, the comment will be removed.
-    //
-    // const orderConfirmation = {
-    //   items: originalOrder.map((oi) => {
-    //     const option = merchItemOptions.get(oi.option);
-    //     const { item } = option;
-    //     return {
-    //       ...item,
-    //       quantityRequested: oi.quantity,
-    //       salePrice: option.getPrice(),
-    //       total: oi.quantity * option.getPrice(),
-    //     };
-    //   }),
-    //   totalCost: order.totalCost,
-    // };
-    //
-    // this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
+    const orderConfirmation = {
+      items: originalOrder.map((oi) => {
+        const option = merchItemOptions.get(oi.option);
+        const { item } = option;
+        return {
+          ...item,
+          quantityRequested: oi.quantity,
+          salePrice: option.getPrice(),
+          total: oi.quantity * option.getPrice(),
+        };
+      }),
+      totalCost: order.totalCost,
+      pickupEvent: {
+        ...order.pickupEvent,
+        start: MerchStoreService.humanReadableDateString(order.pickupEvent.start),
+        end: MerchStoreService.humanReadableDateString(order.pickupEvent.end),
+      },
+    };
+    this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
 
     return order.getPublicOrder();
   }
 
-  public async verifyOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
+  private static humanReadableDateString(date: Date): string {
+    return moment(date).format('MMMM d, H:mm A');
+  }
+
+  public async validateOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
-      this.verifyOrderWithTransaction(originalOrder, user, txn);
+      this.validateOrderInTransaction(originalOrder, user, txn);
     });
   }
 
-  private async verifyOrderWithTransaction(originalOrder: MerchItemOptionAndQuantity[],
+  /**
+   * Validates a merch order. An order is considered valid if all the below are true:
+   *  - all the ordered item options exist within the database
+   *  - the ordered item options were placed for non-hidden items
+   *  - the user wouldn't reach monthly or lifetime limits for any item if this order is placed
+   *  - the requested item options are in stock
+   *  - the user has enough credits to place the order
+   */
+  private async validateOrderInTransaction(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
     txn: EntityManager): Promise<void> {
     await user.reload();
@@ -415,7 +420,7 @@ export default class MerchStoreService {
     // checks that the user hasn't exceeded monthly/lifetime purchase limits
     const merchOrderRepository = Repositories.merchOrder(txn);
     const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersForUser(user);
-    const oneMonthAgo = new Date(moment().subtract(1, 'months').unix());
+    const oneMonthAgo = new Date(moment().subtract(1, 'month').unix());
     const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
     const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, lifetimePurchaseHistory);
     const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, pastMonthPurchaseHistory);
@@ -448,34 +453,233 @@ export default class MerchStoreService {
     if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
   }
 
-  public async updateOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[]): Promise<void> {
-    const updates = new Map<string, OrderItemFulfillmentUpdate>();
-    for (let i = 0; i < fulfillmentUpdates.length; i += 1) {
-      const oi = fulfillmentUpdates[i];
-      oi.fulfilled = Boolean(oi.fulfilled);
-      updates.set(oi.uuid, oi);
-    }
-    await this.transactions.readWrite(async (txn) => {
-      const orderItemRepository = Repositories.merchOrderItem(txn);
-      const orderItems = await orderItemRepository.batchFindByUuid(Array.from(fulfillmentUpdates.map((oi) => oi.uuid)));
-      if (orderItems.size !== fulfillmentUpdates.length) {
-        throw new NotFoundError('Missing some order items');
-      }
+  private static isLessThanTwoDaysBeforePickupEvent(pickupEvent: OrderPickupEventModel): boolean {
+    return new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate();
+  }
 
+  public async editMerchOrderPickup(orderUuid: Uuid, pickupEventUuid: Uuid, user: UserModel): Promise<OrderModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderRepository = Repositories.merchOrder(txn);
+      const order = await orderRepository.findByUuid(orderUuid);
+      if (!order) throw new NotFoundError('Order not found');
+      if (order.user.uuid !== user.uuid) throw new ForbiddenError('Cannot edit the order of a different user');
+      if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot modify pickup for inactive orders');
+
+      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
+      if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
+      if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
+        throw new UserError('Cannot change order pickup to an event that starts in less than 2 days');
+      }
+      const orderInfo = await MerchStoreService.buildOrderUpdateInfo(order, pickupEvent, txn);
+      await this.emailService.sendOrderPickupUpdated(user.email, user.firstName, orderInfo);
+      return orderRepository.upsertMerchOrder(order, { pickupEvent });
+    });
+  }
+
+  private static isInactiveOrder(order: OrderModel): boolean {
+    return order.status === OrderStatus.FULFILLED || order.status === OrderStatus.CANCELLED;
+  }
+
+  /**
+   * Marks an order as missed. An order can be marked as missed only if it's previous status was PLACED,
+   * and its associated pickup event has already passed. Only admins can mark orders as missed
+   * @param uuid order uuid
+   * @returns updated order
+   */
+  public async markOrderAsMissed(uuid: Uuid, proxy: UserModel): Promise<OrderModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderRespository = Repositories.merchOrder(txn);
+      const order = await orderRespository.findByUuid(uuid);
+      if (!order) throw new NotFoundError('Order not found');
+      if (order.status !== OrderStatus.PLACED) {
+        throw new UserError('Cannot mark an order as missed if it\'s already been cancelled, missed, or fulfilled');
+      }
+      // compare with start date and not end date so that store admins can mark orders
+      // as missed during the event and not necessarily limited to after the event
+      // (e.g. in the case where the event ends early)
+      if (new Date() < moment(order.pickupEvent.start).toDate()) {
+        throw new NotFoundError('Cannot mark an order as missed if its pickup event hasn\'t started yet');
+      }
+      const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_MISSED });
+      const orderUpdateInfo = await MerchStoreService
+        .buildOrderUpdateInfo(upsertedOrder, upsertedOrder.pickupEvent, txn);
+      const { user } = order;
+      await this.emailService.sendOrderPickupMissed(user.email, user.firstName, orderUpdateInfo);
+
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity({
+        user,
+        type: ActivityType.ORDER_MISSED,
+        description: `Order ${order.uuid} marked as missed for ${user.uuid} by ${proxy.uuid}`,
+      });
+      return upsertedOrder;
+    });
+  }
+
+  /**
+   * Cancels a merch order, refunding the user of its credits if the user is the one who cancelled the order.
+   */
+  public async cancelMerchOrder(orderUuid: Uuid, user: UserModel): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderRespository = Repositories.merchOrder(txn);
+      const order = await orderRespository.findByUuid(orderUuid);
+      if (!order) throw new NotFoundError('Order not found');
+      if (!user.isAdmin() && order.user.uuid !== user.uuid) {
+        throw new ForbiddenError('Members cannot cancel other members\' orders');
+      }
+      if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot cancel an inactive order');
+      if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
+        throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
+      }
+      const customer = order.user;
+      await this.refundAndConfirmOrderCancellation(order, user, txn);
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity({
+        user,
+        type: ActivityType.ORDER_CANCELLED,
+        description: `Order ${order.uuid} cancelled and refunded to ${customer.uuid} by ${user.uuid}`,
+      });
+    });
+  }
+
+  private async refundAndConfirmOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {
+    const orderRepository = Repositories.merchOrder(txn);
+    const upsertedOrder = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
+
+    // refund only the items that haven't been fulfilled yet
+    const unfulfilledItems = order.items.filter((item) => !item.fulfilled);
+    const refundValue = unfulfilledItems.reduce((refund, item) => refund + item.salePriceAtPurchase, 0);
+    await MerchStoreService.refundUser(user, refundValue, txn);
+
+    const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: unfulfilledItems });
+    const orderUpdateInfo = await MerchStoreService
+      .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
+    await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+
+    // restock items that were cancelled
+    const optionsToRestock = unfulfilledItems.map((item) => item.option);
+    const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+    await Promise.all(optionsToRestock.map((option) => {
+      const quantityUpdate = { quantity: option.quantity + 1 };
+      return merchItemOptionRepository.upsertMerchItemOption(option, quantityUpdate);
+    }));
+  }
+
+  /**
+   * Maps an item's option to its price at purchase and quantity ordered by the user
+   * @param order order
+   * @returns map of item option to its price at purchase and quantity ordered by the user
+   */
+  private static getPriceAndQuantityByOption(order: OrderModel): Map<Uuid, OrderItemPriceAndQuantity> {
+    const optionToPriceAndQuantity = new Map<string, OrderItemPriceAndQuantity>();
+    for (let i = 0; i < order.items.length; i += 1) {
+      const oi = order.items[i];
+      const { uuid } = oi.option;
+      if (optionToPriceAndQuantity.has(uuid)) {
+        const { price, quantity } = optionToPriceAndQuantity.get(uuid);
+        optionToPriceAndQuantity.set(uuid, {
+          quantity: quantity + 1,
+          price,
+        });
+      } else {
+        optionToPriceAndQuantity.set(uuid, {
+          quantity: 1,
+          price: oi.salePriceAtPurchase,
+        });
+      }
+    }
+    return optionToPriceAndQuantity;
+  }
+
+  private static async refundUser(user: UserModel, refund: number, txn: EntityManager): Promise<UserModel> {
+    return Repositories.user(txn).upsertUser(user, { credits: user.credits + refund });
+  }
+
+  /**
+   * Builds an order update info object to be sent in emails, based on the order.
+   * @param order order
+   * @param txn transaction
+   * @returns order update info for email
+   */
+  private static async buildOrderUpdateInfo(order: OrderModel, pickupEvent: OrderPickupEventModel,
+    txn: EntityManager) {
+    // maps an item option to its price at purchase and quantity ordered by the user
+    const optionPricesAndQuantities = MerchStoreService.getPriceAndQuantityByOption(order);
+    const itemOptionsOrdered = Array.from(optionPricesAndQuantities.keys());
+    const itemOptionByUuid = await Repositories
+      .merchStoreItemOption(txn)
+      .batchFindByUuid(itemOptionsOrdered);
+
+    return {
+      items: itemOptionsOrdered.map((option) => {
+        const { item } = itemOptionByUuid.get(option);
+        const { quantity, price } = optionPricesAndQuantities.get(option);
+        return {
+          ...item,
+          quantityRequested: quantity,
+          salePrice: price,
+          total: quantity * price,
+        };
+      }),
+      totalCost: order.totalCost,
+      pickupEvent: {
+        ...pickupEvent,
+        start: MerchStoreService.humanReadableDateString(pickupEvent.start),
+        end: MerchStoreService.humanReadableDateString(pickupEvent.end),
+      },
+    };
+  }
+
+  /**
+   * Process fulfillment updates for all order items of an order.
+   * If all items get fulfilled after this update, then the order is considered fulfilled.
+   * @param fulfillmentUpdates fulfillment updates for order. This should be an array of every order item for an order.
+   * @param orderUuid order uuid
+   */
+  public async fulfillOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[], orderUuid: Uuid,
+    user: UserModel): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderRepository = Repositories.merchOrder(txn);
+      const order = await orderRepository.findByUuid(orderUuid);
+      if (!order) throw new NotFoundError('Order not found');
+      if (MerchStoreService.isInactiveOrder(order)) {
+        throw new UserError('Cannot fulfill items of an order that has already been marked as fulfilled or cancelled');
+      }
+      const { items } = order;
       const toBeFulfilled = fulfillmentUpdates
-        .filter((oi) => oi.fulfilled)
         .map((oi) => oi.uuid);
-      const alreadyFulfilled = Array.from(orderItems.values())
+      const alreadyFulfilled = Array.from(items.values())
         .filter((oi) => oi.fulfilled)
         .map((oi) => oi.uuid);
       if (intersection(toBeFulfilled, alreadyFulfilled).length > 0) {
         throw new UserError('At least one order item marked to be fulfilled has already been fulfilled');
       }
 
-      await Promise.all(Array.from(orderItems.values()).map((oi) => {
-        const { fulfilled, notes } = updates.get(oi.uuid);
-        return orderItemRepository.fulfillOrderItem(oi, fulfilled, notes);
+      // fulfill all items in request and set entire order status as fulfilled if all items were fulfilled
+      const itemUpdatesByUuid = new Map(fulfillmentUpdates.map((update) => [update.uuid, update]));
+      const orderItemRepository = Repositories.merchOrderItem(txn);
+      const updatedItems = await Promise.all(Array.from(items.values()).map((oi) => {
+        if (!itemUpdatesByUuid.has(oi.uuid)) return oi;
+        const { notes } = itemUpdatesByUuid.get(oi.uuid);
+        return orderItemRepository.fulfillOrderItem(oi, notes);
       }));
+      const activityRepository = Repositories.activity(txn);
+      const customer = order.user;
+      const isEntireOrderFulfilled = updatedItems.every((item) => item.fulfilled);
+      if (isEntireOrderFulfilled) {
+        await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
+        await activityRepository.logActivity({
+          user: customer,
+          type: ActivityType.ORDER_FULFILLED,
+          description: `Order ${order.uuid} completely fulfilled for user ${customer.uuid} by ${user.uuid}`,
+        });
+      } else {
+        await activityRepository.logActivity({
+          user: customer,
+          type: ActivityType.ORDER_PARTIALLY_FULFILLED,
+          description: `Order ${order.uuid} partially fulfilled for user ${customer.uuid} by ${user.uuid}`,
+        });
+      }
     });
   }
 
@@ -515,6 +719,25 @@ export default class MerchStoreService {
     }, 0);
   }
 
+  public async cancelAllPendingOrders(user: UserModel): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      const merchOrderRepository = Repositories.merchOrder(txn);
+      const pendingOrders = await merchOrderRepository.getAllOrdersForAllUsers(OrderStatus.PLACED);
+      await Promise.all(pendingOrders.map((order) => this.refundAndConfirmOrderCancellation(order, order.user, txn)));
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity({
+        user,
+        type: ActivityType.PENDING_ORDERS_CANCELLED,
+      });
+    });
+  }
+
+  public async getPastPickupEvents(): Promise<OrderPickupEventModel[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .merchOrderPickupEvent(txn)
+      .getPastPickupEvents());
+  }
+
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
     return this.transactions.readOnly(async (txn) => Repositories
       .merchOrderPickupEvent(txn)
@@ -525,9 +748,13 @@ export default class MerchStoreService {
     if (pickupEvent.start >= pickupEvent.end) {
       throw new UserError('Order pickup event start time must come before the end time');
     }
+    const pickupEventModel = OrderPickupEventModel.create(pickupEvent);
+    if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEventModel)) {
+      throw new NotFoundError('Cannot create a pickup event that starts in less than 2 days');
+    }
     return this.transactions.readWrite(async (txn) => Repositories
       .merchOrderPickupEvent(txn)
-      .upsertPickupEvent(OrderPickupEventModel.create(pickupEvent)));
+      .upsertPickupEvent(pickupEventModel));
   }
 
   public async editPickupEvent(uuid: Uuid, changes: OrderPickupEventEdit): Promise<OrderPickupEventModel> {
@@ -547,17 +774,23 @@ export default class MerchStoreService {
   }
 
   /**
-   * TODO: Rewrite deletePickupEvent as per spec: https://github.com/acmucsd/membership-portal/issues/204
+   * Deletes a pickup event. Before deletion, all orders for the pickup event will
+   * have emails sent out to the users who've placed the order.
    */
   public async deletePickupEvent(uuid: Uuid): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
+      const orderRepository = Repositories.merchOrder(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
-      if (pickupEvent.orders.length > 0) {
-        throw new UserError('Cannot delete an order pickup event that has orders assigned to it');
-      }
-      // Manually set all the orders' pickup events to null before deleting event
-      pickupEvent.orders.map((order) => OrderModel.merge(order, { pickupEvent: null }));
+      // concurrently email the order cancellation email and update order status for every order
+      // then set pickupEvent to null before deleting from table
+      await Promise.all(pickupEvent.orders.map(async (order) => {
+        const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, pickupEvent, txn);
+        const { user } = order;
+        await this.emailService.sendOrderPickupCancelled(user.email, user.firstName, orderUpdateInfo);
+        await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_CANCELLED, pickupEvent: null });
+        return OrderModel.merge(order, { pickupEvent: null });
+      }));
       await orderPickupEventRepository.deletePickupEvent(pickupEvent);
     });
   }

@@ -1,7 +1,7 @@
 import {
   ValidatorConstraintInterface, registerDecorator, ValidationOptions, ValidatorConstraint,
 } from 'class-validator';
-import { PasswordChange, FeedbackType, FeedbackStatus } from '../../types';
+import { PasswordChange, FeedbackType, FeedbackStatus, OrderStatus } from '../../types';
 
 function templatedValidationDecorator(
   validator: ValidatorConstraintInterface | Function, validationOptions?: ValidationOptions,
@@ -137,4 +137,19 @@ class FeedbackStatusValidator implements ValidatorConstraintInterface {
 
 export function IsValidFeedbackStatus(validationOptions?: ValidationOptions) {
   return templatedValidationDecorator(FeedbackStatusValidator, validationOptions);
+}
+
+@ValidatorConstraint()
+class OrderStatusValidator implements ValidatorConstraintInterface {
+  validate(orderStatus: OrderStatus): boolean {
+    return Object.values(OrderStatus).includes(orderStatus);
+  }
+
+  defaultMessage(): string {
+    return `Order status must be one of ${JSON.stringify(Object.values(OrderStatus))}`;
+  }
+}
+
+export function IsValidOrderStatus(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(OrderStatusValidator, validationOptions);
 }

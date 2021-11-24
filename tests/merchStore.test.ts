@@ -1,9 +1,9 @@
 import * as faker from 'faker';
-import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
 import { zip } from 'underscore';
-import { OrderModel } from '../models/OrderModel';
-import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
+import * as moment from 'moment';
+import { OrderPickupEventModel } from 'models/OrderPickupEventModel';
+import { OrderModel } from 'models/OrderModel';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
@@ -68,38 +68,6 @@ describe('archived merch collections', () => {
 
     const getMerchCollectionResponse = await merchStoreController.getOneMerchCollection(params, admin);
     expect(getMerchCollectionResponse.collection.uuid).toEqual(collection.uuid);
-  });
-
-  test('ordering items from archived collections is not allowed', async () => {
-    const conn = await DatabaseConnection.get();
-    const collection = MerchFactory.fakeCollection({ archived: true });
-    const option = collection.items[0].options[0];
-    const orderPickupEvent = MerchFactory.fakeOrderPickupEvent();
-    const admin = UserFactory.fake({
-      accessType: UserAccessType.ADMIN,
-      credits: option.price,
-    });
-    const member = UserFactory.fake({
-      accessType: UserAccessType.STANDARD,
-      credits: option.price,
-    });
-
-    await new PortalState()
-      .createUsers(admin, member)
-      .createMerchCollections(collection)
-      .createOrderPickupEvents(orderPickupEvent)
-      .write();
-
-    const merchStoreController = ControllerFactory.merchStore(conn);
-    const placeMerchOrderRequest = {
-      order: [{ option: option.uuid, quantity: 1 }],
-      pickupEvent: orderPickupEvent.uuid,
-    };
-
-    await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, admin))
-      .rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
-    await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, member))
-      .rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
   });
 });
 
@@ -563,7 +531,7 @@ describe('merch order pickup events', () => {
     await new PortalState()
       .createUsers(member)
       .createMerchItem(item)
-      .createMerchItemOption(option)
+      .createMerchItemOptions(option)
       .createOrderPickupEvents(pickupEvent)
       // orderMerch() needs to be called separately so as to create separate orders
       // for the provided pickup event.
@@ -591,7 +559,7 @@ describe('merch order pickup events', () => {
 
     const state = new PortalState()
       .createUsers(admin, member)
-      .createMerchItemOption(option)
+      .createMerchItemOptions(option)
       .createOrderPickupEvents(pickupEvent)
       // orderMerch() needs to be called separately so as to create separate orders
       // for the provided pickup event.
@@ -637,7 +605,7 @@ describe('merch order pickup events', () => {
     await new PortalState()
       .createUsers(member)
       .createMerchItem(item)
-      .createMerchItemOption(option)
+      .createMerchItemOptions(option)
       .createOrderPickupEvents(pickupEvent)
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
@@ -665,7 +633,7 @@ describe('merch order pickup events', () => {
     await new PortalState()
       .createUsers(member)
       .createMerchItem(item)
-      .createMerchItemOption(option)
+      .createMerchItemOptions(option)
       .createOrderPickupEvents(pickupEvent)
       // orderMerch() needs to be called separately so as to create separate orders
       // for the provided pickup event.
@@ -693,7 +661,7 @@ describe('merch order pickup events', () => {
 
     await new PortalState()
       .createUsers(admin, member)
-      .createMerchItemOption(option)
+      .createMerchItemOptions(option)
       .createOrderPickupEvents(pickupEvent)
       // orderMerch() needs to be called separately so as to create separate orders
       // for the provided pickup event.

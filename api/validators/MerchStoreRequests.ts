@@ -8,6 +8,7 @@ import {
   ValidateNested,
   IsHexColor,
   IsDateString,
+  ArrayNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -19,6 +20,7 @@ import {
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   VerifyMerchOrderRequest as IVerifyMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
+  EditMerchOrderPickupRequest as IEditMerchOrderPickupRequest,
   CreateOrderPickupEventRequest as ICreateOrderPickupEventRequest,
   EditOrderPickupEventRequest as IEditOrderPickupEventRequest,
   MerchItemOptionAndQuantity as IMerchItemOptionAndQuantity,
@@ -30,6 +32,7 @@ import {
   MerchItemOption as IMerchItemOption,
   MerchItemOptionEdit as IMerchItemOptionEdit,
   MerchItemOptionMetadata as IMerchItemOptionMetadata,
+  MerchOrderEdit as IMerchOrderEdit,
   OrderPickupEvent as IOrderPickupEvent,
   OrderPickupEventEdit as IOrderPickupEventEdit,
 } from '../../types';
@@ -155,6 +158,7 @@ export class MerchItem implements IMerchItem {
   @Type(() => MerchItemOption)
   @ValidateNested()
   @IsDefined()
+  @ArrayNotEmpty()
   options: MerchItemOption[];
 }
 
@@ -198,9 +202,6 @@ export class OrderItemFulfillmentUpdate implements IOrderItemFulfillmentUpdate {
   uuid: string;
 
   @Allow()
-  fulfilled?: boolean;
-
-  @Allow()
   notes?: string;
 }
 
@@ -240,6 +241,11 @@ export class OrderPickupEventEdit implements IOrderPickupEventEdit {
 
   @Min(1)
   orderLimit?: number;
+}
+
+export class MerchOrderEdit implements IMerchOrderEdit {
+  @IsUUID()
+  pickupEvent: string;
 }
 
 export class CreateMerchCollectionRequest implements ICreateMerchCollectionRequest {
@@ -300,6 +306,12 @@ export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {
   @ValidateNested()
   @IsDefined()
   items: OrderItemFulfillmentUpdate[];
+}
+
+export class EditMerchOrderPickupRequest implements IEditMerchOrderPickupRequest {
+  @IsDefined()
+  @IsUUID()
+  pickupEvent: string;
 }
 
 export class CreateOrderPickupEventRequest implements ICreateOrderPickupEventRequest {

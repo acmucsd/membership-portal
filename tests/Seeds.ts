@@ -79,6 +79,12 @@ async function seed(): Promise<void> {
     graduationYear: getGraduationYear(0),
   });
 
+  // create members in bulk for testing things like sliding leaderboard in a realistic manner
+  const otherMembers = UserFactory.create(200);
+  const highAttendanceMembers = otherMembers.slice(0, 50);
+  const moderateAttendanceMembers = otherMembers.slice(50, 125);
+  const lowAttendanceMembers = otherMembers.slice(125, 150);
+
   const unstaffed = { requiresStaff: false, staffPointBonus: 0 };
   const staffed = { requiresStaff: true };
   const general = { commitee: 'ACM' };
@@ -478,6 +484,7 @@ async function seed(): Promise<void> {
       MEMBER_SOPHOMORE,
       MEMBER_JUNIOR,
       MEMBER_SENIOR,
+      ...otherMembers,
     )
     .createEvents(
       PAST_AI_WORKSHOP_1,
@@ -494,6 +501,7 @@ async function seed(): Promise<void> {
       MEMBER_SOPHOMORE,
       MEMBER_JUNIOR,
       MEMBER_SENIOR,
+      ...highAttendanceMembers,
     ], [PAST_AI_WORKSHOP_1], true)
     .attendEvents([
       STAFF_HACK,
@@ -501,24 +509,29 @@ async function seed(): Promise<void> {
       MEMBER_SOPHOMORE,
       MEMBER_JUNIOR,
       MEMBER_SENIOR,
+      ...highAttendanceMembers,
+      ...moderateAttendanceMembers,
     ], [PAST_HACK_WORKSHOP], true)
     .attendEvents([
       STAFF_GENERAL,
       STAFF_HACK,
       MEMBER_FRESHMAN,
       MEMBER_SOPHOMORE,
+      ...highAttendanceMembers,
     ], [PAST_ACM_SOCIAL_1], false)
     .attendEvents([
       STAFF_AI,
       STAFF_HACK,
       MEMBER_SOPHOMORE,
       MEMBER_SENIOR,
+      ...moderateAttendanceMembers,
     ], [PAST_AI_WORKSHOP_2], true)
     .attendEvents([
       STAFF_GENERAL,
       MEMBER_FRESHMAN,
       MEMBER_SOPHOMORE,
       MEMBER_JUNIOR,
+      ...highAttendanceMembers,
     ], [PAST_ACM_PANEL], true)
     .attendEvents([
       STAFF_GENERAL,
@@ -526,6 +539,7 @@ async function seed(): Promise<void> {
       MEMBER_FRESHMAN,
       MEMBER_JUNIOR,
       MEMBER_SENIOR,
+      ...lowAttendanceMembers,
     ], [PAST_ACM_SOCIAL_2], true)
     .createEvents(
       ONGOING_ACM_SOCIAL_1,

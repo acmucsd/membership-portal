@@ -28,11 +28,15 @@ import {
   PlaceMerchOrderResponse,
   VerifyMerchOrderResponse,
   EditMerchOrderResponse,
+  FulfillMerchOrderResponse,
   CreateMerchItemOptionResponse,
   DeleteMerchItemOptionResponse,
   MerchItemOptionAndQuantity,
   CreateOrderPickupEventResponse,
   GetOrderPickupEventsResponse,
+  DeleteOrderPickupEventResponse,
+  EditOrderPickupEventResponse,
+  CancelAllPendingOrdersResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -46,11 +50,13 @@ import {
   PlaceMerchOrderRequest,
   VerifyMerchOrderRequest,
   FulfillMerchOrderRequest,
+  EditMerchOrderPickupRequest,
   CreateMerchItemOptionRequest,
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
+import { OrderModel } from '../../models/OrderModel';
 
 @UseBefore(UserAuthentication)
 @JsonController('/merch')
@@ -163,18 +169,23 @@ export class MerchStoreController {
     return { error: null, order };
   }
 
-  @Get('/order')
+  @Get('/orders')
   async getAllMerchOrders(@AuthenticatedUser() user: UserModel): Promise<GetAllMerchOrdersResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const canSeeAllOrders = PermissionsService.canSeeAllMerchOrders(user);
-    const orders = await this.merchStoreService.getAllOrders(user, canSeeAllOrders);
-    return { error: null, orders };
+    let orders: OrderModel[];
+    if (canSeeAllOrders) {
+      orders = await this.merchStoreService.getAllOrdersForAllUsers();
+    } else {
+      orders = await this.merchStoreService.getAllOrdersForUser(user);
+    }
+    return { error: null, orders: orders.map((o) => o.getPublicOrder()) };
   }
 
   @Post('/order')
   async placeMerchOrder(@Body() placeOrderRequest: PlaceMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<PlaceMerchOrderResponse> {
-    const originalOrder = this.verifyMerchOrderRequest(placeOrderRequest.order, user);
+    const originalOrder = this.validateMerchOrderRequest(placeOrderRequest.order);
     const order = await this.merchStoreService.placeOrder(originalOrder, user, placeOrderRequest.pickupEvent);
     return { error: null, order };
   }
@@ -182,13 +193,12 @@ export class MerchStoreController {
   @Post('/order/verification')
   async verifyMerchOrder(@Body() verifyOrderRequest: VerifyMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<VerifyMerchOrderResponse> {
-    const originalOrder = this.verifyMerchOrderRequest(verifyOrderRequest.order, user);
-    await this.merchStoreService.verifyOrder(originalOrder, user);
+    const originalOrder = this.validateMerchOrderRequest(verifyOrderRequest.order);
+    await this.merchStoreService.validateOrder(originalOrder, user);
     return { error: null };
   }
 
-  private verifyMerchOrderRequest(orderRequest: MerchItemOptionAndQuantity[],
-    user: UserModel): MerchItemOptionAndQuantity[] {
+  private validateMerchOrderRequest(orderRequest: MerchItemOptionAndQuantity[]): MerchItemOptionAndQuantity[] {
     const originalOrder = orderRequest.filter((oi) => oi.quantity > 0);
     const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
     if (orderIsEmpty) throw new UserError('There are no items in this order');
@@ -197,16 +207,55 @@ export class MerchStoreController {
     return originalOrder;
   }
 
-  @Patch('/order')
-  async editMerchOrder(@Body() fulfillOrderRequest: FulfillMerchOrderRequest,
+  @Patch('/order/:uuid/pickup')
+  async editMerchOrderPickup(@Params() params: UuidParam,
+    @Body() editOrderRequest: EditMerchOrderPickupRequest,
     @AuthenticatedUser() user: UserModel): Promise<EditMerchOrderResponse> {
-    if (!PermissionsService.canFulfillMerchOrders(user)) throw new ForbiddenError();
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
+    await this.merchStoreService.editMerchOrderPickup(params.uuid, editOrderRequest.pickupEvent, user);
+    return { error: null };
+  }
+
+  @Post('/order/:uuid/cancel')
+  async cancelMerchOrder(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel) {
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
+    const order = await this.merchStoreService.cancelMerchOrder(params.uuid, user);
+    return { error: null, order };
+  }
+
+  @Post('/order/:uuid/missed')
+  async markOrderAsMissed(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel) {
+    if (!PermissionsService.canManageMerchOrders(user)) throw new ForbiddenError();
+    const order = await this.merchStoreService.markOrderAsMissed(params.uuid, user);
+    return { error: null, order };
+  }
+
+  @Post('/order/:uuid/fulfill')
+  async fulfillMerchOrderItems(@Params() params: UuidParam, @Body() fulfillOrderRequest: FulfillMerchOrderRequest,
+    @AuthenticatedUser() user: UserModel): Promise<FulfillMerchOrderResponse> {
+    if (!PermissionsService.canManageMerchOrders(user)) throw new ForbiddenError();
     const numUniqueUuids = (new Set(fulfillOrderRequest.items.map((oi) => oi.uuid))).size;
     if (fulfillOrderRequest.items.length !== numUniqueUuids) {
       throw new BadRequestError('There are duplicate order items');
     }
-    await this.merchStoreService.updateOrderItems(fulfillOrderRequest.items);
+    await this.merchStoreService.fulfillOrderItems(fulfillOrderRequest.items, params.uuid, user);
     return { error: null };
+  }
+
+  @Post('/order/cleanup')
+  async cancelAllPendingMerchOrders(@AuthenticatedUser() user: UserModel): Promise<CancelAllPendingOrdersResponse> {
+    if (!PermissionsService.canCancelAllPendingOrders(user)) throw new ForbiddenError();
+    await this.merchStoreService.cancelAllPendingOrders(user);
+    return { error: null };
+  }
+
+  @Get('/order/pickup/past')
+  async getPastPickupEvents(@AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventsResponse> {
+    const pickupEvents = await this.merchStoreService.getPastPickupEvents();
+    const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
+    const publicPickupEvents = pickupEvents.map((pickupEvent) => pickupEvent
+      .getPublicOrderPickupEvent(canSeePickupEventOrders));
+    return { error: null, pickupEvents: publicPickupEvents };
   }
 
   @Get('/order/pickup/future')
@@ -229,11 +278,19 @@ export class MerchStoreController {
   @Patch('/order/pickup/:uuid')
   async editPickupEvent(@Params() params: UuidParam,
     @Body() editOrderPickupEventRequest: EditOrderPickupEventRequest,
-    @AuthenticatedUser() user: UserModel): Promise<CreateOrderPickupEventResponse> {
+    @AuthenticatedUser() user: UserModel): Promise<EditOrderPickupEventResponse> {
     if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     const pickupEvent = await this.merchStoreService.editPickupEvent(params.uuid,
       editOrderPickupEventRequest.pickupEvent);
     return { error: null,
       pickupEvent: pickupEvent.getPublicOrderPickupEvent() };
+  }
+
+  @Delete('/order/pickup/:uuid')
+  async deletePickupEvent(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
+  Promise<DeleteOrderPickupEventResponse> {
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
+    await this.merchStoreService.deletePickupEvent(params.uuid);
+    return { error: null };
   }
 }

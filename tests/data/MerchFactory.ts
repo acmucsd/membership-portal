@@ -1,4 +1,5 @@
 import * as faker from 'faker';
+import * as moment from 'moment';
 import { MerchItemOptionMetadata } from 'types';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
@@ -21,7 +22,10 @@ export class MerchFactory {
     // fake.items if the substitute doesn't provide any
     if (!substitute?.items) {
       const numItems = FactoryUtils.getRandomNumber(1, 5);
-      fake.items = FactoryUtils.create(numItems, () => MerchFactory.fakeItem({ collection: fake }));
+      fake.items = FactoryUtils.create(numItems, () => MerchFactory.fakeItem({
+        collection: fake,
+        hidden: substitute?.archived,
+      }));
     }
     return MerchandiseCollectionModel.merge(fake, substitute);
   }
@@ -36,6 +40,7 @@ export class MerchFactory {
       hasVariantsEnabled,
       monthlyLimit: FactoryUtils.getRandomNumber(1, 5),
       lifetimeLimit: FactoryUtils.getRandomNumber(6, 10),
+      hidden: false,
     });
 
     // merging arrays returns a union of fake.options and substitute.options so only create
