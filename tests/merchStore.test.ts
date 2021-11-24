@@ -2,8 +2,8 @@ import * as faker from 'faker';
 import { ForbiddenError } from 'routing-controllers';
 import { zip } from 'underscore';
 import * as moment from 'moment';
-import { OrderPickupEventModel } from 'models/OrderPickupEventModel';
-import { OrderModel } from 'models/OrderModel';
+import { OrderModel } from '../models/OrderModel';
+import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
@@ -443,7 +443,7 @@ describe('merch order pickup events', () => {
   test('POST /order/pickup persists pickup event on proper input', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const pickupEvent = MerchFactory.fakeOrderPickupEvent();
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
       .createUsers(admin)
