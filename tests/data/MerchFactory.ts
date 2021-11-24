@@ -1,5 +1,4 @@
 import * as faker from 'faker';
-import * as moment from 'moment';
 import { MerchItemOptionMetadata } from 'types';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
