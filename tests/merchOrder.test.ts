@@ -874,4 +874,146 @@ describe('merch order pickup events', () => {
     expect(merchController.editMerchOrderPickup(orderUuid, pickupEventRequest, member))
       .rejects.toThrow('Cannot change order pickup to an event that starts in less than 2 days');
   });
+
+  test('placing an order with a pickup event that has not reached its capacity succeeds', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ points: 100 });
+    const item = MerchFactory.fakeItem({
+      hidden: false,
+      monthlyLimit: 100,
+    });
+    const option = MerchFactory.fakeOption({
+      item,
+      quantity: 10,
+      price: 10,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ orderLimit: 5 });
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(item)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(pickupEvent)
+      // orderMerch() needs to be called separately so as to create separate orders
+      // for the provided pickup event.
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const placeMerchOrderRequest = {
+      order: [{ option: option.uuid, quantity: 1 }],
+      pickupEvent: pickupEvent.uuid,
+    };
+
+    const placeOrderResponse = await merchStoreController.placeMerchOrder(placeMerchOrderRequest, member);
+    expect(placeOrderResponse.error).toBeNull();
+    expect(placeOrderResponse.order.pickupEvent).toStrictEqual(pickupEvent.getPublicOrderPickupEvent());
+  });
+
+  test("updating a pickup event's order limit to a threshold above the current order count succeeds", async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const member = UserFactory.fake({ points: 100 });
+    const option = MerchFactory.fakeOption({ price: 10 });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ orderLimit: 5 });
+
+    const state = new PortalState()
+      .createUsers(admin, member)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(pickupEvent)
+      // orderMerch() needs to be called separately so as to create separate orders
+      // for the provided pickup event.
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent);
+
+    await state.write();
+
+    const editPickupEventRequest = {
+      pickupEvent: {
+        orderLimit: 2,
+      },
+    };
+    const params = { uuid: pickupEvent.uuid };
+    const response = await ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, admin);
+    expect(response.error).toBeNull();
+
+    const [persistedPickupEvent] = await conn.manager.find(OrderPickupEventModel, { relations: ['orders'] });
+
+    const newPickupEvent = {
+      orderLimit: 2,
+      ...persistedPickupEvent.getPublicOrderPickupEvent(true),
+    };
+    // MerchStoreService won't return the orders because of requiring an additional join.
+    // Additionally, returning orders as a full type causes a stack overflow, because
+    // one cannot return the orders completely (orders refer to pickup events that refer
+    // to orders, etc.)
+    delete newPickupEvent.orders;
+
+    expect(response.pickupEvent).toStrictEqual(newPickupEvent);
+  });
+
+  test('placing an order with a pickup event that has reached the order limit fails', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ points: 100 });
+    const item = MerchFactory.fakeItem({
+      hidden: false,
+      monthlyLimit: 100,
+    });
+    const option = MerchFactory.fakeOption({
+      item,
+      quantity: 10,
+      price: 10,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ orderLimit: 2 });
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(item)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(pickupEvent)
+      // orderMerch() needs to be called separately so as to create separate orders
+      // for the provided pickup event.
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const placeMerchOrderRequest = {
+      order: [{ option: option.uuid, quantity: 1 }],
+      pickupEvent: pickupEvent.uuid,
+    };
+
+    await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, member))
+      .rejects
+      .toThrow('This merch pickup event is full! Please choose a different pickup event');
+  });
+
+  test('pickup event update fails when edit\'s order limit is decreased below the number of orders', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const member = UserFactory.fake({ points: 100 });
+    const option = MerchFactory.fakeOption({ price: 10 });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ orderLimit: 2 });
+
+    await new PortalState()
+      .createUsers(admin, member)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(pickupEvent)
+      // orderMerch() needs to be called separately so as to create separate orders
+      // for the provided pickup event.
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
+      .write();
+
+    const editPickupEventRequest = {
+      pickupEvent: {
+        orderLimit: 1,
+      },
+    };
+    const params = { uuid: pickupEvent.uuid };
+    await expect(ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, admin))
+      .rejects
+      .toThrow('Pickup event cannot have order limit lower than the number of orders booked in it');
+  });
 });
