@@ -69,15 +69,22 @@ describe('archived merch collections', () => {
 });
 
 describe('merch items with options', () => {
-  test('monthly remaining and lifetime remaining values are properly set', async () => {
+  test('monthly and lifetime remaining values are properly set when ordering different item options', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const optionMetadataType = faker.datatype.hexaDecimal(10);
     const option1 = MerchFactory.fakeOptionWithType(optionMetadataType);
     const option2 = MerchFactory.fakeOptionWithType(optionMetadataType);
     const option3 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const unorderedOption = MerchFactory.fakeOption();
     const item = MerchFactory.fakeItem({
       options: [option1, option2, option3],
+      monthlyLimit: 5,
+      lifetimeLimit: 10,
+    });
+    const unorderedItem = MerchFactory.fakeItem({
+      options: [unorderedOption],
+      hasVariantsEnabled: false,
       monthlyLimit: 5,
       lifetimeLimit: 10,
     });
@@ -86,6 +93,7 @@ describe('merch items with options', () => {
     await new PortalState()
       .createUsers(member)
       .createMerchItem(item)
+      .createMerchItem(unorderedItem)
       .createOrderPickupEvents(pickupEvent)
       .orderMerch(member, [
         { option: option1, quantity: 1 },
@@ -95,13 +103,60 @@ describe('merch items with options', () => {
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
-    const params = { uuid: item.uuid };
-    const getOneMerchItemResponse = await merchStoreController.getOneMerchItem(params, member);
-    const updatedItem = getOneMerchItemResponse.item;
-    console.log(updatedItem);
+    const orderedItemParams = { uuid: item.uuid };
+    const getOrderedItemResponse = await merchStoreController.getOneMerchItem(orderedItemParams, member);
+    const updatedItem = getOrderedItemResponse.item;
 
+    // make sure the ordered item's remaining counts got updated
     expect(updatedItem.monthlyRemaining).toEqual(2);
     expect(updatedItem.lifetimeRemaining).toEqual(7);
+
+    const unorderedItemParams = { uuid: unorderedItem.uuid };
+    const getUnorderedItemResponse = await merchStoreController.getOneMerchItem(unorderedItemParams, member);
+    const unchangedItem = getUnorderedItemResponse.item;
+
+    // make sure the un-ordered item's remaining counts didn't change
+    expect(unchangedItem.monthlyRemaining).toEqual(5);
+    expect(unchangedItem.lifetimeRemaining).toEqual(10);
+  });
+
+  test('monthly and lifetime remaining values for one item don\'t change if another item is ordered', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const orderedOption = MerchFactory.fakeOption();
+    const orderedItem = MerchFactory.fakeItem({
+      options: [orderedOption],
+      hasVariantsEnabled: false,
+      monthlyLimit: 5,
+      lifetimeLimit: 5,
+    });
+    const unorderedOption = MerchFactory.fakeOption();
+    const unorderedItem = MerchFactory.fakeItem({
+      options: [unorderedOption],
+      hasVariantsEnabled: false,
+      monthlyLimit: 5,
+      lifetimeLimit: 5,
+    });
+
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(orderedItem)
+      .createMerchItem(unorderedItem)
+      .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, [
+        { option: orderedOption, quantity: 1 },
+      ], pickupEvent)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const params = { uuid: orderedItem.uuid };
+    const orderedItemResponse = await merchStoreController.getOneMerchItem(params, member);
+    const orderedItemPayload = orderedItemResponse.item;
+
+    expect(orderedItemPayload.monthlyRemaining).toEqual(4);
+    expect(orderedItemPayload.lifetimeRemaining).toEqual(4);
   });
 });
 

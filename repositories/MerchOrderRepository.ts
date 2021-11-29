@@ -72,8 +72,8 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
       .innerJoinAndSelect('oi.order', 'order')
       .innerJoinAndSelect('order.user', 'user')
       .innerJoinAndSelect('option.item', 'item')
-      .where('item.uuid = :uuid', { uuid: item.uuid })
-      .andWhere('user.uuid = :uuid', { uuid: user.uuid })
+      .where('item.uuid = :itemUuid', { itemUuid: item.uuid })
+      .andWhere('user.uuid = :userUuid', { userUuid: user.uuid })
       .getMany();
   }
 }

@@ -115,7 +115,6 @@ export default class MerchStoreService {
       // calculate monthly and lifetime remaining purchases for this item
       const merchOrderItemRepository = Repositories.merchOrderItem(txn);
       const lifetimePurchaseHistory = await merchOrderItemRepository.getPastItemOrdersByUser(user, item);
-      console.log(lifetimePurchaseHistory);
       const oneMonthAgo = new Date(moment().subtract(1, 'month').unix());
       const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((oi) => oi.order.orderedAt > oneMonthAgo);
       const lifetimeItemOrderCounts = lifetimePurchaseHistory.length;
@@ -123,9 +122,6 @@ export default class MerchStoreService {
 
       const monthlyRemaining = item.monthlyLimit - pastMonthItemOrderCounts;
       const lifetimeRemaining = item.lifetimeLimit - lifetimeItemOrderCounts;
-
-      console.log('monthlyRemaining', monthlyRemaining);
-      console.log('lifetimeRemaining', lifetimeRemaining);
 
       return {
         ...item.getPublicMerchItem(),
