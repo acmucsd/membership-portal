@@ -291,6 +291,15 @@ export default class MerchStoreService {
 
   /**
    * Places an order with the list of options and their quantities for the given user.
+   *
+   * The order is placed if the following conditions are met:
+   *    - all the ordered item options exist within the database
+   *    - the ordered item options were placed for non-hidden items
+   *    - the user wouldn't reach monthly or lifetime limits for any item if this order is placed
+   *    - the requested item options are in stock
+   *    - the user has enough credits to place the order
+   *    - the pickup event specified exists and is at least 2 days before starting
+   *    - the pickup event is not at or above the current order limit
    * The order needs to match all order verification constraints defined in verifyOrderUnderTransaction()
    *
    * @param originalOrder the order containing item options and their quantities
@@ -315,6 +324,12 @@ export default class MerchStoreService {
         throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
       }
 
+      // Verify that this order would not set the pickup event's order count
+      // over the order limit
+      const currentOrderCount = pickupEvent.orders.length;
+      if (currentOrderCount >= pickupEvent.orderLimit) {
+        throw new UserError('This merch pickup event is full! Please choose a different pickup event');
+      }
       const totalCost = MerchStoreService.totalCost(originalOrder, itemOptions);
       const merchOrderRepository = Repositories.merchOrder(txn);
 
@@ -764,6 +779,10 @@ export default class MerchStoreService {
       const updatedPickupEvent = OrderPickupEventModel.merge(pickupEvent, changes);
       if (updatedPickupEvent.start >= updatedPickupEvent.end) {
         throw new UserError('Order pickup event start time must come before the end time');
+      }
+      const currentOrderCount = pickupEvent.orders.length;
+      if (updatedPickupEvent.orderLimit < currentOrderCount) {
+        throw new UserError('Pickup event cannot have order limit lower than the number of orders booked in it');
       }
       return orderPickupEventRepository.upsertPickupEvent(updatedPickupEvent);
     });
