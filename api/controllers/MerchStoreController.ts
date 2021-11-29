@@ -282,7 +282,8 @@ export class MerchStoreController {
     if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     const pickupEvent = await this.merchStoreService.editPickupEvent(params.uuid,
       editOrderPickupEventRequest.pickupEvent);
-    return { error: null, pickupEvent: pickupEvent.getPublicOrderPickupEvent() };
+    return { error: null,
+      pickupEvent: pickupEvent.getPublicOrderPickupEvent() };
   }
 
   @Delete('/order/pickup/:uuid')
