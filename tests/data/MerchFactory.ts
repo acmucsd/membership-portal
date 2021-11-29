@@ -1,6 +1,6 @@
 import * as faker from 'faker';
-import * as moment from 'moment';
 import { MerchItemOptionMetadata } from 'types';
+import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
@@ -91,6 +91,7 @@ export class MerchFactory {
       description: faker.lorem.sentences(2),
       start,
       end,
+      orderLimit: FactoryUtils.getRandomNumber(1, 5),
       orders: [],
     });
     return OrderPickupEventModel.merge(fake, substitute);

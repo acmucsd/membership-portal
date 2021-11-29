@@ -19,6 +19,9 @@ export class OrderPickupEventModel extends BaseEntity {
   @Column('text')
   description: string;
 
+  @Column('integer')
+  orderLimit: number;
+
   @OneToMany((type) => OrderModel, (order) => order.pickupEvent, { nullable: false })
   @JoinColumn({ name: 'order' })
   orders: OrderModel[];
@@ -30,7 +33,9 @@ export class OrderPickupEventModel extends BaseEntity {
       start: this.start,
       end: this.end,
       description: this.description,
+      orderLimit: this.orderLimit,
     };
+
     if (canSeeOrders) pickupEvent.orders = this.orders.map((order) => order.getPublicOrder());
     return pickupEvent;
   }

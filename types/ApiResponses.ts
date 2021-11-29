@@ -336,6 +336,7 @@ export interface PublicOrderPickupEvent {
   end: Date;
   description: string;
   orders?: PublicOrder[];
+  orderLimit?: number;
 }
 
 export interface GetOrderPickupEventsResponse extends ApiResponse {
