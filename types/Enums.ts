@@ -16,6 +16,7 @@ export enum MediaType {
   EVENT_COVER = 'EVENT_COVER',
   PROFILE_PICTURE = 'PROFILE_PICTURE',
   BANNER = 'BANNER',
+  MERCH_PHOTO = 'MERCH_PHOTO',
 }
 
 export enum ActivityType {

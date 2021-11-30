@@ -10,6 +10,7 @@ import {
   ForbiddenError,
   NotFoundError,
   BadRequestError,
+  UploadedFile,
 } from 'routing-controllers';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
@@ -37,6 +38,9 @@ import {
   DeleteOrderPickupEventResponse,
   EditOrderPickupEventResponse,
   CancelAllPendingOrdersResponse,
+  MediaType,
+  File,
+  UpdateMerchPhotoResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -57,14 +61,18 @@ import {
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
 import { OrderModel } from '../../models/OrderModel';
+import StorageService from '../../services/StorageService';
 
 @UseBefore(UserAuthentication)
 @JsonController('/merch')
 export class MerchStoreController {
   private merchStoreService: MerchStoreService;
 
-  constructor(merchStoreService: MerchStoreService) {
+  private storageService: StorageService;
+
+  constructor(merchStoreService: MerchStoreService, storageService: StorageService) {
     this.merchStoreService = merchStoreService;
+    this.storageService = storageService;
   }
 
   @Get('/collection/:uuid')
@@ -141,6 +149,18 @@ export class MerchStoreController {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     await this.merchStoreService.deleteItem(params.uuid);
     return { error: null };
+  }
+
+  @UseBefore(UserAuthentication)
+  @Post('/item/picture/:uuid')
+  async updateMerchPhoto(@UploadedFile('image',
+    { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
+    @Params() params: UuidParam,
+    @AuthenticatedUser() user: UserModel): Promise<UpdateMerchPhotoResponse> {
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    const picture = await this.storageService.upload(file, MediaType.MERCH_PHOTO, params.uuid);
+    const item = await this.merchStoreService.editItem(params.uuid, { picture });
+    return { error: null, item };
   }
 
   @Post('/option/:uuid')
