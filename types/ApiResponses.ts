@@ -157,12 +157,27 @@ export interface PublicMerchItem {
   options: PublicMerchItemOption[];
 }
 
+export interface PublicCartMerchItem {
+  uuid: Uuid;
+  itemName: string;
+  picture: string;
+  description: string;
+}
+
 export interface PublicMerchItemOption {
   uuid: Uuid;
   price: number;
   quantity?: number;
   discountPercentage: number;
   metadata: MerchItemOptionMetadata;
+}
+
+export interface PublicCartMerchItemOption {
+  uuid: Uuid;
+  price: number;
+  discountPercentage: number;
+  metadata: MerchItemOptionMetadata;
+  item: PublicCartMerchItem;
 }
 
 export interface PublicOrderItem {
@@ -239,6 +254,9 @@ export interface VerifyMerchOrderResponse extends ApiResponse {}
 
 export interface EditMerchOrderResponse extends ApiResponse {}
 
+export interface GetCartResponse extends ApiResponse {
+  cart: PublicCartMerchItemOption[];
+}
 export interface FulfillMerchOrderResponse extends ApiResponse {}
 
 // USER

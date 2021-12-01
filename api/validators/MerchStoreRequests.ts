@@ -23,6 +23,7 @@ import {
   EditMerchOrderPickupRequest as IEditMerchOrderPickupRequest,
   CreateOrderPickupEventRequest as ICreateOrderPickupEventRequest,
   EditOrderPickupEventRequest as IEditOrderPickupEventRequest,
+  GetCartRequest as IGetCartRequest,
   MerchItemOptionAndQuantity as IMerchItemOptionAndQuantity,
   OrderItemFulfillmentUpdate as IOrderItemFulfillmentUpdate,
   MerchCollection as IMerchCollection,
@@ -326,4 +327,10 @@ export class EditOrderPickupEventRequest implements IEditOrderPickupEventRequest
   @ValidateNested()
   @IsDefined()
   pickupEvent: OrderPickupEventEdit;
+}
+
+export class GetCartRequest implements IGetCartRequest {
+  @IsDefined()
+  @IsNotEmpty()
+  items: string[];
 }
