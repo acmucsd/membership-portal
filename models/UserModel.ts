@@ -87,6 +87,22 @@ export class UserModel extends BaseEntity {
     return this.accessType === UserAccessType.STAFF;
   }
 
+  public hasStoreDistributorPermissions(): boolean {
+    return this.isAdmin() || this.isMerchStoreManager() || this.isMerchStoreDistributor();
+  }
+
+  public isMarketing(): boolean {
+    return this.accessType === UserAccessType.MARKETING;
+  }
+
+  public isMerchStoreManager(): boolean {
+    return this.accessType === UserAccessType.MERCH_STORE_MANAGER;
+  }
+
+  public isMerchStoreDistributor(): boolean {
+    return this.accessType === UserAccessType.MERCH_STORE_DISTRIBUTOR;
+  }
+
   public getPublicProfile(): PublicProfile {
     return {
       uuid: this.uuid,
