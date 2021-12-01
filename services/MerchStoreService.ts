@@ -809,4 +809,17 @@ export default class MerchStoreService {
       await orderPickupEventRepository.deletePickupEvent(pickupEvent);
     });
   }
+
+  public async getCartItems(options: string[]): Promise<MerchandiseItemOptionModel[]> {
+    return this.transactions.readOnly(async (txn) => {
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const itemOptionsByUuid = await merchItemOptionRepository.batchFindByUuid(options);
+      const itemOptionUuidsFound = Array.from(itemOptionsByUuid.keys());
+      const missingItems = difference(options, itemOptionUuidsFound);
+      if (missingItems.length > 0) {
+        throw new NotFoundError(`The following items were not found: ${missingItems}`);
+      }
+      return options.map((option) => itemOptionsByUuid.get(option));
+    });
+  }
 }
