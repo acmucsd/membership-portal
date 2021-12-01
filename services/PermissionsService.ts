@@ -5,7 +5,7 @@ import { UserState, PublicOrder } from '../types';
 @Service()
 export default class PermissionsService {
   public static canEditEvents(user: UserModel): boolean {
-    return user.isAdmin();
+    return user.isAdmin() || user.isMarketing();
   }
 
   public static canSeeEventAttendances(user: UserModel): boolean {
@@ -37,7 +37,7 @@ export default class PermissionsService {
   }
 
   public static canEditMerchStore(user: UserModel): boolean {
-    return user.isAdmin();
+    return user.isAdmin() || user.isMerchStoreManager();
   }
 
   public static canAccessMerchStore(user: UserModel): boolean {
@@ -45,30 +45,34 @@ export default class PermissionsService {
   }
 
   public static canSeeOptionQuantities(user: UserModel): boolean {
-    return user.isAdmin();
+    return user.isAdmin() || user.isMerchStoreManager();
   }
 
   public static canSeeMerchOrder(user: UserModel, order: PublicOrder) {
-    return user.isAdmin() || (this.canAccessMerchStore(user) && order.user === user.uuid);
+    return user.hasStoreDistributorPermissions() || (this.canAccessMerchStore(user) && order.user === user.uuid);
   }
 
   public static canSeeAllMerchOrders(user: UserModel) {
-    return user.isAdmin();
+    return PermissionsService.canDistributeMerch(user);
   }
 
   public static canManageMerchOrders(user: UserModel) {
-    return user.isAdmin();
+    return PermissionsService.canDistributeMerch(user);
   }
 
   public static canSeePickupEventOrders(user: UserModel) {
-    return user.isAdmin();
+    return PermissionsService.canDistributeMerch(user);
   }
 
   public static canManagePickupEvents(user: UserModel) {
-    return user.isAdmin();
+    return PermissionsService.canDistributeMerch(user);
   }
 
   public static canCancelAllPendingOrders(user: UserModel) {
-    return user.isAdmin();
+    return user.isAdmin() || user.isMerchStoreManager();
+  }
+
+  private static canDistributeMerch(user: UserModel) {
+    return user.isAdmin() || user.isMerchStoreManager() || user.isMerchStoreDistributor();
   }
 }
