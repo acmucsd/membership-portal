@@ -136,6 +136,46 @@ export default class EmailService {
     }
   }
 
+  public async sendOrderFulfillment(email: string, firstName: string,
+    totalCost: number, fulfilledItems: OrderLineItem[], pickupEvent: OrderPickupEventInfo) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Merch Store - Order Fulfilled',
+        html: ejs.render(EmailService.orderPickupUpdatedTemplate, {
+          firstName,
+          totalCost,
+          fulfilledItems,
+          pickupEvent
+        }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send order fulfillment email to ${email}`, { error });
+    }
+  }
+
+  public async sendPartialOrderFulfillment(email: string, firstName: string,
+    fulfilledItems: OrderLineItem[], unfulfilledItems: OrderLineItem[], pickupEvent: OrderPickupEventInfo) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Merch Store - Order Fulfilled',
+        html: ejs.render(EmailService.orderPickupUpdatedTemplate, {
+          firstName,
+          unfulfilledItems,
+          fulfilledItems,
+          pickupEvent
+        }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send partial order fulfillment email to ${email}`, { error });
+    }
+  }
+
   private static readTemplate(filename: string): string {
     return fs.readFileSync(path.join(__dirname, `../templates/${filename}`), 'utf-8');
   }

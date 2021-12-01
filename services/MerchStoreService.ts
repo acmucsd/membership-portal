@@ -673,6 +673,9 @@ export default class MerchStoreService {
           type: ActivityType.ORDER_FULFILLED,
           description: `Order ${order.uuid} completely fulfilled for user ${customer.uuid} by ${user.uuid}`,
         });
+        // compute totalCost since totalCost != order.totalCost if the order was previously partially fulfilled
+        const totalCost = updatedItems.reduce((cost, item) => item.salePriceAtPurchase + cost, 0);
+        await this.emailService.sendOrderFulfillment(customer.email, customer.firstName, totalCost, updatedItems, order.pickupEvent);
       } else {
         await activityRepository.logActivity({
           user: customer,
