@@ -58,8 +58,10 @@ export class ControllerFactory {
     return new LeaderboardController(userAccountService);
   }
 
-  public static merchStore(conn: Connection, emailService = new EmailService()): MerchStoreController {
+  public static merchStore(conn: Connection,
+    emailService = new EmailService(),
+    storageService = new StorageService()): MerchStoreController {
     const merchStoreService = new MerchStoreService(conn.manager, emailService);
-    return new MerchStoreController(merchStoreService);
+    return new MerchStoreController(merchStoreService, storageService);
   }
 }
