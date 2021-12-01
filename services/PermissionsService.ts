@@ -53,26 +53,26 @@ export default class PermissionsService {
   }
 
   public static canSeeAllMerchOrders(user: UserModel) {
-    return PermissionsService.hasStoreDistributorPermissions(user);
+    return PermissionsService.canDistributeMerch(user);
   }
 
   public static canManageMerchOrders(user: UserModel) {
-    return PermissionsService.hasStoreDistributorPermissions(user);
+    return PermissionsService.canDistributeMerch(user);
   }
 
   public static canSeePickupEventOrders(user: UserModel) {
-    return PermissionsService.hasStoreDistributorPermissions(user);
+    return PermissionsService.canDistributeMerch(user);
   }
 
   public static canManagePickupEvents(user: UserModel) {
-    return PermissionsService.hasStoreDistributorPermissions(user);
+    return PermissionsService.canDistributeMerch(user);
   }
 
   public static canCancelAllPendingOrders(user: UserModel) {
     return user.isAdmin() || user.isMerchStoreManager();
   }
 
-  private static hasStoreDistributorPermissions(user: UserModel) {
+  private static canDistributeMerch(user: UserModel) {
     return user.isAdmin() || user.isMerchStoreManager() || user.isMerchStoreDistributor();
   }
 }
