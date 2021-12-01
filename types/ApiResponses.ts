@@ -157,12 +157,32 @@ export interface PublicMerchItem {
   options: PublicMerchItemOption[];
 }
 
+export interface PublicMerchItemWithPurchaseLimits extends PublicMerchItem {
+  monthlyRemaining: number;
+  lifetimeRemaining: number;
+}
+
+export interface PublicCartMerchItem {
+  uuid: Uuid;
+  itemName: string;
+  picture: string;
+  description: string;
+}
+
 export interface PublicMerchItemOption {
   uuid: Uuid;
   price: number;
-  quantity?: number;
+  quantity: number;
   discountPercentage: number;
   metadata: MerchItemOptionMetadata;
+}
+
+export interface PublicCartMerchItemOption {
+  uuid: Uuid;
+  price: number;
+  discountPercentage: number;
+  metadata: MerchItemOptionMetadata;
+  item: PublicCartMerchItem;
 }
 
 export interface PublicOrderItem {
@@ -204,7 +224,7 @@ export interface EditMerchCollectionResponse extends ApiResponse {
 export interface DeleteMerchCollectionResponse extends ApiResponse {}
 
 export interface GetOneMerchItemResponse extends ApiResponse {
-  item: PublicMerchItem;
+  item: PublicMerchItemWithPurchaseLimits;
 }
 
 export interface CreateMerchItemResponse extends ApiResponse {
@@ -243,6 +263,9 @@ export interface VerifyMerchOrderResponse extends ApiResponse {}
 
 export interface EditMerchOrderResponse extends ApiResponse {}
 
+export interface GetCartResponse extends ApiResponse {
+  cart: PublicCartMerchItemOption[];
+}
 export interface FulfillMerchOrderResponse extends ApiResponse {}
 
 // USER

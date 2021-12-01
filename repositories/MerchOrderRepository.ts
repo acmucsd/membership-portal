@@ -5,6 +5,7 @@ import { UserModel } from '../models/UserModel';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { BaseRepository } from './BaseRepository';
+import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 
 @EntityRepository(OrderModel)
 export class MerchOrderRepository extends BaseRepository<OrderModel> {
@@ -63,6 +64,17 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
   public async hasOptionBeenOrdered(option: Uuid): Promise<boolean> {
     const count = await this.repository.count({ where: { option } });
     return count > 0;
+  }
+
+  public async getPastItemOrdersByUser(user: UserModel, item: MerchandiseItemModel): Promise<OrderItemModel[]> {
+    return this.repository.createQueryBuilder('oi')
+      .innerJoinAndSelect('oi.option', 'option')
+      .innerJoinAndSelect('oi.order', 'order')
+      .innerJoinAndSelect('order.user', 'user')
+      .innerJoinAndSelect('option.item', 'item')
+      .where('item.uuid = :itemUuid', { itemUuid: item.uuid })
+      .andWhere('user.uuid = :userUuid', { userUuid: user.uuid })
+      .getMany();
   }
 }
 

@@ -68,6 +68,59 @@ describe('archived merch collections', () => {
   });
 });
 
+describe('merch items with options', () => {
+  test('monthly and lifetime remaining values are properly set when ordering different item options', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const optionMetadataType = faker.datatype.hexaDecimal(10);
+    const option1 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option2 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option3 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const unorderedOption = MerchFactory.fakeOption();
+    const item = MerchFactory.fakeItem({
+      options: [option1, option2, option3],
+      monthlyLimit: 5,
+      lifetimeLimit: 10,
+    });
+    const unorderedItem = MerchFactory.fakeItem({
+      options: [unorderedOption],
+      hasVariantsEnabled: false,
+      monthlyLimit: 5,
+      lifetimeLimit: 10,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(item)
+      .createMerchItem(unorderedItem)
+      .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, [
+        { option: option1, quantity: 1 },
+        { option: option2, quantity: 1 },
+        { option: option3, quantity: 1 },
+      ], pickupEvent)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const orderedItemParams = { uuid: item.uuid };
+    const getOrderedItemResponse = await merchStoreController.getOneMerchItem(orderedItemParams, member);
+    const updatedItem = getOrderedItemResponse.item;
+
+    // make sure the ordered item's remaining counts got updated
+    expect(updatedItem.monthlyRemaining).toEqual(2);
+    expect(updatedItem.lifetimeRemaining).toEqual(7);
+
+    const unorderedItemParams = { uuid: unorderedItem.uuid };
+    const getUnorderedItemResponse = await merchStoreController.getOneMerchItem(unorderedItemParams, member);
+    const unchangedItem = getUnorderedItemResponse.item;
+
+    // make sure the un-ordered item's remaining counts didn't change
+    expect(unchangedItem.monthlyRemaining).toEqual(5);
+    expect(unchangedItem.lifetimeRemaining).toEqual(10);
+  });
+});
+
 describe('merch items with no options', () => {
   test('can delete all item options and add back options if the item is hidden', async () => {
     const conn = await DatabaseConnection.get();
@@ -262,7 +315,7 @@ describe('merch item edits', () => {
     await merchStoreController.editMerchItem(params, editMerchItemRequest, admin);
     const merchItemResponse = await merchStoreController.getOneMerchItem(params, admin);
 
-    const publicUpdatedOptions = updatedOptions.map((o) => o.getPublicMerchItemOption(true));
+    const publicUpdatedOptions = updatedOptions.map((o) => o.getPublicMerchItemOption());
     expect(merchItemResponse.item.options)
       .toEqual(expect.arrayContaining(publicUpdatedOptions));
   });
@@ -326,10 +379,10 @@ describe('merch item options', () => {
     const merchItemResponse = await merchStoreController.getOneMerchItem(params, admin);
 
     // verify that option was added
-    const existingPublicOptions = item.options.map((o) => o.getPublicMerchItemOption(true));
+    const existingPublicOptions = item.options.map((o) => o.getPublicMerchItemOption());
     const allOptions = [
       ...existingPublicOptions,
-      optionWithSameType.getPublicMerchItemOption(true),
+      optionWithSameType.getPublicMerchItemOption(),
     ];
     expect(merchItemResponse.item.options).toEqual(expect.arrayContaining(allOptions));
   });
@@ -380,7 +433,7 @@ describe('merch item options', () => {
     const merchItemResponse = await merchStoreController.getOneMerchItem(itemParams, admin);
     expect(merchItemResponse.item.options).toHaveLength(1);
     expect(merchItemResponse.item.options[0])
-      .toStrictEqual(optionWithDifferentType.getPublicMerchItemOption(true));
+      .toStrictEqual(optionWithDifferentType.getPublicMerchItemOption());
   });
 
   test('cannot add option to an item with variants disabled and an option', async () => {
@@ -403,6 +456,67 @@ describe('merch item options', () => {
     const getMerchItemResponse = await merchStoreController.getOneMerchItem(params, admin);
     expect(getMerchItemResponse.item.options).toHaveLength(1);
     expect(getMerchItemResponse.item.options[0])
-      .toStrictEqual(item.options[0].getPublicMerchItemOption(true));
+      .toStrictEqual(item.options[0].getPublicMerchItemOption());
+  });
+});
+
+describe('checkout cart', () => {
+  test('passing in valid item option uuids returns the full options and their items', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const option1 = MerchFactory.fakeOption();
+    const option2 = MerchFactory.fakeOption();
+    const option3 = MerchFactory.fakeOption();
+    const options = [option1, option2, option3];
+
+    const itemForOptions1And2 = MerchFactory.fakeItem({ options: [option1, option2] });
+    const itemForOption3 = MerchFactory.fakeItem({ options: [option3] });
+
+    // need to explicitly set option.item after calling fakeItem(),
+    // so that the item.options elements don't have circular references to
+    // the item, but the singular option objects here do
+    // (so that option.getPublicCartMerchItemOption() doesn't throw for undefined item)
+    option1.item = itemForOptions1And2;
+    option2.item = itemForOptions1And2;
+    option3.item = itemForOption3;
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(itemForOptions1And2)
+      .createMerchItem(itemForOption3)
+      .write();
+
+    const params = { items: options.map((o) => o.uuid) };
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const getCartResponse = await merchStoreController.getCartItems(params, member);
+
+    const { cart } = getCartResponse;
+
+    expect(cart).toHaveLength(3);
+    expect(cart[0]).toStrictEqual(option1.getPublicCartMerchItemOption());
+    expect(cart[1]).toStrictEqual(option2.getPublicCartMerchItemOption());
+    expect(cart[2]).toStrictEqual(option3.getPublicCartMerchItemOption());
+  });
+
+  test('passing in item option uuids that do not exist throws an error', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const option1 = MerchFactory.fakeOption();
+    const option2 = MerchFactory.fakeOption();
+    const options = [option1, option2];
+
+    const item = MerchFactory.fakeItem({ options: [option1, option2] });
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(item)
+      .write();
+
+    const validOptionUuids = options.map((o) => o.uuid);
+    const invalidOptionUuid = faker.datatype.uuid();
+    const params = { items: [...validOptionUuids, invalidOptionUuid] };
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    expect(merchStoreController.getCartItems(params, member))
+      .rejects.toThrow(`The following items were not found: ${[invalidOptionUuid]}`);
   });
 });

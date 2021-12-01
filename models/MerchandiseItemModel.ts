@@ -1,7 +1,7 @@
 import {
   Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn, OneToMany,
 } from 'typeorm';
-import { Uuid, PublicMerchItem } from '../types';
+import { Uuid, PublicMerchItem, PublicCartMerchItem } from '../types';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
 
@@ -41,18 +41,27 @@ export class MerchandiseItemModel extends BaseEntity {
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })
   options: MerchandiseItemOptionModel[];
 
-  public getPublicMerchItem(canSeeOptionQuantities = false): PublicMerchItem {
+  public getPublicMerchItem(): PublicMerchItem {
     const baseMerchItem: PublicMerchItem = {
       uuid: this.uuid,
       itemName: this.itemName,
       picture: this.picture,
       description: this.description,
-      options: this.options.map((o) => o.getPublicMerchItemOption(canSeeOptionQuantities)),
+      options: this.options.map((o) => o.getPublicMerchItemOption()),
       monthlyLimit: this.monthlyLimit,
       lifetimeLimit: this.lifetimeLimit,
       hasVariantsEnabled: this.hasVariantsEnabled,
     };
     if (this.collection) baseMerchItem.collection = this.collection.getPublicMerchCollection();
     return baseMerchItem;
+  }
+
+  public getPublicCartMerchItem(): PublicCartMerchItem {
+    return {
+      uuid: this.uuid,
+      itemName: this.itemName,
+      picture: this.picture,
+      description: this.description,
+    };
   }
 }

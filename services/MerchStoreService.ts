@@ -9,7 +9,6 @@ import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel
 import {
   Uuid,
   PublicMerchCollection,
-  PublicMerchItem,
   PublicOrder,
   ActivityType,
   OrderItemFulfillmentUpdate,
@@ -23,6 +22,7 @@ import {
   OrderStatus,
   OrderPickupEvent,
   OrderPickupEventEdit,
+  PublicMerchItemWithPurchaseLimits,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
@@ -108,12 +108,27 @@ export default class MerchStoreService {
     });
   }
 
-  public async findItemByUuid(uuid: Uuid, canSeeFullItem = false): Promise<PublicMerchItem> {
-    const item = await this.transactions.readOnly(async (txn) => Repositories
-      .merchStoreItem(txn)
-      .findByUuid(uuid));
-    if (!item) throw new NotFoundError('Merch item not found');
-    return item.getPublicMerchItem(canSeeFullItem);
+  public async findItemByUuid(uuid: Uuid, user: UserModel): Promise<PublicMerchItemWithPurchaseLimits> {
+    return this.transactions.readOnly(async (txn) => {
+      const item = await Repositories.merchStoreItem(txn).findByUuid(uuid);
+
+      // calculate monthly and lifetime remaining purchases for this item
+      const merchOrderItemRepository = Repositories.merchOrderItem(txn);
+      const lifetimePurchaseHistory = await merchOrderItemRepository.getPastItemOrdersByUser(user, item);
+      const oneMonthAgo = new Date(moment().subtract(1, 'month').unix());
+      const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((oi) => oi.order.orderedAt > oneMonthAgo);
+      const lifetimeItemOrderCounts = lifetimePurchaseHistory.length;
+      const pastMonthItemOrderCounts = pastMonthPurchaseHistory.length;
+
+      const monthlyRemaining = item.monthlyLimit - pastMonthItemOrderCounts;
+      const lifetimeRemaining = item.lifetimeLimit - lifetimeItemOrderCounts;
+
+      return {
+        ...item.getPublicMerchItem(),
+        monthlyRemaining,
+        lifetimeRemaining,
+      };
+    });
   }
 
   public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
@@ -792,6 +807,19 @@ export default class MerchStoreService {
         return OrderModel.merge(order, { pickupEvent: null });
       }));
       await orderPickupEventRepository.deletePickupEvent(pickupEvent);
+    });
+  }
+
+  public async getCartItems(options: string[]): Promise<MerchandiseItemOptionModel[]> {
+    return this.transactions.readOnly(async (txn) => {
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const itemOptionsByUuid = await merchItemOptionRepository.batchFindByUuid(options);
+      const itemOptionUuidsFound = Array.from(itemOptionsByUuid.keys());
+      const missingItems = difference(options, itemOptionUuidsFound);
+      if (missingItems.length > 0) {
+        throw new NotFoundError(`The following items were not found: ${missingItems}`);
+      }
+      return options.map((option) => itemOptionsByUuid.get(option));
     });
   }
 }
