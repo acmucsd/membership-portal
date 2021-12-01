@@ -119,45 +119,6 @@ describe('merch items with options', () => {
     expect(unchangedItem.monthlyRemaining).toEqual(5);
     expect(unchangedItem.lifetimeRemaining).toEqual(10);
   });
-
-  test('monthly and lifetime remaining values for one item don\'t change if another item is ordered', async () => {
-    const conn = await DatabaseConnection.get();
-    const member = UserFactory.fake();
-    const orderedOption = MerchFactory.fakeOption();
-    const orderedItem = MerchFactory.fakeItem({
-      options: [orderedOption],
-      hasVariantsEnabled: false,
-      monthlyLimit: 5,
-      lifetimeLimit: 5,
-    });
-    const unorderedOption = MerchFactory.fakeOption();
-    const unorderedItem = MerchFactory.fakeItem({
-      options: [unorderedOption],
-      hasVariantsEnabled: false,
-      monthlyLimit: 5,
-      lifetimeLimit: 5,
-    });
-
-    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
-
-    await new PortalState()
-      .createUsers(member)
-      .createMerchItem(orderedItem)
-      .createMerchItem(unorderedItem)
-      .createOrderPickupEvents(pickupEvent)
-      .orderMerch(member, [
-        { option: orderedOption, quantity: 1 },
-      ], pickupEvent)
-      .write();
-
-    const merchStoreController = ControllerFactory.merchStore(conn);
-    const params = { uuid: orderedItem.uuid };
-    const orderedItemResponse = await merchStoreController.getOneMerchItem(params, member);
-    const orderedItemPayload = orderedItemResponse.item;
-
-    expect(orderedItemPayload.monthlyRemaining).toEqual(4);
-    expect(orderedItemPayload.lifetimeRemaining).toEqual(4);
-  });
 });
 
 describe('merch items with no options', () => {
