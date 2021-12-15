@@ -3,6 +3,9 @@ export enum UserAccessType {
   STANDARD = 'STANDARD',
   STAFF = 'STAFF',
   ADMIN = 'ADMIN',
+  MARKETING = 'MARKETING',
+  MERCH_STORE_MANAGER = 'MERCH_STORE_MANAGER',
+  MERCH_STORE_DISTRIBUTOR = 'MERCH_STORE_DISTRIBUTOR',
 }
 
 export enum UserState {
@@ -16,6 +19,7 @@ export enum MediaType {
   EVENT_COVER = 'EVENT_COVER',
   PROFILE_PICTURE = 'PROFILE_PICTURE',
   BANNER = 'BANNER',
+  MERCH_PHOTO = 'MERCH_PHOTO',
 }
 
 export enum ActivityType {
