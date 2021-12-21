@@ -270,7 +270,7 @@ async function seed(): Promise<void> {
   const MERCH_ITEM_1 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Unisex Hack School Anorak',
-    picture: '',
+    picture: 'https://i.imgur.com/jkTcUJO.jpg',
     description: 'San Diego has an average annual precipitation less than 12 inches,'
     + 'but that doesn\'t mean you don\'t need one of these.',
     monthlyLimit: 1,
@@ -343,7 +343,7 @@ async function seed(): Promise<void> {
   const MERCH_ITEM_2 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Hack School Sticker Pack (4) - Cyan',
-    picture: '',
+    picture: 'https://i.imgur.com/pSZ921P.png',
     description: 'Make space on your laptop cover for these Cyan stickers. Pack of 4, size in inches.',
     monthlyLimit: 5,
     lifetimeLimit: 25,
@@ -397,7 +397,7 @@ async function seed(): Promise<void> {
   const MERCH_ITEM_3 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Camp Snoopy Snapback',
-    picture: '',
+    picture: 'https://i.imgur.com/QNdhfuO.png',
     description: 'Guaranteed 2x return on Grailed.',
     monthlyLimit: 2,
     lifetimeLimit: 5,
@@ -414,7 +414,7 @@ async function seed(): Promise<void> {
   const MERCH_ITEM_4 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Salt & Pepper (Canyon) Shakers',
-    picture: '',
+    picture: 'https://i.pinimg.com/originals/df/c5/72/dfc5729a0dea666c31c5f4daea851619.jpg',
     description: 'Salt and pepper not included.',
     monthlyLimit: 3,
     lifetimeLimit: 10,
@@ -431,7 +431,7 @@ async function seed(): Promise<void> {
   const MERCH_ITEM_5 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Unisex Raccoon Print Shell Jacket',
-    picture: '',
+    picture: 'https://i.etsystatic.com/8812670/r/il/655afa/3440382093/il_340x270.3440382093_cbui.jpg',
     description: 'Self-explanatory.',
     monthlyLimit: 1,
     lifetimeLimit: 2,
