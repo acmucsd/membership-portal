@@ -501,7 +501,7 @@ export default class MerchStoreService {
    * @param uuid order uuid
    * @returns updated order
    */
-  public async markOrderAsMissed(uuid: Uuid, proxy: UserModel): Promise<OrderModel> {
+  public async markOrderAsMissed(uuid: Uuid, distributor: UserModel): Promise<OrderModel> {
     return this.transactions.readWrite(async (txn) => {
       const orderRespository = Repositories.merchOrder(txn);
       const order = await orderRespository.findByUuid(uuid);
@@ -515,17 +515,18 @@ export default class MerchStoreService {
       if (new Date() < moment(order.pickupEvent.start).toDate()) {
         throw new NotFoundError('Cannot mark an order as missed if its pickup event hasn\'t started yet');
       }
-      const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_MISSED });
       const orderUpdateInfo = await MerchStoreService
-        .buildOrderUpdateInfo(upsertedOrder, upsertedOrder.pickupEvent, txn);
+        .buildOrderUpdateInfo(order, order.pickupEvent, txn);
       const { user } = order;
+
       await this.emailService.sendOrderPickupMissed(user.email, user.firstName, orderUpdateInfo);
 
+      const upsertedOrder = await orderRespository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_MISSED });
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
         user,
         type: ActivityType.ORDER_MISSED,
-        description: `Order ${order.uuid} marked as missed for ${user.uuid} by ${proxy.uuid}`,
+        description: `Order ${order.uuid} marked as missed for ${user.uuid} by ${distributor.uuid}`,
       });
       return upsertedOrder;
     });
@@ -690,7 +691,7 @@ export default class MerchStoreService {
         });
         // compute totalCost since totalCost != order.totalCost if the order was previously partially fulfilled
         const totalCost = updatedItems.reduce((cost, item) => item.salePriceAtPurchase + cost, 0);
-        await this.emailService.sendOrderFulfillment(customer.email, customer.firstName, totalCost, updatedItems, order.pickupEvent);
+        await this.emailService.sendOrderFulfillment(customer.email, customer.firstName, totalCost, [], null);
       } else {
         await activityRepository.logActivity({
           user: customer,
