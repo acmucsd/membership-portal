@@ -538,7 +538,7 @@ describe('merch orders', () => {
 });
 
 describe('merch order pickup events', () => {
-  test('past and future pickup events can be retrieved', async () => {
+  test('past, future, and individual pickup events can be retrieved', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const pastPickupEvent = MerchFactory.fakeOrderPickupEvent({
@@ -573,6 +573,10 @@ describe('merch order pickup events', () => {
       .toEqual(expect.arrayContaining([
         pastPickupEvent.getPublicOrderPickupEvent(true),
       ]));
+
+    const getPickupEventParams = { uuid: ongoingPickupEvent.uuid };
+    const getOnePickupEventResponse = await merchStoreController.getOnePickupEvent(getPickupEventParams, admin);
+    expect(getOnePickupEventResponse.pickupEvent).toStrictEqual(ongoingPickupEvent.getPublicOrderPickupEvent(true));
   });
 
   test('pickup events can be created on valid input', async () => {

@@ -757,6 +757,12 @@ export default class MerchStoreService {
       .getFuturePickupEvents());
   }
 
+  public async getPickupEvent(uuid: Uuid): Promise<OrderPickupEventModel> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .merchOrderPickupEvent(txn)
+      .findByUuid(uuid));
+  }
+
   public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<OrderPickupEventModel> {
     if (pickupEvent.start >= pickupEvent.end) {
       throw new UserError('Order pickup event start time must come before the end time');

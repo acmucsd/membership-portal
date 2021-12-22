@@ -352,6 +352,10 @@ export interface GetOrderPickupEventsResponse extends ApiResponse {
   pickupEvents: PublicOrderPickupEvent[];
 }
 
+export interface GetOrderPickupEventResponse extends ApiResponse {
+  pickupEvent: PublicOrderPickupEvent;
+}
+
 export interface CreateOrderPickupEventResponse extends ApiResponse {
   pickupEvent: PublicOrderPickupEvent;
 }

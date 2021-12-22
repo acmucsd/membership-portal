@@ -42,6 +42,7 @@ import {
   MediaType,
   File,
   UpdateMerchPhotoResponse,
+  GetOrderPickupEventResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -286,6 +287,14 @@ export class MerchStoreController {
     const publicPickupEvents = pickupEvents.map((pickupEvent) => pickupEvent
       .getPublicOrderPickupEvent(canSeePickupEventOrders));
     return { error: null, pickupEvents: publicPickupEvents };
+  }
+
+  @Get('/order/pickup/:uuid')
+  async getOnePickupEvent(@Params() params: UuidParam,
+    @AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventResponse> {
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
+    const pickupEvent = await this.merchStoreService.getPickupEvent(params.uuid);
+    return { error: null, pickupEvent: pickupEvent.getPublicOrderPickupEvent(true) };
   }
 
   @Post('/order/pickup')
