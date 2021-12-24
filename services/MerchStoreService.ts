@@ -391,9 +391,7 @@ export default class MerchStoreService {
   }
 
   public async validateOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
-    return this.transactions.readWrite(async (txn) => {
-      this.validateOrderInTransaction(originalOrder, user, txn);
-    });
+    return this.transactions.readWrite(async (txn) => this.validateOrderInTransaction(originalOrder, user, txn));
   }
 
   /**
