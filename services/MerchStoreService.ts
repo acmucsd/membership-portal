@@ -29,7 +29,7 @@ import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
-import EmailService from './EmailService';
+import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
@@ -379,11 +379,7 @@ export default class MerchStoreService {
         };
       }),
       totalCost: order.totalCost,
-      pickupEvent: {
-        ...order.pickupEvent,
-        start: MerchStoreService.humanReadableDateString(order.pickupEvent.start),
-        end: MerchStoreService.humanReadableDateString(order.pickupEvent.end),
-      },
+      pickupEvent: MerchStoreService.toPickupEventUpdateInfo(order.pickupEvent),
     };
     this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
 
@@ -618,7 +614,7 @@ export default class MerchStoreService {
    * @returns order update info for email
    */
   private static async buildOrderUpdateInfo(order: OrderModel, pickupEvent: OrderPickupEventModel,
-    txn: EntityManager) {
+    txn: EntityManager): Promise<OrderInfo> {
     // maps an item option to its price at purchase and quantity ordered by the user
     const optionPricesAndQuantities = MerchStoreService.getPriceAndQuantityByOption(order);
     const itemOptionsOrdered = Array.from(optionPricesAndQuantities.keys());
@@ -638,11 +634,15 @@ export default class MerchStoreService {
         };
       }),
       totalCost: order.totalCost,
-      pickupEvent: {
-        ...pickupEvent,
-        start: MerchStoreService.humanReadableDateString(pickupEvent.start),
-        end: MerchStoreService.humanReadableDateString(pickupEvent.end),
-      },
+      pickupEvent: MerchStoreService.toPickupEventUpdateInfo(pickupEvent),
+    };
+  }
+
+  private static toPickupEventUpdateInfo(pickupEvent: OrderPickupEventModel): OrderPickupEventInfo {
+    return {
+      ...pickupEvent,
+      start: MerchStoreService.humanReadableDateString(pickupEvent.start),
+      end: MerchStoreService.humanReadableDateString(pickupEvent.end),
     };
   }
 
@@ -655,6 +655,7 @@ export default class MerchStoreService {
   public async fulfillOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[], orderUuid: Uuid,
     user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
+      // make sure no items marked as fulfilled have already been fulfilled before
       const orderRepository = Repositories.merchOrder(txn);
       const order = await orderRepository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
@@ -679,20 +680,53 @@ export default class MerchStoreService {
         const { notes } = itemUpdatesByUuid.get(oi.uuid);
         return orderItemRepository.fulfillOrderItem(oi, notes);
       }));
+
+      // send order fulfillment emails and log activity
       const activityRepository = Repositories.activity(txn);
       const customer = order.user;
+      const { pickupEvent } = order;
       const isEntireOrderFulfilled = updatedItems.every((item) => item.fulfilled);
       if (isEntireOrderFulfilled) {
+        const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, pickupEvent, txn);
+        await this.emailService.sendOrderFulfillment(customer.email, customer.firstName, orderUpdateInfo);
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
         await activityRepository.logActivity({
           user: customer,
           type: ActivityType.ORDER_FULFILLED,
           description: `Order ${order.uuid} completely fulfilled for user ${customer.uuid} by ${user.uuid}`,
         });
-        // compute totalCost since totalCost != order.totalCost if the order was previously partially fulfilled
-        const totalCost = updatedItems.reduce((cost, item) => item.salePriceAtPurchase + cost, 0);
-        await this.emailService.sendOrderFulfillment(customer.email, customer.firstName, totalCost, [], null);
       } else {
+        // need to send email containing details of the items that were fulfilled
+        // and the ones that still need to be fulfilled (to be picked up at the next event),
+        // so convert order into fulfilled and unfulfilled item sets
+        const fulfilledItems = order.items.filter((item) => item.fulfilled);
+        const fulfilledItemsCost = fulfilledItems.reduce((cost, curr) => cost + curr.salePriceAtPurchase, 0);
+        const orderWithFulfilledItems = OrderModel.create({
+          ...order,
+          items: fulfilledItems,
+          totalCost: fulfilledItemsCost,
+        });
+        const unfulfilledItems = order.items.filter((item) => !item.fulfilled);
+        const unfulfilledItemsCost = unfulfilledItems.reduce((cost, curr) => cost + curr.salePriceAtPurchase, 0);
+        const orderWithUnfulfilledItems = OrderModel.create({
+          ...order,
+          items: unfulfilledItems,
+          totalCost: unfulfilledItemsCost,
+        });
+        const { items: fulfilledItemInfo } = await MerchStoreService
+          .buildOrderUpdateInfo(orderWithFulfilledItems, pickupEvent, txn);
+        const { items: unfulfilledItemInfo } = await MerchStoreService
+          .buildOrderUpdateInfo(orderWithUnfulfilledItems, pickupEvent, txn);
+        const pickupEventInfo = MerchStoreService.toPickupEventUpdateInfo(pickupEvent);
+
+        await this.emailService.sendPartialOrderFulfillment(
+          customer.email,
+          customer.firstName,
+          fulfilledItemInfo,
+          unfulfilledItemInfo,
+          pickupEventInfo,
+        );
+        await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PARTIALLY_FULFILLED });
         await activityRepository.logActivity({
           user: customer,
           type: ActivityType.ORDER_PARTIALLY_FULFILLED,
@@ -729,8 +763,8 @@ export default class MerchStoreService {
     return requestedQuantitiesByMerchItem;
   }
 
-  private static totalCost(order:MerchItemOptionAndQuantity[],
-    itemOptions:Map<string, MerchandiseItemOptionModel>):number {
+  private static totalCost(order: MerchItemOptionAndQuantity[],
+    itemOptions: Map<string, MerchandiseItemOptionModel>): number {
     return order.reduce((sum, o) => {
       const option = itemOptions.get(o.option);
       const quantityRequested = o.quantity;
@@ -812,6 +846,32 @@ export default class MerchStoreService {
       }));
       await orderPickupEventRepository.deletePickupEvent(pickupEvent);
     });
+  }
+
+  /**
+   * Completes an order pickup event, marking any orders that haven't been fulfilled
+   * or partially fulfilled as missed.
+   * @returns all orders that have been marked as missed
+   */
+  public async completeOrderPickupEvent(uuid: Uuid): Promise<OrderModel[]> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
+      const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
+      const ordersToMarkAsMissed = pickupEvent.orders.filter((order) => this.isUnfulfilledOrder(order));
+
+      const orderRepository = Repositories.merchOrder(txn);
+      return Promise.all(ordersToMarkAsMissed.map(async (order) => {
+        await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_MISSED });
+        const { user: customer } = order;
+        const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, pickupEvent, txn);
+        await this.emailService.sendOrderPickupMissed(customer.email, customer.firstName, orderUpdateInfo);
+        return order;
+      }));
+    });
+  }
+
+  private isUnfulfilledOrder(order: OrderModel): boolean {
+    return order.status !== OrderStatus.FULFILLED && order.status !== OrderStatus.PARTIALLY_FULFILLED;
   }
 
   public async getCartItems(options: string[]): Promise<MerchandiseItemOptionModel[]> {

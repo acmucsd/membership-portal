@@ -24,6 +24,10 @@ export default class EmailService {
 
   private static readonly orderPickupUpdatedTemplate = EmailService.readTemplate('orderPickupUpdated.ejs');
 
+  private static readonly orderFulfilledTemplate = EmailService.readTemplate('orderFulfilled.ejs');
+
+  private static readonly orderPartiallyFulfilledTemplate = EmailService.readTemplate('orderPartiallyFulfilled.ejs');
+
   constructor() {
     this.mailer.setApiKey(Config.email.apiKey);
   }
@@ -136,19 +140,13 @@ export default class EmailService {
     }
   }
 
-  public async sendOrderFulfillment(email: string, firstName: string,
-    totalCost: number, fulfilledItems: OrderLineItem[], pickupEvent: OrderPickupEventInfo) {
+  public async sendOrderFulfillment(email: string, firstName: string, order: OrderInfo) {
     try {
       const data = {
         to: email,
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store - Order Fulfilled',
-        html: ejs.render(EmailService.orderPickupUpdatedTemplate, {
-          firstName,
-          totalCost,
-          fulfilledItems,
-          pickupEvent
-        }),
+        html: ejs.render(EmailService.orderFulfilledTemplate, { firstName, order }),
       };
       await this.sendEmail(data);
     } catch (error) {
@@ -163,11 +161,11 @@ export default class EmailService {
         to: email,
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store - Order Fulfilled',
-        html: ejs.render(EmailService.orderPickupUpdatedTemplate, {
+        html: ejs.render(EmailService.orderPartiallyFulfilledTemplate, {
           firstName,
           unfulfilledItems,
           fulfilledItems,
-          pickupEvent
+          pickupEvent,
         }),
       };
       await this.sendEmail(data);

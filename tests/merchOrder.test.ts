@@ -166,6 +166,8 @@ describe('merch orders', () => {
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
       .thenResolve();
+    when(emailService.sendPartialOrderFulfillment(member.email, member.firstName, anything(), anything(), anything()))
+      .thenResolve();
     when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
       .thenResolve();
 
@@ -273,6 +275,8 @@ describe('merch orders', () => {
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
       .thenResolve();
+    when(emailService.sendPartialOrderFulfillment(member.email, member.firstName, anything(), anything(), anything()))
+      .thenResolve();
 
     // place order
     const order = [
@@ -307,10 +311,12 @@ describe('merch orders', () => {
     const getOrderResponse = await merchController.getOneMerchOrder(orderParams, member);
     const partiallyFulfilledOrder = getOrderResponse.order;
 
-    // order status should not be FULFILLED because entire order isn't fulfilled
-    expect(partiallyFulfilledOrder.status).toEqual(OrderStatus.PLACED);
+    expect(partiallyFulfilledOrder.status).toEqual(OrderStatus.PARTIALLY_FULFILLED);
     expect(partiallyFulfilledOrder.items.some((item) => item.fulfilled)).toBeTruthy();
     expect(partiallyFulfilledOrder.items.every((item) => item.fulfilled)).toBeFalsy();
+
+    verify(emailService.sendPartialOrderFulfillment(member.email, member.firstName, anything(), anything(), anything()))
+      .called();
 
     // check fulfilled activity
     const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
@@ -343,6 +349,8 @@ describe('merch orders', () => {
 
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+    when(emailService.sendOrderFulfillment(member.email, member.firstName, anything()))
       .thenResolve();
 
     // place order
@@ -384,6 +392,9 @@ describe('merch orders', () => {
     expect(fulfilledOrder.status).toEqual(OrderStatus.FULFILLED);
     expect(fulfilledOrder.items[0].fulfilled).toBeTruthy();
     expect(fulfilledOrder.items[1].fulfilled).toBeTruthy();
+
+    verify(emailService.sendOrderFulfillment(member.email, member.firstName, anything()))
+      .called();
 
     // check fulfilled activity
     const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
@@ -501,9 +512,13 @@ describe('merch orders', () => {
       .orderMerch(member3, order, pickupEvent)
       .write();
 
-    // fulfill one order, leaving the other two as pending
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderFulfillment(member1.email, member1.firstName, anything()))
+      .thenResolve();
+
+    // fulfill member1's order, leaving the other two orders as PLACED
     const order1 = await conn.manager.findOne(OrderModel, { user: member1 }, { relations: ['items'] });
-    const merchController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn, emailService);
     const itemsToFulfill = order1.items.map((item) => ({ uuid: item.uuid }));
     const fulfillmentParams = { uuid: order1.uuid };
     const fulfillmentRequest = { items: itemsToFulfill };
@@ -725,9 +740,10 @@ describe('merch order pickup events', () => {
     expect(order2Response.order.status).toEqual(OrderStatus.PICKUP_CANCELLED);
   });
 
-  test('members get pickup rescheduling emails for their orders if they miss the event', async () => {
+  test('completing a pickup event marks all unfulfilled orders as missed and prompts a reschedule', async () => {
     const conn = await DatabaseConnection.get();
-    const member = UserFactory.fake({ credits: 10000 });
+    const member1 = UserFactory.fake({ credits: 10000 });
+    const member2 = UserFactory.fake({ credits: 10000 });
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const affordableOption = MerchFactory.fakeOption({
       quantity: 2,
@@ -737,15 +753,17 @@ describe('merch order pickup events', () => {
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
     await new PortalState()
-      .createUsers(member, admin)
+      .createUsers(member1, member2, admin)
       .createMerchItemOptions(affordableOption)
       .createOrderPickupEvents(pickupEvent)
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
       .thenResolve();
-    when(emailService.sendOrderPickupMissed(member.email, member.firstName, anything()))
+    when(emailService.sendOrderFulfillment(member1.email, member1.firstName, anything()))
+      .thenResolve();
+    when(emailService.sendOrderPickupMissed(member2.email, member2.firstName, anything()))
       .thenResolve();
 
     // place order
@@ -760,7 +778,15 @@ describe('merch order pickup events', () => {
       pickupEvent: pickupEvent.uuid,
     };
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
-    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+    const placedOrder1Response = await merchController.placeMerchOrder(placeMerchOrderRequest, member1);
+    const placedOrder2Response = await merchController.placeMerchOrder(placeMerchOrderRequest, member2);
+
+    // fulfill one order
+    const items = placedOrder1Response.order.items.map((item) => item.uuid);
+    const { uuid: fulfilledOrderUuid } = placedOrder1Response.order;
+    const fulfillOrderParams = { uuid: fulfilledOrderUuid };
+    const fulfillOrderBody = { items: items.map((item) => ({ uuid: item })) };
+    await merchController.fulfillMerchOrderItems(fulfillOrderParams, fulfillOrderBody, admin);
 
     // update pickup event to have passed
     const pickupEventUuid = { uuid: pickupEvent.uuid };
@@ -770,13 +796,20 @@ describe('merch order pickup events', () => {
     };
     await conn.manager.update(OrderPickupEventModel, pickupEventUuid, pickupEventUpdates);
 
-    // mark order as missed and check if reschedule email is sent
-    const { uuid } = placedOrderResponse.order;
-    await merchController.markOrderAsMissed({ uuid }, admin);
-    const updatedOrder = await merchController.getOneMerchOrder({ uuid }, member);
+    // mark pickup event as complete
+    await merchController.completePickupEvent(pickupEventUuid, admin);
 
-    expect(updatedOrder.order.status).toEqual(OrderStatus.PICKUP_MISSED);
-    verify(emailService.sendOrderPickupMissed(member.email, member.firstName, anything()))
+    // check member1's order is fulfilled
+    const fulfilledOrder = await merchController.getOneMerchOrder({ uuid: fulfilledOrderUuid }, member1);
+    expect(fulfilledOrder.order.status).toEqual(OrderStatus.FULFILLED);
+    verify(emailService.sendOrderFulfillment(member1.email, member1.firstName, anything()))
+      .called();
+
+    // check member2's order is missed
+    const { uuid: missedOrderUuid } = placedOrder2Response.order;
+    const missedOrder = await merchController.getOneMerchOrder({ uuid: missedOrderUuid }, member2);
+    expect(missedOrder.order.status).toEqual(OrderStatus.PICKUP_MISSED);
+    verify(emailService.sendOrderPickupMissed(member2.email, member2.firstName, anything()))
       .called();
   });
 

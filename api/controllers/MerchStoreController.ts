@@ -42,6 +42,7 @@ import {
   MediaType,
   File,
   UpdateMerchPhotoResponse,
+  CompleteOrderPickupEventResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -244,13 +245,6 @@ export class MerchStoreController {
     return { error: null, order };
   }
 
-  @Post('/order/:uuid/missed')
-  async markOrderAsMissed(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel) {
-    if (!PermissionsService.canManageMerchOrders(user)) throw new ForbiddenError();
-    const order = await this.merchStoreService.markOrderAsMissed(params.uuid, user);
-    return { error: null, order };
-  }
-
   @Post('/order/:uuid/fulfill')
   async fulfillMerchOrderItems(@Params() params: UuidParam, @Body() fulfillOrderRequest: FulfillMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<FulfillMerchOrderResponse> {
@@ -313,6 +307,14 @@ export class MerchStoreController {
     if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     await this.merchStoreService.deletePickupEvent(params.uuid);
     return { error: null };
+  }
+
+  @Post('/order/pickup/:uuid/complete')
+  async completePickupEvent(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
+  Promise<CompleteOrderPickupEventResponse> {
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
+    const ordersMarkedAsMissed = await this.merchStoreService.completeOrderPickupEvent(params.uuid);
+    return { error: null, orders: ordersMarkedAsMissed.map((order) => order.getPublicOrder()) };
   }
 
   @Get('/cart')
