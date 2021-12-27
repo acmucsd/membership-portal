@@ -743,8 +743,11 @@ export default class MerchStoreService {
     }
     const orderedItemOptions = flatten(orders.map((o) => o.items));
     for (let i = 0; i < orderedItemOptions.length; i += 1) {
-      const { item } = itemOptions.get(orderedItemOptions[i].option.uuid);
-      if (counts.has(item)) counts.set(item, counts.get(item) + 1);
+      const orderedOption = itemOptions.get(orderedItemOptions[i].option.uuid);
+      if (orderedOption) {
+        const { item } = orderedOption;
+        if (counts.has(item)) counts.set(item, counts.get(item) + 1);
+      }
     }
     return counts;
   }

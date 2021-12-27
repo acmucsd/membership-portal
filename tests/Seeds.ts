@@ -63,6 +63,7 @@ async function seed(): Promise<void> {
     accessType: UserAccessType.STANDARD,
     firstName: 'Paul',
     lastName: 'Pan',
+    points: 800,
     graduationYear: getGraduationYear(3),
   });
   const MEMBER_JUNIOR = UserFactory.fake({
