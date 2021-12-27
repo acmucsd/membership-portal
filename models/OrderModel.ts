@@ -41,7 +41,7 @@ export class OrderModel extends BaseEntity {
   @Index('orders_by_pickupEvent_index')
   pickupEvent: OrderPickupEventModel;
 
-  @OneToMany((type) => OrderItemModel, (item) => item.order, { cascade: true })
+  @OneToMany((type) => OrderItemModel, (item) => item.order, { cascade: true, eager: true })
   items: OrderItemModel[];
 
   public getPublicOrder(): PublicOrder {

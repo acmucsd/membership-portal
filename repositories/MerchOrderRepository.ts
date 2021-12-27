@@ -13,7 +13,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
    * Gets a single order. Returns the order joined with ordered items,
    * user, pickup event, the ordered items' merch options,
    * and those merch options' merch items.
-   * 
+   *
    * This is the same set of joins that gets executed for OrderPickupEventRepository::findByUuid()
    */
   public async findByUuid(uuid: Uuid): Promise<OrderModel> {
@@ -24,7 +24,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('orderItem.option', 'option')
       .leftJoinAndSelect('option.item', 'merchItem')
-      .where('uuid = :uuid', { uuid })
+      .where('order.uuid = :uuid', { uuid })
       .getOne();
   }
 
@@ -126,7 +126,7 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
    * Gets a single pickup event. Returns the pickup event joined with all orders,
    * each order's ordered items, the user who placed the order, the pickup event, the ordered items'
    * merch options, and those merch options' merch items.
-   * 
+   *
    * This is the same set of joins that gets executed for MerchOrderRepository::findByUuid()
    */
   public async findByUuid(uuid: Uuid): Promise<OrderPickupEventModel> {
@@ -154,6 +154,6 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
   private getBaseFindManyQuery(): SelectQueryBuilder<OrderPickupEventModel> {
     return this.repository
       .createQueryBuilder('orderPickupEvent')
-      .leftJoinAndSelect('orderPickupEvent.orders', 'order')
+      .leftJoinAndSelect('orderPickupEvent.orders', 'order');
   }
 }

@@ -188,7 +188,7 @@ export class MerchStoreController {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const order = await this.merchStoreService.findOrderByUuid(params.uuid);
     if (!PermissionsService.canSeeMerchOrder(user, order)) throw new NotFoundError();
-    return { error: null, order };
+    return { error: null, order: order.getPublicOrder() };
   }
 
   @Get('/orders')

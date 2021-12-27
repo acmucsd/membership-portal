@@ -761,9 +761,11 @@ export default class MerchStoreService {
   }
 
   public async getPickupEvent(uuid: Uuid): Promise<OrderPickupEventModel> {
-    return this.transactions.readOnly(async (txn) => Repositories
-      .merchOrderPickupEvent(txn)
-      .findByUuid(uuid));
+    return this.transactions.readOnly(async (txn) => {
+      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(uuid);
+      if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
+      return pickupEvent;
+    });
   }
 
   public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<OrderPickupEventModel> {
@@ -804,6 +806,7 @@ export default class MerchStoreService {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       const orderRepository = Repositories.merchOrder(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
+      if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
       // concurrently email the order cancellation email and update order status for every order
       // then set pickupEvent to null before deleting from table
       await Promise.all(pickupEvent.orders.map(async (order) => {
