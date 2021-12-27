@@ -269,12 +269,12 @@ export default class MerchStoreService {
     });
   }
 
-  public async findOrderByUuid(uuid: Uuid): Promise<PublicOrder> {
+  public async findOrderByUuid(uuid: Uuid): Promise<OrderModel> {
     const order = await this.transactions.readOnly(async (txn) => Repositories
       .merchOrder(txn)
       .findByUuid(uuid));
     if (!order) throw new NotFoundError('Merch order not found');
-    return order.getPublicOrder();
+    return order;
   }
 
   public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
@@ -772,7 +772,7 @@ export default class MerchStoreService {
     }
     const pickupEventModel = OrderPickupEventModel.create(pickupEvent);
     if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEventModel)) {
-      throw new NotFoundError('Cannot create a pickup event that starts in less than 2 days');
+      throw new UserError('Cannot create a pickup event that starts in less than 2 days');
     }
     return this.transactions.readWrite(async (txn) => Repositories
       .merchOrderPickupEvent(txn)
