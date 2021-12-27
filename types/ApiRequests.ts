@@ -33,6 +33,10 @@ export interface UserRegistration {
   major: string;
 }
 
+export interface ModifyEmailRequest {
+  email: string
+}
+
 export interface RegistrationRequest {
   user: UserRegistration;
 }

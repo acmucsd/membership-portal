@@ -42,6 +42,19 @@ export default class UserAuthService {
     });
   }
 
+  public async modifyEmail(user: UserModel, proposedEmail: string): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      const userRepository = Repositories.user(txn);
+
+      await userRepository.upsertUser(user, {
+        email: proposedEmail,
+        state: UserState.PENDING,
+      });
+
+      await this.setAccessCode(proposedEmail);
+    });
+  }
+
   public async checkAuthToken(authHeader: string): Promise<UserModel> {
     const token = jwt.verify(UserAuthService.parseAuthHeader(authHeader), Config.auth.secret);
     if (!UserAuthService.isAuthToken(token)) throw new BadRequestError('Invalid auth token');
