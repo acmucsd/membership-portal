@@ -49,7 +49,7 @@ export default class PermissionsService {
   }
 
   public static canSeeMerchOrder(user: UserModel, order: PublicOrder) {
-    return user.hasStoreDistributorPermissions() || (this.canAccessMerchStore(user) && order.user === user.uuid);
+    return user.hasStoreDistributorPermissions() || (this.canAccessMerchStore(user) && order.user.uuid === user.uuid);
   }
 
   public static canSeeAllMerchOrders(user: UserModel) {

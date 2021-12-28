@@ -47,12 +47,12 @@ export class OrderModel extends BaseEntity {
   public getPublicOrder(): PublicOrder {
     return {
       uuid: this.uuid,
-      user: this.user.uuid,
+      user: this.user.getPublicProfile(),
       totalCost: this.totalCost,
       status: this.status,
       orderedAt: this.orderedAt,
       pickupEvent: this.pickupEvent?.getPublicOrderPickupEvent(),
-      items: this.items.map((oi) => oi.getPublicOrderItem()),
+      items: this.items?.map((oi) => oi.getPublicOrderItem()),
     };
   }
 }
