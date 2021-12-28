@@ -7,7 +7,7 @@ import {
   SendPasswordResetEmailResponse,
   VerifyEmailResponse,
   ResendEmailVerificationResponse,
-  ModifyEmailResponse,
+  EmailModificationResponse,
 } from 'types';
 import UserAccountService from '../../services/UserAccountService';
 import UserAuthService from '../../services/UserAuthService';
@@ -18,7 +18,7 @@ import {
   LoginRequest,
   RegistrationRequest,
   PasswordResetRequest,
-  ModifyEmailRequest,
+  EmailModificationRequest,
 } from '../validators/AuthControllerRequests';
 import { authActionMetadata } from '../../utils/AuthActionMetadata';
 import { OptionalUserAuthentication, UserAuthentication } from '../middleware/UserAuthentication';
@@ -72,11 +72,11 @@ export class AuthController {
   }
 
   @UseBefore(UserAuthentication)
-  @Post('/modifyEmail')
-  async modifyEmail(@Body() modifyEmailRequest: ModifyEmailRequest,
-    @AuthenticatedUser() user: UserModel): Promise<ModifyEmailResponse> {
-    await this.userAuthService.modifyEmail(user, modifyEmailRequest.email);
-    await this.emailService.sendEmailVerification(user.email, user.firstName, user.accessCode);
+  @Post('/emailModification')
+  async emailModification(@Body() emailModificationRequest: EmailModificationRequest,
+    @AuthenticatedUser() user: UserModel): Promise<EmailModificationResponse> {
+    const updatedUser = await this.userAuthService.modifyEmail(user, emailModificationRequest.email);
+    await this.emailService.sendEmailVerification(updatedUser.email, updatedUser.firstName, updatedUser.accessCode);
     return { error: null };
   }
 

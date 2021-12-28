@@ -9,7 +9,7 @@ import {
   PasswordResetRequest as IPasswordResetRequest,
   UserRegistration as IUserRegistration,
   PasswordChange as IPasswordChange,
-  ModifyEmailRequest as IModifyEmailRequest,
+  EmailModificationRequest as IEmailModificationRequest,
 } from '../../types';
 
 export class UserRegistration implements IUserRegistration {
@@ -63,7 +63,7 @@ export class LoginRequest implements ILoginRequest {
   password: string;
 }
 
-export class ModifyEmailRequest implements IModifyEmailRequest {
+export class EmailModificationRequest implements IEmailModificationRequest {
   @IsEmail()
   email: string;
 }

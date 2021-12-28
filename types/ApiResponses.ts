@@ -71,7 +71,7 @@ export interface ResendEmailVerificationResponse extends ApiResponse {}
 
 export interface VerifyEmailResponse extends ApiResponse {}
 
-export interface ModifyEmailResponse extends ApiResponse {}
+export interface EmailModificationResponse extends ApiResponse {}
 
 export interface SendPasswordResetEmailResponse extends ApiResponse {}
 

@@ -33,7 +33,7 @@ export interface UserRegistration {
   major: string;
 }
 
-export interface ModifyEmailRequest {
+export interface EmailModificationRequest {
   email: string
 }
 

@@ -42,17 +42,25 @@ export default class UserAuthService {
     });
   }
 
-  public async modifyEmail(user: UserModel, proposedEmail: string): Promise<void> {
-    return this.transactions.readWrite(async (txn) => {
+  public async modifyEmail(user: UserModel, proposedEmail: string): Promise<UserModel> {
+    const updatedUser = await this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
 
-      await userRepository.upsertUser(user, {
+      proposedEmail = proposedEmail.toLowerCase();
+
+      // ensure that the proposed email isn't used already
+      const foundUser = await userRepository.findByEmail(proposedEmail);
+      if (foundUser !== undefined) {
+        throw new BadRequestError('Email already in use');
+      }
+
+      return userRepository.upsertUser(user, {
         email: proposedEmail,
         state: UserState.PENDING,
       });
-
-      await this.setAccessCode(proposedEmail);
     });
+
+    return this.setAccessCode(updatedUser.email);
   }
 
   public async checkAuthToken(authHeader: string): Promise<UserModel> {
@@ -116,6 +124,7 @@ export default class UserAuthService {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       const user = await userRepository.findByEmail(email);
+
       if (!user) throw new NotFoundError();
       return userRepository.upsertUser(user, { accessCode: UserAuthService.generateAccessCode() });
     });

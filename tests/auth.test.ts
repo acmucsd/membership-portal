@@ -224,6 +224,62 @@ describe('resending email verification', () => {
   });
 });
 
+describe('email modification', () => {
+  test('user can change email', async () => {
+    const conn = await DatabaseConnection.get();
+    let member = UserFactory.fake();
+
+    await new PortalState()
+      .createUsers(member)
+      .write();
+
+    const emailService = mock(EmailService);
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+
+    // call route to change email
+    const request = { email: 'someemail@example.com' };
+
+    when(emailService.sendEmailVerification(request.email, member.firstName, anyString()))
+      .thenResolve();
+    const response = await authController.emailModification(request, member);
+    expect(response.error).toBeNull();
+
+    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    expect(member.state).toEqual(UserState.PENDING);
+    expect(member.email).toEqual(request.email);
+
+    // confirm the email
+    await authController.verifyEmail({ accessCode: member.accessCode });
+
+    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    expect(member.state).toEqual(UserState.ACTIVE);
+  });
+
+  test('user cannot change email to new email', async () => {
+    const conn = await DatabaseConnection.get();
+    let member = UserFactory.fake();
+    const otherMember = UserFactory.fake({ email: 'anotheremail@acmucsd.org' });
+
+    await new PortalState()
+      .createUsers(member, otherMember)
+      .write();
+
+    const emailService = mock(EmailService);
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+
+    // call route to change email
+    const request = { email: otherMember.email };
+
+    verify(emailService.sendEmailVerification(request.email, member.firstName, anyString())).never();
+    await expect(authController.emailModification(request, member))
+      .rejects.toThrow('Email already in use');
+
+    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    expect(member.state).toEqual(UserState.ACTIVE);
+    expect(member.email).toEqual(member.email);
+  });
+});
+
 describe('password reset', () => {
   test('user can reset password correctly', async () => {
     const conn = await DatabaseConnection.get();
