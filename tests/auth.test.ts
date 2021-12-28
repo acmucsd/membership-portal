@@ -255,7 +255,7 @@ describe('email modification', () => {
     expect(member.state).toEqual(UserState.ACTIVE);
   });
 
-  test('user cannot change email to new email', async () => {
+  test('user cannot change email to an already existing email', async () => {
     const conn = await DatabaseConnection.get();
     let member = UserFactory.fake();
     const otherMember = UserFactory.fake({ email: 'anotheremail@acmucsd.org' });

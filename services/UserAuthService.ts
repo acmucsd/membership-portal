@@ -48,11 +48,8 @@ export default class UserAuthService {
 
       proposedEmail = proposedEmail.toLowerCase();
 
-      // ensure that the proposed email isn't used already
-      const foundUser = await userRepository.findByEmail(proposedEmail);
-      if (foundUser !== undefined) {
-        throw new BadRequestError('Email already in use');
-      }
+      const emailAlreadyUsed = !!(await userRepository.findByEmail(proposedEmail));
+      if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
 
       return userRepository.upsertUser(user, {
         email: proposedEmail,

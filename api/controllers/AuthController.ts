@@ -73,7 +73,7 @@ export class AuthController {
 
   @UseBefore(UserAuthentication)
   @Post('/emailModification')
-  async emailModification(@Body() emailModificationRequest: EmailModificationRequest,
+  async modifyEmail(@Body() emailModificationRequest: EmailModificationRequest,
     @AuthenticatedUser() user: UserModel): Promise<EmailModificationResponse> {
     const updatedUser = await this.userAuthService.modifyEmail(user, emailModificationRequest.email);
     await this.emailService.sendEmailVerification(updatedUser.email, updatedUser.firstName, updatedUser.accessCode);
