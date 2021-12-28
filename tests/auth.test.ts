@@ -241,7 +241,7 @@ describe('email modification', () => {
 
     when(emailService.sendEmailVerification(request.email, member.firstName, anyString()))
       .thenResolve();
-    const response = await authController.emailModification(request, member);
+    const response = await authController.modifyEmail(request, member);
     expect(response.error).toBeNull();
 
     member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
@@ -271,7 +271,7 @@ describe('email modification', () => {
     const request = { email: otherMember.email };
 
     verify(emailService.sendEmailVerification(request.email, member.firstName, anyString())).never();
-    await expect(authController.emailModification(request, member))
+    await expect(authController.modifyEmail(request, member))
       .rejects.toThrow('Email already in use');
 
     member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
