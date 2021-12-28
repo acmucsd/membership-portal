@@ -1,7 +1,7 @@
 import {
   Entity, BaseEntity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, Index,
 } from 'typeorm';
-import { Uuid, PublicMerchItemOption, MerchItemOptionMetadata, PublicCartMerchItemOption } from '../types';
+import { Uuid, PublicMerchItemOption, MerchItemOptionMetadata, PublicOrderMerchItemOption } from '../types';
 import { OrderItemModel } from './OrderItemModel';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
 
@@ -56,13 +56,13 @@ export class MerchandiseItemOptionModel extends BaseEntity {
     return option;
   }
 
-  public getPublicCartMerchItemOption(): PublicCartMerchItemOption {
+  public getPublicOrderMerchItemOption(): PublicOrderMerchItemOption {
     return {
       uuid: this.uuid,
       price: this.price,
       discountPercentage: this.discountPercentage,
       metadata: this.metadata,
-      item: this.item.getPublicCartMerchItem(),
+      item: this.item.getPublicOrderMerchItem(),
     };
   }
 }
