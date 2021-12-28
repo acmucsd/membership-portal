@@ -7,15 +7,21 @@ import {
   SendPasswordResetEmailResponse,
   VerifyEmailResponse,
   ResendEmailVerificationResponse,
+  EmailModificationResponse,
 } from 'types';
 import UserAccountService from '../../services/UserAccountService';
 import UserAuthService from '../../services/UserAuthService';
 import { logger as log } from '../../utils/Logger';
 import { RequestTrace } from '../decorators/RequestTrace';
 import EmailService from '../../services/EmailService';
-import { LoginRequest, RegistrationRequest, PasswordResetRequest } from '../validators/AuthControllerRequests';
+import {
+  LoginRequest,
+  RegistrationRequest,
+  PasswordResetRequest,
+  EmailModificationRequest,
+} from '../validators/AuthControllerRequests';
 import { authActionMetadata } from '../../utils/AuthActionMetadata';
-import { OptionalUserAuthentication } from '../middleware/UserAuthentication';
+import { OptionalUserAuthentication, UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import { EmailParam, AccessCodeParam } from '../validators/GenericRequests';
@@ -62,6 +68,15 @@ export class AuthController {
   @Post('/emailVerification/:accessCode')
   async verifyEmail(@Params() params: AccessCodeParam): Promise<VerifyEmailResponse> {
     await this.userAccountService.verifyEmail(params.accessCode);
+    return { error: null };
+  }
+
+  @UseBefore(UserAuthentication)
+  @Post('/emailModification')
+  async modifyEmail(@Body() emailModificationRequest: EmailModificationRequest,
+    @AuthenticatedUser() user: UserModel): Promise<EmailModificationResponse> {
+    const updatedUser = await this.userAuthService.modifyEmail(user, emailModificationRequest.email);
+    await this.emailService.sendEmailVerification(updatedUser.email, updatedUser.firstName, updatedUser.accessCode);
     return { error: null };
   }
 
