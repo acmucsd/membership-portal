@@ -202,6 +202,9 @@ export interface PublicOrder {
   status: string;
   orderedAt: Date;
   pickupEvent: PublicOrderPickupEvent;
+}
+
+export interface PublicOrderWithItems extends PublicOrder {
   items: PublicOrderItem[];
 }
 
@@ -248,7 +251,7 @@ export interface CreateMerchItemOptionResponse extends ApiResponse {
 export interface DeleteMerchItemOptionResponse extends ApiResponse {}
 
 export interface GetOneMerchOrderResponse extends ApiResponse {
-  order: PublicOrder;
+  order: PublicOrderWithItems;
 }
 
 export interface GetAllMerchOrdersResponse extends ApiResponse {
@@ -256,7 +259,7 @@ export interface GetAllMerchOrdersResponse extends ApiResponse {
 }
 
 export interface PlaceMerchOrderResponse extends ApiResponse {
-  order: PublicOrder;
+  order: PublicOrderWithItems;
 }
 
 export interface VerifyMerchOrderResponse extends ApiResponse {}
@@ -344,7 +347,7 @@ export interface PublicOrderPickupEvent {
   start: Date;
   end: Date;
   description: string;
-  orders?: PublicOrder[];
+  orders?: PublicOrderWithItems[];
   orderLimit?: number;
 }
 

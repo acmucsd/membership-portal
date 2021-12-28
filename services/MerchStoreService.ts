@@ -9,7 +9,6 @@ import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel
 import {
   Uuid,
   PublicMerchCollection,
-  PublicOrder,
   ActivityType,
   OrderItemFulfillmentUpdate,
   MerchCollection,
@@ -308,7 +307,7 @@ export default class MerchStoreService {
    */
   public async placeOrder(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
-    pickupEventUuid: Uuid): Promise<PublicOrder> {
+    pickupEventUuid: Uuid): Promise<OrderModel> {
     const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
@@ -387,7 +386,7 @@ export default class MerchStoreService {
     };
     this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
 
-    return order.getPublicOrder();
+    return order;
   }
 
   private static humanReadableDateString(date: Date): string {

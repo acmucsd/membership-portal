@@ -62,7 +62,7 @@ export class MerchandiseItemOptionModel extends BaseEntity {
       price: this.price,
       discountPercentage: this.discountPercentage,
       metadata: this.metadata,
-      item: this.item.getPublicOrderMerchItem(),
+      item: this.item?.getPublicOrderMerchItem(),
     };
   }
 }
