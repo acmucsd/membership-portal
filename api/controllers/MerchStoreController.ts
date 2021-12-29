@@ -188,7 +188,7 @@ export class MerchStoreController {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const order = await this.merchStoreService.findOrderByUuid(params.uuid);
     if (!PermissionsService.canSeeMerchOrder(user, order)) throw new NotFoundError();
-    return { error: null, order: order.getPublicOrder() };
+    return { error: null, order: order.getPublicOrderWithItems() };
   }
 
   @Get('/orders')
@@ -209,7 +209,7 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<PlaceMerchOrderResponse> {
     const originalOrder = this.validateMerchOrderRequest(placeOrderRequest.order);
     const order = await this.merchStoreService.placeOrder(originalOrder, user, placeOrderRequest.pickupEvent);
-    return { error: null, order };
+    return { error: null, order: order.getPublicOrderWithItems() };
   }
 
   @Post('/order/verification')
