@@ -43,6 +43,7 @@ import {
   File,
   UpdateMerchPhotoResponse,
   CompleteOrderPickupEventResponse,
+  GetOrderPickupEventResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -188,7 +189,7 @@ export class MerchStoreController {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const order = await this.merchStoreService.findOrderByUuid(params.uuid);
     if (!PermissionsService.canSeeMerchOrder(user, order)) throw new NotFoundError();
-    return { error: null, order };
+    return { error: null, order: order.getPublicOrderWithItems() };
   }
 
   @Get('/orders')
@@ -209,7 +210,7 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<PlaceMerchOrderResponse> {
     const originalOrder = this.validateMerchOrderRequest(placeOrderRequest.order);
     const order = await this.merchStoreService.placeOrder(originalOrder, user, placeOrderRequest.pickupEvent);
-    return { error: null, order };
+    return { error: null, order: order.getPublicOrderWithItems() };
   }
 
   @Post('/order/verification')
@@ -282,6 +283,14 @@ export class MerchStoreController {
     return { error: null, pickupEvents: publicPickupEvents };
   }
 
+  @Get('/order/pickup/:uuid')
+  async getOnePickupEvent(@Params() params: UuidParam,
+    @AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventResponse> {
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
+    const pickupEvent = await this.merchStoreService.getPickupEvent(params.uuid);
+    return { error: null, pickupEvent: pickupEvent.getPublicOrderPickupEvent(true) };
+  }
+
   @Post('/order/pickup')
   async createPickupEvent(@Body() createOrderPickupEventRequest: CreateOrderPickupEventRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateOrderPickupEventResponse> {
@@ -322,6 +331,6 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<GetCartResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const cartItems = await this.merchStoreService.getCartItems(getCartRequest.items);
-    return { error: null, cart: cartItems.map((option) => option.getPublicCartMerchItemOption()) };
+    return { error: null, cart: cartItems.map((option) => option.getPublicOrderMerchItemOption()) };
   }
 }

@@ -35,7 +35,7 @@ export class OrderItemModel extends BaseEntity {
   public getPublicOrderItem(): PublicOrderItem {
     return {
       uuid: this.uuid,
-      option: this.option.getPublicMerchItemOption(),
+      option: this.option.getPublicOrderMerchItemOption(),
       salePriceAtPurchase: this.salePriceAtPurchase,
       discountPercentageAtPurchase: this.discountPercentageAtPurchase,
       fulfilled: this.fulfilled,

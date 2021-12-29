@@ -9,7 +9,6 @@ import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel
 import {
   Uuid,
   PublicMerchCollection,
-  PublicOrder,
   ActivityType,
   OrderItemFulfillmentUpdate,
   MerchCollection,
@@ -269,12 +268,12 @@ export default class MerchStoreService {
     });
   }
 
-  public async findOrderByUuid(uuid: Uuid): Promise<PublicOrder> {
+  public async findOrderByUuid(uuid: Uuid): Promise<OrderModel> {
     const order = await this.transactions.readOnly(async (txn) => Repositories
       .merchOrder(txn)
       .findByUuid(uuid));
     if (!order) throw new NotFoundError('Merch order not found');
-    return order.getPublicOrder();
+    return order;
   }
 
   public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
@@ -308,7 +307,7 @@ export default class MerchStoreService {
    */
   public async placeOrder(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
-    pickupEventUuid: Uuid): Promise<PublicOrder> {
+    pickupEventUuid: Uuid): Promise<OrderModel> {
     const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
@@ -383,7 +382,7 @@ export default class MerchStoreService {
     };
     this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
 
-    return order.getPublicOrder();
+    return order;
   }
 
   private static humanReadableDateString(date: Date): string {
@@ -798,13 +797,21 @@ export default class MerchStoreService {
       .getFuturePickupEvents());
   }
 
+  public async getPickupEvent(uuid: Uuid): Promise<OrderPickupEventModel> {
+    return this.transactions.readOnly(async (txn) => {
+      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(uuid);
+      if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
+      return pickupEvent;
+    });
+  }
+
   public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<OrderPickupEventModel> {
     if (pickupEvent.start >= pickupEvent.end) {
       throw new UserError('Order pickup event start time must come before the end time');
     }
     const pickupEventModel = OrderPickupEventModel.create(pickupEvent);
     if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEventModel)) {
-      throw new NotFoundError('Cannot create a pickup event that starts in less than 2 days');
+      throw new UserError('Cannot create a pickup event that starts in less than 2 days');
     }
     return this.transactions.readWrite(async (txn) => Repositories
       .merchOrderPickupEvent(txn)
@@ -836,6 +843,7 @@ export default class MerchStoreService {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       const orderRepository = Repositories.merchOrder(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
+      if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
       // concurrently email the order cancellation email and update order status for every order
       // then set pickupEvent to null before deleting from table
       await Promise.all(pickupEvent.orders.map(async (order) => {

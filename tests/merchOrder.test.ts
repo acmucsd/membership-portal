@@ -553,7 +553,7 @@ describe('merch orders', () => {
 });
 
 describe('merch order pickup events', () => {
-  test('past and future pickup events can be retrieved', async () => {
+  test('past, future, and individual pickup events can be retrieved', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const pastPickupEvent = MerchFactory.fakeOrderPickupEvent({
@@ -588,6 +588,10 @@ describe('merch order pickup events', () => {
       .toEqual(expect.arrayContaining([
         pastPickupEvent.getPublicOrderPickupEvent(true),
       ]));
+
+    const getPickupEventParams = { uuid: ongoingPickupEvent.uuid };
+    const getOnePickupEventResponse = await merchStoreController.getOnePickupEvent(getPickupEventParams, admin);
+    expect(getOnePickupEventResponse.pickupEvent).toStrictEqual(ongoingPickupEvent.getPublicOrderPickupEvent(true));
   });
 
   test('pickup events can be created on valid input', async () => {
@@ -967,23 +971,13 @@ describe('merch order pickup events', () => {
         orderLimit: 2,
       },
     };
+    const merchStoreController = ControllerFactory.merchStore(conn);
     const params = { uuid: pickupEvent.uuid };
-    const response = await ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, admin);
-    expect(response.error).toBeNull();
+    await merchStoreController.editPickupEvent(params, editPickupEventRequest, admin);
 
-    const [persistedPickupEvent] = await conn.manager.find(OrderPickupEventModel, { relations: ['orders'] });
+    const persistedPickupEvent = await merchStoreController.getOnePickupEvent(params, admin);
 
-    const newPickupEvent = {
-      orderLimit: 2,
-      ...persistedPickupEvent.getPublicOrderPickupEvent(true),
-    };
-    // MerchStoreService won't return the orders because of requiring an additional join.
-    // Additionally, returning orders as a full type causes a stack overflow, because
-    // one cannot return the orders completely (orders refer to pickup events that refer
-    // to orders, etc.)
-    delete newPickupEvent.orders;
-
-    expect(response.pickupEvent).toStrictEqual(newPickupEvent);
+    expect(persistedPickupEvent.pickupEvent.orderLimit).toEqual(2);
   });
 
   test('placing an order with a pickup event that has reached the order limit fails', async () => {
