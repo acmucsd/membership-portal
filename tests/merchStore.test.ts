@@ -23,19 +23,38 @@ describe('creating merch collections', () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const member = UserFactory.fake({ accessType: UserAccessType.STANDARD });
-    const firstCollectionToBeMade = MerchFactory.fakeCollection();
-    const secondCollectionToBeMade = MerchFactory.fakeCollection();
+    const firstCollectionToBeMade = MerchFactory.fakeCollection({
+      createdAt: faker.date.past(),
+      archived: true,
+    });
+    const secondCollectionToBeMade = MerchFactory.fakeCollection({
+      createdAt: new Date(),
+      archived: false,
+    });
+    const thirdCollectionToBeMade = MerchFactory.fakeCollection({
+      createdAt: faker.date.future(),
+      archived: false,
+    });
 
     await new PortalState()
       .createUsers(admin, member)
-      .createMerchCollections(firstCollectionToBeMade, secondCollectionToBeMade)
+      .createMerchCollections(firstCollectionToBeMade, secondCollectionToBeMade, thirdCollectionToBeMade)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
 
-    const collections = await merchStoreController.getAllMerchCollections(admin);
-    expect(collections.collections.map((collection) => collection.uuid))
-      .toEqual([secondCollectionToBeMade, firstCollectionToBeMade].map((collection) => collection.uuid));
+    const expectedCollectionOrder = [thirdCollectionToBeMade, secondCollectionToBeMade]
+      .map((coll) => coll.uuid);
+
+    const collectionsVisibleByAdmin = await merchStoreController.getAllMerchCollections(admin);
+
+    expect(collectionsVisibleByAdmin.collections.map((collection) => collection.uuid))
+      .toEqual(expectedCollectionOrder.concat(firstCollectionToBeMade.uuid));
+
+    const collectionsVisibleByMember = await merchStoreController.getAllMerchCollections(member);
+
+    expect(collectionsVisibleByMember.collections.map((collection) => collection.uuid))
+      .toEqual(expectedCollectionOrder);
   });
 });
 describe('editing merch collections', () => {

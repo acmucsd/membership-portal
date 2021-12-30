@@ -28,6 +28,7 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
       .leftJoinAndSelect('collection.items', 'items')
       .leftJoinAndSelect('items.options', 'options')
       .where({ archived: false })
+      .orderBy('collection.createdAt', 'DESC')
       .getMany();
   }
 
