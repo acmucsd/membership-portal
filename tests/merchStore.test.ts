@@ -18,7 +18,26 @@ afterAll(async () => {
   await DatabaseConnection.clear();
   await DatabaseConnection.close();
 });
+describe('creating merch collections', () => {
+  test('getting created collections returns them in reverse order of creation', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const member = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+    const firstCollectionToBeMade = MerchFactory.fakeCollection();
+    const secondCollectionToBeMade = MerchFactory.fakeCollection();
 
+    await new PortalState()
+      .createUsers(admin, member)
+      .createMerchCollections(firstCollectionToBeMade, secondCollectionToBeMade)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+
+    const collections = await merchStoreController.getAllMerchCollections(admin);
+    expect(collections.collections.map((collection) => collection.uuid))
+      .toEqual([secondCollectionToBeMade, firstCollectionToBeMade].map((collection) => collection.uuid));
+  });
+});
 describe('editing merch collections', () => {
   test('only admins can edit merch collections', async () => {
     const conn = await DatabaseConnection.get();

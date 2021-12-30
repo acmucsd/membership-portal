@@ -15,6 +15,7 @@ export class MerchFactory {
       title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
       themeColorHex: faker.internet.color(),
+      createdAt: faker.date.recent(),
     });
 
     // merging arrays returns a union of fake.items and substitute.items, so only create
