@@ -42,6 +42,24 @@ export default class UserAuthService {
     });
   }
 
+  public async modifyEmail(user: UserModel, proposedEmail: string): Promise<UserModel> {
+    const updatedUser = await this.transactions.readWrite(async (txn) => {
+      const userRepository = Repositories.user(txn);
+
+      proposedEmail = proposedEmail.toLowerCase();
+
+      const emailAlreadyUsed = !!(await userRepository.findByEmail(proposedEmail));
+      if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
+
+      return userRepository.upsertUser(user, {
+        email: proposedEmail,
+        state: UserState.PENDING,
+      });
+    });
+
+    return this.setAccessCode(updatedUser.email);
+  }
+
   public async checkAuthToken(authHeader: string): Promise<UserModel> {
     const token = jwt.verify(UserAuthService.parseAuthHeader(authHeader), Config.auth.secret);
     if (!UserAuthService.isAuthToken(token)) throw new BadRequestError('Invalid auth token');
@@ -103,6 +121,7 @@ export default class UserAuthService {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       const user = await userRepository.findByEmail(email);
+
       if (!user) throw new NotFoundError();
       return userRepository.upsertUser(user, { accessCode: UserAuthService.generateAccessCode() });
     });

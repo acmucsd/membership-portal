@@ -71,6 +71,8 @@ export interface ResendEmailVerificationResponse extends ApiResponse {}
 
 export interface VerifyEmailResponse extends ApiResponse {}
 
+export interface EmailModificationResponse extends ApiResponse {}
+
 export interface SendPasswordResetEmailResponse extends ApiResponse {}
 
 export interface ResetPasswordResponse extends ApiResponse {}
@@ -177,7 +179,7 @@ export interface PublicMerchItemOption {
   metadata: MerchItemOptionMetadata;
 }
 
-export interface PublicCartMerchItemOption {
+export interface PublicOrderMerchItemOption {
   uuid: Uuid;
   price: number;
   discountPercentage: number;
@@ -187,7 +189,7 @@ export interface PublicCartMerchItemOption {
 
 export interface PublicOrderItem {
   uuid: Uuid;
-  option: PublicMerchItemOption;
+  option: PublicOrderMerchItemOption;
   salePriceAtPurchase: number;
   discountPercentageAtPurchase: number;
   fulfilled: boolean;
@@ -197,11 +199,14 @@ export interface PublicOrderItem {
 
 export interface PublicOrder {
   uuid: Uuid;
-  user: Uuid;
+  user: PublicProfile;
   totalCost: number;
   status: string;
   orderedAt: Date;
   pickupEvent: PublicOrderPickupEvent;
+}
+
+export interface PublicOrderWithItems extends PublicOrder {
   items: PublicOrderItem[];
 }
 
@@ -248,7 +253,7 @@ export interface CreateMerchItemOptionResponse extends ApiResponse {
 export interface DeleteMerchItemOptionResponse extends ApiResponse {}
 
 export interface GetOneMerchOrderResponse extends ApiResponse {
-  order: PublicOrder;
+  order: PublicOrderWithItems;
 }
 
 export interface GetAllMerchOrdersResponse extends ApiResponse {
@@ -256,7 +261,7 @@ export interface GetAllMerchOrdersResponse extends ApiResponse {
 }
 
 export interface PlaceMerchOrderResponse extends ApiResponse {
-  order: PublicOrder;
+  order: PublicOrderWithItems;
 }
 
 export interface VerifyMerchOrderResponse extends ApiResponse {}
@@ -264,7 +269,7 @@ export interface VerifyMerchOrderResponse extends ApiResponse {}
 export interface EditMerchOrderResponse extends ApiResponse {}
 
 export interface GetCartResponse extends ApiResponse {
-  cart: PublicCartMerchItemOption[];
+  cart: PublicOrderMerchItemOption[];
 }
 export interface FulfillMerchOrderResponse extends ApiResponse {}
 
@@ -344,12 +349,16 @@ export interface PublicOrderPickupEvent {
   start: Date;
   end: Date;
   description: string;
-  orders?: PublicOrder[];
+  orders?: PublicOrderWithItems[];
   orderLimit?: number;
 }
 
 export interface GetOrderPickupEventsResponse extends ApiResponse {
   pickupEvents: PublicOrderPickupEvent[];
+}
+
+export interface GetOrderPickupEventResponse extends ApiResponse {
+  pickupEvent: PublicOrderPickupEvent;
 }
 
 export interface CreateOrderPickupEventResponse extends ApiResponse {
