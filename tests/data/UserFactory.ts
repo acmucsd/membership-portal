@@ -27,11 +27,13 @@ export class UserFactory {
   }
 
   public static fake(substitute?: Partial<UserModel>): UserModel {
+    const fName = faker.name.firstName();
+    const lName = faker.name.lastName();
     const fake = UserModel.create({
       uuid: uuid(),
-      email: faker.internet.email(),
-      firstName: faker.name.firstName(),
-      lastName: faker.name.lastName(),
+      email: faker.internet.email(fName, lName, 'ucsd.edu'),
+      firstName: fName,
+      lastName: lName,
       hash: UserFactory.PASSWORD_HASH,
       accessType: UserAccessType.STANDARD,
       state: UserState.ACTIVE,
