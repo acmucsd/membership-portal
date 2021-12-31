@@ -57,7 +57,7 @@ import {
   PlaceMerchOrderRequest,
   VerifyMerchOrderRequest,
   FulfillMerchOrderRequest,
-  EditMerchOrderPickupRequest,
+  RescheduleOrderPickupRequest,
   CreateMerchItemOptionRequest,
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
@@ -230,12 +230,12 @@ export class MerchStoreController {
     return originalOrder;
   }
 
-  @Patch('/order/:uuid/pickup')
-  async editMerchOrderPickup(@Params() params: UuidParam,
-    @Body() editOrderRequest: EditMerchOrderPickupRequest,
+  @Post('/order/:uuid/reschedule')
+  async rescheduleOrderPickup(@Params() params: UuidParam,
+    @Body() rescheduleOrderPickupRequest: RescheduleOrderPickupRequest,
     @AuthenticatedUser() user: UserModel): Promise<EditMerchOrderResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    await this.merchStoreService.editMerchOrderPickup(params.uuid, editOrderRequest.pickupEvent, user);
+    await this.merchStoreService.rescheduleOrderPickup(params.uuid, rescheduleOrderPickupRequest.pickupEvent, user);
     return { error: null };
   }
 

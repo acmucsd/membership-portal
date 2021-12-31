@@ -160,7 +160,7 @@ export default class EmailService {
       const data = {
         to: email,
         from: Config.email.user,
-        subject: 'ACM UCSD Merch Store - Order Fulfilled',
+        subject: 'ACM UCSD Merch Store - Order Partially Fulfilled',
         html: ejs.render(EmailService.orderPartiallyFulfilledTemplate, {
           firstName,
           unfulfilledItems,

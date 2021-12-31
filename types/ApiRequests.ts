@@ -189,7 +189,7 @@ export interface FulfillMerchOrderRequest {
   items: OrderItemFulfillmentUpdate[];
 }
 
-export interface EditMerchOrderPickupRequest {
+export interface RescheduleOrderPickupRequest {
   pickupEvent: Uuid;
 }
 

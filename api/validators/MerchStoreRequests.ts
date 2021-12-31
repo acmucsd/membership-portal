@@ -20,7 +20,7 @@ import {
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   VerifyMerchOrderRequest as IVerifyMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
-  EditMerchOrderPickupRequest as IEditMerchOrderPickupRequest,
+  RescheduleOrderPickupRequest as IRescheduleOrderPickupRequest,
   CreateOrderPickupEventRequest as ICreateOrderPickupEventRequest,
   EditOrderPickupEventRequest as IEditOrderPickupEventRequest,
   GetCartRequest as IGetCartRequest,
@@ -309,7 +309,7 @@ export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {
   items: OrderItemFulfillmentUpdate[];
 }
 
-export class EditMerchOrderPickupRequest implements IEditMerchOrderPickupRequest {
+export class RescheduleOrderPickupRequest implements IRescheduleOrderPickupRequest {
   @IsDefined()
   @IsUUID()
   pickupEvent: string;

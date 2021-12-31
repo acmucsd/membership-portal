@@ -465,7 +465,14 @@ export default class MerchStoreService {
     return new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate();
   }
 
-  public async editMerchOrderPickup(orderUuid: Uuid, pickupEventUuid: Uuid, user: UserModel): Promise<OrderModel> {
+  /**
+   * Changes the pickup event of an order to a new one. The new pickup event must start more than 2 calendar
+   * days after the current time.
+   * 
+   * If successful, the order's status is updated to PLACED, 
+   * allowing it to be fulfilled by MerchStoreService::fulfillOrderItems()
+   */
+  public async rescheduleOrderPickup(orderUuid: Uuid, pickupEventUuid: Uuid, user: UserModel): Promise<OrderModel> {
     return this.transactions.readWrite(async (txn) => {
       const orderRepository = Repositories.merchOrder(txn);
       const order = await orderRepository.findByUuid(orderUuid);
@@ -480,7 +487,10 @@ export default class MerchStoreService {
       }
       const orderInfo = await MerchStoreService.buildOrderUpdateInfo(order, pickupEvent, txn);
       await this.emailService.sendOrderPickupUpdated(user.email, user.firstName, orderInfo);
-      return orderRepository.upsertMerchOrder(order, { pickupEvent });
+      return orderRepository.upsertMerchOrder(order, {
+        pickupEvent,
+        status: OrderStatus.PLACED,
+      });
     });
   }
 
@@ -652,13 +662,23 @@ export default class MerchStoreService {
   public async fulfillOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[], orderUuid: Uuid,
     user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
-      // make sure no items marked as fulfilled have already been fulfilled before
+      // check if order exists
       const orderRepository = Repositories.merchOrder(txn);
       const order = await orderRepository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
-      if (MerchStoreService.isInactiveOrder(order)) {
-        throw new UserError('Cannot fulfill items of an order that has already been marked as fulfilled or cancelled');
+      // check if pickup event is happening today
+      // (we don't check if it's ongoing in case the event needs to start earlier for any reason
+      // or if someone comes a few minutes earlier)
+      const { pickupEvent } = order; 
+      const isOrderPickupEventToday = moment().isSame(moment(pickupEvent.start), 'day');
+      if (!isOrderPickupEventToday) {
+        throw new UserError('Cannot fulfill items of an order that has a pickup event not happening today');
       }
+      // check if order is in PLACED status (by order state machine design)
+      if (order.status !== OrderStatus.PLACED) {
+        throw new UserError(`This order is not able to be fulfilled. Order state must be PLACED, is ${order.status}`);
+      }
+
       const { items } = order;
       const toBeFulfilled = fulfillmentUpdates
         .map((oi) => oi.uuid);
@@ -681,7 +701,6 @@ export default class MerchStoreService {
       // send order fulfillment emails and log activity
       const activityRepository = Repositories.activity(txn);
       const customer = order.user;
-      const { pickupEvent } = order;
       const isEntireOrderFulfilled = updatedItems.every((item) => item.fulfilled);
       if (isEntireOrderFulfilled) {
         const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, pickupEvent, txn);
