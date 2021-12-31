@@ -56,7 +56,7 @@ export class MerchandiseItemModel extends BaseEntity {
     return baseMerchItem;
   }
 
-  public getPublicCartMerchItem(): PublicCartMerchItem {
+  public getPublicOrderMerchItem(): PublicCartMerchItem {
     return {
       uuid: this.uuid,
       itemName: this.itemName,

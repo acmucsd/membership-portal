@@ -493,9 +493,9 @@ describe('checkout cart', () => {
     const { cart } = getCartResponse;
 
     expect(cart).toHaveLength(3);
-    expect(cart[0]).toStrictEqual(option1.getPublicCartMerchItemOption());
-    expect(cart[1]).toStrictEqual(option2.getPublicCartMerchItemOption());
-    expect(cart[2]).toStrictEqual(option3.getPublicCartMerchItemOption());
+    expect(cart[0]).toStrictEqual(option1.getPublicOrderMerchItemOption());
+    expect(cart[1]).toStrictEqual(option2.getPublicOrderMerchItemOption());
+    expect(cart[2]).toStrictEqual(option3.getPublicOrderMerchItemOption());
   });
 
   test('passing in item option uuids that do not exist throws an error', async () => {

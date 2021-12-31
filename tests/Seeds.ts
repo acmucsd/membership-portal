@@ -63,6 +63,7 @@ async function seed(): Promise<void> {
     accessType: UserAccessType.STANDARD,
     firstName: 'Paul',
     lastName: 'Pan',
+    points: 800,
     graduationYear: getGraduationYear(3),
   });
   const MEMBER_JUNIOR = UserFactory.fake({
@@ -462,13 +463,22 @@ async function seed(): Promise<void> {
   });
   MERCH_ITEM_5.options = [MERCH_ITEM_5_MEDIUM, MERCH_ITEM_5_LARGE];
   MERCH_COLLECTION_2.items = [MERCH_ITEM_3, MERCH_ITEM_4, MERCH_ITEM_5];
-  const ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
-    title: 'Example Order Pickup Event',
-    description: 'This is a test event to pickup orders from.',
-    orderLimit: 10,
-  });
 
-  const OTHER_ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
+  const PAST_ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
+    title: 'ACM Merch Distribution Event 1',
+    description: 'This is a test event to pickup orders from. It has already passed :(',
+    orderLimit: 10,
+    start: moment().subtract(3, 'days').subtract(2, 'hours').toDate(),
+    end: moment().subtract(3, 'days').toDate(),
+  });
+  const ONGOING_ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
+    title: 'ACM Merch Distribution Event 2',
+    description: 'Another test event',
+    orderLimit: 10,
+    start: moment().subtract(30, 'minutes').toDate(),
+    end: moment().add(90, 'minutes').toDate(),
+  });
+  const FUTURE_ORDER_PICKUP_EVENT = MerchFactory.fakeFutureOrderPickupEvent({
     title: 'Example Other Order Pickup Event',
     description: 'This is another test event to pickup orders from.',
     orderLimit: 10,
@@ -566,10 +576,10 @@ async function seed(): Promise<void> {
       MERCH_COLLECTION_1,
       MERCH_COLLECTION_2,
     )
-    .createOrderPickupEvents(ORDER_PICKUP_EVENT, OTHER_ORDER_PICKUP_EVENT)
-    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], ORDER_PICKUP_EVENT)
-    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], ORDER_PICKUP_EVENT)
-    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], OTHER_ORDER_PICKUP_EVENT)
+    .createOrderPickupEvents(PAST_ORDER_PICKUP_EVENT, ONGOING_ORDER_PICKUP_EVENT, FUTURE_ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], PAST_ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], PAST_ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
     .write();
 }
 
