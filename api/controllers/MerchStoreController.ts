@@ -25,7 +25,7 @@ import {
   EditMerchItemResponse,
   DeleteMerchItemResponse,
   GetOneMerchOrderResponse,
-  GetAllMerchOrdersResponse,
+  GetMerchOrdersResponse,
   PlaceMerchOrderResponse,
   VerifyMerchOrderResponse,
   EditMerchOrderResponse,
@@ -63,7 +63,6 @@ import {
   GetCartRequest,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
-import { OrderModel } from '../../models/OrderModel';
 import StorageService from '../../services/StorageService';
 
 @UseBefore(UserAuthentication)
@@ -191,16 +190,18 @@ export class MerchStoreController {
     return { error: null, order: order.getPublicOrderWithItems() };
   }
 
+  @Get('/orders/all')
+  async getMerchOrdersForAllUsers(@AuthenticatedUser() user: UserModel): Promise<GetMerchOrdersResponse> {
+    if (!(PermissionsService.canAccessMerchStore(user)
+      && PermissionsService.canSeeAllMerchOrders(user))) throw new ForbiddenError();
+    const orders = await this.merchStoreService.getAllOrdersForAllUsers();
+    return { error: null, orders: orders.map((o) => o.getPublicOrder()) };
+  }
+
   @Get('/orders')
-  async getAllMerchOrders(@AuthenticatedUser() user: UserModel): Promise<GetAllMerchOrdersResponse> {
+  async getMerchOrdersForCurrentUser(@AuthenticatedUser() user: UserModel): Promise<GetMerchOrdersResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const canSeeAllOrders = PermissionsService.canSeeAllMerchOrders(user);
-    let orders: OrderModel[];
-    if (canSeeAllOrders) {
-      orders = await this.merchStoreService.getAllOrdersForAllUsers();
-    } else {
-      orders = await this.merchStoreService.getAllOrdersForUser(user);
-    }
+    const orders = await this.merchStoreService.getAllOrdersForUser(user);
     return { error: null, orders: orders.map((o) => o.getPublicOrder()) };
   }
 
