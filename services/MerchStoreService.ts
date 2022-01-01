@@ -666,6 +666,7 @@ export default class MerchStoreService {
       const orderRepository = Repositories.merchOrder(txn);
       const order = await orderRepository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
+
       // check if pickup event is happening today
       // (we don't check if it's ongoing in case the event needs to start earlier for any reason
       // or if someone comes a few minutes earlier)

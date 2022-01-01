@@ -8,6 +8,7 @@ import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { UserAccessType, OrderStatus, ActivityType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
+import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -191,7 +192,8 @@ describe('merch orders', () => {
     const orderItem = placedOrderResponse.order.items[0].uuid;
     const fulfillmentUpdate = { uuid: orderItem, notes: faker.datatype.hexaDecimal(10) };
     const itemsToFulfill = { items: [fulfillmentUpdate] };
-    await merchController.fulfillMerchOrderItems(fulfillOrderParams, itemsToFulfill, admin);
+    await MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, fulfillOrderParams,
+      itemsToFulfill, admin, conn, pickupEvent);
 
     // cancel the order
     const { uuid } = placedOrderResponse.order;
@@ -306,7 +308,8 @@ describe('merch orders', () => {
         },
       ],
     };
-    await merchController.fulfillMerchOrderItems(orderParams, fulfillMerchOrderItemsRequest, admin);
+    await MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, orderParams,
+      fulfillMerchOrderItemsRequest, admin, conn, pickupEvent);
 
     const getOrderResponse = await merchController.getOneMerchOrder(orderParams, member);
     const partiallyFulfilledOrder = getOrderResponse.order;
@@ -384,7 +387,8 @@ describe('merch orders', () => {
         },
       ],
     };
-    await merchController.fulfillMerchOrderItems(uuidParams, fulfillMerchOrderItemsRequest, admin);
+    await MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, uuidParams,
+      fulfillMerchOrderItemsRequest, admin, conn, pickupEvent);
 
     const getOrderResponse = await merchController.getOneMerchOrder(uuidParams, member);
     const fulfilledOrder = getOrderResponse.order;
@@ -447,7 +451,8 @@ describe('merch orders', () => {
         },
       ],
     };
-    expect(merchController.fulfillMerchOrderItems(uuidParams, fulfillMerchOrderItemsRequest, member))
+    expect(MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, uuidParams,
+      fulfillMerchOrderItemsRequest, member, conn, pickupEvent))
       .rejects.toThrow(ForbiddenError);
   });
 
@@ -522,7 +527,8 @@ describe('merch orders', () => {
     const itemsToFulfill = order1.items.map((item) => ({ uuid: item.uuid }));
     const fulfillmentParams = { uuid: order1.uuid };
     const fulfillmentRequest = { items: itemsToFulfill };
-    await merchController.fulfillMerchOrderItems(fulfillmentParams, fulfillmentRequest, admin);
+    await MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, fulfillmentParams,
+      fulfillmentRequest, admin, conn, pickupEvent);
 
     await merchController.cancelAllPendingMerchOrders(admin);
 
@@ -606,7 +612,7 @@ describe('merch order pickup events', () => {
     const merchStoreController = ControllerFactory.merchStore(conn);
     await merchStoreController.createPickupEvent({ pickupEvent }, admin);
 
-    const [persistedPickupEvent] = await conn.manager.find(OrderPickupEventModel, { relations: ['orders'] });
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
   });
 
@@ -641,7 +647,7 @@ describe('merch order pickup events', () => {
     const params = { uuid: pickupEvent.uuid };
     await ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, admin);
 
-    const [persistedPickupEvent] = await conn.manager.find(OrderPickupEventModel, { relations: ['orders'] });
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
     expect(persistedPickupEvent.uuid).toEqual(pickupEvent.uuid);
     expect(persistedPickupEvent.title).toEqual(editPickupEventRequest.pickupEvent.title);
   });
@@ -681,8 +687,8 @@ describe('merch order pickup events', () => {
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
-    const [persistedOrder] = await conn.manager.find(OrderModel);
-    const [persistedPickupEvent] = await conn.manager.find(OrderPickupEventModel, { relations: ['orders'] });
+    const persistedOrder = await conn.manager.findOne(OrderModel);
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
     expect(persistedPickupEvent.orders).toHaveLength(1);
     expect(persistedPickupEvent.orders[0]).toStrictEqual(persistedOrder);
   });
@@ -785,14 +791,15 @@ describe('merch order pickup events', () => {
     const placedOrder1Response = await merchController.placeMerchOrder(placeMerchOrderRequest, member1);
     const placedOrder2Response = await merchController.placeMerchOrder(placeMerchOrderRequest, member2);
 
-    // fulfill one order
+    // fulfill one of the two orders
     const items = placedOrder1Response.order.items.map((item) => item.uuid);
     const { uuid: fulfilledOrderUuid } = placedOrder1Response.order;
     const fulfillOrderParams = { uuid: fulfilledOrderUuid };
     const fulfillOrderBody = { items: items.map((item) => ({ uuid: item })) };
-    await merchController.fulfillMerchOrderItems(fulfillOrderParams, fulfillOrderBody, admin);
+    await MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, fulfillOrderParams,
+      fulfillOrderBody, admin, conn, pickupEvent);
 
-    // update pickup event to have passed
+    // update the pickup event to have passed
     const pickupEventUuid = { uuid: pickupEvent.uuid };
     const pickupEventUpdates = {
       start: moment().subtract(1, 'day'),
@@ -803,13 +810,13 @@ describe('merch order pickup events', () => {
     // mark pickup event as complete
     await merchController.completePickupEvent(pickupEventUuid, admin);
 
-    // check member1's order is fulfilled
+    // check member1's order is fulfilled, and that confirmation email is sent
     const fulfilledOrder = await merchController.getOneMerchOrder({ uuid: fulfilledOrderUuid }, member1);
     expect(fulfilledOrder.order.status).toEqual(OrderStatus.FULFILLED);
     verify(emailService.sendOrderFulfillment(member1.email, member1.firstName, anything()))
       .called();
 
-    // check member2's order is missed
+    // check member2's order is missed, and that reschedule email is sent
     const { uuid: missedOrderUuid } = placedOrder2Response.order;
     const missedOrder = await merchController.getOneMerchOrder({ uuid: missedOrderUuid }, member2);
     expect(missedOrder.order.status).toEqual(OrderStatus.PICKUP_MISSED);
