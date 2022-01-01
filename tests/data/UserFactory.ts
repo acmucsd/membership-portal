@@ -32,8 +32,8 @@ export class UserFactory {
     const fake = UserModel.create({
       uuid: uuid(),
       email: faker.internet.email(firstName, lastName, 'ucsd.edu'),
-      firstName: firstName,
-      lastName: lastName,
+      firstName,
+      lastName,
       hash: UserFactory.PASSWORD_HASH,
       accessType: UserAccessType.STANDARD,
       state: UserState.ACTIVE,
