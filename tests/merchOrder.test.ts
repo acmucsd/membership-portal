@@ -594,6 +594,56 @@ describe('merch orders', () => {
     const orderPlacedActivity = adminActivityStream.activity[adminActivityStream.activity.length - 1];
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.PENDING_ORDERS_CANCELLED);
   });
+
+  test('only admins can get all orders while users can get their own orders', async () => {
+    const conn = await DatabaseConnection.get();
+    const member1 = UserFactory.fake({ credits: 10000 });
+    const member2 = UserFactory.fake({ credits: 10000 });
+    const member3 = UserFactory.fake({ credits: 10000 });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const affordableOption = MerchFactory.fakeOption({
+      quantity: 10,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const merchItem = MerchFactory.fakeItem({
+      monthlyLimit: 20,
+      lifetimeLimit: 20,
+      options: [affordableOption],
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    const order = [{ option: affordableOption, quantity: 1 }];
+
+    await new PortalState()
+      .createUsers(member1, member2, member3, admin)
+      .createMerchItem(merchItem)
+      .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member1, order, pickupEvent)
+      .orderMerch(member2, order, pickupEvent)
+      .orderMerch(member3, order, pickupEvent)
+      .orderMerch(admin, order, pickupEvent)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const order1 = await merchStoreController.getMerchOrdersForCurrentUser(member1);
+    expect(order1.orders.length).toBe(1);
+    expect(order1.orders[0].user).toStrictEqual(member1.getPublicProfile());
+
+    const adminOrder = await merchStoreController.getMerchOrdersForCurrentUser(admin);
+    expect(adminOrder.orders.length).toBe(1);
+    expect(adminOrder.orders[0].user).toStrictEqual(admin.getPublicProfile());
+
+    const order2 = await merchStoreController.getMerchOrdersForCurrentUser(member2);
+    const order3 = await merchStoreController.getMerchOrdersForCurrentUser(member3);
+
+    const allOrders = await merchStoreController.getMerchOrdersForAllUsers(admin);
+    expect(allOrders.orders)
+      .toStrictEqual(expect.arrayContaining([order1.orders[0], order2.orders[0], order3.orders[0],
+        adminOrder.orders[0]]));
+
+    expect(merchStoreController.getMerchOrdersForAllUsers(member1)).rejects.toThrow(ForbiddenError);
+  });
 });
 
 describe('merch order pickup events', () => {
