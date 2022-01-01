@@ -256,7 +256,7 @@ export interface GetOneMerchOrderResponse extends ApiResponse {
   order: PublicOrderWithItems;
 }
 
-export interface GetAllMerchOrdersResponse extends ApiResponse {
+export interface GetMerchOrdersResponse extends ApiResponse {
   orders: PublicOrder[];
 }
 
