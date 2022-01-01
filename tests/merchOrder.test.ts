@@ -476,15 +476,15 @@ describe('merch orders', () => {
       .createOrderPickupEvents(orderPickupEvent)
       .write();
 
-    const merchStoreController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn);
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
       pickupEvent: orderPickupEvent.uuid,
     };
 
-    await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, admin))
+    await expect(merchController.placeMerchOrder(placeMerchOrderRequest, admin))
       .rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
-    await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, member))
+    await expect(merchController.placeMerchOrder(placeMerchOrderRequest, member))
       .rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
   });
 
@@ -580,23 +580,23 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pastPickupEvent, ongoingPickupEvent, futurePickupEvent)
       .write();
 
-    const merchStoreController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn);
 
-    const getFuturePickupEventsResponse = await merchStoreController.getFuturePickupEvents(admin);
+    const getFuturePickupEventsResponse = await merchController.getFuturePickupEvents(admin);
     expect(getFuturePickupEventsResponse.pickupEvents)
       .toEqual(expect.arrayContaining([
         ongoingPickupEvent.getPublicOrderPickupEvent(true),
         futurePickupEvent.getPublicOrderPickupEvent(true),
       ]));
 
-    const getPastPickupEventsResponse = await merchStoreController.getPastPickupEvents(admin);
+    const getPastPickupEventsResponse = await merchController.getPastPickupEvents(admin);
     expect(getPastPickupEventsResponse.pickupEvents)
       .toEqual(expect.arrayContaining([
         pastPickupEvent.getPublicOrderPickupEvent(true),
       ]));
 
     const getPickupEventParams = { uuid: ongoingPickupEvent.uuid };
-    const getOnePickupEventResponse = await merchStoreController.getOnePickupEvent(getPickupEventParams, admin);
+    const getOnePickupEventResponse = await merchController.getOnePickupEvent(getPickupEventParams, admin);
     expect(getOnePickupEventResponse.pickupEvent).toStrictEqual(ongoingPickupEvent.getPublicOrderPickupEvent(true));
   });
 
@@ -609,8 +609,8 @@ describe('merch order pickup events', () => {
       .createUsers(admin)
       .write();
 
-    const merchStoreController = ControllerFactory.merchStore(conn);
-    await merchStoreController.createPickupEvent({ pickupEvent }, admin);
+    const merchController = ControllerFactory.merchStore(conn);
+    await merchController.createPickupEvent({ pickupEvent }, admin);
 
     const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
@@ -944,13 +944,13 @@ describe('merch order pickup events', () => {
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
-    const merchStoreController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn);
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
       pickupEvent: pickupEvent.uuid,
     };
 
-    const placeOrderResponse = await merchStoreController.placeMerchOrder(placeMerchOrderRequest, member);
+    const placeOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
     expect(placeOrderResponse.error).toBeNull();
     expect(placeOrderResponse.order.pickupEvent).toStrictEqual(pickupEvent.getPublicOrderPickupEvent());
   });
@@ -978,11 +978,11 @@ describe('merch order pickup events', () => {
         orderLimit: 2,
       },
     };
-    const merchStoreController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn);
     const params = { uuid: pickupEvent.uuid };
-    await merchStoreController.editPickupEvent(params, editPickupEventRequest, admin);
+    await merchController.editPickupEvent(params, editPickupEventRequest, admin);
 
-    const persistedPickupEvent = await merchStoreController.getOnePickupEvent(params, admin);
+    const persistedPickupEvent = await merchController.getOnePickupEvent(params, admin);
 
     expect(persistedPickupEvent.pickupEvent.orderLimit).toEqual(2);
   });
@@ -1012,13 +1012,13 @@ describe('merch order pickup events', () => {
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
-    const merchStoreController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn);
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
       pickupEvent: pickupEvent.uuid,
     };
 
-    await expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, member))
+    await expect(merchController.placeMerchOrder(placeMerchOrderRequest, member))
       .rejects
       .toThrow('This merch pickup event is full! Please choose a different pickup event');
   });

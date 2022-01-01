@@ -28,11 +28,9 @@ export class MerchStoreControllerWrapper {
     const startHour = moment(pickupEvent.start).hours();
     const startMinute = moment(pickupEvent.start).minutes();
     const newStart = moment().hour(startHour).minute(startMinute).toDate();
-
     const endHour = moment(pickupEvent.end).hours();
     const endMinute = moment(pickupEvent.end).minutes();
     const newEnd = moment().hour(endHour).minute(endMinute).toDate();
-
     const dateUpdateParams = { uuid: pickupEvent.uuid };
     const dateUpdates = {
       start: newStart,
