@@ -468,8 +468,8 @@ export default class MerchStoreService {
   /**
    * Changes the pickup event of an order to a new one. The new pickup event must start more than 2 calendar
    * days after the current time.
-   * 
-   * If successful, the order's status is updated to PLACED, 
+   *
+   * If successful, the order's status is updated to PLACED,
    * allowing it to be fulfilled by MerchStoreService::fulfillOrderItems()
    */
   public async rescheduleOrderPickup(orderUuid: Uuid, pickupEventUuid: Uuid, user: UserModel): Promise<OrderModel> {
@@ -669,7 +669,7 @@ export default class MerchStoreService {
       // check if pickup event is happening today
       // (we don't check if it's ongoing in case the event needs to start earlier for any reason
       // or if someone comes a few minutes earlier)
-      const { pickupEvent } = order; 
+      const { pickupEvent } = order;
       const isOrderPickupEventToday = moment().isSame(moment(pickupEvent.start), 'day');
       if (!isOrderPickupEventToday) {
         throw new UserError('Cannot fulfill items of an order that has a pickup event not happening today');

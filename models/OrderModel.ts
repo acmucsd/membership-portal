@@ -7,6 +7,7 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { Uuid, PublicOrder, OrderStatus, PublicOrderWithItems } from '../types';
 import { UserModel } from './UserModel';

@@ -857,7 +857,7 @@ describe('merch order pickup events', () => {
     // reschedule pickup event
     const orderUuid = { uuid: placedOrderResponse.order.uuid };
     const pickupEventRequest = { pickupEvent: anotherPickupEvent.uuid };
-    await merchController.editMerchOrderPickup(orderUuid, pickupEventRequest, member);
+    await merchController.rescheduleOrderPickup(orderUuid, pickupEventRequest, member);
     const updatedOrderResponse = await merchController.getOneMerchOrder(orderUuid, member);
 
     expect(updatedOrderResponse.order.pickupEvent).toStrictEqual(anotherPickupEvent.getPublicOrderPickupEvent());
@@ -908,7 +908,7 @@ describe('merch order pickup events', () => {
     // attempt to reschedule pickup event
     const orderUuid = { uuid: placedOrderResponse.order.uuid };
     const pickupEventRequest = { pickupEvent: moreRecentPickupEvent.uuid };
-    expect(merchController.editMerchOrderPickup(orderUuid, pickupEventRequest, member))
+    expect(merchController.rescheduleOrderPickup(orderUuid, pickupEventRequest, member))
       .rejects.toThrow('Cannot change order pickup to an event that starts in less than 2 days');
   });
 
