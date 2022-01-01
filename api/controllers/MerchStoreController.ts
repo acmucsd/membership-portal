@@ -207,6 +207,7 @@ export class MerchStoreController {
   @Post('/order')
   async placeMerchOrder(@Body() placeOrderRequest: PlaceMerchOrderRequest,
     @AuthenticatedUser() user: UserModel): Promise<PlaceMerchOrderResponse> {
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const originalOrder = this.validateMerchOrderRequest(placeOrderRequest.order);
     const order = await this.merchStoreService.placeOrder(originalOrder, user, placeOrderRequest.pickupEvent);
     return { error: null, order: order.getPublicOrderWithItems() };

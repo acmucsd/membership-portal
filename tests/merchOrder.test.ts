@@ -84,6 +84,65 @@ describe('merch orders', () => {
       .called();
   });
 
+  test('members can only access store with a valid acm or ucsd email', async () => {
+    const conn = await DatabaseConnection.get();
+    const UCSDMember = UserFactory.fake({ credits: 10000 });
+    const ACMMember = UserFactory.fake({
+      email: 'gZhao@acmucsd.org',
+      credits: 10000,
+    });
+    const invalidMember = UserFactory.fake({
+      email: 'gZhao@gmail.com',
+      credits: 10000,
+    });
+
+    const affordableOption1 = MerchFactory.fakeOption({
+      quantity: 5,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(ACMMember, UCSDMember, invalidMember)
+      .createMerchItemOptions(affordableOption1)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(ACMMember.email, ACMMember.firstName, anything()))
+      .thenResolve();
+    when(emailService.sendOrderConfirmation(UCSDMember.email, UCSDMember.firstName, anything()))
+      .thenResolve();
+
+    const order = [
+      {
+        option: affordableOption1.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+
+    const merchStoreController = await ControllerFactory.merchStore(conn, instance(emailService));
+
+    const ACMPlacedOrderResponse = await merchStoreController.placeMerchOrder(placeMerchOrderRequest, ACMMember);
+    const ACMPlacedOrder = ACMPlacedOrderResponse.order;
+
+    expect(ACMPlacedOrder.items).toHaveLength(1);
+    expect(ACMPlacedOrder.status).toStrictEqual(OrderStatus.PLACED);
+
+    const UCSDPlacedOrderResponse = await merchStoreController.placeMerchOrder(placeMerchOrderRequest, UCSDMember);
+    const UCSDPlacedOrder = UCSDPlacedOrderResponse.order;
+
+    expect(UCSDPlacedOrder.items).toHaveLength(1);
+    expect(UCSDPlacedOrder.status).toStrictEqual(OrderStatus.PLACED);
+
+    expect(merchStoreController.placeMerchOrder(placeMerchOrderRequest, invalidMember)).rejects.toThrow(ForbiddenError);
+  });
+
   test('members can cancel orders that they\'ve placed and receive a full refund to their order', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake({ credits: 10000 });
