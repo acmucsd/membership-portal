@@ -19,7 +19,7 @@ export class MerchStoreControllerWrapper {
    * The start/end times are reverted back before the function returns.
    */
   public static async fulfillMerchOrderItems(merchController: MerchStoreController,
-    fulfillOrderParams: UuidParam, itemsToFulfill: FulfillMerchOrderRequest, admin: UserModel,
+    fulfillOrderParams: UuidParam, itemsToFulfill: FulfillMerchOrderRequest, distributor: UserModel,
     conn: Connection, pickupEvent: OrderPickupEventModel) {
     const originalStart = pickupEvent.start;
     const originalEnd = pickupEvent.end;
@@ -39,7 +39,7 @@ export class MerchStoreControllerWrapper {
     await conn.manager.update(OrderPickupEventModel, dateUpdateParams, dateUpdates);
 
     // fulfill order items
-    await merchController.fulfillMerchOrderItems(fulfillOrderParams, itemsToFulfill, admin);
+    await merchController.fulfillMerchOrderItems(fulfillOrderParams, itemsToFulfill, distributor);
 
     // move pickup event back to original day
     const dateRollback = {
