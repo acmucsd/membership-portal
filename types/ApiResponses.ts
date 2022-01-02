@@ -71,6 +71,8 @@ export interface ResendEmailVerificationResponse extends ApiResponse {}
 
 export interface VerifyEmailResponse extends ApiResponse {}
 
+export interface EmailModificationResponse extends ApiResponse {}
+
 export interface SendPasswordResetEmailResponse extends ApiResponse {}
 
 export interface ResetPasswordResponse extends ApiResponse {}
@@ -203,6 +205,9 @@ export interface PublicOrder {
   status: string;
   orderedAt: Date;
   pickupEvent: PublicOrderPickupEvent;
+}
+
+export interface PublicOrderWithItems extends PublicOrder {
   items: PublicOrderItem[];
 }
 
@@ -249,15 +254,15 @@ export interface CreateMerchItemOptionResponse extends ApiResponse {
 export interface DeleteMerchItemOptionResponse extends ApiResponse {}
 
 export interface GetOneMerchOrderResponse extends ApiResponse {
-  order: PublicOrder;
+  order: PublicOrderWithItems;
 }
 
-export interface GetAllMerchOrdersResponse extends ApiResponse {
+export interface GetMerchOrdersResponse extends ApiResponse {
   orders: PublicOrder[];
 }
 
 export interface PlaceMerchOrderResponse extends ApiResponse {
-  order: PublicOrder;
+  order: PublicOrderWithItems;
 }
 
 export interface VerifyMerchOrderResponse extends ApiResponse {}
@@ -345,7 +350,7 @@ export interface PublicOrderPickupEvent {
   start: Date;
   end: Date;
   description: string;
-  orders?: PublicOrder[];
+  orders?: PublicOrderWithItems[];
   orderLimit?: number;
 }
 
