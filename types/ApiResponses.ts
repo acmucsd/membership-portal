@@ -145,6 +145,7 @@ export interface PublicMerchCollection {
   themeColorHex?: string;
   description: string;
   items: PublicMerchItem[];
+  createdAt: Date;
 }
 
 export interface PublicMerchItem {
