@@ -10,7 +10,7 @@ export class MerchandiseCollectionModel extends BaseEntity {
   @Column('varchar', { length: 255 })
   title: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
   @Column('varchar', { length: 255 })
