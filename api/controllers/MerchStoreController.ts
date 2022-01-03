@@ -80,6 +80,7 @@ export class MerchStoreController {
   @Get('/collection/:uuid')
   async getOneMerchCollection(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchCollectionResponse> {
+    if(!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const canSeeHiddenItems = PermissionsService.canEditMerchStore(user);
     const collection = await this.merchStoreService.findCollectionByUuid(params.uuid, canSeeHiddenItems);
     return { error: null, collection };
@@ -87,6 +88,7 @@ export class MerchStoreController {
 
   @Get('/collection')
   async getAllMerchCollections(@AuthenticatedUser() user: UserModel): Promise<GetAllMerchCollectionsResponse> {
+    if(!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const canSeeInactiveCollections = PermissionsService.canEditMerchStore(user);
     const collections = await this.merchStoreService.getAllCollections(canSeeInactiveCollections);
     return { error: null, collections };
