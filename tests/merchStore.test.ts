@@ -18,7 +18,45 @@ afterAll(async () => {
   await DatabaseConnection.clear();
   await DatabaseConnection.close();
 });
+describe('creating merch collections', () => {
+  test('getting created collections returns them in reverse order of creation', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const member = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+    const firstCollectionToBeMade = MerchFactory.fakeCollection({
+      createdAt: faker.date.past(),
+      archived: true,
+    });
+    const secondCollectionToBeMade = MerchFactory.fakeCollection({
+      createdAt: new Date(),
+      archived: false,
+    });
+    const thirdCollectionToBeMade = MerchFactory.fakeCollection({
+      createdAt: faker.date.future(),
+      archived: false,
+    });
 
+    await new PortalState()
+      .createUsers(admin, member)
+      .createMerchCollections(firstCollectionToBeMade, secondCollectionToBeMade, thirdCollectionToBeMade)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+
+    const expectedCollectionOrder = [thirdCollectionToBeMade, secondCollectionToBeMade]
+      .map((coll) => coll.uuid);
+
+    const collectionsVisibleByAdmin = await merchStoreController.getAllMerchCollections(admin);
+
+    expect(collectionsVisibleByAdmin.collections.map((collection) => collection.uuid))
+      .toEqual(expectedCollectionOrder.concat(firstCollectionToBeMade.uuid));
+
+    const collectionsVisibleByMember = await merchStoreController.getAllMerchCollections(member);
+
+    expect(collectionsVisibleByMember.collections.map((collection) => collection.uuid))
+      .toEqual(expectedCollectionOrder);
+  });
+});
 describe('editing merch collections', () => {
   test('only admins can edit merch collections', async () => {
     const conn = await DatabaseConnection.get();
