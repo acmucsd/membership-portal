@@ -905,7 +905,9 @@ describe('merch order pickup events', () => {
       price: 2000,
       discountPercentage: 0,
     });
-    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({
+      orderLimit: 3,
+    });
 
     await new PortalState()
       .createUsers(member1, member2, merchDistributor)
