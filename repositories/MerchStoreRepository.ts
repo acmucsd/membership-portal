@@ -19,6 +19,7 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
     return this.repository.createQueryBuilder('collection')
       .leftJoinAndSelect('collection.items', 'items')
       .leftJoinAndSelect('items.options', 'options')
+      .orderBy('collection.createdAt', 'DESC')
       .getMany();
   }
 
@@ -27,6 +28,7 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
       .leftJoinAndSelect('collection.items', 'items')
       .leftJoinAndSelect('items.options', 'options')
       .where({ archived: false })
+      .orderBy('collection.createdAt', 'DESC')
       .getMany();
   }
 

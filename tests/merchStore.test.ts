@@ -19,6 +19,83 @@ afterAll(async () => {
   await DatabaseConnection.close();
 });
 
+describe('merch store permissions', () => {
+  test('members can only access store with a valid acm or ucsd email', async () => {
+    const conn = await DatabaseConnection.get();
+    const UCSDMember = UserFactory.fake({ credits: 10000 });
+    const ACMBoardMember = UserFactory.fake({
+      email: 'random@acmucsd.org',
+      credits: 10000,
+    });
+    const invalidMember = UserFactory.fake({
+      email: 'random@gmail.com',
+      credits: 10000,
+    });
+
+    const affordableOption1 = MerchFactory.fakeOption({
+      quantity: 5,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(ACMBoardMember, UCSDMember, invalidMember)
+      .createMerchItemOptions(affordableOption1)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const merchStoreController = await ControllerFactory.merchStore(conn);
+
+    const ACMBoardMemberResponse = await merchStoreController.getAllMerchCollections(ACMBoardMember);
+    expect(ACMBoardMemberResponse.error).toBe(null);
+
+    const UCSDMemberResponse = await merchStoreController.getAllMerchCollections(UCSDMember);
+    expect(UCSDMemberResponse.error).toBe(null);
+
+    expect(merchStoreController.getAllMerchCollections(invalidMember)).rejects.toThrow(ForbiddenError);
+  });
+});
+
+describe('creating merch collections', () => {
+  test('getting created collections returns them in reverse order of creation', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const member = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+    const firstCollectionToBeMade = MerchFactory.fakeCollection({
+      createdAt: faker.date.past(),
+      archived: true,
+    });
+    const secondCollectionToBeMade = MerchFactory.fakeCollection({
+      createdAt: new Date(),
+      archived: false,
+    });
+    const thirdCollectionToBeMade = MerchFactory.fakeCollection({
+      createdAt: faker.date.future(),
+      archived: false,
+    });
+
+    await new PortalState()
+      .createUsers(admin, member)
+      .createMerchCollections(firstCollectionToBeMade, secondCollectionToBeMade, thirdCollectionToBeMade)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+
+    const expectedCollectionOrder = [thirdCollectionToBeMade, secondCollectionToBeMade]
+      .map((coll) => coll.uuid);
+
+    const collectionsVisibleByAdmin = await merchStoreController.getAllMerchCollections(admin);
+
+    expect(collectionsVisibleByAdmin.collections.map((collection) => collection.uuid))
+      .toEqual(expectedCollectionOrder.concat(firstCollectionToBeMade.uuid));
+
+    const collectionsVisibleByMember = await merchStoreController.getAllMerchCollections(member);
+
+    expect(collectionsVisibleByMember.collections.map((collection) => collection.uuid))
+      .toEqual(expectedCollectionOrder);
+  });
+});
 describe('editing merch collections', () => {
   test('only admins can edit merch collections', async () => {
     const conn = await DatabaseConnection.get();
