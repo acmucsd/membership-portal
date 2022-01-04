@@ -109,8 +109,6 @@ describe('merch orders', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    
-
     const merchStoreController = await ControllerFactory.merchStore(conn);
 
     const ACMBoardMemberResponse = await merchStoreController.getAllMerchCollections(ACMBoardMember);
