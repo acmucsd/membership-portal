@@ -50,6 +50,7 @@ export class MerchandiseItemModel extends BaseEntity {
       options: this.options.map((o) => o.getPublicMerchItemOption()),
       monthlyLimit: this.monthlyLimit,
       lifetimeLimit: this.lifetimeLimit,
+      hidden: this.hidden,
       hasVariantsEnabled: this.hasVariantsEnabled,
     };
     if (this.collection) baseMerchItem.collection = this.collection.getPublicMerchCollection();
