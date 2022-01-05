@@ -154,6 +154,7 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
   private getBaseFindManyQuery(): SelectQueryBuilder<OrderPickupEventModel> {
     return this.repository
       .createQueryBuilder('orderPickupEvent')
-      .leftJoinAndSelect('orderPickupEvent.orders', 'order');
+      .leftJoinAndSelect('orderPickupEvent.orders', 'order')
+      .leftJoinAndSelect('order.user', 'user');
   }
 }
