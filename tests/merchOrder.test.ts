@@ -716,7 +716,9 @@ describe('merch orders', () => {
       lifetimeLimit: 2,
       options: [option],
     });
-    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({
+      orderLimit: 2,
+    });
 
     // hit the monthly and lifetime limits in first order
     const order = [{ option, quantity: 2 }];
