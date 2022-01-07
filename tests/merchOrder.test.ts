@@ -728,7 +728,6 @@ describe('merch orders', () => {
       .createMerchItem(merchItem)
       .createOrderPickupEvents(pickupEvent)
       .orderMerch(member, order, pickupEvent)
-      .orderMerch(admin, order, pickupEvent)
       .write();
 
     const emailService = mock(EmailService);
