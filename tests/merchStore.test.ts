@@ -280,7 +280,7 @@ describe('merch items with no options', () => {
 });
 
 describe('merch item edits', () => {
-  test('succeeds when item fields are updated', async () => {
+  test('merch item fields can be updated', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem();
@@ -308,7 +308,7 @@ describe('merch item edits', () => {
     expect(getMerchItemResponse.item.lifetimeLimit).toEqual(merchItemEdits.lifetimeLimit);
   });
 
-  test('succeeds when item option fields are updated', async () => {
+  test('merch item option fields can be updated', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
@@ -346,7 +346,7 @@ describe('merch item edits', () => {
       .toEqual(expect.arrayContaining(updatedOptions));
   });
 
-  test('fails when updated options have multiple types', async () => {
+  test('items cannot be updated to have multiple options with different types', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
@@ -365,7 +365,7 @@ describe('merch item edits', () => {
       .rejects.toThrow('Merch items cannot have multiple option types');
   });
 
-  test('succeeds when updated options have same type', async () => {
+  test('items can have their options\' types updated as long as its the same type for all options', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
@@ -399,7 +399,7 @@ describe('merch item edits', () => {
 });
 
 describe('merch item option variants', () => {
-  test('fails when disabling variants on item with multiple options', async () => {
+  test('items cannot have variants disabled and have multiple options', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
@@ -415,7 +415,7 @@ describe('merch item option variants', () => {
       .rejects.toThrow('Merch items with variants disabled cannot have multiple options');
   });
 
-  test('fails when enabling variants on item where only option has null metadata', async () => {
+  test('items cannot have variants enabled and have null metadata for an option', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: false });
