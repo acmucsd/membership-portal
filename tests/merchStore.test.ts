@@ -346,6 +346,81 @@ describe('merch item edits', () => {
       .toEqual(expect.arrayContaining(updatedOptions));
   });
 
+  test('merch item option quantity can be incremented and decremented', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const option = MerchFactory.fakeOption({
+      quantity: 10,
+    });
+    const item = MerchFactory.fakeItem({
+      hasVariantsEnabled: false,
+      options: [option],
+    });
+
+    await new PortalState()
+      .createUsers(admin)
+      .createMerchItem(item)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const params = { uuid: item.uuid };
+
+    // increment quantity from 10 to 15
+    const incrementOptionUpdates = [{
+      uuid: option.uuid,
+      quantityToAdd: 5,
+    }];
+    const incrementQuantityRequest = { merchandise: { options: incrementOptionUpdates } };
+    await merchStoreController.editMerchItem(params, incrementQuantityRequest, admin);
+
+    // verify it got incremented
+    const incrementedQuantityResponse = await merchStoreController.getOneMerchItem(params, admin);
+    const incrementedOption = incrementedQuantityResponse.item.options[0];
+    expect(incrementedOption.quantity).toEqual(15);
+
+    // decrement quantity from 15 to 10
+    const decrementOptionUpdates = [{
+      uuid: option.uuid,
+      quantityToAdd: -5,
+    }];
+    const decrementQuantityRequest = { merchandise: { options: decrementOptionUpdates } };
+    await merchStoreController.editMerchItem(params, decrementQuantityRequest, admin);
+
+    // verify it got decremented
+    const decrementedQuantityResponse = await merchStoreController.getOneMerchItem(params, admin);
+    const decrementedOption = decrementedQuantityResponse.item.options[0];
+    expect(decrementedOption.quantity).toEqual(10);
+  });
+
+  test('merch item option quantity cannot be decremented to below 0', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const option = MerchFactory.fakeOption({
+      quantity: 5,
+    });
+    const item = MerchFactory.fakeItem({
+      hasVariantsEnabled: false,
+      options: [option],
+    });
+
+    await new PortalState()
+      .createUsers(admin)
+      .createMerchItem(item)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const params = { uuid: item.uuid };
+
+    // decrement quantity by 10 when the current quantity is 5
+    const decrementOptionUpdates = [{
+      uuid: option.uuid,
+      quantityToAdd: -10,
+    }];
+    const decrementQuantityRequest = { merchandise: { options: decrementOptionUpdates } };
+    expect(merchStoreController.editMerchItem(params, decrementQuantityRequest, admin))
+      .rejects.toThrow(`Cannot decrement option quantity below 0 for option: ${option.uuid}`);
+  });
+
   test('items cannot be updated to have multiple options with different types', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });

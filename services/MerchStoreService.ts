@@ -191,8 +191,13 @@ export default class MerchStoreService {
           const optionUpdate = optionUpdatesByUuid.get(currentOption.uuid);
           // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
           // e.g. there's 10 of an item and someone adds 5 to stock while someone else orders 1
-          // so the merch store admin sets quantity to 15 but the true quantity is 14
-          if (optionUpdate.quantityToAdd) currentOption.quantity += optionUpdate.quantityToAdd;
+          // so the merch store admin sets quantity to 15 but the true quantity is 14.
+          if (optionUpdate.quantityToAdd) {
+            currentOption.quantity += optionUpdate.quantityToAdd;
+            if (currentOption.quantity < 0) {
+              throw new UserError(`Cannot decrement option quantity below 0 for option: ${currentOption.uuid}`);
+            }
+          }
           return MerchandiseItemOptionModel.merge(currentOption, optionUpdate);
         });
       }

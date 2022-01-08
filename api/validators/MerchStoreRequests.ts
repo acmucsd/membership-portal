@@ -9,6 +9,7 @@ import {
   IsHexColor,
   IsDateString,
   ArrayNotEmpty,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -110,7 +111,9 @@ export class MerchItemOptionEdit implements IMerchItemOptionEdit {
   @IsUUID()
   uuid: string;
 
-  @Min(0)
+  /** We allow negative quantityToAdd for decrementing an option's quantity
+   * (e.g. if the initial quantity was typoed) */
+  @IsNumber()
   quantityToAdd?: number;
 
   @Min(0)
