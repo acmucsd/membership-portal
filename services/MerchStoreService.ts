@@ -762,22 +762,56 @@ export default class MerchStoreService {
     });
   }
 
-  private static countItemOrders(itemOptions: Map<string, MerchandiseItemOptionModel>, orders: OrderModel[]):
+  /**
+   * Counts the number of times each option has been ordered by the user.
+   *
+   * An ordered item does not contribute towards an option's count if its order
+   * has been cancelled AND the item is unfufilled. An ordered item
+   * whose order has been cancelled but the item is fulfilled still counts towards the count.
+   */
+  private static countItemOrders(itemOptionsToOrder: Map<string, MerchandiseItemOptionModel>, pastOrders: OrderModel[]):
   Map<MerchandiseItemModel, number> {
     const counts = new Map<MerchandiseItemModel, number>();
-    const options = Array.from(itemOptions.values());
+    const options = Array.from(itemOptionsToOrder.values());
     for (let i = 0; i < options.length; i += 1) {
       counts.set(options[i].item, 0);
     }
-    const orderedItemOptions = flatten(orders.map((o) => o.items));
+    const ordersByOrderItem = new Map<string, OrderModel>();
+    const orderedItemOptions = [];
+
+    for (let o = 0; o < pastOrders.length; o += 1) {
+      for (let i = 0; i < pastOrders[o].items.length; i += 1) {
+        const orderItem = pastOrders[o].items[i];
+        ordersByOrderItem.set(orderItem.uuid, pastOrders[o]);
+        orderedItemOptions.push(orderItem);
+      }
+    }
+
     for (let i = 0; i < orderedItemOptions.length; i += 1) {
-      const orderedOption = itemOptions.get(orderedItemOptions[i].option.uuid);
+      const orderedItem = orderedItemOptions[i];
+      const orderedOption = itemOptionsToOrder.get(orderedItem.option.uuid);
+      // check for nullity of orderedOption since the Map.get() call can return null
+      // if the user's previously ordered options aren't what they are ordering now
       if (orderedOption) {
-        const { item } = orderedOption;
-        if (counts.has(item)) counts.set(item, counts.get(item) + 1);
+        const order = ordersByOrderItem.get(orderedItem.uuid);
+        if (MerchStoreService.doesItemCountTowardsOrderLimits(orderedItem, order)) {
+          const { item } = orderedOption;
+          if (counts.has(item)) counts.set(item, counts.get(item) + 1);
+        }
       }
     }
     return counts;
+  }
+
+  /**
+   * An item counts towards the order limit if it has either been fulfilled or if
+   * it's on hold for that customer, meaning if the customer's order was cancelled
+   * and the item is unfulfilled, the item shouldn't count.
+   * (having the order cancelled and the item fulfilled would mean the order was
+   * partially fulfilled then cancelled, which would still count since that item belongs to that user)
+   */
+  private static doesItemCountTowardsOrderLimits(orderItem: OrderItemModel, order: OrderModel) {
+    return order.status !== OrderStatus.CANCELLED || orderItem.fulfilled;
   }
 
   private static countItemRequestedQuantities(order: MerchItemOptionAndQuantity[],

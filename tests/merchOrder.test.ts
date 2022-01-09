@@ -658,7 +658,7 @@ describe('merch orders', () => {
     const member2 = UserFactory.fake({ credits: 10000 });
     const member3 = UserFactory.fake({ credits: 10000 });
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const affordableOption = MerchFactory.fakeOption({
+    const option = MerchFactory.fakeOption({
       quantity: 10,
       price: 2000,
       discountPercentage: 0,
@@ -666,11 +666,11 @@ describe('merch orders', () => {
     const merchItem = MerchFactory.fakeItem({
       monthlyLimit: 20,
       lifetimeLimit: 20,
-      options: [affordableOption],
+      options: [option],
     });
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
 
-    const order = [{ option: affordableOption, quantity: 1 }];
+    const order = [{ option, quantity: 1 }];
 
     await new PortalState()
       .createUsers(member1, member2, member3, admin)
@@ -700,6 +700,54 @@ describe('merch orders', () => {
         adminOrder.orders[0]]));
 
     expect(merchStoreController.getMerchOrdersForAllUsers(member1)).rejects.toThrow(ForbiddenError);
+  });
+
+  test('unfulfilled ordered items whose order was cancelled do not count towards order limits for user', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const option = MerchFactory.fakeOption({
+      quantity: 10,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const merchItem = MerchFactory.fakeItem({
+      monthlyLimit: 2,
+      lifetimeLimit: 2,
+      options: [option],
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({
+      orderLimit: 2,
+    });
+
+    // hit the monthly and lifetime limits in first order
+    const order = [{ option, quantity: 2 }];
+
+    await new PortalState()
+      .createUsers(member, admin)
+      .createMerchItem(merchItem)
+      .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, order, pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderCancellation(anyString(), anyString(), anything()))
+      .thenResolve();
+    when(emailService.sendOrderConfirmation(anyString(), anyString(), anything()))
+      .thenResolve();
+
+    // cancel order
+    const merchController = ControllerFactory.merchStore(conn);
+    const placedOrder = await conn.manager.findOne(OrderModel, { user: member }, { relations: ['items'] });
+    const cancelOrderParams = { uuid: placedOrder.uuid };
+    await merchController.cancelMerchOrder(cancelOrderParams, member);
+
+    // place order with 2 items again
+    const secondOrder = [{ option: option.uuid, quantity: 2 }];
+    const placeOrderRequest = { order: secondOrder, pickupEvent: pickupEvent.uuid };
+    const placeMerchOrderResponse = await merchController.placeMerchOrder(placeOrderRequest, member);
+
+    expect(placeMerchOrderResponse.error).toBeNull();
   });
 });
 
