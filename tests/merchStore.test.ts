@@ -55,6 +55,65 @@ describe('merch store permissions', () => {
 
     expect(merchStoreController.getAllMerchCollections(invalidMember)).rejects.toThrow(ForbiddenError);
   });
+
+  test('archived collections are hidden from members, but not for store managers', async () => {
+    const conn = await DatabaseConnection.get();
+    const storeManager = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_MANAGER });
+    const member = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+    const archivedCollection = MerchFactory.fakeCollection({
+      archived: true,
+    });
+    const unarchivedCollection = MerchFactory.fakeCollection({
+      archived: false,
+    });
+
+    await new PortalState()
+      .createUsers(storeManager, member)
+      .createMerchCollections(archivedCollection, unarchivedCollection)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+
+    const collectionsVisibleByManager = await merchStoreController.getAllMerchCollections(storeManager);
+    expect(collectionsVisibleByManager.collections.map((c) => c.uuid)).toEqual(
+      expect.arrayContaining([archivedCollection.uuid, unarchivedCollection.uuid]),
+    );
+
+    const collectionsVisibleByMember = await merchStoreController.getAllMerchCollections(member);
+    expect(collectionsVisibleByMember.collections.map((c) => c.uuid)).toEqual(
+      expect.arrayContaining([unarchivedCollection.uuid]),
+    );
+  });
+
+  test('hidden items are hidden from members, but not for store managers', async () => {
+    const conn = await DatabaseConnection.get();
+    const storeManager = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_MANAGER });
+    const member = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+    const hiddenItem = MerchFactory.fakeItem({
+      hidden: true,
+    });
+    const visibleItem = MerchFactory.fakeItem({
+      hidden: false,
+    });
+    const collection = MerchFactory.fakeCollection({
+      items: [hiddenItem, visibleItem],
+    });
+
+    await new PortalState()
+      .createUsers(storeManager, member)
+      .createMerchCollections(collection)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+
+    const collectionsForManagerResponse = await merchStoreController.getAllMerchCollections(storeManager);
+    const itemsForManager = collectionsForManagerResponse.collections[0].items.map((i) => i.uuid);
+    expect(itemsForManager).toEqual(expect.arrayContaining([visibleItem.uuid, hiddenItem.uuid]));
+
+    const collectionsForMemberResponse = await merchStoreController.getAllMerchCollections(storeManager);
+    const itemsForMember = collectionsForMemberResponse.collections[0].items.map((i) => i.uuid);
+    expect(itemsForMember).toEqual(expect.arrayContaining([visibleItem.uuid]));
+  });
 });
 
 describe('creating merch collections', () => {
