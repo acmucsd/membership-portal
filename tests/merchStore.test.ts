@@ -339,7 +339,7 @@ describe('merch items with no options', () => {
 });
 
 describe('merch item edits', () => {
-  test('succeeds when item fields are updated', async () => {
+  test('merch item fields can be updated', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem();
@@ -367,7 +367,7 @@ describe('merch item edits', () => {
     expect(getMerchItemResponse.item.lifetimeLimit).toEqual(merchItemEdits.lifetimeLimit);
   });
 
-  test('succeeds when item option fields are updated', async () => {
+  test('merch item option fields can be updated', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
@@ -405,7 +405,82 @@ describe('merch item edits', () => {
       .toEqual(expect.arrayContaining(updatedOptions));
   });
 
-  test('fails when updated options have multiple types', async () => {
+  test('merch item option quantity can be incremented and decremented', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const option = MerchFactory.fakeOption({
+      quantity: 10,
+    });
+    const item = MerchFactory.fakeItem({
+      hasVariantsEnabled: false,
+      options: [option],
+    });
+
+    await new PortalState()
+      .createUsers(admin)
+      .createMerchItem(item)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const params = { uuid: item.uuid };
+
+    // increment quantity from 10 to 15
+    const incrementOptionUpdates = [{
+      uuid: option.uuid,
+      quantityToAdd: 5,
+    }];
+    const incrementQuantityRequest = { merchandise: { options: incrementOptionUpdates } };
+    await merchStoreController.editMerchItem(params, incrementQuantityRequest, admin);
+
+    // verify it got incremented
+    const incrementedQuantityResponse = await merchStoreController.getOneMerchItem(params, admin);
+    const incrementedOption = incrementedQuantityResponse.item.options[0];
+    expect(incrementedOption.quantity).toEqual(15);
+
+    // decrement quantity from 15 to 10
+    const decrementOptionUpdates = [{
+      uuid: option.uuid,
+      quantityToAdd: -5,
+    }];
+    const decrementQuantityRequest = { merchandise: { options: decrementOptionUpdates } };
+    await merchStoreController.editMerchItem(params, decrementQuantityRequest, admin);
+
+    // verify it got decremented
+    const decrementedQuantityResponse = await merchStoreController.getOneMerchItem(params, admin);
+    const decrementedOption = decrementedQuantityResponse.item.options[0];
+    expect(decrementedOption.quantity).toEqual(10);
+  });
+
+  test('merch item option quantity cannot be decremented to below 0', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const option = MerchFactory.fakeOption({
+      quantity: 5,
+    });
+    const item = MerchFactory.fakeItem({
+      hasVariantsEnabled: false,
+      options: [option],
+    });
+
+    await new PortalState()
+      .createUsers(admin)
+      .createMerchItem(item)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const params = { uuid: item.uuid };
+
+    // decrement quantity by 10 when the current quantity is 5
+    const decrementOptionUpdates = [{
+      uuid: option.uuid,
+      quantityToAdd: -10,
+    }];
+    const decrementQuantityRequest = { merchandise: { options: decrementOptionUpdates } };
+    expect(merchStoreController.editMerchItem(params, decrementQuantityRequest, admin))
+      .rejects.toThrow(`Cannot decrement option quantity below 0 for option: ${option.uuid}`);
+  });
+
+  test('items cannot be updated to have multiple options with different types', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
@@ -424,7 +499,7 @@ describe('merch item edits', () => {
       .rejects.toThrow('Merch items cannot have multiple option types');
   });
 
-  test('succeeds when updated options have same type', async () => {
+  test('items can have their options\' types updated as long as its the same type for all options', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
@@ -458,7 +533,7 @@ describe('merch item edits', () => {
 });
 
 describe('merch item option variants', () => {
-  test('fails when disabling variants on item with multiple options', async () => {
+  test('items cannot have variants disabled and have multiple options', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: true });
@@ -474,7 +549,7 @@ describe('merch item option variants', () => {
       .rejects.toThrow('Merch items with variants disabled cannot have multiple options');
   });
 
-  test('fails when enabling variants on item where only option has null metadata', async () => {
+  test('items cannot have variants enabled and have null metadata for an option', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const item = MerchFactory.fakeItem({ hasVariantsEnabled: false });
