@@ -1,4 +1,4 @@
-import { EntityRepository } from 'typeorm';
+import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
@@ -8,25 +8,19 @@ import { BaseRepository } from './BaseRepository';
 @EntityRepository(MerchandiseCollectionModel)
 export class MerchCollectionRepository extends BaseRepository<MerchandiseCollectionModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchandiseCollectionModel> {
-    return this.repository.createQueryBuilder('collection')
-      .leftJoinAndSelect('collection.items', 'items')
-      .leftJoinAndSelect('items.options', 'options')
+    return this.getBaseFindManyQuery()
       .where({ uuid })
       .getOne();
   }
 
   public async getAllCollections(): Promise<MerchandiseCollectionModel[]> {
-    return this.repository.createQueryBuilder('collection')
-      .leftJoinAndSelect('collection.items', 'items')
-      .leftJoinAndSelect('items.options', 'options')
+    return this.getBaseFindManyQuery()
       .orderBy('collection.createdAt', 'DESC')
       .getMany();
   }
 
   public async getAllActiveCollections(): Promise<MerchandiseCollectionModel[]> {
-    return this.repository.createQueryBuilder('collection')
-      .leftJoinAndSelect('collection.items', 'items')
-      .leftJoinAndSelect('items.options', 'options')
+    return this.getBaseFindManyQuery()
       .where({ archived: false })
       .orderBy('collection.createdAt', 'DESC')
       .getMany();
@@ -40,6 +34,12 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
 
   public async deleteMerchCollection(collection: MerchandiseCollectionModel): Promise<void> {
     await this.repository.remove(collection);
+  }
+
+  public getBaseFindManyQuery(): SelectQueryBuilder<MerchandiseCollectionModel> {
+    return this.repository.createQueryBuilder('collection')
+      .leftJoinAndSelect('collection.items', 'items')
+      .leftJoinAndSelect('items.options', 'options');
   }
 }
 

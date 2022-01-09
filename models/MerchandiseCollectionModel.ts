@@ -25,7 +25,7 @@ export class MerchandiseCollectionModel extends BaseEntity {
   @OneToMany((type) => MerchandiseItemModel, (item) => item.collection, { cascade: true })
   items: MerchandiseItemModel[];
 
-  public getPublicMerchCollection(): PublicMerchCollection {
+  public getPublicMerchCollection(canSeeHiddenItems = false): PublicMerchCollection {
     const baseMerchCollection: any = {
       uuid: this.uuid,
       title: this.title,
@@ -33,7 +33,12 @@ export class MerchandiseCollectionModel extends BaseEntity {
       description: this.description,
       createdAt: this.createdAt,
     };
-    if (this.items) baseMerchCollection.items = this.items.map((i) => i.getPublicMerchItem());
+    if (this.items) {
+      baseMerchCollection.items = this.items.map((i) => i.getPublicMerchItem());
+      if (!canSeeHiddenItems) {
+        baseMerchCollection.items = baseMerchCollection.items.filter((i) => !i.hidden);
+      }
+    }
     return baseMerchCollection;
   }
 }
