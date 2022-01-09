@@ -44,23 +44,24 @@ export default class MerchStoreService {
     this.emailService = emailService;
   }
 
-  public async findCollectionByUuid(uuid: Uuid, canSeeSeeHiddenItems = false): Promise<PublicMerchCollection> {
+  public async findCollectionByUuid(uuid: Uuid, canSeeInactiveCollections = false): Promise<PublicMerchCollection> {
     const collection = await this.transactions.readOnly(async (txn) => Repositories
       .merchStoreCollection(txn)
       .findByUuid(uuid));
     if (!collection) throw new NotFoundError('Merch collection not found');
-    if (collection.archived && !canSeeSeeHiddenItems) throw new ForbiddenError();
-    return canSeeSeeHiddenItems ? collection : collection.getPublicMerchCollection();
+    if (collection.archived && !canSeeInactiveCollections) throw new ForbiddenError();
+    return canSeeInactiveCollections ? collection : collection.getPublicMerchCollection();
   }
 
-  public async getAllCollections(canSeeInactiveCollections = false): Promise<PublicMerchCollection[]> {
+  public async getAllCollections(canSeeInactiveCollections = false, canSeeHiddenItems = canSeeInactiveCollections):
+  Promise<PublicMerchCollection[]> {
     return this.transactions.readOnly(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       if (canSeeInactiveCollections) {
         return merchCollectionRepository.getAllCollections();
       }
       const collections = await merchCollectionRepository.getAllActiveCollections();
-      return collections.map((c) => c.getPublicMerchCollection());
+      return collections.map((c) => c.getPublicMerchCollection(canSeeHiddenItems));
     });
   }
 
@@ -191,8 +192,13 @@ export default class MerchStoreService {
           const optionUpdate = optionUpdatesByUuid.get(currentOption.uuid);
           // 'quantity' is incremented instead of directly set to avoid concurrency issues with orders
           // e.g. there's 10 of an item and someone adds 5 to stock while someone else orders 1
-          // so the merch store admin sets quantity to 15 but the true quantity is 14
-          if (optionUpdate.quantityToAdd) currentOption.quantity += optionUpdate.quantityToAdd;
+          // so the merch store admin sets quantity to 15 but the true quantity is 14.
+          if (optionUpdate.quantityToAdd) {
+            currentOption.quantity += optionUpdate.quantityToAdd;
+            if (currentOption.quantity < 0) {
+              throw new UserError(`Cannot decrement option quantity below 0 for option: ${currentOption.uuid}`);
+            }
+          }
           return MerchandiseItemOptionModel.merge(currentOption, optionUpdate);
         });
       }
