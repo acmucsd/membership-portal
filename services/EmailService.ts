@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { logger as log } from '../utils/Logger';
 import { Config } from '../config';
+import { Uuid } from '../types';
 
 type EmailData = MailDataRequired;
 
@@ -76,6 +77,7 @@ export default class EmailService {
           firstName,
           order,
           pickupEvent: order.pickupEvent,
+          link: `${Config.client}/store/order/${order.uuid}`,
         }),
       };
       await this.sendEmail(data);
@@ -104,7 +106,9 @@ export default class EmailService {
         to: email,
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store - Order Pickup Missed',
-        html: ejs.render(EmailService.orderPickupMissedTemplate, { firstName, order }),
+        html: ejs.render(EmailService.orderPickupMissedTemplate, {
+          firstName, order, link: `${Config.client}/store/order/${order.uuid}`,
+        }),
       };
       await this.sendEmail(data);
     } catch (error) {
@@ -118,7 +122,9 @@ export default class EmailService {
         to: email,
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store - Order Pickup Event Cancelled',
-        html: ejs.render(EmailService.orderPickupCancelledTemplate, { firstName, order }),
+        html: ejs.render(EmailService.orderPickupCancelledTemplate, {
+          firstName, order, link: `${Config.client}/store/order/${order.uuid}`,
+        }),
       };
       await this.sendEmail(data);
     } catch (error) {
@@ -132,7 +138,9 @@ export default class EmailService {
         to: email,
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store - Order Pickup Event Updated',
-        html: ejs.render(EmailService.orderPickupUpdatedTemplate, { firstName, order }),
+        html: ejs.render(EmailService.orderPickupUpdatedTemplate, {
+          firstName, order, link: `${Config.client}/store/order/${order.uuid}`,
+        }),
       };
       await this.sendEmail(data);
     } catch (error) {
@@ -155,7 +163,8 @@ export default class EmailService {
   }
 
   public async sendPartialOrderFulfillment(email: string, firstName: string,
-    fulfilledItems: OrderLineItem[], unfulfilledItems: OrderLineItem[], pickupEvent: OrderPickupEventInfo) {
+    fulfilledItems: OrderLineItem[], unfulfilledItems: OrderLineItem[], pickupEvent: OrderPickupEventInfo,
+    orderUuid: string) {
     try {
       const data = {
         to: email,
@@ -166,6 +175,7 @@ export default class EmailService {
           unfulfilledItems,
           fulfilledItems,
           pickupEvent,
+          link: `${Config.client}/store/order/${orderUuid}`,
         }),
       };
       await this.sendEmail(data);
@@ -200,6 +210,7 @@ export interface OrderPickupEventInfo {
 }
 
 export interface OrderInfo {
+  uuid: Uuid;
   items: OrderLineItem[];
   totalCost: number;
   pickupEvent: OrderPickupEventInfo;

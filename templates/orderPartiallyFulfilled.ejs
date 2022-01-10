@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Order Fulfilled</title>
+    <title>Order Partially Fulfilled</title>
     <style>
         /* -------------------------------------
             INLINED WITH htmlemail.io/inline
@@ -104,25 +104,37 @@
                                     <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Hi <%= firstName %>,</p>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Thanks for stopping by at our pickup event today! The following items have been fulfilled so far:</p>
-                                        <% for(var i=0; i < fulfilledItems.length; i++) { %>
-                                                            <p><%= fulfilledItems[i].itemName %></p>
-                                                            <p><small><%= fulfilledItems[i].salePrice %> x <%= fulfilledItems[i].quantityRequested %> = <%= fulfilledItems[i].total %></small></p>
-                                        <% } %>
+                                        <div style="border: 2px solid #c4c4c4; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                                            <% for(var i=0; i < fulfilledItems.length; i++) { %>
+                                                <p style="font-size: 24px; margin-top: 0; margin-bottom: 16px;"><%= fulfilledItems[i].itemName %></p>
+                                                <span style="vertical-align: middle;"><%= fulfilledItems[i].salePrice %> x <%= fulfilledItems[i].quantityRequested %> = <%= fulfilledItems[i].total %></span>
+                                                <svg width="16" height="16" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+                                                    <rect x="0.539062" y="10.6472" width="14.1421" height="14.1421" rx="2" transform="rotate(-45 0.539062 10.6472)" fill="#62B0FF"/>
+                                                </svg>
+                                                <% if (i !== fulfilledItems.length) { %>
+                                                    <div style="border-bottom: 1px solid #e6e6e6; height: 1px; margin: 16px -16px;"></div>
+                                                <% } %>
+                                            <% } %>
+                                        </div>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Pickup event details:</p>
-                                                                <p><%= pickupEvent.title %></p>
-                                                                <p><small>From <%= pickupEvent.start %> to <%= pickupEvent.end %></small></p>
-                                                                <p><small>Description: <%= pickupEvent.description %></small></p>
-                                                                
-                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">There are still some items left to fulfill for this order: <br />ACM UCSD</p>
-                                        <% for(var i=0; i < unfulfilledItems.length; i++) { %>
-                                                            <p><%= unfulfilledItems[i].itemName %></p>
-                                                            <p><small><%= unfulfilledItems[i].salePrice %> x <%= unfulfilledItems[i].quantityRequested %> = <%= unfulfilledItems[i].total %></small></p>
-                                        <% } %>
-                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Please reschedule a pickup time for your order. If you are not able to schedule a pickup time
-                                            before the end of the quarter, then your order will be cancelled and fully refunded to your account.
-    
-                                            You can reschedule here: https://members.acmucsd.com/store/orders?uuid=<%= order.uuid %>
-                                        </p>
+                                        <p><%= order.pickupEvent.title %></p>
+                                        <p><b>From:</b> <%= order.pickupEvent.start %></p>
+                                        <p><b>To:</b> <%= order.pickupEvent.end %></p>
+                                        <p><b>Description:</b> <%= order.pickupEvent.description %></p> 
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">There are still some items left to fulfill for this order:</p>
+                                        <div style="border: 2px solid #c4c4c4; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                                            <% for(var i=0; i < unfulfilledItems.length; i++) { %>
+                                                <p style="font-size: 24px; margin-top: 0; margin-bottom: 16px;"><%= unfulfilledItems[i].itemName %></p>
+                                                <span style="vertical-align: middle;"><%= unfulfilledItems[i].salePrice %> x <%= unfulfilledItems[i].quantityRequested %> = <%= unfulfilledItems[i].total %></span>
+                                                <svg width="16" height="16" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+                                                    <rect x="0.539062" y="10.6472" width="14.1421" height="14.1421" rx="2" transform="rotate(-45 0.539062 10.6472)" fill="#62B0FF"/>
+                                                </svg>
+                                                <% if (i !== unfulfilledItems.length) { %>
+                                                    <div style="border-bottom: 1px solid #e6e6e6; height: 1px; margin: 16px -16px;"></div>
+                                                <% } %>
+                                            <% } %>
+                                        </div>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Please reschedule a pickup time for your order. If you are not able to schedule a pickup time before the end of the quarter, then your order will be cancelled and fully refunded to your account. <a href="<%= link %>">Click here to reschedule or cancel.</a></p>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Regards, <br />ACM UCSD</p>
                                     </td>
                                 </tr>

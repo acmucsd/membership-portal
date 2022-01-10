@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Order Pickup Missed</title>
+    <title>Order Pickup Cancelled</title>
     <style>
         /* -------------------------------------
             INLINED WITH htmlemail.io/inline
@@ -104,21 +104,28 @@
                                     <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Hi <%= firstName %>,</p>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">The pickup event for your order on the ACM membership portal has been cancelled:</p>
-                                            <p>Pickup event:</p>
-                                                <p><%= order.pickupEvent.title %></p>
-                                                <p><small>From <%= order.pickupEvent.start %> to <%= order.pickupEvent.end %></small></p>
-                                                <p><small>Description: <%= order.pickupEvent.description %></small></p>
-                                            <p>Order:</p>
-                                                <% for(var i=0; i < order.items.length; i++) { %>
-                                                                    <p><%= order.items[i].itemName %></p>
-                                                                    <p><small><%= order.items[i].salePrice %> x <%= order.items[i].quantityRequested %> = <%= order.items[i].total %></small></p>
-                                                <% } %>
-                                                <h1><%= order.totalCost %></h1>
-                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Please reschedule a new pickup time for your order. If you are not able to schedule a pickup time
-                                          before the end of the quarter, then your order will be cancelled and fully refunded to your account.
-
-                                          You can reschedule here: https://members.acmucsd.com/store/orders?uuid=<%= order.uuid %>
-                                        </p>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;"><b>Pickup Event:</b></p>
+                                        <p><%= order.pickupEvent.title %></p>
+                                        <p><b>From:</b> <%= order.pickupEvent.start %></p>
+                                        <p><b>To:</b> <%= order.pickupEvent.end %></p>
+                                        <p><b>Description:</b> <%= order.pickupEvent.description %></p>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;"><b>Order Details:</b></p>
+                                        <div style="border: 2px solid #c4c4c4; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                                            <% for(var i=0; i < order.items.length; i++) { %>
+                                                <p style="font-size: 24px; margin-top: 0; margin-bottom: 16px;"><%= order.items[i].itemName %></p>
+                                                <span style="vertical-align: middle;"><%= order.items[i].salePrice %> x <%= order.items[i].quantityRequested %> = <%= order.items[i].total %></span>
+                                                <svg width="16" height="16" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+                                                    <rect x="0.539062" y="10.6472" width="14.1421" height="14.1421" rx="2" transform="rotate(-45 0.539062 10.6472)" fill="#62B0FF"/>
+                                                </svg>
+                                                <div style="border-bottom: 1px solid #e6e6e6; height: 1px; margin: 16px -16px;"></div>
+                                            <% } %>
+                                            <span style="font-size: 24px; vertical-align: middle;">Total:</span>
+                                            <span style="font-size: 18px; vertical-align: middle;"><%= order.totalCost %></span>
+                                            <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+                                                <rect x="0.539062" y="10.6472" width="14.1421" height="14.1421" rx="2" transform="rotate(-45 0.539062 10.6472)" fill="#62B0FF"/>
+                                            </svg>
+                                        </div>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Please reschedule a new pickup time for your order. If you are not able to schedule a pickup time before the end of the quarter, then your order will be cancelled and fully refunded to your account. <a href="<%= link %>">Click here to reschedule or cancel.</a></p>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Regards, <br />ACM UCSD</p>
                                     </td>
                                 </tr>

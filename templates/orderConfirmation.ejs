@@ -103,16 +103,29 @@
                                 <tr>
                                     <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Hi <%= firstName %>,</p>
-                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your merch order on the ACM membership portal has been placed:</p>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your merch order on the ACM Membership Portal has been placed.</p>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;"><b>Pickup Event:</b></p>
+                                        <p><%= order.pickupEvent.title %></p>
+                                        <p><b>From:</b> <%= order.pickupEvent.start %></p>
+                                        <p><b>To:</b> <%= order.pickupEvent.end %></p>
+                                        <p><b>Description:</b> <%= order.pickupEvent.description %></p>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;"><b>Order Details:</b></p>
+                                        <div style="border: 2px solid #c4c4c4; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
                                             <% for(var i=0; i < order.items.length; i++) { %>
-                                                                <p><%= order.items[i].itemName %></p>
-                                                                <p><small><%= order.items[i].salePrice %> x <%= order.items[i].quantityRequested %> = <%= order.items[i].total %></small></p>
+                                                <p style="font-size: 24px; margin-top: 0; margin-bottom: 16px;"><%= order.items[i].itemName %></p>
+                                                <span style="vertical-align: middle;"><%= order.items[i].salePrice %> x <%= order.items[i].quantityRequested %> = <%= order.items[i].total %></span>
+                                                <svg width="16" height="16" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+                                                    <rect x="0.539062" y="10.6472" width="14.1421" height="14.1421" rx="2" transform="rotate(-45 0.539062 10.6472)" fill="#62B0FF"/>
+                                                </svg>
+                                                <div style="border-bottom: 1px solid #e6e6e6; height: 1px; margin: 16px -16px;"></div>
                                             <% } %>
-                                                <h1><%= order.totalCost %></h1>
-                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your pickup event details are below:</p>
-                                                                <p><%= order.pickupEvent.title %></p>
-                                                                <p><small>From <%= order.pickupEvent.start %> to <%= order.pickupEvent.end %></small></p>
-                                                                <p><small>Description: <%= order.pickupEvent.description %></small></p>
+                                            <span style="font-size: 24px; vertical-align: middle;">Total:</span>
+                                            <span style="font-size: 18px; vertical-align: middle;"><%= order.totalCost %></span>
+                                            <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+                                                <rect x="0.539062" y="10.6472" width="14.1421" height="14.1421" rx="2" transform="rotate(-45 0.539062 10.6472)" fill="#62B0FF"/>
+                                            </svg>
+                                        </div>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">You can cancel your order or reschedule your pickup up to two days before the currently scheduled pickup event. <a href="<%= link %>">Click here to reschedule or cancel.</a></p>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Regards, <br />ACM UCSD</p>
                                     </td>
                                 </tr>
