@@ -103,12 +103,8 @@
                                 <tr>
                                     <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Hi <%= firstName %>,</p>
-                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your merch order on the ACM membership portal has been cancelled. The following items have been fully refunded to your account</p>
-                                            <% for(var i=0; i < order.items.length; i++) { %>
-                                                                <p><%= order.items[i].itemName %></p>
-                                                                <p><small><%= order.items[i].salePrice %> x <%= order.items[i].quantityRequested %> = <%= order.items[i].total %></small></p>
-                                            <% } %>
-                                                <h1><%= order.totalCost %></h1>
+                                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your merch order on the ACM Membership Portal has been cancelled. The following items have been fully refunded to your account:</p>
+                                        <%- orderItems %>
                                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Regards, <br />ACM UCSD</p>
                                     </td>
                                 </tr>

@@ -373,6 +373,7 @@ export default class MerchStoreService {
     });
 
     const orderConfirmation = {
+      uuid: order.uuid,
       items: originalOrder.map((oi) => {
         const option = merchItemOptions.get(oi.option);
         const { item } = option;
@@ -639,6 +640,7 @@ export default class MerchStoreService {
       .batchFindByUuid(itemOptionsOrdered);
 
     return {
+      uuid: order.uuid,
       items: itemOptionsOrdered.map((option) => {
         const { item } = itemOptionByUuid.get(option);
         const { quantity, price } = optionPricesAndQuantities.get(option);
@@ -751,6 +753,7 @@ export default class MerchStoreService {
           fulfilledItemInfo,
           unfulfilledItemInfo,
           pickupEventInfo,
+          orderWithUnfulfilledItems.uuid,
         );
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PARTIALLY_FULFILLED });
         await activityRepository.logActivity({

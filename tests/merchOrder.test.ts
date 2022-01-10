@@ -190,7 +190,9 @@ describe('merch orders', () => {
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
       .thenResolve();
-    when(emailService.sendPartialOrderFulfillment(member.email, member.firstName, anything(), anything(), anything()))
+    when(emailService.sendPartialOrderFulfillment(
+      member.email, member.firstName, anything(), anything(), anything(), anything(),
+    ))
       .thenResolve();
 
     // place order
@@ -232,7 +234,9 @@ describe('merch orders', () => {
     expect(partiallyFulfilledOrder.items.every((item) => item.fulfilled)).toBeFalsy();
 
     // check confirmation email has been sent
-    verify(emailService.sendPartialOrderFulfillment(member.email, member.firstName, anything(), anything(), anything()))
+    verify(emailService.sendPartialOrderFulfillment(
+      member.email, member.firstName, anything(), anything(), anything(), anything(),
+    ))
       .called();
 
     // check fulfilled activity
@@ -268,7 +272,9 @@ describe('merch orders', () => {
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
       .thenResolve();
-    when(emailService.sendPartialOrderFulfillment(member.email, member.firstName, anything(), anything(), anything()))
+    when(emailService.sendPartialOrderFulfillment(
+      member.email, member.firstName, anything(), anything(), anything(), anything(),
+    ))
       .thenResolve();
 
     // place order
@@ -412,7 +418,9 @@ describe('merch orders', () => {
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
       .thenResolve();
-    when(emailService.sendPartialOrderFulfillment(member.email, member.firstName, anything(), anything(), anything()))
+    when(emailService.sendPartialOrderFulfillment(
+      member.email, member.firstName, anything(), anything(), anything(), anything(),
+    ))
       .thenResolve();
     when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
       .thenResolve();
