@@ -182,6 +182,12 @@ export class MerchItemEdit implements IMerchItemEdit {
   @Allow()
   hidden?: boolean;
 
+  @Min(0)
+  monthlyLimit?: number;
+
+  @Min(0)
+  lifetimeLimit?: number;
+
   @Allow()
   hasVariantsEnabled?: boolean;
 
