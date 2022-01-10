@@ -1,0 +1,20 @@
+<div style="border: 2px solid #c4c4c4; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+    <% for(var i=0; i < items.length; i++) { %>
+        <p style="font-size: 24px; margin-top: 0; margin-bottom: 16px;"><%= items[i].itemName %></p>
+        <span style="vertical-align: middle;"><%= items[i].salePrice %> x <%= items[i].quantityRequested %> = <%= items[i].total %></span>
+        <svg width="16" height="16" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+            <rect x="0.539062" y="10.6472" width="14.1421" height="14.1421" rx="2" transform="rotate(-45 0.539062 10.6472)" fill="#62B0FF"/>
+        </svg>
+        <% if (i !== items.length - 1) { %>
+            <div style="border-bottom: 1px solid #e6e6e6; height: 1px; margin: 16px -16px;"></div>
+        <% } %>
+    <% } %>
+    <% if (totalCost) { %>
+        <div style="border-bottom: 1px solid #e6e6e6; height: 1px; margin: 16px -16px;"></div>
+        <span style="font-size: 24px; vertical-align: middle;">Total:</span>
+        <span style="font-size: 18px; vertical-align: middle;"><%= totalCost %></span>
+        <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+            <rect x="0.539062" y="10.6472" width="14.1421" height="14.1421" rx="2" transform="rotate(-45 0.539062 10.6472)" fill="#62B0FF"/>
+        </svg>
+    <% } %>
+</div>

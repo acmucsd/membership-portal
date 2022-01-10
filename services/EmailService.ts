@@ -11,6 +11,8 @@ type EmailData = MailDataRequired;
 export default class EmailService {
   private readonly mailer = new MailService();
 
+  private static readonly itemDisplayTemplate = EmailService.readTemplate('itemDisplay.ejs');
+
   private static readonly passwordResetTemplate = EmailService.readTemplate('passwordReset.ejs');
 
   private static readonly emailVerificationTemplate = EmailService.readTemplate('emailVerification.ejs');
@@ -44,7 +46,7 @@ export default class EmailService {
           link: `${Config.client}/resetPassword/${code}`,
         }),
       };
-      await this.sendEmail(data);
+      console.log(data.html);
     } catch (error) {
       log.warn(`Failed to send password reset email to ${email}`, { error });
     }
@@ -61,7 +63,7 @@ export default class EmailService {
           link: `${Config.client}/verifyEmail/${code}`,
         }),
       };
-      await this.sendEmail(data);
+      console.log(data.html);
     } catch (error) {
       log.warn(`Failed to send verification email to ${email}`, { error });
     }
@@ -76,11 +78,12 @@ export default class EmailService {
         html: ejs.render(EmailService.orderConfirmationTemplate, {
           firstName,
           order,
+          orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
           pickupEvent: order.pickupEvent,
           link: `${Config.client}/store/order/${order.uuid}`,
         }),
       };
-      await this.sendEmail(data);
+      console.log(data.html);
     } catch (error) {
       log.warn(`Failed to send order confirmation email to ${email}`, { error });
     }
@@ -92,9 +95,13 @@ export default class EmailService {
         to: email,
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store - Order Cancellation',
-        html: ejs.render(EmailService.orderCancellationTemplate, { firstName, order }),
+        html: ejs.render(EmailService.orderCancellationTemplate, {
+          firstName,
+          order,
+          orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
+        }),
       };
-      await this.sendEmail(data);
+      console.log(data.html);
     } catch (error) {
       log.warn(`Failed to send order cancellation email to ${email}`, { error });
     }
@@ -107,10 +114,13 @@ export default class EmailService {
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store - Order Pickup Missed',
         html: ejs.render(EmailService.orderPickupMissedTemplate, {
-          firstName, order, link: `${Config.client}/store/order/${order.uuid}`,
+          firstName,
+          order,
+          orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
+          link: `${Config.client}/store/order/${order.uuid}`,
         }),
       };
-      await this.sendEmail(data);
+      console.log(data.html);
     } catch (error) {
       log.warn(`Failed to send order pickup missed email to ${email}`, { error });
     }
@@ -123,10 +133,13 @@ export default class EmailService {
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store - Order Pickup Event Cancelled',
         html: ejs.render(EmailService.orderPickupCancelledTemplate, {
-          firstName, order, link: `${Config.client}/store/order/${order.uuid}`,
+          firstName,
+          order,
+          orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
+          link: `${Config.client}/store/order/${order.uuid}`,
         }),
       };
-      await this.sendEmail(data);
+      console.log(data.html);
     } catch (error) {
       log.warn(`Failed to send order pickup cancelled email to ${email}`, { error });
     }
@@ -139,10 +152,13 @@ export default class EmailService {
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store - Order Pickup Event Updated',
         html: ejs.render(EmailService.orderPickupUpdatedTemplate, {
-          firstName, order, link: `${Config.client}/store/order/${order.uuid}`,
+          firstName,
+          order,
+          orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
+          link: `${Config.client}/store/order/${order.uuid}`,
         }),
       };
-      await this.sendEmail(data);
+      console.log(data.html);
     } catch (error) {
       log.warn(`Failed to send order pickup update email to ${email}`, { error });
     }
@@ -154,9 +170,13 @@ export default class EmailService {
         to: email,
         from: Config.email.user,
         subject: 'ACM UCSD Merch Store - Order Fulfilled',
-        html: ejs.render(EmailService.orderFulfilledTemplate, { firstName, order }),
+        html: ejs.render(EmailService.orderFulfilledTemplate, {
+          firstName,
+          order,
+          orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
+        }),
       };
-      await this.sendEmail(data);
+      console.log(data.html);
     } catch (error) {
       log.warn(`Failed to send order fulfillment email to ${email}`, { error });
     }
@@ -172,13 +192,13 @@ export default class EmailService {
         subject: 'ACM UCSD Merch Store - Order Partially Fulfilled',
         html: ejs.render(EmailService.orderPartiallyFulfilledTemplate, {
           firstName,
-          unfulfilledItems,
-          fulfilledItems,
+          unfulfilledItems: ejs.render(EmailService.itemDisplayTemplate, { items: unfulfilledItems }),
+          fulfilledItems: ejs.render(EmailService.itemDisplayTemplate, { items: fulfilledItems }),
           pickupEvent,
           link: `${Config.client}/store/order/${orderUuid}`,
         }),
       };
-      await this.sendEmail(data);
+      console.log(data.html);
     } catch (error) {
       log.warn(`Failed to send partial order fulfillment email to ${email}`, { error });
     }
