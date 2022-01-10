@@ -46,7 +46,7 @@ export default class EmailService {
           link: `${Config.client}/resetPassword/${code}`,
         }),
       };
-      console.log(data.html);
+      await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send password reset email to ${email}`, { error });
     }
@@ -63,7 +63,7 @@ export default class EmailService {
           link: `${Config.client}/verifyEmail/${code}`,
         }),
       };
-      console.log(data.html);
+      await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send verification email to ${email}`, { error });
     }
@@ -83,7 +83,7 @@ export default class EmailService {
           link: `${Config.client}/store/order/${order.uuid}`,
         }),
       };
-      console.log(data.html);
+      await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send order confirmation email to ${email}`, { error });
     }
@@ -101,7 +101,7 @@ export default class EmailService {
           orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
         }),
       };
-      console.log(data.html);
+      await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send order cancellation email to ${email}`, { error });
     }
@@ -120,7 +120,7 @@ export default class EmailService {
           link: `${Config.client}/store/order/${order.uuid}`,
         }),
       };
-      console.log(data.html);
+      await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send order pickup missed email to ${email}`, { error });
     }
@@ -139,7 +139,7 @@ export default class EmailService {
           link: `${Config.client}/store/order/${order.uuid}`,
         }),
       };
-      console.log(data.html);
+      await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send order pickup cancelled email to ${email}`, { error });
     }
@@ -158,7 +158,7 @@ export default class EmailService {
           link: `${Config.client}/store/order/${order.uuid}`,
         }),
       };
-      console.log(data.html);
+      await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send order pickup update email to ${email}`, { error });
     }
@@ -176,7 +176,7 @@ export default class EmailService {
           orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
         }),
       };
-      console.log(data.html);
+      await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send order fulfillment email to ${email}`, { error });
     }
@@ -198,7 +198,7 @@ export default class EmailService {
           link: `${Config.client}/store/order/${orderUuid}`,
         }),
       };
-      console.log(data.html);
+      await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send partial order fulfillment email to ${email}`, { error });
     }
