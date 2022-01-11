@@ -393,7 +393,7 @@ export default class MerchStoreService {
   }
 
   private static humanReadableDateString(date: Date): string {
-    return moment(date).tz('America/Los_Angeles').format('MMMM D, H:mm A');
+    return moment(date).tz('America/Los_Angeles').format('MMMM D, h:mm A');
   }
 
   public async validateOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
