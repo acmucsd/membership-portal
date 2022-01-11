@@ -72,7 +72,7 @@ export default class UserAuthService {
 
   public async login(email: string, pass: string): Promise<string> {
     const authenticatedUser = await this.transactions.readWrite(async (txn) => {
-      const user = await Repositories
+      let user = await Repositories
         .user(txn)
         .findByEmail(email.toLowerCase());
       if (!user) throw new NotFoundError('There is no account associated with that email');
@@ -82,6 +82,9 @@ export default class UserAuthService {
         user,
         type: ActivityType.ACCOUNT_LOGIN,
       });
+      if (user.state === UserState.PASSWORD_RESET) {
+        user = await Repositories.user(txn).upsertUser(user, { state: UserState.ACTIVE });
+      }
       return user;
     });
     const token: AuthToken = {
