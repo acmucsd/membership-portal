@@ -3,7 +3,7 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import { OrderItemPriceAndQuantity } from 'types/internal';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
@@ -393,7 +393,7 @@ export default class MerchStoreService {
   }
 
   private static humanReadableDateString(date: Date): string {
-    return moment(date).format('MMMM d, H:mm A');
+    return moment(date).tz('America/Los_Angeles').format('MMMM D, H:mm A');
   }
 
   public async validateOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
