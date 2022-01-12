@@ -1277,10 +1277,10 @@ describe('merch order pickup events', () => {
     const order = await conn.manager.findOne(OrderModel, { user: member });
     const cancelOrderParams = { uuid: order.uuid };
     const merchController = ControllerFactory.merchStore(conn);
-    await merchController.cancelMerchOrder(cancelOrderParams, member)    
+    await merchController.cancelMerchOrder(cancelOrderParams, member);
 
     // re-place order, making sure its successful
-    const reorderDetails = [{ option: option.uuid, quantity: 1}];
+    const reorderDetails = [{ option: option.uuid, quantity: 1 }];
     const placeOrderParams = { order: reorderDetails, pickupEvent: pickupEvent.uuid };
     const placeOrderResponse = await merchController.placeMerchOrder(placeOrderParams, member);
     expect(placeOrderResponse.error).toBeNull();

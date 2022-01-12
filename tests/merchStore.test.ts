@@ -1,12 +1,12 @@
 import * as faker from 'faker';
 import { ForbiddenError } from 'routing-controllers';
 import { zip } from 'underscore';
+import { anything, mock, when } from 'ts-mockito';
 import { OrderModel } from '../models/OrderModel';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
-import { anything, mock, when } from 'ts-mockito';
 import EmailService from '../services/EmailService';
 
 beforeAll(async () => {
@@ -278,7 +278,7 @@ describe('merch items with options', () => {
         { option, quantity: 1 },
       ], pickupEvent)
       .write();
-    
+
     const emailService = mock(EmailService);
     when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
       .thenResolve();
