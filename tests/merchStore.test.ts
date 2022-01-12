@@ -1,6 +1,7 @@
 import * as faker from 'faker';
 import { ForbiddenError } from 'routing-controllers';
 import { zip } from 'underscore';
+import { OrderModel } from '../models/OrderModel';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
@@ -254,6 +255,46 @@ describe('merch items with options', () => {
     // make sure the un-ordered item's remaining counts didn't change
     expect(unchangedItem.monthlyRemaining).toEqual(5);
     expect(unchangedItem.lifetimeRemaining).toEqual(10);
+  });
+
+  test('monthly and lifetime remaining values are reset when an order is cancelled', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const option = MerchFactory.fakeOption();
+    const item = MerchFactory.fakeItem({
+      options: [option],
+      monthlyLimit: 5,
+      lifetimeLimit: 10,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(item)
+      .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, [
+        { option, quantity: 1 },
+      ], pickupEvent)
+      .write();
+
+    // make sure the item's remaining counts got updated
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const orderedItemParams = { uuid: item.uuid };
+    const getOrderedItemResponse = await merchStoreController.getOneMerchItem(orderedItemParams, member);
+    const updatedItem = getOrderedItemResponse.item;
+    expect(updatedItem.monthlyRemaining).toEqual(4);
+    expect(updatedItem.lifetimeRemaining).toEqual(9);
+
+    // cancel order
+    const order = await conn.manager.findOne(OrderModel, { user: member });
+    const cancelOrderParams = { uuid: order.uuid };
+    await merchStoreController.cancelMerchOrder(cancelOrderParams, member);
+
+    // make sure the item's remaining counts got reset
+    const getCancelledItemResponse = await merchStoreController.getOneMerchItem(orderedItemParams, member);
+    const cancelledItem = getCancelledItemResponse.item;
+    expect(cancelledItem.monthlyRemaining).toEqual(5);
+    expect(cancelledItem.lifetimeRemaining).toEqual(10);
   });
 });
 

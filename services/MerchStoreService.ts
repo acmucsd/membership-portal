@@ -117,8 +117,12 @@ export default class MerchStoreService {
       const lifetimePurchaseHistory = await merchOrderItemRepository.getPastItemOrdersByUser(user, item);
       const oneMonthAgo = new Date(moment().subtract(1, 'month').unix());
       const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((oi) => oi.order.orderedAt > oneMonthAgo);
-      const lifetimeItemOrderCounts = lifetimePurchaseHistory.length;
-      const pastMonthItemOrderCounts = pastMonthPurchaseHistory.length;
+      const lifetimeCancelledItems = lifetimePurchaseHistory
+        .filter((oi) => oi.order.status === OrderStatus.CANCELLED);
+      const pastMonthCancelledItems = pastMonthPurchaseHistory
+        .filter((oi) => oi.order.status === OrderStatus.CANCELLED);
+      const lifetimeItemOrderCounts = lifetimePurchaseHistory.length - lifetimeCancelledItems.length;
+      const pastMonthItemOrderCounts = pastMonthPurchaseHistory.length - pastMonthCancelledItems.length;
 
       const monthlyRemaining = item.monthlyLimit - pastMonthItemOrderCounts;
       const lifetimeRemaining = item.lifetimeLimit - lifetimeItemOrderCounts;
