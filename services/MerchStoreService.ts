@@ -335,7 +335,7 @@ export default class MerchStoreService {
 
       // Verify that this order would not set the pickup event's order count
       // over the order limit
-      const currentOrderCount = pickupEvent.orders.length;
+      const currentOrderCount = pickupEvent.orders.filter((o) => o.status !== OrderStatus.CANCELLED).length;
       if (currentOrderCount >= pickupEvent.orderLimit) {
         throw new UserError('This merch pickup event is full! Please choose a different pickup event');
       }

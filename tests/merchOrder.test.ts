@@ -1253,4 +1253,36 @@ describe('merch order pickup events', () => {
       .rejects
       .toThrow('Pickup event cannot have order limit lower than the number of orders booked in it');
   });
+
+  test('cancelled orders do not contribute to a pickup event\'s order limit', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ points: 100 });
+    const option = MerchFactory.fakeOption({ price: 10 });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ orderLimit: 1 });
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+    when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // cancel order
+    const order = await conn.manager.findOne(OrderModel, { user: member });
+    const cancelOrderParams = { uuid: order.uuid };
+    const merchController = ControllerFactory.merchStore(conn);
+    await merchController.cancelMerchOrder(cancelOrderParams, member)    
+
+    // re-place order, making sure its successful
+    const reorderDetails = [{ option: option.uuid, quantity: 1}];
+    const placeOrderParams = { order: reorderDetails, pickupEvent: pickupEvent.uuid };
+    const placeOrderResponse = await merchController.placeMerchOrder(placeOrderParams, member);
+    expect(placeOrderResponse.error).toBeNull();
+  });
 });

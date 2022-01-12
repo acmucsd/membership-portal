@@ -6,6 +6,8 @@ import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
+import { anything, mock, when } from 'ts-mockito';
+import EmailService from '../services/EmailService';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -276,6 +278,10 @@ describe('merch items with options', () => {
         { option, quantity: 1 },
       ], pickupEvent)
       .write();
+    
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
+      .thenResolve();
 
     // make sure the item's remaining counts got updated
     const merchStoreController = ControllerFactory.merchStore(conn);
