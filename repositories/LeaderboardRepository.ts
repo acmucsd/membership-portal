@@ -1,6 +1,6 @@
 import { EntityRepository, Not, Raw } from 'typeorm';
 import * as moment from 'moment';
-import { Config } from 'config';
+import { Config } from '../config';
 import { ActivityModel } from '../models/ActivityModel';
 import { UserModel } from '../models/UserModel';
 import { UserState } from '../types';
