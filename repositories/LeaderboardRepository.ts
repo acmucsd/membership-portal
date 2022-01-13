@@ -1,8 +1,9 @@
 import { EntityRepository, Not, Raw } from 'typeorm';
 import * as moment from 'moment';
+import { Config } from 'config';
 import { ActivityModel } from '../models/ActivityModel';
 import { UserModel } from '../models/UserModel';
-import { UserAccessType, UserState } from '../types';
+import { UserState } from '../types';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(UserModel)
@@ -12,7 +13,7 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
       skip: offset,
       take: limit,
       where: {
-        accessType: Not(UserAccessType.ADMIN),
+        email: Not(Config.admin.email),
         state: Raw((state) => `NOT ${state} = '${UserState.BLOCKED}' AND NOT ${state} = '${UserState.PENDING}'`),
       },
       order: { points: 'DESC' },
@@ -38,7 +39,7 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
         'usr.uuid = totals.user',
       )
       .setParameter('from', new Date(from))
-      .where(`NOT "accessType" = '${UserAccessType.ADMIN}'`)
+      .where(`NOT "email" = '${Config.admin.email}'`)
       .andWhere(`NOT state = '${UserState.BLOCKED}'`)
       .andWhere(`NOT state = '${UserState.PENDING}'`)
       .orderBy('points', 'DESC')
@@ -68,7 +69,7 @@ export class LeaderboardRepository extends BaseRepository<UserModel> {
       )
       .setParameter('from', new Date(from))
       .setParameter('to', new Date(to))
-      .where(`NOT "accessType" = '${UserAccessType.ADMIN}'`)
+      .where(`NOT "email" = '${Config.admin.email}'`)
       .andWhere(`NOT state = '${UserState.BLOCKED}'`)
       .andWhere(`NOT state = '${UserState.PENDING}'`)
       .orderBy('points', 'DESC')
