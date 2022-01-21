@@ -258,8 +258,8 @@ export class MerchStoreController {
     if (fulfillOrderRequest.items.length !== numUniqueUuids) {
       throw new BadRequestError('There are duplicate order items');
     }
-    await this.merchStoreService.fulfillOrderItems(fulfillOrderRequest.items, params.uuid, user);
-    return { error: null };
+    const updatedOrder = await this.merchStoreService.fulfillOrderItems(fulfillOrderRequest.items, params.uuid, user);
+    return { error: null, order: updatedOrder.getPublicOrder() };
   }
 
   @Post('/order/cleanup')

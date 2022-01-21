@@ -675,11 +675,11 @@ export default class MerchStoreService {
    * @param orderUuid order uuid
    */
   public async fulfillOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[], orderUuid: Uuid,
-    user: UserModel): Promise<void> {
+    user: UserModel): Promise<OrderModel> {
     return this.transactions.readWrite(async (txn) => {
       // check if order exists
       const orderRepository = Repositories.merchOrder(txn);
-      const order = await orderRepository.findByUuid(orderUuid);
+      let order = await orderRepository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
 
       // check if pickup event is happening today
@@ -721,7 +721,7 @@ export default class MerchStoreService {
       if (isEntireOrderFulfilled) {
         const orderUpdateInfo = await MerchStoreService.buildOrderUpdateInfo(order, pickupEvent, txn);
         await this.emailService.sendOrderFulfillment(customer.email, customer.firstName, orderUpdateInfo);
-        await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
+        order = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.FULFILLED });
         await activityRepository.logActivity({
           user: customer,
           type: ActivityType.ORDER_FULFILLED,
@@ -759,13 +759,14 @@ export default class MerchStoreService {
           pickupEventInfo,
           orderWithUnfulfilledItems.uuid,
         );
-        await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PARTIALLY_FULFILLED });
+        order = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PARTIALLY_FULFILLED });
         await activityRepository.logActivity({
           user: customer,
           type: ActivityType.ORDER_PARTIALLY_FULFILLED,
           description: `Order ${order.uuid} partially fulfilled for user ${customer.uuid} by ${user.uuid}`,
         });
       }
+      return order;
     });
   }
 
