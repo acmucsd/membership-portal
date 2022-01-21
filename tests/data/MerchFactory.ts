@@ -57,7 +57,7 @@ export class MerchFactory {
   public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {
     const fake = MerchandiseItemOptionModel.create({
       uuid: uuid(),
-      quantity: FactoryUtils.getRandomNumber(0, 25),
+      quantity: FactoryUtils.getRandomNumber(1, 25),
       price: MerchFactory.randomPrice(),
       discountPercentage: MerchFactory.randomDiscountPercentage(),
       metadata: null,
