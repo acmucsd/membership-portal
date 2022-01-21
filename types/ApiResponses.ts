@@ -273,7 +273,9 @@ export interface EditMerchOrderResponse extends ApiResponse {}
 export interface GetCartResponse extends ApiResponse {
   cart: PublicOrderMerchItemOption[];
 }
-export interface FulfillMerchOrderResponse extends ApiResponse {}
+export interface FulfillMerchOrderResponse extends ApiResponse {
+  order: PublicOrder;
+}
 
 // USER
 
