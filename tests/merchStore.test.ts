@@ -302,6 +302,41 @@ describe('merch items with options', () => {
     expect(cancelledItem.monthlyRemaining).toEqual(5);
     expect(cancelledItem.lifetimeRemaining).toEqual(10);
   });
+
+  test('if monthly or lifetime limits are reached, then the item cannot be ordered', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 100000 });
+    const option1 = MerchFactory.fakeOption();
+    const option2 = MerchFactory.fakeOption();
+    const item = MerchFactory.fakeItem({
+      options: [option1, option2],
+      monthlyLimit: 1,
+      lifetimeLimit: 1,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({
+      orderLimit: 2,
+    });
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(item)
+      .createOrderPickupEvents(pickupEvent)
+      .orderMerch(member, [
+        { option: option1, quantity: 1 },
+      ], pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // placing order fails
+    const merchController = ControllerFactory.merchStore(conn);
+    const order = [{ option: option2.uuid, quantity: 1 }];
+    const placeOrderParams = { order, pickupEvent: pickupEvent.uuid };
+    await expect(merchController.placeMerchOrder(placeOrderParams, member))
+      .rejects.toThrow(`This order exceeds the lifetime limit for ${item.itemName}`);
+  });
 });
 
 describe('merch items with no options', () => {
