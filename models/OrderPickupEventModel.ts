@@ -1,5 +1,5 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, JoinColumn, OneToMany } from 'typeorm';
-import { Uuid, PublicOrderPickupEvent } from '../types';
+import { Uuid, PublicOrderPickupEvent, OrderPickupEventStatus } from '../types';
 import { OrderModel } from './OrderModel';
 
 @Entity('OrderPickupEvents')
@@ -22,6 +22,9 @@ export class OrderPickupEventModel extends BaseEntity {
   @Column('integer')
   orderLimit: number;
 
+  @Column('varchar', { length: 255, default: OrderPickupEventStatus.ACTIVE })
+  status: OrderPickupEventStatus;
+
   @OneToMany((type) => OrderModel, (order) => order.pickupEvent, { nullable: false })
   @JoinColumn({ name: 'order' })
   orders: OrderModel[];
@@ -34,6 +37,7 @@ export class OrderPickupEventModel extends BaseEntity {
       end: this.end,
       description: this.description,
       orderLimit: this.orderLimit,
+      status: this.status
     };
 
     if (canSeeOrders) pickupEvent.orders = this.orders.map((order) => order.getPublicOrderWithItems());

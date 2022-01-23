@@ -1,4 +1,4 @@
-import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType } from './Enums';
+import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
 
 // RESPONSE TYPES
@@ -355,6 +355,7 @@ export interface PublicOrderPickupEvent {
   description: string;
   orders?: PublicOrderWithItems[];
   orderLimit?: number;
+  status: OrderPickupEventStatus;
 }
 
 export interface GetOrderPickupEventsResponse extends ApiResponse {

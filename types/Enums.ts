@@ -75,3 +75,9 @@ export enum OrderStatus {
   PICKUP_MISSED = 'PICKUP_MISSED',
   PICKUP_CANCELLED = 'PICKUP_CANCELLED',
 }
+
+export enum OrderPickupEventStatus {
+  ACTIVE = 'ACTIVE',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+}
