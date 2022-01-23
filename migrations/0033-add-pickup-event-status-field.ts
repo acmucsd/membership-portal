@@ -1,4 +1,4 @@
-import {MigrationInterface, QueryRunner, TableColumn, TableIndex} from "typeorm";
+import { MigrationInterface, QueryRunner, TableColumn, TableIndex } from 'typeorm';
 
 const TABLE_NAME = 'OrderPickupEvents';
 

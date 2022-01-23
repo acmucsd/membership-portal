@@ -935,7 +935,7 @@ export default class MerchStoreService {
       if (!MerchStoreService.isActivePickupEvent(pickupEvent)) {
         throw new UserError('Cannot cancel a pickup event that isn\'t currently active');
       }
-      
+
       // concurrently email the order cancellation email and update order status for every order
       // then set pickupEvent to null before deleting from table
       await Promise.all(pickupEvent.orders.map(async (order) => {
