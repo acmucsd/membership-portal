@@ -40,10 +40,26 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
   }
 
   /**
-   * Gets all orders for a given user. Returns the order joined with its pickup event.
+   * Gets all orders for a given user. Returns the order joined with its pickup event and user.
    */
   public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
     return this.repository.find({ user });
+  }
+
+  /**
+   * Gets all orders for a given user. Returns the order joined with its pickup event, user,
+   * merch item options, and merch items.
+   */
+  public async getAllOrdersWithItemsForUser(user: UserModel): Promise<OrderModel[]> {
+    return this.repository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.pickupEvent', 'orderPickupEvent')
+      .leftJoinAndSelect('order.items', 'orderItem')
+      .leftJoinAndSelect('order.user', 'user')
+      .leftJoinAndSelect('orderItem.option', 'option')
+      .leftJoinAndSelect('option.item', 'merchItem')
+      .where('order.user = :uuid', { uuid: user.uuid })
+      .getMany();
   }
 
   public async upsertMerchOrder(order: OrderModel, changes?: Partial<OrderModel>): Promise<OrderModel> {

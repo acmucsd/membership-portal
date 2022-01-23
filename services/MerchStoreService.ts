@@ -417,10 +417,10 @@ export default class MerchStoreService {
     txn: EntityManager): Promise<void> {
     await user.reload();
     const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-    const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
-    if (itemOptions.size !== originalOrder.length) {
+    const itemOptionsToOrder = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
+    if (itemOptionsToOrder.size !== originalOrder.length) {
       const requestedItems = originalOrder.map((oi) => oi.option);
-      const foundItems = Array.from(itemOptions.values())
+      const foundItems = Array.from(itemOptionsToOrder.values())
         .filter((o) => !o.item.hidden)
         .map((o) => o.uuid);
       const missingItems = difference(requestedItems, foundItems);
@@ -428,7 +428,7 @@ export default class MerchStoreService {
     }
 
     // Checks that hidden items were not ordered
-    const hiddenItems = Array.from(itemOptions.values())
+    const hiddenItems = Array.from(itemOptionsToOrder.values())
       .filter((o) => o.item.hidden)
       .map((o) => o.uuid);
 
@@ -438,21 +438,22 @@ export default class MerchStoreService {
 
     // checks that the user hasn't exceeded monthly/lifetime purchase limits
     const merchOrderRepository = Repositories.merchOrder(txn);
-    const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersForUser(user);
+    const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersWithItemsForUser(user);
     const oneMonthAgo = new Date(moment().subtract(1, 'month').unix());
     const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
-    const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, lifetimePurchaseHistory);
-    const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptions, pastMonthPurchaseHistory);
+    const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptionsToOrder, lifetimePurchaseHistory);
+    const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptionsToOrder, pastMonthPurchaseHistory);
+
     // aggregate requested quantities by item
     const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
-      .countItemRequestedQuantities(originalOrder, itemOptions)
+      .countItemRequestedQuantities(originalOrder, itemOptionsToOrder)
       .entries());
     for (let i = 0; i < requestedQuantitiesByMerchItem.length; i += 1) {
       const [item, quantityRequested] = requestedQuantitiesByMerchItem[i];
-      if (!!item.lifetimeLimit && lifetimeItemOrderCounts.get(item) + quantityRequested > item.lifetimeLimit) {
+      if (!!item.lifetimeLimit && lifetimeItemOrderCounts.get(item.uuid) + quantityRequested > item.lifetimeLimit) {
         throw new UserError(`This order exceeds the lifetime limit for ${item.itemName}`);
       }
-      if (!!item.monthlyLimit && pastMonthItemOrderCounts.get(item) + quantityRequested > item.monthlyLimit) {
+      if (!!item.monthlyLimit && pastMonthItemOrderCounts.get(item.uuid) + quantityRequested > item.monthlyLimit) {
         throw new UserError(`This order exceeds the monthly limit for ${item.itemName}`);
       }
     }
@@ -460,7 +461,7 @@ export default class MerchStoreService {
     // checks that enough units of requested item options are in stock
     for (let i = 0; i < originalOrder.length; i += 1) {
       const optionAndQuantity = originalOrder[i];
-      const option = itemOptions.get(optionAndQuantity.option);
+      const option = itemOptionsToOrder.get(optionAndQuantity.option);
       const quantityRequested = optionAndQuantity.quantity;
       if (option.quantity < quantityRequested) {
         throw new UserError(`There aren't enough units of ${option.item.itemName} in stock`);
@@ -468,7 +469,7 @@ export default class MerchStoreService {
     }
 
     // checks that the user has enough credits to place order
-    const totalCost = MerchStoreService.totalCost(originalOrder, itemOptions);
+    const totalCost = MerchStoreService.totalCost(originalOrder, itemOptionsToOrder);
     if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
   }
 
@@ -771,41 +772,38 @@ export default class MerchStoreService {
   }
 
   /**
-   * Counts the number of times each option has been ordered by the user.
+   * Counts the number of times any MerchandiseItem has been ordered by the user.
    *
    * An ordered item does not contribute towards an option's count if its order
    * has been cancelled AND the item is unfufilled. An ordered item
    * whose order has been cancelled but the item is fulfilled still counts towards the count.
    */
   private static countItemOrders(itemOptionsToOrder: Map<string, MerchandiseItemOptionModel>, pastOrders: OrderModel[]):
-  Map<MerchandiseItemModel, number> {
-    const counts = new Map<MerchandiseItemModel, number>();
+  Map<string, number> {
+    const counts = new Map<string, number>();
     const options = Array.from(itemOptionsToOrder.values());
-    for (let i = 0; i < options.length; i += 1) {
-      counts.set(options[i].item, 0);
+    for (let o = 0; o < options.length; o += 1) {
+      counts.set(options[o].item.uuid, 0);
     }
     const ordersByOrderItem = new Map<string, OrderModel>();
-    const orderedItemOptions = [];
+    const orderedItems: OrderItemModel[] = [];
 
+    // go through every OrderItem previously ordered and add to above map/list
     for (let o = 0; o < pastOrders.length; o += 1) {
-      for (let i = 0; i < pastOrders[o].items.length; i += 1) {
-        const orderItem = pastOrders[o].items[i];
+      for (let oi = 0; oi < pastOrders[o].items.length; oi += 1) {
+        const orderItem = pastOrders[o].items[oi];
         ordersByOrderItem.set(orderItem.uuid, pastOrders[o]);
-        orderedItemOptions.push(orderItem);
+        orderedItems.push(orderItem);
       }
     }
 
-    for (let i = 0; i < orderedItemOptions.length; i += 1) {
-      const orderedItem = orderedItemOptions[i];
-      const orderedOption = itemOptionsToOrder.get(orderedItem.option.uuid);
-      // check for nullity of orderedOption since the Map.get() call can return null
-      // if the user's previously ordered options aren't what they are ordering now
-      if (orderedOption) {
-        const order = ordersByOrderItem.get(orderedItem.uuid);
-        if (MerchStoreService.doesItemCountTowardsOrderLimits(orderedItem, order)) {
-          const { item } = orderedOption;
-          if (counts.has(item)) counts.set(item, counts.get(item) + 1);
-        }
+    // count MerchItems based on number of OrderItems previously ordered
+    for (let i = 0; i < orderedItems.length; i += 1) {
+      const orderedItem = orderedItems[i];
+      const order = ordersByOrderItem.get(orderedItem.uuid);
+      if (MerchStoreService.doesItemCountTowardsOrderLimits(orderedItem, order)) {
+        const { uuid: itemUuid } = orderedItem.option.item;
+        if (counts.has(itemUuid)) counts.set(itemUuid, counts.get(itemUuid) + 1);
       }
     }
     return counts;
@@ -813,8 +811,8 @@ export default class MerchStoreService {
 
   /**
    * An item counts towards the order limit if it has either been fulfilled or if
-   * it's on hold for that customer, meaning if the customer's order was cancelled
-   * and the item is unfulfilled, the item shouldn't count.
+   * it's on hold for that customer. This means if the customer's order was cancelled
+   * and the item is unfulfilled, then the item shouldn't count.
    * (having the order cancelled and the item fulfilled would mean the order was
    * partially fulfilled then cancelled, which would still count since that item belongs to that user)
    */
