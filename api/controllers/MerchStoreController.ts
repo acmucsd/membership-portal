@@ -44,6 +44,7 @@ import {
   UpdateMerchPhotoResponse,
   CompleteOrderPickupEventResponse,
   GetOrderPickupEventResponse,
+  CancelOrderPickupEventResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -322,11 +323,19 @@ export class MerchStoreController {
     return { error: null };
   }
 
+  @Post('/order/pickup/:uuid/cancel')
+  async cancelPickupEvent(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
+  Promise<CancelOrderPickupEventResponse> {
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
+    await this.merchStoreService.cancelPickupEvent(params.uuid);
+    return { error: null };
+  }
+
   @Post('/order/pickup/:uuid/complete')
   async completePickupEvent(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
   Promise<CompleteOrderPickupEventResponse> {
     if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
-    const ordersMarkedAsMissed = await this.merchStoreService.completeOrderPickupEvent(params.uuid);
+    const ordersMarkedAsMissed = await this.merchStoreService.completePickupEvent(params.uuid);
     return { error: null, orders: ordersMarkedAsMissed.map((order) => order.getPublicOrder()) };
   }
 
