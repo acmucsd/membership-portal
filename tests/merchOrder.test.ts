@@ -5,7 +5,7 @@ import { ForbiddenError } from 'routing-controllers';
 import EmailService from '../services/EmailService';
 import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
-import { UserAccessType, OrderStatus, ActivityType } from '../types';
+import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
@@ -933,15 +933,17 @@ describe('merch order pickup events', () => {
     const placedOrder1 = await merchController.placeMerchOrder(placeMerchOrderRequest, member1);
     const placedOrder2 = await merchController.placeMerchOrder(placeMerchOrderRequest, member2);
 
-    // delete pickup event
+    // cancel pickup event
     const { uuid } = pickupEvent;
-    await merchController.deletePickupEvent({ uuid }, merchDistributor);
+    const pickupEventUuid = { uuid };
+    await merchController.cancelPickupEvent(pickupEventUuid, merchDistributor);
 
     verify(emailService.sendOrderPickupCancelled(member1.email, member1.firstName, anything()))
       .called();
     verify(emailService.sendOrderPickupCancelled(member2.email, member2.firstName, anything()))
       .called();
 
+    // check order statuses have been updated
     const order1Request = { uuid: placedOrder1.order.uuid };
     const order1Response = await merchController.getOneMerchOrder(order1Request, member1);
     expect(order1Response.order.status).toEqual(OrderStatus.PICKUP_CANCELLED);
@@ -949,6 +951,10 @@ describe('merch order pickup events', () => {
     const order2Request = { uuid: placedOrder2.order.uuid };
     const order2Response = await merchController.getOneMerchOrder(order2Request, member2);
     expect(order2Response.order.status).toEqual(OrderStatus.PICKUP_CANCELLED);
+
+    // check pickup event's status has been updated
+    const completedPickupEvent = await merchController.getOnePickupEvent(pickupEventUuid, merchDistributor);
+    expect(completedPickupEvent.pickupEvent.status).toEqual(OrderPickupEventStatus.CANCELLED);
   });
 
   test('completing a pickup event marks all unfulfilled orders as missed and prompts a reschedule', async () => {
@@ -1025,6 +1031,10 @@ describe('merch order pickup events', () => {
     expect(missedOrder.order.status).toEqual(OrderStatus.PICKUP_MISSED);
     verify(emailService.sendOrderPickupMissed(member2.email, member2.firstName, anything()))
       .called();
+
+    // check pickup event's status has been updated
+    const completedPickupEvent = await merchController.getOnePickupEvent(pickupEventUuid, merchDistributor);
+    expect(completedPickupEvent.pickupEvent.status).toEqual(OrderPickupEventStatus.COMPLETED);
   });
 
   test('members can update their orders\' pickup events if the event is more than 2 days away', async () => {
