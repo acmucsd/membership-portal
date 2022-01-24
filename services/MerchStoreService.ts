@@ -492,7 +492,10 @@ export default class MerchStoreService {
       if (!order) throw new NotFoundError('Order not found');
       if (order.user.uuid !== user.uuid) throw new ForbiddenError('Cannot edit the order of a different user');
       if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot modify pickup for inactive orders');
-      if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
+      // the 2-day check is only necessary on PLACED orders since for other states,
+      // the pickup event would've already passed
+      if (order.status === OrderStatus.PLACED
+        && MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
         throw new UserError('Cannot reschedule an order pickup within 2 days of the event');
       }
 
@@ -563,7 +566,10 @@ export default class MerchStoreService {
         throw new ForbiddenError('Members cannot cancel other members\' orders');
       }
       if (MerchStoreService.isInactiveOrder(order)) throw new UserError('Cannot cancel an inactive order');
-      if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
+      // the 2-day check is only necessary on PLACED orders since for other states,
+      // the pickup event would've already passed
+      if (order.status === OrderStatus.PLACED
+        && MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
         throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
       }
       const customer = order.user;
@@ -688,8 +694,7 @@ export default class MerchStoreService {
       // (we don't check if it's ongoing in case the event needs to start earlier for any reason
       // or if someone comes a few minutes earlier)
       const { pickupEvent } = order;
-      const isOrderPickupEventToday = moment().isSame(moment(pickupEvent.start), 'day');
-      if (!isOrderPickupEventToday) {
+      if (!MerchStoreService.isPickupEventHappeningToday(pickupEvent)) {
         throw new UserError('Cannot fulfill items of an order that has a pickup event not happening today');
       }
       // check if order is in PLACED status (by order state machine design)
@@ -842,6 +847,10 @@ export default class MerchStoreService {
     }, 0);
   }
 
+  private static isPickupEventHappeningToday(pickupEvent: OrderPickupEventModel): boolean {
+    return moment().isSame(moment(pickupEvent.start), 'day');
+  }
+
   public async cancelAllPendingOrders(user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const merchOrderRepository = Repositories.merchOrder(txn);
@@ -959,6 +968,9 @@ export default class MerchStoreService {
       if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
       if (!MerchStoreService.isActivePickupEvent(pickupEvent)) {
         throw new UserError('Cannot complete a pickup event that isn\'t currently active');
+      }
+      if (!MerchStoreService.isPickupEventHappeningToday(pickupEvent)) {
+        throw new UserError('Cannot complete a pickup event that\'s not happening today');
       }
 
       await orderPickupEventRepository.upsertPickupEvent(pickupEvent, { status: OrderPickupEventStatus.COMPLETED });
