@@ -1,11 +1,11 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { mock, when, anything, instance, verify, anyString } from 'ts-mockito';
-import { ForbiddenError } from 'routing-controllers';
+import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import EmailService from '../services/EmailService';
 import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
-import { UserAccessType, OrderStatus, ActivityType } from '../types';
+import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
@@ -875,6 +875,54 @@ describe('merch order pickup events', () => {
       .toThrow('Order pickup event start time must come before the end time');
   });
 
+  test('pickup events can be deleted if they have no orders scheduled for it', async () => {
+    const conn = await DatabaseConnection.get();
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const pickupEvent = MerchFactory.fakeOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(merchDistributor)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const params = { uuid: pickupEvent.uuid };
+    const merchController = ControllerFactory.merchStore(conn);
+    await merchController.deletePickupEvent(params, merchDistributor);
+
+    // make sure pickup event cannot be retrieved
+    await (expect(merchController.getOnePickupEvent(params, merchDistributor)))
+      .rejects.toThrow(NotFoundError);
+  });
+
+  test('pickup events cannot be deleted if they have orders scheduled for it', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const option = MerchFactory.fakeOption({ price: 2000 });
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member, merchDistributor)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(pickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // place order
+    const order = [{ option: option.uuid, quantity: 1 }];
+    const placeOrderRequest = { order, pickupEvent: pickupEvent.uuid };
+    const merchController = ControllerFactory.merchStore(conn);
+    await merchController.placeMerchOrder(placeOrderRequest, member);
+
+    // attempt to delete event
+    const params = { uuid: pickupEvent.uuid };
+    await (expect(merchController.deletePickupEvent(params, merchDistributor)))
+      .rejects.toThrow('Cannot delete a pickup event that has order pickups scheduled for it');
+  });
+
   test('placing an order with a pickup event properly sets the pickup event\'s order', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
@@ -933,15 +981,17 @@ describe('merch order pickup events', () => {
     const placedOrder1 = await merchController.placeMerchOrder(placeMerchOrderRequest, member1);
     const placedOrder2 = await merchController.placeMerchOrder(placeMerchOrderRequest, member2);
 
-    // delete pickup event
+    // cancel pickup event
     const { uuid } = pickupEvent;
-    await merchController.deletePickupEvent({ uuid }, merchDistributor);
+    const pickupEventUuid = { uuid };
+    await merchController.cancelPickupEvent(pickupEventUuid, merchDistributor);
 
     verify(emailService.sendOrderPickupCancelled(member1.email, member1.firstName, anything()))
       .called();
     verify(emailService.sendOrderPickupCancelled(member2.email, member2.firstName, anything()))
       .called();
 
+    // check order statuses have been updated
     const order1Request = { uuid: placedOrder1.order.uuid };
     const order1Response = await merchController.getOneMerchOrder(order1Request, member1);
     expect(order1Response.order.status).toEqual(OrderStatus.PICKUP_CANCELLED);
@@ -949,6 +999,10 @@ describe('merch order pickup events', () => {
     const order2Request = { uuid: placedOrder2.order.uuid };
     const order2Response = await merchController.getOneMerchOrder(order2Request, member2);
     expect(order2Response.order.status).toEqual(OrderStatus.PICKUP_CANCELLED);
+
+    // check pickup event's status has been updated
+    const completedPickupEvent = await merchController.getOnePickupEvent(pickupEventUuid, merchDistributor);
+    expect(completedPickupEvent.pickupEvent.status).toEqual(OrderPickupEventStatus.CANCELLED);
   });
 
   test('completing a pickup event marks all unfulfilled orders as missed and prompts a reschedule', async () => {
@@ -1025,6 +1079,59 @@ describe('merch order pickup events', () => {
     expect(missedOrder.order.status).toEqual(OrderStatus.PICKUP_MISSED);
     verify(emailService.sendOrderPickupMissed(member2.email, member2.firstName, anything()))
       .called();
+
+    // check pickup event's status has been updated
+    const completedPickupEvent = await merchController.getOnePickupEvent(pickupEventUuid, merchDistributor);
+    expect(completedPickupEvent.pickupEvent.status).toEqual(OrderPickupEventStatus.COMPLETED);
+  });
+
+  test('pickup events that have previously been completed/cancelled cannot be completed/cancelled again', async () => {
+    const conn = await DatabaseConnection.get();
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const pickupEventToComplete = MerchFactory.fakeFutureOrderPickupEvent();
+    const pickupEventToCancel = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(merchDistributor)
+      .createOrderPickupEvents(pickupEventToComplete, pickupEventToCancel)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderPickupCancelled(anything(), anything(), anything()))
+      .thenResolve();
+
+    // update the pickup events to have passed
+    const cancelledPickupEventUuid = { uuid: pickupEventToCancel.uuid };
+    const completedPickupEventUuid = { uuid: pickupEventToComplete.uuid };
+    const pickupEventUpdates = {
+      start: moment().subtract(1, 'day'),
+      end: moment().subtract(1, 'day').add(1, 'hour'),
+    };
+    await conn.manager.update(OrderPickupEventModel, cancelledPickupEventUuid, pickupEventUpdates);
+    await conn.manager.update(OrderPickupEventModel, completedPickupEventUuid, pickupEventUpdates);
+
+    // mark pickup event as complete
+    const merchController = ControllerFactory.merchStore(conn);
+    await merchController.completePickupEvent(completedPickupEventUuid, merchDistributor);
+
+    // mark pickup event as cancelled
+    await merchController.cancelPickupEvent(cancelledPickupEventUuid, merchDistributor);
+
+    // attempt to mark the completed event as complete again
+    await expect(merchController.completePickupEvent(completedPickupEventUuid, merchDistributor))
+      .rejects.toThrow('Cannot complete a pickup event that isn\'t currently active');
+
+    // attempt to mark the completed event as cancelled
+    await expect(merchController.cancelPickupEvent(completedPickupEventUuid, merchDistributor))
+      .rejects.toThrow('Cannot cancel a pickup event that isn\'t currently active');
+
+    // attempt to mark the cancelled event as complete
+    await expect(merchController.completePickupEvent(cancelledPickupEventUuid, merchDistributor))
+      .rejects.toThrow('Cannot complete a pickup event that isn\'t currently active');
+
+    // attempt to mark the cancelled event as cancelled
+    await expect(merchController.cancelPickupEvent(cancelledPickupEventUuid, merchDistributor))
+      .rejects.toThrow('Cannot cancel a pickup event that isn\'t currently active');
   });
 
   test('members can update their orders\' pickup events if the event is more than 2 days away', async () => {

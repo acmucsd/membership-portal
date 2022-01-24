@@ -1,7 +1,7 @@
 import * as faker from 'faker';
-import { MerchItemOptionMetadata } from 'types';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
+import { MerchItemOptionMetadata, OrderPickupEventStatus } from '../../types';
 import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
@@ -93,6 +93,7 @@ export class MerchFactory {
       start,
       end,
       orderLimit: FactoryUtils.getRandomNumber(1, 5),
+      status: OrderPickupEventStatus.ACTIVE,
       orders: [],
     });
     return OrderPickupEventModel.merge(fake, substitute);

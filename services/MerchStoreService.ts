@@ -22,6 +22,7 @@ import {
   OrderPickupEvent,
   OrderPickupEventEdit,
   PublicMerchItemWithPurchaseLimits,
+  OrderPickupEventStatus,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
@@ -904,15 +905,35 @@ export default class MerchStoreService {
   }
 
   /**
-   * Deletes a pickup event. Before deletion, all orders for the pickup event will
-   * have emails sent out to the users who've placed the order.
+   * Delete a pickup event. No pickups must be scheduled for this event
+   * in order for deletion to succeed.
    */
   public async deletePickupEvent(uuid: Uuid): Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
+      const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
+      if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
+      if (pickupEvent.orders.length > 0) {
+        throw new UserError('Cannot delete a pickup event that has order pickups scheduled for it');
+      }
+      await orderPickupEventRepository.deletePickupEvent(pickupEvent);
+    });
+  }
+
+  /**
+   * Cancel a pickup event. All orders for the pickup event will
+   * have emails sent out to the users who've placed the order.
+   */
+  public async cancelPickupEvent(uuid: Uuid): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       const orderRepository = Repositories.merchOrder(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
       if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
+      if (!MerchStoreService.isActivePickupEvent(pickupEvent)) {
+        throw new UserError('Cannot cancel a pickup event that isn\'t currently active');
+      }
+
       // concurrently email the order cancellation email and update order status for every order
       // then set pickupEvent to null before deleting from table
       await Promise.all(pickupEvent.orders.map(async (order) => {
@@ -922,7 +943,7 @@ export default class MerchStoreService {
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_CANCELLED, pickupEvent: null });
         return OrderModel.merge(order, { pickupEvent: null });
       }));
-      await orderPickupEventRepository.deletePickupEvent(pickupEvent);
+      await orderPickupEventRepository.upsertPickupEvent(pickupEvent, { status: OrderPickupEventStatus.CANCELLED });
     });
   }
 
@@ -931,12 +952,19 @@ export default class MerchStoreService {
    * or partially fulfilled as missed.
    * @returns all orders that have been marked as missed
    */
-  public async completeOrderPickupEvent(uuid: Uuid): Promise<OrderModel[]> {
+  public async completePickupEvent(uuid: Uuid): Promise<OrderModel[]> {
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
-      const ordersToMarkAsMissed = pickupEvent.orders.filter((order) => this.isUnfulfilledOrder(order));
+      if (!pickupEvent) throw new NotFoundError('Order pickup event not found');
+      if (!MerchStoreService.isActivePickupEvent(pickupEvent)) {
+        throw new UserError('Cannot complete a pickup event that isn\'t currently active');
+      }
 
+      await orderPickupEventRepository.upsertPickupEvent(pickupEvent, { status: OrderPickupEventStatus.COMPLETED });
+
+      // mark all unfulfilled orders as missed
+      const ordersToMarkAsMissed = pickupEvent.orders.filter((order) => this.isUnfulfilledOrder(order));
       const orderRepository = Repositories.merchOrder(txn);
       return Promise.all(ordersToMarkAsMissed.map(async (order) => {
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_MISSED });
@@ -946,6 +974,10 @@ export default class MerchStoreService {
         return order;
       }));
     });
+  }
+
+  private static isActivePickupEvent(pickupEvent: OrderPickupEventModel) {
+    return pickupEvent.status === OrderPickupEventStatus.ACTIVE;
   }
 
   private isUnfulfilledOrder(order: OrderModel): boolean {

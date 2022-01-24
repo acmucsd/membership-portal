@@ -149,7 +149,9 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
     return this.getBaseFindOneQuery().where({ uuid }).getOne();
   }
 
-  public async upsertPickupEvent(pickupEvent: OrderPickupEventModel): Promise<OrderPickupEventModel> {
+  public async upsertPickupEvent(pickupEvent: OrderPickupEventModel, changes?: Partial<OrderPickupEventModel>):
+  Promise<OrderPickupEventModel> {
+    if (changes) pickupEvent = OrderPickupEventModel.merge(pickupEvent, changes);
     return this.repository.save(pickupEvent);
   }
 
