@@ -1059,8 +1059,8 @@ describe('merch order pickup events', () => {
     // update the pickup event to have passed
     const pickupEventUuid = { uuid: pickupEvent.uuid };
     const pickupEventUpdates = {
-      start: moment().subtract(1, 'day'),
-      end: moment().subtract(1, 'day').add(1, 'hour'),
+      start: moment().subtract(3, 'hours').toDate(),
+      end: moment().subtract(2, 'hours').toDate(),
     };
     await conn.manager.update(OrderPickupEventModel, pickupEventUuid, pickupEventUpdates);
 
@@ -1104,8 +1104,8 @@ describe('merch order pickup events', () => {
     const cancelledPickupEventUuid = { uuid: pickupEventToCancel.uuid };
     const completedPickupEventUuid = { uuid: pickupEventToComplete.uuid };
     const pickupEventUpdates = {
-      start: moment().subtract(1, 'day'),
-      end: moment().subtract(1, 'day').add(1, 'hour'),
+      start: moment().subtract(3, 'hours').toDate(),
+      end: moment().subtract(2, 'hours').toDate(),
     };
     await conn.manager.update(OrderPickupEventModel, cancelledPickupEventUuid, pickupEventUpdates);
     await conn.manager.update(OrderPickupEventModel, completedPickupEventUuid, pickupEventUpdates);
@@ -1172,6 +1172,124 @@ describe('merch order pickup events', () => {
     const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
 
     // reschedule pickup event
+    const orderUuid = { uuid: placedOrderResponse.order.uuid };
+    const pickupEventRequest = { pickupEvent: anotherPickupEvent.uuid };
+    await merchController.rescheduleOrderPickup(orderUuid, pickupEventRequest, member);
+    const updatedOrderResponse = await merchController.getOneMerchOrder(orderUuid, member);
+
+    expect(updatedOrderResponse.order.pickupEvent).toStrictEqual(anotherPickupEvent.getPublicOrderPickupEvent());
+    verify(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+      .called();
+  });
+
+  test('members can reschedule their pickup after an event has ended if they missed it', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const option = MerchFactory.fakeOption({
+      quantity: 2,
+      price: 2000,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+    const anotherPickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member, merchDistributor)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(pickupEvent, anotherPickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // place order
+    const order = [
+      {
+        option: option.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+
+    // update the pickup event to have passed
+    const pickupEventUuid = { uuid: pickupEvent.uuid };
+    const pickupEventUpdates = {
+      start: moment().subtract(3, 'hours').toDate(),
+      end: moment().subtract(2, 'hours').toDate(),
+    };
+    await conn.manager.update(OrderPickupEventModel, pickupEventUuid, pickupEventUpdates);
+
+    // complete the event, marking the above order as missed
+    await merchController.completePickupEvent(pickupEventUuid, merchDistributor);
+
+    // reschedule the missed order's pickup
+    const orderUuid = { uuid: placedOrderResponse.order.uuid };
+    const pickupEventRequest = { pickupEvent: anotherPickupEvent.uuid };
+    await merchController.rescheduleOrderPickup(orderUuid, pickupEventRequest, member);
+    const updatedOrderResponse = await merchController.getOneMerchOrder(orderUuid, member);
+
+    expect(updatedOrderResponse.order.pickupEvent).toStrictEqual(anotherPickupEvent.getPublicOrderPickupEvent());
+    verify(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+      .called();
+  });
+
+  test('members can reschedule their pickup if their current pickup event is cancelled', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const option = MerchFactory.fakeOption({
+      quantity: 2,
+      price: 2000,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+    const anotherPickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member, merchDistributor)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(pickupEvent, anotherPickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // place order
+    const order = [
+      {
+        option: option.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+
+    // update the pickup event to be 1 day away
+    const pickupEventUuid = { uuid: pickupEvent.uuid };
+    const pickupEventUpdates = {
+      start: moment().add(1, 'day').toDate(),
+      end: moment().add(1, 'day').add(1, 'hour').toDate(),
+    };
+    await conn.manager.update(OrderPickupEventModel, pickupEventUuid, pickupEventUpdates);
+
+    // cancel the event, marking the above order as PICKUP_CANCELLED
+    await merchController.cancelPickupEvent(pickupEventUuid, merchDistributor);
+
+    // reschedule the order's pickup
     const orderUuid = { uuid: placedOrderResponse.order.uuid };
     const pickupEventRequest = { pickupEvent: anotherPickupEvent.uuid };
     await merchController.rescheduleOrderPickup(orderUuid, pickupEventRequest, member);
