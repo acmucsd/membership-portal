@@ -9,7 +9,7 @@
             <div style="border-bottom: 1px solid #e6e6e6; height: 1px; margin: 16px -16px;"></div>
         <% } %>
     <% } %>
-    <% if (totalCost) { %>
+    <% if (typeof totalCost !== 'undefined') { %>
         <div style="border-bottom: 1px solid #e6e6e6; height: 1px; margin: 16px -16px;"></div>
         <span style="font-size: 24px; vertical-align: middle;">Total:</span>
         <span style="font-size: 18px; vertical-align: middle;"><%= totalCost %></span>
