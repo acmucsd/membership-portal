@@ -1,7 +1,7 @@
 import * as faker from 'faker';
 import { ForbiddenError } from 'routing-controllers';
 import { zip } from 'underscore';
-import { anything, mock, when } from 'ts-mockito';
+import { anything, instance, mock, when } from 'ts-mockito';
 import { OrderModel } from '../models/OrderModel';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchItemEdit, UserAccessType } from '../types';
@@ -284,7 +284,7 @@ describe('merch items with options', () => {
       .thenResolve();
 
     // make sure the item's remaining counts got updated
-    const merchStoreController = ControllerFactory.merchStore(conn);
+    const merchStoreController = ControllerFactory.merchStore(conn, instance(emailService));
     const orderedItemParams = { uuid: item.uuid };
     const getOrderedItemResponse = await merchStoreController.getOneMerchItem(orderedItemParams, member);
     const updatedItem = getOrderedItemResponse.item;
