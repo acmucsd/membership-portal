@@ -1078,8 +1078,8 @@ describe('merch order pickup events', () => {
     // update the pickup event to have passed
     const pickupEventUuid = { uuid: pickupEvent.uuid };
     const pickupEventUpdates = {
-      start: moment().subtract(3, 'hours').toDate(),
-      end: moment().subtract(2, 'hours').toDate(),
+      start: moment().startOf('day').toDate(),
+      end: moment().startOf('day').add(2, 'hours').toDate(),
     };
     await conn.manager.update(OrderPickupEventModel, pickupEventUuid, pickupEventUpdates);
 
@@ -1123,8 +1123,8 @@ describe('merch order pickup events', () => {
     const cancelledPickupEventUuid = { uuid: pickupEventToCancel.uuid };
     const completedPickupEventUuid = { uuid: pickupEventToComplete.uuid };
     const pickupEventUpdates = {
-      start: moment().subtract(3, 'hours').toDate(),
-      end: moment().subtract(2, 'hours').toDate(),
+      start: moment().startOf('day').toDate(),
+      end: moment().startOf('day').add(2, 'hours').toDate(),
     };
     await conn.manager.update(OrderPickupEventModel, cancelledPickupEventUuid, pickupEventUpdates);
     await conn.manager.update(OrderPickupEventModel, completedPickupEventUuid, pickupEventUpdates);
@@ -1241,8 +1241,8 @@ describe('merch order pickup events', () => {
     // update the pickup event to have passed
     const pickupEventUuid = { uuid: pickupEvent.uuid };
     const pickupEventUpdates = {
-      start: moment().subtract(3, 'hours').toDate(),
-      end: moment().subtract(2, 'hours').toDate(),
+      start: moment().startOf('day').toDate(),
+      end: moment().startOf('day').add(2, 'hours').toDate(),
     };
     await conn.manager.update(OrderPickupEventModel, pickupEventUuid, pickupEventUpdates);
 
