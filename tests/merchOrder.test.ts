@@ -574,7 +574,11 @@ describe('merch orders', () => {
       .createOrderPickupEvents(orderPickupEvent)
       .write();
 
-    const merchController = ControllerFactory.merchStore(conn);
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
       pickupEvent: orderPickupEvent.uuid,
@@ -690,7 +694,11 @@ describe('merch orders', () => {
       .orderMerch(admin, order, pickupEvent)
       .write();
 
-    const merchStoreController = ControllerFactory.merchStore(conn);
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
+    const merchStoreController = ControllerFactory.merchStore(conn, instance(emailService));
     const order1 = await merchStoreController.getMerchOrdersForCurrentUser(member1);
     expect(order1.orders.length).toBe(1);
     expect(order1.orders[0].user).toStrictEqual(member1.getPublicProfile());
@@ -745,7 +753,7 @@ describe('merch orders', () => {
       .thenResolve();
 
     // cancel order
-    const merchController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placedOrder = await conn.manager.findOne(OrderModel, { user: member }, { relations: ['items'] });
     const cancelOrderParams = { uuid: placedOrder.uuid };
     await merchController.cancelMerchOrder(cancelOrderParams, member);
@@ -781,7 +789,10 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pastPickupEvent, ongoingPickupEvent, futurePickupEvent)
       .write();
 
-    const merchController = ControllerFactory.merchStore(conn);
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
 
     const getFuturePickupEventsResponse = await merchController.getFuturePickupEvents(merchDistributor);
     expect(getFuturePickupEventsResponse.pickupEvents)
@@ -810,7 +821,11 @@ describe('merch order pickup events', () => {
       .createUsers(merchDistributor)
       .write();
 
-    const merchController = ControllerFactory.merchStore(conn);
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.createPickupEvent({ pickupEvent }, merchDistributor);
 
     const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
@@ -885,8 +900,12 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
     const params = { uuid: pickupEvent.uuid };
-    const merchController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.deletePickupEvent(params, merchDistributor);
 
     // make sure pickup event cannot be retrieved
@@ -914,7 +933,7 @@ describe('merch order pickup events', () => {
     // place order
     const order = [{ option: option.uuid, quantity: 1 }];
     const placeOrderRequest = { order, pickupEvent: pickupEvent.uuid };
-    const merchController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.placeMerchOrder(placeOrderRequest, member);
 
     // attempt to delete event
@@ -1111,7 +1130,7 @@ describe('merch order pickup events', () => {
     await conn.manager.update(OrderPickupEventModel, completedPickupEventUuid, pickupEventUpdates);
 
     // mark pickup event as complete
-    const merchController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.completePickupEvent(completedPickupEventUuid, merchDistributor);
 
     // mark pickup event as cancelled
@@ -1372,7 +1391,11 @@ describe('merch order pickup events', () => {
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
-    const merchController = ControllerFactory.merchStore(conn);
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
       pickupEvent: pickupEvent.uuid,
@@ -1406,7 +1429,12 @@ describe('merch order pickup events', () => {
         orderLimit: 2,
       },
     };
-    const merchController = ControllerFactory.merchStore(conn);
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const params = { uuid: pickupEvent.uuid };
     await merchController.editPickupEvent(params, editPickupEventRequest, merchDistributor);
 
@@ -1440,7 +1468,11 @@ describe('merch order pickup events', () => {
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
-    const merchController = ControllerFactory.merchStore(conn);
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
       pickupEvent: pickupEvent.uuid,
@@ -1501,7 +1533,7 @@ describe('merch order pickup events', () => {
     // cancel order
     const order = await conn.manager.findOne(OrderModel, { user: member });
     const cancelOrderParams = { uuid: order.uuid };
-    const merchController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.cancelMerchOrder(cancelOrderParams, member);
 
     // re-place order, making sure its successful
