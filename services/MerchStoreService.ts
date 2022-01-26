@@ -995,7 +995,9 @@ export default class MerchStoreService {
   }
 
   private isUnfulfilledOrder(order: OrderModel): boolean {
-    return order.status !== OrderStatus.FULFILLED && order.status !== OrderStatus.PARTIALLY_FULFILLED;
+    return order.status !== OrderStatus.FULFILLED
+    && order.status !== OrderStatus.PARTIALLY_FULFILLED
+    && order.status !== OrderStatus.CANCELLED;
   }
 
   public async getCartItems(options: string[]): Promise<MerchandiseItemOptionModel[]> {
