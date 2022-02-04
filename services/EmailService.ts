@@ -9,7 +9,7 @@ import { Uuid } from '../types';
 type EmailData = MailDataRequired;
 
 export default class EmailService {
-  private readonly mailer = new MailService();
+  private mailer;
 
   private static readonly itemDisplayTemplate = EmailService.readTemplate('itemDisplay.ejs');
 
@@ -31,7 +31,8 @@ export default class EmailService {
 
   private static readonly orderPartiallyFulfilledTemplate = EmailService.readTemplate('orderPartiallyFulfilled.ejs');
 
-  constructor() {
+  constructor(mailer = new MailService()) {
+    this.mailer = mailer;
     this.mailer.setApiKey(Config.email.apiKey);
   }
 
