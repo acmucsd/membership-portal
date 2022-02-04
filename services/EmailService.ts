@@ -9,7 +9,7 @@ import { Uuid } from '../types';
 type EmailData = MailDataRequired;
 
 export default class EmailService {
-  private mailer;
+  private mailer: MailService;
 
   private static readonly itemDisplayTemplate = EmailService.readTemplate('itemDisplay.ejs');
 
@@ -36,7 +36,7 @@ export default class EmailService {
     this.mailer.setApiKey(Config.email.apiKey);
   }
 
-  public async sendPasswordReset(email: string, firstName: string, code: string): Promise<void> {
+  public async sendPasswordReset(email: string, firstName: string, code: string): Promise<boolean> {
     try {
       const data = {
         to: email,
@@ -48,12 +48,14 @@ export default class EmailService {
         }),
       };
       await this.sendEmail(data);
+      return true;
     } catch (error) {
       log.warn(`Failed to send password reset email to ${email}`, { error });
+      return false;
     }
   }
 
-  public async sendEmailVerification(email: string, firstName: string, code: string): Promise<void> {
+  public async sendEmailVerification(email: string, firstName: string, code: string): Promise<boolean> {
     try {
       const data = {
         to: email,
@@ -65,12 +67,14 @@ export default class EmailService {
         }),
       };
       await this.sendEmail(data);
+      return true;
     } catch (error) {
       log.warn(`Failed to send verification email to ${email}`, { error });
+      return false;
     }
   }
 
-  public async sendOrderConfirmation(email: string, firstName: string, order: OrderInfo): Promise<void> {
+  public async sendOrderConfirmation(email: string, firstName: string, order: OrderInfo): Promise<boolean> {
     try {
       const data = {
         to: email,
@@ -85,12 +89,14 @@ export default class EmailService {
         }),
       };
       await this.sendEmail(data);
+      return true;
     } catch (error) {
       log.warn(`Failed to send order confirmation email to ${email}`, { error });
+      return false;
     }
   }
 
-  public async sendOrderCancellation(email: string, firstName: string, order: OrderInfo) {
+  public async sendOrderCancellation(email: string, firstName: string, order: OrderInfo): Promise<boolean> {
     try {
       const data = {
         to: email,
@@ -103,12 +109,14 @@ export default class EmailService {
         }),
       };
       await this.sendEmail(data);
+      return true;
     } catch (error) {
       log.warn(`Failed to send order cancellation email to ${email}`, { error });
+      return false;
     }
   }
 
-  public async sendOrderPickupMissed(email: string, firstName: string, order: OrderInfo) {
+  public async sendOrderPickupMissed(email: string, firstName: string, order: OrderInfo): Promise<boolean> {
     try {
       const data = {
         to: email,
@@ -122,12 +130,14 @@ export default class EmailService {
         }),
       };
       await this.sendEmail(data);
+      return true;
     } catch (error) {
       log.warn(`Failed to send order pickup missed email to ${email}`, { error });
+      return false;
     }
   }
 
-  public async sendOrderPickupCancelled(email: string, firstName: string, order: OrderInfo) {
+  public async sendOrderPickupCancelled(email: string, firstName: string, order: OrderInfo): Promise<boolean> {
     try {
       const data = {
         to: email,
@@ -141,12 +151,14 @@ export default class EmailService {
         }),
       };
       await this.sendEmail(data);
+      return true;
     } catch (error) {
       log.warn(`Failed to send order pickup cancelled email to ${email}`, { error });
+      return false;
     }
   }
 
-  public async sendOrderPickupUpdated(email: string, firstName: string, order: OrderInfo) {
+  public async sendOrderPickupUpdated(email: string, firstName: string, order: OrderInfo): Promise<boolean> {
     try {
       const data = {
         to: email,
@@ -160,12 +172,14 @@ export default class EmailService {
         }),
       };
       await this.sendEmail(data);
+      return true;
     } catch (error) {
       log.warn(`Failed to send order pickup update email to ${email}`, { error });
+      return false;
     }
   }
 
-  public async sendOrderFulfillment(email: string, firstName: string, order: OrderInfo) {
+  public async sendOrderFulfillment(email: string, firstName: string, order: OrderInfo): Promise<boolean> {
     try {
       const data = {
         to: email,
@@ -178,14 +192,16 @@ export default class EmailService {
         }),
       };
       await this.sendEmail(data);
+      return true;
     } catch (error) {
       log.warn(`Failed to send order fulfillment email to ${email}`, { error });
+      return false;
     }
   }
 
   public async sendPartialOrderFulfillment(email: string, firstName: string,
     fulfilledItems: OrderLineItem[], unfulfilledItems: OrderLineItem[], pickupEvent: OrderPickupEventInfo,
-    orderUuid: string) {
+    orderUuid: string): Promise<boolean> {
     try {
       const data = {
         to: email,
@@ -200,8 +216,10 @@ export default class EmailService {
         }),
       };
       await this.sendEmail(data);
+      return true;
     } catch (error) {
       log.warn(`Failed to send partial order fulfillment email to ${email}`, { error });
+      return false;
     }
   }
 

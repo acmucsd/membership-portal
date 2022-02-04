@@ -279,7 +279,7 @@ describe('merch items with options', () => {
       ], pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // make sure the item's remaining counts got updated
     const merchStoreController = ControllerFactory.merchStore(conn, instance(emailService));
@@ -324,7 +324,7 @@ describe('merch items with options', () => {
       ], pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // placing order fails
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));

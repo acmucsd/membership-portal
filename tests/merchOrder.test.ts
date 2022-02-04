@@ -46,7 +46,7 @@ describe('merch orders', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
     const order = [
       {
         option: option.uuid,
@@ -106,7 +106,7 @@ describe('merch orders', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -181,7 +181,7 @@ describe('merch orders', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -257,7 +257,7 @@ describe('merch orders', () => {
       .createOrderPickupEvents(pickupEvent, anotherPickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -334,7 +334,7 @@ describe('merch orders', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -393,7 +393,7 @@ describe('merch orders', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const orderRequest = [
@@ -449,7 +449,7 @@ describe('merch orders', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -488,7 +488,7 @@ describe('merch orders', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -540,7 +540,7 @@ describe('merch orders', () => {
       .createOrderPickupEvents(orderPickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
@@ -583,7 +583,7 @@ describe('merch orders', () => {
       .orderMerch(member3, order, pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // fulfill member1's order, leaving the other two orders as PLACED
     const order1 = await conn.manager.findOne(OrderModel, { user: member1 }, { relations: ['items'] });
@@ -655,7 +655,7 @@ describe('merch orders', () => {
       .orderMerch(admin, order, pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
     const merchStoreController = ControllerFactory.merchStore(conn, instance(emailService));
     const order1 = await merchStoreController.getMerchOrdersForCurrentUser(member1);
     expect(order1.orders.length).toBe(1);
@@ -704,7 +704,7 @@ describe('merch orders', () => {
       .orderMerch(member, order, pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // cancel order
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
@@ -743,7 +743,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pastPickupEvent, ongoingPickupEvent, futurePickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
 
     const getFuturePickupEventsResponse = await merchController.getFuturePickupEvents(merchDistributor);
@@ -773,7 +773,7 @@ describe('merch order pickup events', () => {
       .createUsers(merchDistributor)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.createPickupEvent({ pickupEvent }, merchDistributor);
 
@@ -849,7 +849,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
     const params = { uuid: pickupEvent.uuid };
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.deletePickupEvent(params, merchDistributor);
@@ -872,7 +872,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [{ option: option.uuid, quantity: 1 }];
@@ -923,7 +923,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -984,7 +984,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -1049,7 +1049,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEventToComplete, pickupEventToCancel)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // update the pickup events to have passed
     const cancelledPickupEventUuid = { uuid: pickupEventToCancel.uuid };
@@ -1102,7 +1102,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent, anotherPickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -1146,7 +1146,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent, anotherPickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -1201,7 +1201,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent, anotherPickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -1259,7 +1259,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent, moreRecentPickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // place order
     const order = [
@@ -1307,7 +1307,7 @@ describe('merch order pickup events', () => {
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
@@ -1343,7 +1343,7 @@ describe('merch order pickup events', () => {
       },
     };
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const params = { uuid: pickupEvent.uuid };
     await merchController.editPickupEvent(params, editPickupEventRequest, merchDistributor);
@@ -1378,7 +1378,7 @@ describe('merch order pickup events', () => {
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placeMerchOrderRequest = {
       order: [{ option: option.uuid, quantity: 1 }],
@@ -1431,7 +1431,7 @@ describe('merch order pickup events', () => {
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
-    const emailService = MockEmailService.mock();
+    const emailService = new MockEmailService().mock();
 
     // cancel order
     const order = await conn.manager.findOne(OrderModel, { user: member });
