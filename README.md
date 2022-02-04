@@ -53,6 +53,20 @@ CLIENT=localhost:8000
 
 Take a look at [`package.json`](https://github.com/acmucsd/membership-portal/blob/master/package.json) for the actual commands.
 
+### Testing Information
+After having executed `npm run db:seed`, `tests/Seeds.ts` will have been used to generate sample data. For all testing accounts, the password is `password`. To test basic features of the portal, `acm@ucsd.edu` can be used for the demo admin account, and any  seed email (e.g. `s3bansal@ucsd.edu`) can be used for a demo member account.
+
+For testing out the different portal roles, use the email `acm_[role]@ucsd.edu`, such that `[role]` is replaced with any of the following terms:
+* `restricted` - User has been blocked from appearing on the leaderboard, although their account is still valid.
+* `standard` - The default user role for all member accounts.
+* `staff` - User is able to check in to events as a staff member.
+* `admin` - User has full permissions to administrate the portal and store.
+* `marketing` - User is able to create and edit events.
+* `store_manager` - User is able to administrate store, including modifying collections, items, options, stock, and pricing.
+* `store_distributor` - User is able to execute store distributions, including viewing and fulfilling orders for each pickup event.
+
+For testing out the store, use the email `acm_store@ucsd.edu`, as the majority of demo orders will be placed with this account.
+
 ### Upgrading to Latest Version
 The first iteration of the membership portal is a JavaScript app written in 2019. The second and latest iteration, written 2020, is a TypeScript app built with better reliability and error handling, stronger concurrency guarantees, and a smoother development experience in mind, and includes a number of breaking changes at the API and database levels. For a more concrete list of improvements, see [acmucsd/membership-portal#115](https://github.com/acmucsd/membership-portal/pull/115).
 
