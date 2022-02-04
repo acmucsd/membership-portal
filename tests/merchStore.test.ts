@@ -1,13 +1,13 @@
 import * as faker from 'faker';
 import { ForbiddenError } from 'routing-controllers';
 import { zip } from 'underscore';
-import { anything, instance, mock, when } from 'ts-mockito';
+import { instance } from 'ts-mockito';
 import { OrderModel } from '../models/OrderModel';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
-import EmailService from '../services/EmailService';
+import { MockEmailService } from './services';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -279,9 +279,7 @@ describe('merch items with options', () => {
       ], pickupEvent)
       .write();
 
-    const emailService = mock(EmailService);
-    when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
-      .thenResolve();
+    const emailService = MockEmailService.mock();
 
     // make sure the item's remaining counts got updated
     const merchStoreController = ControllerFactory.merchStore(conn, instance(emailService));
@@ -326,12 +324,10 @@ describe('merch items with options', () => {
       ], pickupEvent)
       .write();
 
-    const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
-      .thenResolve();
+    const emailService = MockEmailService.mock();
 
     // placing order fails
-    const merchController = ControllerFactory.merchStore(conn);
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const order = [{ option: option2.uuid, quantity: 1 }];
     const placeOrderParams = { order, pickupEvent: pickupEvent.uuid };
     await expect(merchController.placeMerchOrder(placeOrderParams, member))

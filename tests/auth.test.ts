@@ -4,12 +4,12 @@ import { NotFoundError } from 'routing-controllers';
 import { anyString, instance, mock, verify, when } from 'ts-mockito';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
-import EmailService from '../services/EmailService';
 import UserAuthService from '../services/UserAuthService';
 import { UserAccessType, UserState } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, PortalState, UserFactory } from './data';
 import FactoryUtils from './data/FactoryUtils';
+import { MockEmailService } from './services';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -43,9 +43,7 @@ describe('account registration', () => {
     };
 
     // register member
-    const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
-      .thenResolve();
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const registerRequest = { user };
     const registerResponse = await authController.register(registerRequest, FactoryUtils.randomHexString());
@@ -86,9 +84,7 @@ describe('account registration', () => {
       graduationYear: UserFactory.graduationYear(),
     };
 
-    const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
-      .thenResolve();
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const registerRequest = { user };
     await expect(authController.register(registerRequest, FactoryUtils.randomHexString()))
@@ -108,7 +104,7 @@ describe('account login', () => {
       .createUsers(member)
       .write();
 
-    const emailService = mock(EmailService);
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const loginRequest = {
       email: member.email,
@@ -130,7 +126,7 @@ describe('account login', () => {
       .createUsers(member)
       .write();
 
-    const emailService = mock(EmailService);
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const loginRequest = {
       email: member.email,
@@ -154,9 +150,7 @@ describe('verifying email', () => {
       .createUsers(member)
       .write();
 
-    const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
-      .thenResolve();
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     await authController.verifyEmail({ accessCode });
 
@@ -176,9 +170,7 @@ describe('verifying email', () => {
       .createUsers(admin, member)
       .write();
 
-    const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
-      .thenResolve();
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     await expect(authController.verifyEmail({ accessCode: FactoryUtils.randomHexString() }))
       .rejects.toThrow(NotFoundError);
@@ -197,9 +189,7 @@ describe('resending email verification', () => {
       .createUsers(member)
       .write();
 
-    const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
-      .thenResolve();
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
     await authController.resendEmailVerification(params);
@@ -213,7 +203,7 @@ describe('resending email verification', () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
 
-    const emailService = mock(EmailService);
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
     await expect(authController.resendEmailVerification(params))
@@ -233,14 +223,12 @@ describe('email modification', () => {
       .createUsers(member)
       .write();
 
-    const emailService = mock(EmailService);
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
 
     // call route to change email
     const request = { email: 'someemail@example.com' };
 
-    when(emailService.sendEmailVerification(request.email, member.firstName, anyString()))
-      .thenResolve();
     const response = await authController.modifyEmail(request, member);
     expect(response.error).toBeNull();
 
@@ -264,7 +252,7 @@ describe('email modification', () => {
       .createUsers(member, otherMember)
       .write();
 
-    const emailService = mock(EmailService);
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
 
     // call route to change email
@@ -293,7 +281,7 @@ describe('password reset', () => {
       .createUsers(member)
       .write();
 
-    const emailService = mock(EmailService);
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { accessCode };
     const newPassword = 'new-password';
@@ -322,7 +310,7 @@ describe('password reset', () => {
       .createUsers(member)
       .write();
 
-    const emailService = mock(EmailService);
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { accessCode };
     const newPassword = 'new-password';
@@ -349,8 +337,7 @@ describe('resending password reset email', () => {
       .createUsers(member)
       .write();
 
-    const emailService = mock(EmailService);
-    when(emailService.sendPasswordReset(member.email, member.firstName, anyString()));
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
     await authController.sendPasswordResetEmail(params, FactoryUtils.randomHexString());
@@ -366,8 +353,7 @@ describe('resending password reset email', () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
 
-    const emailService = mock(EmailService);
-    when(emailService.sendPasswordReset(member.email, member.firstName, anyString()));
+    const emailService = MockEmailService.mock();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
     await expect(authController.sendPasswordResetEmail(params, FactoryUtils.randomHexString()))
