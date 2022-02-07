@@ -848,9 +848,7 @@ export default class MerchStoreService {
   }
 
   private static isPickupEventHappeningToday(pickupEvent: OrderPickupEventModel): boolean {
-    // return moment().isSame(moment(pickupEvent.start), 'day');
-
-    return true;
+    return moment().isSame(moment(pickupEvent.start), 'day');
   }
 
   public async cancelAllPendingOrders(user: UserModel): Promise<void> {
