@@ -80,6 +80,42 @@ async function seed(): Promise<void> {
     graduationYear: getGraduationYear(0),
   });
 
+  // Used for testing out user view of the merch store
+  const USER_STORE = UserFactory.fake({
+    email: 'acm_store@ucsd.edu',
+    points: 500,
+  });
+
+  // Used for testing out user access types
+  const USER_RESTRICTED = UserFactory.fake({
+    email: 'acm_restricted@ucsd.edu',
+    accessType: UserAccessType.RESTRICTED,
+  });
+  const USER_STANDARD = UserFactory.fake({
+    email: 'acm_standard@ucsd.edu',
+    accessType: UserAccessType.STANDARD,
+  });
+  const USER_STAFF = UserFactory.fake({
+    email: 'acm_staff@ucsd.edu',
+    accessType: UserAccessType.STAFF,
+  });
+  const USER_ADMIN = UserFactory.fake({
+    email: 'acm_admin@ucsd.edu',
+    accessType: UserAccessType.ADMIN,
+  });
+  const USER_MARKETING = UserFactory.fake({
+    email: 'acm_marketing@ucsd.edu',
+    accessType: UserAccessType.MARKETING,
+  });
+  const USER_MERCH_STORE_MANAGER = UserFactory.fake({
+    email: 'acm_store_manager@ucsd.edu',
+    accessType: UserAccessType.MERCH_STORE_MANAGER,
+  });
+  const USER_MERCH_STORE_DISTRIBUTOR = UserFactory.fake({
+    email: 'acm_store_distributor@ucsd.edu',
+    accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
+  });
+
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
   const highAttendanceMembers = otherMembers.slice(0, 50);
@@ -494,6 +530,14 @@ async function seed(): Promise<void> {
       MEMBER_SOPHOMORE,
       MEMBER_JUNIOR,
       MEMBER_SENIOR,
+      USER_STORE,
+      USER_RESTRICTED,
+      USER_STANDARD,
+      USER_STAFF,
+      USER_ADMIN,
+      USER_MARKETING,
+      USER_MERCH_STORE_MANAGER,
+      USER_MERCH_STORE_DISTRIBUTOR,
       ...otherMembers,
     )
     .createEvents(
@@ -577,9 +621,15 @@ async function seed(): Promise<void> {
       MERCH_COLLECTION_2,
     )
     .createOrderPickupEvents(PAST_ORDER_PICKUP_EVENT, ONGOING_ORDER_PICKUP_EVENT, FUTURE_ORDER_PICKUP_EVENT)
-    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], PAST_ORDER_PICKUP_EVENT)
-    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], PAST_ORDER_PICKUP_EVENT)
-    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
+    .orderMerch(USER_STORE, [{ option: MERCH_ITEM_1_OPTION_M, quantity: 1 }], PAST_ORDER_PICKUP_EVENT)
+    .orderMerch(USER_STORE, [{ option: MERCH_ITEM_1_OPTION_L, quantity: 1 }], PAST_ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_JUNIOR, [{ option: MERCH_ITEM_2_OPTION_4X4, quantity: 2 }], PAST_ORDER_PICKUP_EVENT)
+    .orderMerch(USER_STORE, [{ option: MERCH_ITEM_2_OPTION_3X3, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_FRESHMAN, [{ option: MERCH_ITEM_2_OPTION_3X3, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_2_OPTION_2X2, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_2_OPTION_2X2, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_JUNIOR, [{ option: MERCH_ITEM_2_OPTION_4X4, quantity: 2 }], ONGOING_ORDER_PICKUP_EVENT)
+    .orderMerch(MEMBER_SENIOR, [{ option: MERCH_ITEM_2_OPTION_3X3, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
     .write();
 }
 
