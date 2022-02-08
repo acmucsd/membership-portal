@@ -59,7 +59,180 @@ Modifying the schema requires not only direct edits to the data models (found in
 + [TypeORM](https://github.com/typeorm/typeorm/) is a library we use to manage our data models
 
 ### Testing
-"Software engineering is the integral of coding over time"; to build a reliable system over several years, we rely on tests to verify that we've implemented changes correctly without breaking anything unexpected in the process, that we throw errors when appropriate, and that we've handled forgettable edge cases. This is currently a bit of a work in progress, but it's something to keep in mind as you're developing&mdash;the use cases to be tested&mdash;and once we've established some examples and work towards testing the entire system, we'll expect you to write tests for your own PRs.
+"Software engineering is the integral of coding over time"; to build a reliable system over several years, we rely on tests to verify that we've implemented changes correctly without breaking anything unexpected in the process, that we throw errors when appropriate, and that we've handled forgettable edge cases. 
+
+The tests we've defined can be found in the `tests` folder, and currently contain tests for the API layer. These tests are written with [Jest](https://jestjs.io/), with mocking done with (ts-mockito)[https://github.com/NagRock/ts-mockito] (a TypeScript version of the popular [Mockito](https://site.mockito.org/) library in Java). We don't test specific functions in the service or repository layer, since given the heirarchical structure of our layers, correctness at the API layer implies correctness in the service and repository layers.
+
+#### Test Design
+
+Our tests are a mix of unit and integration tests &mdash; we will often test that specific API routes work as intended and can handle different scenarios as a unit, but we also test that the API route works in tandem with other routes if a given user flow uses those routes. For example, in our merch store, we have a feature where users can cancel orders that they placed. An example unit test could be: 'cancelling an order refunds the user the amount of credits they spent on that order'. However, there are other interactions that can depend on this route, such as if a user has their order fulfilled. So a more 'integrated' test could be: 'cancelling an already fulfilled order is not allowed', which uses both the 'cancel order' and 'fulfill order' functionalities in a single test.
+
+#### Test Structure
+Every test consists of 3 main parts: setup, execution, and assertion. The setup step involves creating any data that is needed for that specific functionality to be tested. Below is an example merch store test that ensures members earn both points and credits for attending an event. The setup involves retrieving a `Connection` object via. the `DatabaseConnection` class (so we can write data to the database later on), and creating a fake member to check into a fake event. Every test will need to start by getting a `Connection` object, because the actual operations that take place on persistent data depend on it (see section on `ControllerFactory`).
+
+```ts
+test('members can attend events for points and credits', async () => {
+  const conn = await DatabaseConnection.get();
+  const member = UserFactory.fake();
+  const event = EventFactory.fake(EventFactory.ongoing());
+```
+
+##### Test Factories
+Factories are a construct we built as a simple and ergonomic way of creating fake data needed for tests. They can be found in our `tests/data` directory. Every factory defines ways to create objects in bulk (with the `create(n)` methods), and to create individual objects but with specific values (with the `fake(substitute?: FactoryModel`) methods).
+
+For example, the below snippet would create 10 fake users, each with their own emails, first names, last names, etc., and each with 0 points and credits (as specified in the `UserFactory::fake` implementation):
+```ts
+const members = UserFactory.create(10);
+```
+And the below snippet would create a single fake user with 10000 credits:
+```ts
+const member = UserFactory.fake({ credits: 10000 });
+```
+while the below snippet would create a single fake user with 0 points.
+```ts
+const member = UserFactory.fake();
+```
+
+Certain factories, like the MerchFactory, create fake data heirarchically since the data models regarding merchandise are heirarchical in fashion (with MerchCollections containing 1 or more MerchItems, each containing one or more MerchItemOptions), so it is important to be careful how you are creating fake objects with those and making sure all relationship constraints between objects are valid (e.g. a MerchItem requiring at least 1 MerchItemOption)
+
+##### PortalState
+
+PortalState (found in `tests/data/PortalState.ts`) is a mechanism we built to quickly write all the fake data generated to the database, as well as to perform any relevant portal operations on that data, if that level of setup is needed (such as ordering merch for making sure fulfilling merch works properly). In every test, you'll see at least one usage of PortalState, which is generally for inserting the data generated by the Factory methods into the database.  
+
+Below is an example usage of PortalState in the same test as above:
+```ts
+test('members can attend events for points and credits', async () => {
+  const conn = await DatabaseConnection.get();
+  const member = UserFactory.fake();
+  const event = EventFactory.fake(EventFactory.ongoing());
+
+  await new PortalState()
+    .createUsers(member)
+    .createEvents(event)
+    .write();
+```
+After the PortalState call is finished, the database is populated with the fake data generated above, so any API calls made will operate on data persisted in the database. This is a requirement in order to test any functionality during the execution step of a test, since any type of API functionality depends on some kind of persisted data.
+
+During the execution step, we build the request for the API route we want to access, call that API route, and store the response in a variable (or alternatively, assert if that route threw an error). We use the `ControllerFactory` utility class to generate controller objects that we can directly call via. a function call, rather than needing to make an API request with a library like `fetch`.
+
+```ts
+test('members can attend events for points and credits', async () => {
+  const conn = await DatabaseConnection.get();
+  const member = UserFactory.fake();
+  const event = EventFactory.fake(EventFactory.ongoing());
+
+  await new PortalState()
+    .createUsers(member)
+    .createEvents(event)
+    .write();
+
+  // attend event
+  const attendanceController = ControllerFactory.attendance(conn);
+  const attendEventRequest = { attendanceCode: event.attendanceCode };
+  await attendanceController.attendEvent(attendEventRequest, member);
+```
+
+##### ControllerFactory
+
+`ControllerFactory` automatically injects any service the controller depends on, so that the test writer does not need to worry about creating any of the dependencies for that controller. If, however, you need to pass in a mocked version of a service into a controller (see the section on 'mocking' below for details), then you can do so by passing that service into the resective `ControllerFactory` generator function. 
+
+Below is a more involved example that uses `ControllerFactory` with a mocked version of `EmailService`:
+
+```ts
+  test('members can reschedule their pickup if their current pickup event is cancelled', async () => {
+    // setup
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const option = MerchFactory.fakeOption({
+      quantity: 2,
+      price: 2000,
+    });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+    const anotherPickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member, merchDistributor)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(pickupEvent, anotherPickupEvent)
+      .write();
+
+    // mock the EmailService to make sure that sendOrderConfirmation and sendOrderCancellation do not actually send any emails to the fake member's emails.
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // execution
+    const order = [
+      {
+        option: option.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: pickupEvent.uuid,
+    };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService)); // pass in an instance of mocked emailService here
+    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+```
+
+##### Mocking
+Mocking is a software engineering technique in testing that essentially simulates the behavior of an actual class or method in a pre-defined way. Conceptually, this might be tricky to understand, but it may help to look at an example first. In the above code snippet, the following lines demonstrate mocking:
+```ts
+const emailService = mock(EmailService);
+when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+  .thenResolve();
+when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+  .thenResolve();
+```
+Firstly, a mock instance of `emailService` is created using the `mock()` function provided by the `ts-mockito` package. Then, we define what the behavior of the functions that *would* be called in the test should be. For the above example, since we are calling placing merch orders in our test, normally an email would be sent as confirmation that the order was placed. In tests, however, we don't want to send any emails, since the emails we are generating are most oftenly fake emails (with the small off-chance that they are real emails, in which case they might think their email was hacked). So, instead of using the implementation defined in the `EmailService::sendOrderConfirmation` method, we are specifying in the above snippet to simply resolve the function call (since the `sendOrderConfirmation` function returns a Promise), meaning the function will not do anything.
+
+
+
+In the last step of testing, we assert that the return values of the execution stage are what they should be. We use standard Jest functionality like `expect()` or standard ts-mockito functionality like `verify()` to make sure return values are what they should be, and that mocked classes ended up calling the functions that they should have.
+
+```ts
+test('members can attend events for points and credits', async () => {
+  // setup
+  const conn = await DatabaseConnection.get();
+  const member = UserFactory.fake();
+  const event = EventFactory.fake(EventFactory.ongoing());
+
+  await new PortalState()
+    .createUsers(member)
+    .createEvents(event)
+    .write();
+
+  // execution
+  const attendanceController = ControllerFactory.attendance(conn);
+  const attendEventRequest = { attendanceCode: event.attendanceCode };
+  await attendanceController.attendEvent(attendEventRequest, member);
+
+  // assertions (this example has multiple)
+  const userController = ControllerFactory.user(conn);
+  const getUserResponse = await userController.getCurrentUser(member);
+  expect(getUserResponse.user.points).toEqual(event.pointValue);
+  expect(getUserResponse.user.credits).toEqual(event.pointValue * 100);
+
+  // check user activities
+  const getUserActivitiesResponse = await userController.getCurrentUserActivityStream(member);
+  const attendanceActivity = getUserActivitiesResponse.activity[getUserActivitiesResponse.activity.length - 1];
+  expect(attendanceActivity.type).toEqual(ActivityType.ATTEND_EVENT);
+  expect(attendanceActivity.pointsEarned).toEqual(event.pointValue);
+
+  // check attendances for user
+  const getAttendancesForUserResponse = await attendanceController.getAttendancesForCurrentUser(member);
+  const attendance = getAttendancesForUserResponse.attendances[0];
+  expect(attendance.user.uuid).toEqual(member.uuid);
+  expect(attendance.event.uuid).toEqual(event.uuid);
+});
+```
+
+If you need to assert the specific structure of an array or specific properties of an object and are not quite sure how to do so (e.g. with the `expect().arrayContaining()` paradigm), use other tests as examples before looking anything up. We strive to keep coding conventions the same across each test, so aim to use common conventions over something more unique.
+
 
 ### Tooling
 Our tooling is meant to keep our codebase in good health and run the portal in production with as little manual intervention as possible. Our CI/CD pipeline ties everything together, verifying that PRs meet some criteria before allowing them to merge and then deploying our updated app to its production environment and publishing it to the npm registry as needed. All PRs must be linted TypeScript code with no failing tests. See the ["Useful Commands"](https://github.com/acmucsd/membership-portal#useful-commands) section of the README for the npm scripts to compile the code, lint the code, and run the tests.
