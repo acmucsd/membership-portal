@@ -9,6 +9,7 @@ import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } fro
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
+import { UserError } from 'utils/Errors';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -588,6 +589,43 @@ describe('merch orders', () => {
       .rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
     await expect(merchController.placeMerchOrder(placeMerchOrderRequest, member))
       .rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
+  });
+
+  test('order route accurately verifies monthly and lifetime limits', async () => {
+    const conn = await DatabaseConnection.get();
+    const optionMetadataType = faker.datatype.hexaDecimal(10);
+    const option1 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option2 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const item = MerchFactory.fakeItem({
+      options: [option1, option2],
+      monthlyLimit: 5,
+      lifetimeLimit: 10,
+    });
+    const orderPickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+    const member = UserFactory.fake({
+      accessType: UserAccessType.STANDARD,
+      credits: 5 * option1.price + 6 * option2.price
+    });
+
+    await new PortalState()
+      .createUsers(member)
+      .createOrderPickupEvents(orderPickupEvent)
+      .createMerchItem(item)
+      .createMerchItemOptions(option1,option2)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placeMerchOrderRequest = {
+      order: [{ option: option1.uuid, quantity: 5 }, { option: option2.uuid, quantity: 6 }],
+      pickupEvent: orderPickupEvent.uuid,
+    };
+
+    expect(merchController.verifyMerchOrder(placeMerchOrderRequest,member)).rejects.toThrowError(UserError);
+    expect(merchController.placeMerchOrder(placeMerchOrderRequest,member)).rejects.toThrowError(UserError);
   });
 
   test('store managers, but not store distributors, can cancel all pending orders for all users', async () => {
