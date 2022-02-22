@@ -1,3 +1,5 @@
+import { MerchItem } from 'api/validators/MerchStoreRequests';
+import { MerchandiseItemModel } from 'models/MerchandiseItemModel';
 import { EventModel } from '../../models/EventModel';
 import { UserModel } from '../../models/UserModel';
 import { ActivityScope, ActivityType } from '../Enums';
@@ -42,3 +44,8 @@ export type OrderItemPriceAndQuantity = {
   price: number,
   quantity: number,
 };
+
+export type MerchItemWithQuantity = {
+  item: MerchandiseItemModel,
+  quantity: number,
+}

@@ -1,7 +1,7 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { mock, when, anything, instance, verify, anyString } from 'ts-mockito';
-import { ForbiddenError, NotFoundError } from 'routing-controllers';
+import { ForbiddenError, HttpError, NotFoundError } from 'routing-controllers';
 import EmailService from '../services/EmailService';
 import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
@@ -9,7 +9,7 @@ import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } fro
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
-import { UserError } from 'utils/Errors';
+import { UserError } from '../utils/Errors';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -598,13 +598,13 @@ describe('merch orders', () => {
     const option2 = MerchFactory.fakeOptionWithType(optionMetadataType);
     const item = MerchFactory.fakeItem({
       options: [option1, option2],
-      monthlyLimit: 5,
-      lifetimeLimit: 10,
+      monthlyLimit: 1,
+      lifetimeLimit: 1,
     });
     const orderPickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
     const member = UserFactory.fake({
       accessType: UserAccessType.STANDARD,
-      credits: 5 * option1.price + 6 * option2.price
+      credits: 1 * option1.price + 1 * option2.price
     });
 
     await new PortalState()
@@ -613,6 +613,8 @@ describe('merch orders', () => {
       .createMerchItem(item)
       .createMerchItemOptions(option1,option2)
       .write();
+    
+    member.reload()
 
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
@@ -620,12 +622,12 @@ describe('merch orders', () => {
 
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placeMerchOrderRequest = {
-      order: [{ option: option1.uuid, quantity: 5 }, { option: option2.uuid, quantity: 6 }],
+      order: [{ option: option1.uuid, quantity: 1 }, { option: option2.uuid, quantity: 1 }],
       pickupEvent: orderPickupEvent.uuid,
     };
-
-    expect(merchController.verifyMerchOrder(placeMerchOrderRequest,member)).rejects.toThrowError(UserError);
-    expect(merchController.placeMerchOrder(placeMerchOrderRequest,member)).rejects.toThrowError(UserError);
+    console.log(placeMerchOrderRequest.order)
+    //await merchController.placeMerchOrder(placeMerchOrderRequest,member);
+    expect(merchController.placeMerchOrder(placeMerchOrderRequest,member)).rejects.toThrowError(HttpError);
   });
 
   test('store managers, but not store distributors, can cancel all pending orders for all users', async () => {
