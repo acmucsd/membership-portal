@@ -1,7 +1,7 @@
 import { Config } from './config';
 import { DatabaseNamingStrategy } from './config/DatabaseNamingStrategy';
 
-const dbConfig = {
+module.exports =  {
   type: 'postgres',
   host: Config.database.host,
   port: Config.database.port,
@@ -14,29 +14,11 @@ const dbConfig = {
   ],
   synchronize: false,
   namingStrategy: new DatabaseNamingStrategy(),
-};
-
-module.exports = [
-  {
-    ...dbConfig,
-    migrations: [
-      'migrations/*.ts',
-    ],
-    cli: {
-      entitiesDir: 'models/',
-      migrationsDir: 'migrations/',
-    },
+  migrations: [
+    'migrations/*.ts',
+  ],
+  cli: {
+    entitiesDir: 'models/',
+    migrationsDir: 'migrations/',
   },
-  {
-    ...dbConfig,
-    name: 'seed',
-    migrations: [
-      'seeds/*.ts',
-    ],
-    migrationsTableName: 'seeds',
-    cli: {
-      entitiesDir: 'models/',
-      migrationsDir: 'seeds/',
-    },
-  },
-];
+}
