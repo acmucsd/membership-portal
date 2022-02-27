@@ -1,7 +1,7 @@
 import { Config } from './config';
 import { DatabaseNamingStrategy } from './config/DatabaseNamingStrategy';
 
-module.exports =  {
+module.exports = {
   type: 'postgres',
   host: Config.database.host,
   port: Config.database.port,
@@ -21,4 +21,4 @@ module.exports =  {
     entitiesDir: 'models/',
     migrationsDir: 'migrations/',
   },
-}
+};
