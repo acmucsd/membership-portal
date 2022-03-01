@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - run:
-          command: yarn
+          command: yarn install --frozen-lockfile
       - run:
           command: yarn build
   lint:
