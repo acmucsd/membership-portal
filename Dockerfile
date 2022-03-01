@@ -2,7 +2,7 @@ FROM node:14.15.3 AS build
 
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN yarn
+RUN yarn install --frozen-lockfile
 COPY . .
 RUN yarn build
 
