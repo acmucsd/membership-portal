@@ -7,24 +7,24 @@ jobs:
     steps:
       - checkout
       - run:
-          command: npm ci
+          command: yarn install --frozen-lockfile
       - run:
-          command: npm run build
+          command: yarn build
   lint:
     docker:
       - image: circleci/node:14.17.6
     steps:
       - checkout
       - restore_cache:
-          key: package-cache-{{ checksum "package-lock.json" }}
+          key: package-cache-{{ checksum "yarn.lock" }}
       - run:
-          command: npm install
+          command: yarn
       - save_cache:
-          key: package-cache-{{ checksum "package-lock.json" }}
+          key: package-cache-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
       - run:
-          command: npm run lint
+          command: yarn lint
   test:
     docker:
       - image: circleci/node:14.17.6
@@ -41,17 +41,17 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: package-cache-{{ checksum "package-lock.json" }}
+          key: package-cache-{{ checksum "yarn.lock" }}
       - run:
-          command: npm install
+          command: yarn
       - save_cache:
-          key: package-cache-{{ checksum "package-lock.json" }}
+          key: package-cache-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
       - run:
-          command: npm run db:migrate
+          command: yarn db:migrate
       - run:
-          command: npm run test
+          command: yarn test
   image:
     working_directory: /app
     docker:
