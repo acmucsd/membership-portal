@@ -298,6 +298,17 @@ async function seed(): Promise<void> {
     attendanceCode: 'f0rk',
     ...staffed,
   });
+  const LONG_ACM_EVENT = EventFactory.fake({
+    title: 'Winter 2022 Census',
+    description: `Fill out our Winter 2022 census at https://acmurl.com/census! We
+    appreciate your input and will continue to take your feedback to improve ACM.
+    After checking in, you will automatically be entered into a raffle for a winter
+    gift set!`,
+    ...general,
+    location: 'Online',
+    ...EventFactory.daysLong(7),
+    attendanceCode: 'c3nsus',
+  });
 
   const MERCH_COLLECTION_1 = MerchFactory.fakeCollection({
     title: 'The Hack School Collection',
@@ -547,6 +558,7 @@ async function seed(): Promise<void> {
       PAST_AI_WORKSHOP_2,
       PAST_ACM_PANEL,
       PAST_ACM_SOCIAL_2,
+      LONG_ACM_EVENT,
     )
     .attendEvents([
       STAFF_AI,
