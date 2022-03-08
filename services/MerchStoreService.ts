@@ -33,7 +33,6 @@ import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
-import { Console } from 'console';
 
 @Service()
 export default class MerchStoreService {
@@ -450,12 +449,15 @@ export default class MerchStoreService {
     const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
       .countItemRequestedQuantities(originalOrder, itemOptionsToOrder)
       .entries());
+
     for (let i = 0; i < requestedQuantitiesByMerchItem.length; i += 1) {
       const [uuid, itemWithQuantity] = requestedQuantitiesByMerchItem[i];
-      if (!!itemWithQuantity.item.lifetimeLimit && lifetimeItemOrderCounts.get(uuid) + itemWithQuantity.quantity > itemWithQuantity.item.lifetimeLimit) {
+      if (!!itemWithQuantity.item.lifetimeLimit
+        && lifetimeItemOrderCounts.get(uuid) + itemWithQuantity.quantity > itemWithQuantity.item.lifetimeLimit) {
         throw new UserError(`This order exceeds the lifetime limit for ${itemWithQuantity.item.itemName}`);
       }
-      if (!!itemWithQuantity.item.monthlyLimit && pastMonthItemOrderCounts.get(uuid) + itemWithQuantity.quantity > itemWithQuantity.item.monthlyLimit) {
+      if (!!itemWithQuantity.item.monthlyLimit
+        && pastMonthItemOrderCounts.get(uuid) + itemWithQuantity.quantity > itemWithQuantity.item.monthlyLimit) {
         throw new UserError(`This order exceeds the monthly limit for ${itemWithQuantity.item.itemName}`);
       }
     }
@@ -813,7 +815,6 @@ export default class MerchStoreService {
         if (counts.has(itemUuid)) {
           counts.set(itemUuid, counts.get(itemUuid) + 1);
         }
-
       }
     }
     return counts;
@@ -834,14 +835,19 @@ export default class MerchStoreService {
     itemOptions: Map<string, MerchandiseItemOptionModel>): Map<string, MerchItemWithQuantity> {
     const requestedQuantitiesByMerchItem = new Map<string, MerchItemWithQuantity>();
     for (let i = 0; i < order.length; i += 1) {
-      const { item } = itemOptions.get(order[i].option);
+      const opt = itemOptions.get(order[i].option);
+
+      const { item } = opt;
       const quantityRequested = order[i].quantity;
-      if (!requestedQuantitiesByMerchItem.has(item.uuid)) requestedQuantitiesByMerchItem.set(item.uuid, { item, quantity: 0 });
+
+      if (!requestedQuantitiesByMerchItem.has(item.uuid)) {
+        requestedQuantitiesByMerchItem.set(item.uuid, {
+          item,
+          quantity: 0,
+        });
+      }
       requestedQuantitiesByMerchItem.get(item.uuid).quantity += quantityRequested;
-      console.log(item)
-      console.log(quantityRequested)
     }
-    console.log(requestedQuantitiesByMerchItem);
     return requestedQuantitiesByMerchItem;
   }
 

@@ -9,7 +9,6 @@ import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } fro
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
-import { UserError } from '../utils/Errors';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -604,17 +603,16 @@ describe('merch orders', () => {
     const orderPickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
     const member = UserFactory.fake({
       accessType: UserAccessType.STANDARD,
-      credits: 1 * option1.price + 1 * option2.price
+      credits: 1 * option1.price + 1 * option2.price,
     });
 
     await new PortalState()
       .createUsers(member)
       .createOrderPickupEvents(orderPickupEvent)
       .createMerchItem(item)
-      .createMerchItemOptions(option1,option2)
       .write();
-    
-    member.reload()
+
+    member.reload();
 
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
@@ -625,9 +623,9 @@ describe('merch orders', () => {
       order: [{ option: option1.uuid, quantity: 1 }, { option: option2.uuid, quantity: 1 }],
       pickupEvent: orderPickupEvent.uuid,
     };
-    console.log(placeMerchOrderRequest.order)
-    //await merchController.placeMerchOrder(placeMerchOrderRequest,member);
-    expect(merchController.placeMerchOrder(placeMerchOrderRequest,member)).rejects.toThrowError(HttpError);
+    // console.log(placeMerchOrderRequest.order)
+    // await merchController.placeMerchOrder(placeMerchOrderRequest,member);
+    await expect(merchController.placeMerchOrder(placeMerchOrderRequest, member)).rejects.toThrowError(HttpError);
   });
 
   test('store managers, but not store distributors, can cancel all pending orders for all users', async () => {
