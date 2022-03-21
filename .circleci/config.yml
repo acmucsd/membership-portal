@@ -54,11 +54,12 @@ jobs:
           command: yarn test
   image:
     working_directory: /app
-    - setup_remote_docker:
-        version: 19.03.13
+    docker:
+      - image: docker:20.10.2
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
