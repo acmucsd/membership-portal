@@ -59,7 +59,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 19.03.13
+          version: 20.10.2
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
