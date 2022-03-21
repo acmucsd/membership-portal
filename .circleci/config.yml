@@ -86,7 +86,9 @@ jobs:
       - run:
           name: Push application Docker image
           command: |
-              echo "test"
+            echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
+            docker tag app "acmucsd/membership-portal-api:latest"
+            docker push "acmucsd/membership-portal-api:latest"
   deploy:
     machine:
       enabled: true
@@ -111,7 +113,7 @@ workflows:
             - test
           filters:
             branches:
-              only: docker-upgrade
+              only: master
       - deploy:
           requires:
             - build
