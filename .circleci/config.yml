@@ -54,8 +54,8 @@ jobs:
           command: yarn test
   image:
     working_directory: /app
-    docker:
-      - image: docker:20.10.2
+    - setup_remote_docker:
+        version: 19.03.13
     steps:
       - checkout
       - setup_remote_docker
@@ -85,9 +85,7 @@ jobs:
       - run:
           name: Push application Docker image
           command: |
-            echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
-            docker tag app "acmucsd/membership-portal-api:latest"
-            docker push "acmucsd/membership-portal-api:latest"
+              echo "test"
   deploy:
     machine:
       enabled: true
@@ -112,7 +110,7 @@ workflows:
             - test
           filters:
             branches:
-              only: master
+              only: docker-upgrade
       - deploy:
           requires:
             - build
