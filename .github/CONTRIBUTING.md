@@ -58,17 +58,21 @@ Modifying the schema requires not only direct edits to the data models (found in
 
 + [TypeORM](https://github.com/typeorm/typeorm/) is a library we use to manage our data models
 
-### Testing
+## Testing
 "Software engineering is the integral of coding over time"; to build a reliable system over several years, we rely on tests to verify that we've implemented changes correctly without breaking anything unexpected in the process, that we throw errors when appropriate, and that we've handled forgettable edge cases. 
 
 The tests we've defined can be found in the `tests` folder, and currently contain tests for the API layer. These tests are written with [Jest](https://jestjs.io/), with mocking done with [ts-mockito](https://github.com/NagRock/ts-mockito) (a TypeScript version of the popular [Mockito](https://site.mockito.org/) library in Java). We don't test specific functions in the service or repository layer, since given the heirarchical structure of our layers, correctness at the API layer implies correctness in the service and repository layers.
 
-#### Test Design
+### Test Design
 
 Our tests are a mix of unit and integration tests &mdash; we will often test that specific API routes work as intended and can handle different scenarios as a unit, but we also test that the API route works in tandem with other routes if a given user flow uses those routes. For example, in our merch store, we have a feature where users can cancel orders that they placed. An example unit test could be: 'cancelling an order refunds the user the amount of credits they spent on that order'. However, there are other interactions that can depend on this route, such as if a user has their order fulfilled. So a more 'integrated' test could be: 'cancelling an already fulfilled order is not allowed', which uses both the 'cancel order' and 'fulfill order' functionalities in a single test.
 
-#### Test Structure
-Every test consists of 3 main parts: setup, execution, and assertion. The setup step involves creating any data that is needed for that specific functionality to be tested. Below is an example merch store test that ensures members earn both points and credits for attending an event. The setup involves retrieving a `Connection` object via. the `DatabaseConnection` class (so we can write data to the database later on), and creating a fake member to check into a fake event. Every test will need to start by getting a `Connection` object, because the actual operations that take place on persistent data depend on it (see section on `ControllerFactory`).
+### Test Structure
+Every test consists of 3 main parts: setup, execution, and assertion. The setup step involves creating any data and dependencies that are needed for that specific functionality to be tested. The execution step is when the code we are testing gets executed, and the assertion step checks the correctness of the executed code across any variables or models that were updated. 
+
+#### Setup
+
+Below is an example merch store test that ensures members earn both points and credits for attending an event. The setup involves retrieving a `Connection` object via. the `DatabaseConnection` class (so we can write data to the database later on), and creating a fake member to check into a fake event. Every test will need to start by getting a `Connection` object, because the actual operations that take place on persistent data depend on it (see section on `ControllerFactory`).
 
 ```ts
 test('members can attend events for points and credits', async () => {
@@ -112,6 +116,8 @@ test('members can attend events for points and credits', async () => {
     .write();
 ```
 After the PortalState call is finished, the database is populated with the fake data generated above, so any API calls made will operate on data persisted in the database. This is a requirement in order to test any functionality during the execution step of a test, since any type of API functionality depends on some kind of persisted data.
+
+#### Execution
 
 During the execution step, we build the request for the API route we want to access, call that API route, and store the response in a variable (or alternatively, assert if that route threw an error). We use the `ControllerFactory` utility class to generate controller objects that we can directly call via. a function call, rather than needing to make an API request with a library like `fetch`.
 
@@ -190,7 +196,7 @@ when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anythin
 ```
 Firstly, a mock instance of `emailService` is created using the `mock()` function provided by the `ts-mockito` package. Then, we define what the behavior of the functions that *would* be called in the test should be. For the above example, since we are calling placing merch orders in our test, normally an email would be sent as confirmation that the order was placed. In tests, however, we don't want to send any emails, since the emails we are generating are most oftenly fake emails (with the small off-chance that they are real emails, in which case they might think their email was hacked). So, instead of using the implementation defined in the `EmailService::sendOrderConfirmation` method, we are specifying in the above snippet to simply resolve the function call (since the `sendOrderConfirmation` function returns a Promise), meaning the function will not do anything.
 
-
+#### Assertion
 
 In the last step of testing, we assert that the return values of the execution stage are what they should be. We use standard Jest functionality like `expect()` or standard ts-mockito functionality like `verify()` to make sure return values are what they should be, and that mocked classes ended up calling the functions that they should have.
 
@@ -234,8 +240,8 @@ test('members can attend events for points and credits', async () => {
 If you need to assert the specific structure of an array or specific properties of an object and are not quite sure how to do so (e.g. with the `expect().arrayContaining()` paradigm), use other tests as examples before looking anything up. We strive to keep coding conventions the same across each test, so aim to use common conventions over something more unique.
 
 
-### Tooling
+## Tooling
 Our tooling is meant to keep our codebase in good health and run the portal in production with as little manual intervention as possible. Our CI/CD pipeline ties everything together, verifying that PRs meet some criteria before allowing them to merge and then deploying our updated app to its production environment and publishing it to the npm registry as needed. All PRs must be linted TypeScript code with no failing tests. See the ["Useful Commands"](https://github.com/acmucsd/membership-portal#useful-commands) section of the README for the npm scripts to compile the code, lint the code, and run the tests.
 
-### Other Considerations
+## Other Considerations
 This project's been built with a few development principles in mind: we care about correctness, readability, and ease of maintenance. Performance isn't a major concern and we don't heavily optimize, given that this is a fairly simple app that can be comfortably run at decent scale, but we do care about it broadly, e.g. in establishing useful database indexes and efficient access patterns.
