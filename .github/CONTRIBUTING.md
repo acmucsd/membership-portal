@@ -61,7 +61,7 @@ Modifying the schema requires not only direct edits to the data models (found in
 ### Testing
 "Software engineering is the integral of coding over time"; to build a reliable system over several years, we rely on tests to verify that we've implemented changes correctly without breaking anything unexpected in the process, that we throw errors when appropriate, and that we've handled forgettable edge cases. 
 
-The tests we've defined can be found in the `tests` folder, and currently contain tests for the API layer. These tests are written with [Jest](https://jestjs.io/), with mocking done with (ts-mockito)[https://github.com/NagRock/ts-mockito] (a TypeScript version of the popular [Mockito](https://site.mockito.org/) library in Java). We don't test specific functions in the service or repository layer, since given the heirarchical structure of our layers, correctness at the API layer implies correctness in the service and repository layers.
+The tests we've defined can be found in the `tests` folder, and currently contain tests for the API layer. These tests are written with [Jest](https://jestjs.io/), with mocking done with [ts-mockito](https://github.com/NagRock/ts-mockito) (a TypeScript version of the popular [Mockito](https://site.mockito.org/) library in Java). We don't test specific functions in the service or repository layer, since given the heirarchical structure of our layers, correctness at the API layer implies correctness in the service and repository layers.
 
 #### Test Design
 
