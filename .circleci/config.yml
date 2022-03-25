@@ -58,7 +58,8 @@ jobs:
       - image: docker:20.10.2
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.2
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
