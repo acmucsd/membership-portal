@@ -835,9 +835,9 @@ export default class MerchStoreService {
     itemOptions: Map<string, MerchandiseItemOptionModel>): Map<string, MerchItemWithQuantity> {
     const requestedQuantitiesByMerchItem = new Map<string, MerchItemWithQuantity>();
     for (let i = 0; i < order.length; i += 1) {
-      const opt = itemOptions.get(order[i].option);
+      const option = itemOptions.get(order[i].option);
 
-      const { item } = opt;
+      const { item } = option;
       const quantityRequested = order[i].quantity;
 
       if (!requestedQuantitiesByMerchItem.has(item.uuid)) {

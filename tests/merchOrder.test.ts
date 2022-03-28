@@ -603,7 +603,7 @@ describe('merch orders', () => {
     const orderPickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
     const member = UserFactory.fake({
       accessType: UserAccessType.STANDARD,
-      credits: 1 * option1.price + 1 * option2.price,
+      credits: option1.price + option2.price,
     });
 
     await new PortalState()
