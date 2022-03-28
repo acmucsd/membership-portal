@@ -61,6 +61,13 @@ export class EventFactory {
     };
   }
 
+  public static daysLong(n: number): Partial<EventModel> {
+    return {
+      start: FactoryUtils.roundToHalfHour(moment().hour(11)),
+      end: FactoryUtils.roundToHalfHour(moment().add(n, 'days').hour(13)),
+    };
+  }
+
   private static randomPointValue(): number {
     // some multiple of 5, min 5 and max 20
     return FactoryUtils.getRandomNumber(5, 20, 5);
