@@ -1,4 +1,4 @@
-import { EntityRepository, SelectQueryBuilder } from 'typeorm';
+import { EntityRepository, In, SelectQueryBuilder } from 'typeorm';
 import { OrderStatus, Uuid } from '../types';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
@@ -32,9 +32,13 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
    * Gets all orders for all users. Returns the order joined with its pickup event.
    * Can optionally filter by order status.
    */
-  public async getAllOrdersForAllUsers(status?: OrderStatus): Promise<OrderModel[]> {
-    if (status) {
-      return this.repository.find({ status });
+  public async getAllOrdersForAllUsers(...statuses: OrderStatus[]): Promise<OrderModel[]> {
+    if (statuses.length > 0) {
+      return this.repository.find({
+        where: {
+          status: In(statuses),
+        },
+      });
     }
     return this.repository.find();
   }

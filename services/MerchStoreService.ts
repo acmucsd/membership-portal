@@ -854,7 +854,9 @@ export default class MerchStoreService {
   public async cancelAllPendingOrders(user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const merchOrderRepository = Repositories.merchOrder(txn);
-      const pendingOrders = await merchOrderRepository.getAllOrdersForAllUsers(OrderStatus.PLACED);
+      const pendingOrders = await merchOrderRepository.getAllOrdersForAllUsers(
+        ...MerchStoreService.pendingOrderStatuses(),
+      );
       await Promise.all(pendingOrders.map((order) => this.refundAndConfirmOrderCancellation(order, order.user, txn)));
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
@@ -862,6 +864,15 @@ export default class MerchStoreService {
         type: ActivityType.PENDING_ORDERS_CANCELLED,
       });
     });
+  }
+
+  private static pendingOrderStatuses(): OrderStatus[] {
+    return [
+      OrderStatus.PLACED,
+      OrderStatus.PARTIALLY_FULFILLED,
+      OrderStatus.PICKUP_CANCELLED,
+      OrderStatus.PICKUP_MISSED,
+    ];
   }
 
   public async getPastPickupEvents(): Promise<OrderPickupEventModel[]> {

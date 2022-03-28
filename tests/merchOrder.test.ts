@@ -9,6 +9,7 @@ import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } fro
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
+import { UserModel } from '../models/UserModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -592,9 +593,9 @@ describe('merch orders', () => {
 
   test('store managers, but not store distributors, can cancel all pending orders for all users', async () => {
     const conn = await DatabaseConnection.get();
-    const member1 = UserFactory.fake({ credits: 10000 });
-    const member2 = UserFactory.fake({ credits: 10000 });
-    const member3 = UserFactory.fake({ credits: 10000 });
+    const members = UserFactory.create(6).map((member) => UserModel.merge(member, { credits: 10000 }));
+    const [placedOrderMember, cancelledOrderMember, fulfilledOrderMember,
+      partiallyFulfilledOrderMember, pickupCancelledMember, pickupMissedMember] = members;
     const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
     const storeManager = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_MANAGER });
     const affordableOption = MerchFactory.fakeOption({
@@ -612,51 +613,50 @@ describe('merch orders', () => {
     const order = [{ option: affordableOption, quantity: 1 }];
 
     await new PortalState()
-      .createUsers(member1, member2, member3, merchDistributor, storeManager)
+      .createUsers(...members, merchDistributor, storeManager)
       .createMerchItem(merchItem)
       .createOrderPickupEvents(pickupEvent)
-      .orderMerch(member1, order, pickupEvent)
-      .orderMerch(member2, order, pickupEvent)
-      .orderMerch(member3, order, pickupEvent)
+      .orderMerch(placedOrderMember, order, pickupEvent)
+      .orderMerch(cancelledOrderMember, order, pickupEvent)
+      .orderMerch(fulfilledOrderMember, order, pickupEvent)
+      .orderMerch(partiallyFulfilledOrderMember, order, pickupEvent)
+      .orderMerch(pickupCancelledMember, order, pickupEvent)
+      .orderMerch(pickupMissedMember, order, pickupEvent)
       .write();
 
-    const emailService = mock(EmailService);
-    when(emailService.sendOrderFulfillment(member1.email, member1.firstName, anything()))
-      .thenResolve();
-
-    // fulfill member1's order, leaving the other two orders as PLACED
-    const order1 = await conn.manager.findOne(OrderModel, { user: member1 }, { relations: ['items'] });
-    const merchController = ControllerFactory.merchStore(conn, emailService);
-    const itemsToFulfill = order1.items.map((item) => ({ uuid: item.uuid }));
-    const fulfillmentParams = { uuid: order1.uuid };
-    const fulfillmentRequest = { items: itemsToFulfill };
-    await MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, fulfillmentParams,
-      fulfillmentRequest, merchDistributor, conn, pickupEvent);
+    // change order statuses of orders to every possible order status
+    await conn.manager.update(OrderModel, { user: cancelledOrderMember }, { status: OrderStatus.CANCELLED });
+    await conn.manager.update(OrderModel, { user: fulfilledOrderMember }, { status: OrderStatus.FULFILLED });
+    await conn.manager.update(OrderModel, { user: partiallyFulfilledOrderMember },
+      { status: OrderStatus.PARTIALLY_FULFILLED });
+    await conn.manager.update(OrderModel, { user: pickupCancelledMember }, { status: OrderStatus.PICKUP_CANCELLED });
+    await conn.manager.update(OrderModel, { user: pickupMissedMember }, { status: OrderStatus.PICKUP_MISSED });
 
     // cancell all pending orders
+    const merchController = ControllerFactory.merchStore(conn);
     await merchController.cancelAllPendingMerchOrders(storeManager);
     // (making sure that store distributors cannot)
     expect(merchController.cancelAllPendingMerchOrders(merchDistributor))
       .rejects.toThrow(ForbiddenError);
 
-    // refresh points
-    await member1.reload();
-    await member2.reload();
-    await member3.reload();
-
-    // member who's order is fulfilled shouldn't get refunded
-    expect(member1.credits).toEqual(8000);
-    expect(member2.credits).toEqual(10000);
-    expect(member3.credits).toEqual(10000);
-
-    const fulfilledOrder = await conn.manager.findOne(OrderModel, { user: member1 }, { relations: ['items'] });
-    expect(fulfilledOrder.status).toEqual(OrderStatus.FULFILLED);
-
-    const cancelledOrder1 = await conn.manager.findOne(OrderModel, { user: member2 }, { relations: ['items'] });
-    expect(cancelledOrder1.status).toEqual(OrderStatus.CANCELLED);
-
-    const cancelledOrder2 = await conn.manager.findOne(OrderModel, { user: member3 }, { relations: ['items'] });
-    expect(cancelledOrder2.status).toEqual(OrderStatus.CANCELLED);
+    await Promise.all(members.map(async (member) => {
+      await member.reload();
+      // members whose orders were previously fulfilled or cancelled shouldn't get refunded,
+      // whereas all other members should
+      if (member === fulfilledOrderMember || member === cancelledOrderMember) {
+        expect(member.credits).toEqual(8000);
+      } else {
+        expect(member.credits).toEqual(10000);
+      }
+      // orders that were fulfilled should remain fulfilled,
+      // whereas all other orders should be cancelled
+      const updatedOrder = await conn.manager.findOne(OrderModel, { user: member });
+      if (member === fulfilledOrderMember) {
+        expect(updatedOrder.status).toEqual(OrderStatus.FULFILLED);
+      } else {
+        expect(updatedOrder.status).toEqual(OrderStatus.CANCELLED);
+      }
+    }));
 
     // check pending order cancellation activity
     const adminActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(merchDistributor);
