@@ -588,12 +588,24 @@ export default class MerchStoreService {
     const refundedItems = await MerchStoreService.refundAndRestockItems(order, user, txn);
 
     // send email confirming cancel
+    const orderUpdateInfo = await MerchStoreService.buildOrderCancellationInfo(order, refundedItems, txn);
+    await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+  }
+
+  private async refundAndConfirmAutomatedOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {
+    // refund and restock items
+    const refundedItems = await MerchStoreService.refundAndRestockItems(order, user, txn);
+
+    // send email confirming automated cancel by admin
+    const orderUpdateInfo = await MerchStoreService.buildOrderCancellationInfo(order, refundedItems, txn);
+    await this.emailService.sendAutomatedOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+  }
+
+  private static async buildOrderCancellationInfo(order: OrderModel, refundedItems: OrderItemModel[], txn: EntityManager) {
     const orderRepository = Repositories.merchOrder(txn);
     const upsertedOrder = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
     const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: refundedItems });
-    const orderUpdateInfo = await MerchStoreService
-      .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
-    await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+    return MerchStoreService.buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
   }
 
   private static async refundAndRestockItems(order: OrderModel, user: UserModel, txn: EntityManager):
@@ -611,19 +623,6 @@ export default class MerchStoreService {
       return merchItemOptionRepository.upsertMerchItemOption(option, quantityUpdate);
     }));
     return unfulfilledItems;
-  }
-
-  private async refundAndConfirmAutomatedOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {
-    // refund and restock items
-    const refundedItems = await MerchStoreService.refundAndRestockItems(order, user, txn);
-
-    // send email confirming automated cancel by admin
-    const orderRepository = Repositories.merchOrder(txn);
-    const upsertedOrder = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
-    const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: refundedItems });
-    const orderUpdateInfo = await MerchStoreService
-      .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
-    await this.emailService.sendAutomatedOrderCancellation(user.email, user.firstName, orderUpdateInfo);
   }
 
   /**
