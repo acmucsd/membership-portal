@@ -583,7 +583,7 @@ export default class MerchStoreService {
     });
   }
 
-  private async refundAndConfirmOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {    
+  private async refundAndConfirmOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {
     // refund and restock items
     const refundedItems = await MerchStoreService.refundAndRestockItems(order, user, txn);
 
@@ -596,7 +596,8 @@ export default class MerchStoreService {
     await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
   }
 
-  private static async refundAndRestockItems(order: OrderModel, user: UserModel, txn: EntityManager): Promise<OrderItemModel[]> {
+  private static async refundAndRestockItems(order: OrderModel, user: UserModel, txn: EntityManager):
+  Promise<OrderItemModel[]> {
     // refund only the items that haven't been fulfilled yet
     const unfulfilledItems = order.items.filter((item) => !item.fulfilled);
     const refundValue = unfulfilledItems.reduce((refund, item) => refund + item.salePriceAtPurchase, 0);
@@ -612,7 +613,7 @@ export default class MerchStoreService {
     return unfulfilledItems;
   }
 
-  private async refundAndConfirmAutomatedOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {    
+  private async refundAndConfirmAutomatedOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {
     // refund and restock items
     const refundedItems = await MerchStoreService.refundAndRestockItems(order, user, txn);
 
@@ -622,7 +623,7 @@ export default class MerchStoreService {
     const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: refundedItems });
     const orderUpdateInfo = await MerchStoreService
       .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
-    await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+    await this.emailService.sendAutomatedOrderCancellation(user.email, user.firstName, orderUpdateInfo);
   }
 
   /**
@@ -876,7 +877,9 @@ export default class MerchStoreService {
       const pendingOrders = await merchOrderRepository.getAllOrdersForAllUsers(
         ...MerchStoreService.pendingOrderStatuses(),
       );
-      await Promise.all(pendingOrders.map((order) => this.refundAndConfirmOrderCancellation(order, order.user, txn)));
+      await Promise.all(pendingOrders.map(
+        (order) => this.refundAndConfirmAutomatedOrderCancellation(order, order.user, txn),
+      ));
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
         user,

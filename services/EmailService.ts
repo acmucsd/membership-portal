@@ -20,8 +20,9 @@ export default class EmailService {
   private static readonly orderConfirmationTemplate = EmailService.readTemplate('orderConfirmation.ejs');
 
   private static readonly orderCancellationTemplate = EmailService.readTemplate('orderCancellation.ejs');
-  
-  private static readonly automatedOrderCancellationTemplate = EmailService.readTemplate('cancelPendingOrdersConfirmation.ejs');
+
+  private static readonly automatedOrderCancellationTemplate = EmailService
+    .readTemplate('cancelPendingOrdersConfirmation.ejs');
 
   private static readonly orderPickupMissedTemplate = EmailService.readTemplate('orderPickupMissed.ejs');
 
