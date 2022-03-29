@@ -601,7 +601,8 @@ export default class MerchStoreService {
     await this.emailService.sendAutomatedOrderCancellation(user.email, user.firstName, orderUpdateInfo);
   }
 
-  private static async buildOrderCancellationInfo(order: OrderModel, refundedItems: OrderItemModel[], txn: EntityManager) {
+  private static async buildOrderCancellationInfo(order: OrderModel, refundedItems: OrderItemModel[],
+    txn: EntityManager): Promise<OrderInfo> {
     const orderRepository = Repositories.merchOrder(txn);
     const upsertedOrder = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
     const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: refundedItems });
