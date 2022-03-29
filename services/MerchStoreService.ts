@@ -583,19 +583,24 @@ export default class MerchStoreService {
     });
   }
 
-  private async refundAndConfirmOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {
+  private async refundAndConfirmOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {    
+    // refund and restock items
+    const refundedItems = await MerchStoreService.refundAndRestockItems(order, user, txn);
+
+    // send email confirming cancel
     const orderRepository = Repositories.merchOrder(txn);
     const upsertedOrder = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
+    const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: refundedItems });
+    const orderUpdateInfo = await MerchStoreService
+      .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
+    await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+  }
 
+  private static async refundAndRestockItems(order: OrderModel, user: UserModel, txn: EntityManager): Promise<OrderItemModel[]> {
     // refund only the items that haven't been fulfilled yet
     const unfulfilledItems = order.items.filter((item) => !item.fulfilled);
     const refundValue = unfulfilledItems.reduce((refund, item) => refund + item.salePriceAtPurchase, 0);
     await MerchStoreService.refundUser(user, refundValue, txn);
-
-    const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: unfulfilledItems });
-    const orderUpdateInfo = await MerchStoreService
-      .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
-    await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
 
     // restock items that were cancelled
     const optionsToRestock = unfulfilledItems.map((item) => item.option);
@@ -604,6 +609,20 @@ export default class MerchStoreService {
       const quantityUpdate = { quantity: option.quantity + 1 };
       return merchItemOptionRepository.upsertMerchItemOption(option, quantityUpdate);
     }));
+    return unfulfilledItems;
+  }
+
+  private async refundAndConfirmAutomatedOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {    
+    // refund and restock items
+    const refundedItems = await MerchStoreService.refundAndRestockItems(order, user, txn);
+
+    // send email confirming automated cancel by admin
+    const orderRepository = Repositories.merchOrder(txn);
+    const upsertedOrder = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
+    const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: refundedItems });
+    const orderUpdateInfo = await MerchStoreService
+      .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
+    await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
   }
 
   /**

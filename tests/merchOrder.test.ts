@@ -632,8 +632,12 @@ describe('merch orders', () => {
     await conn.manager.update(OrderModel, { user: pickupCancelledMember }, { status: OrderStatus.PICKUP_CANCELLED });
     await conn.manager.update(OrderModel, { user: pickupMissedMember }, { status: OrderStatus.PICKUP_MISSED });
 
-    // cancell all pending orders
-    const merchController = ControllerFactory.merchStore(conn);
+    const emailService = mock(EmailService);
+    when(emailService.sendAutomatedOrderCancellation(anything(), anything(), anything()))
+      .thenResolve();
+
+    // cancel all pending orders
+    const merchController = ControllerFactory.merchStore(conn, emailService);
     await merchController.cancelAllPendingMerchOrders(storeManager);
     // (making sure that store distributors cannot)
     expect(merchController.cancelAllPendingMerchOrders(merchDistributor))
