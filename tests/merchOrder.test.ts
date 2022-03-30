@@ -591,6 +591,66 @@ describe('merch orders', () => {
       .rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
   });
 
+  test('order route accurately verifies monthly and lifetime limits', async () => {
+    const conn = await DatabaseConnection.get();
+    const optionMetadataType = faker.datatype.hexaDecimal(10);
+    const option1 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option2 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option3 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option4 = MerchFactory.fakeOptionWithType(optionMetadataType);
+
+    const item = MerchFactory.fakeItem({
+      options: [option1, option2],
+      monthlyLimit: 1,
+      lifetimeLimit: 1,
+    });
+    const item2 = MerchFactory.fakeItem({
+      options: [option3, option4],
+      monthlyLimit: 1,
+      lifetimeLimit: 2,
+    });
+
+    const orderPickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+    const member = UserFactory.fake({
+      accessType: UserAccessType.STANDARD,
+      credits: option1.price + option2.price + option3.price + option4.price,
+    });
+
+    await new PortalState()
+      .createUsers(member)
+      .createOrderPickupEvents(orderPickupEvent)
+      .createMerchItem(item)
+      .createMerchItem(item2)
+      .write();
+
+    await member.reload();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
+    // Test Lifetime limit
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placeMerchOrderRequest = {
+      order: [{ option: option1.uuid, quantity: 1 }, { option: option2.uuid, quantity: 1 }],
+      pickupEvent: orderPickupEvent.uuid,
+    };
+
+    await expect(merchController.placeMerchOrder(placeMerchOrderRequest, member)).rejects.toThrowError(
+      `This order exceeds the lifetime limit for ${item.itemName}`,
+    );
+
+    // Test Monthly limit
+    const placeMerchOrderRequest2 = {
+      order: [{ option: option3.uuid, quantity: 1 }, { option: option4.uuid, quantity: 1 }],
+      pickupEvent: orderPickupEvent.uuid,
+    };
+
+    await expect(merchController.placeMerchOrder(placeMerchOrderRequest2, member)).rejects.toThrowError(
+      `This order exceeds the monthly limit for ${item2.itemName}`,
+    );
+  });
+
   test('store managers, but not store distributors, can cancel all pending orders for all users', async () => {
     const conn = await DatabaseConnection.get();
     const members = UserFactory.create(6).map((member) => UserModel.merge(member, { credits: 10000 }));
