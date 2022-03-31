@@ -4,7 +4,7 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
-import { OrderItemPriceAndQuantity } from 'types/internal';
+import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,
@@ -449,13 +449,16 @@ export default class MerchStoreService {
     const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
       .countItemRequestedQuantities(originalOrder, itemOptionsToOrder)
       .entries());
+
     for (let i = 0; i < requestedQuantitiesByMerchItem.length; i += 1) {
-      const [item, quantityRequested] = requestedQuantitiesByMerchItem[i];
-      if (!!item.lifetimeLimit && lifetimeItemOrderCounts.get(item.uuid) + quantityRequested > item.lifetimeLimit) {
-        throw new UserError(`This order exceeds the lifetime limit for ${item.itemName}`);
+      const [uuid, itemWithQuantity] = requestedQuantitiesByMerchItem[i];
+      if (!!itemWithQuantity.item.lifetimeLimit
+        && lifetimeItemOrderCounts.get(uuid) + itemWithQuantity.quantity > itemWithQuantity.item.lifetimeLimit) {
+        throw new UserError(`This order exceeds the lifetime limit for ${itemWithQuantity.item.itemName}`);
       }
-      if (!!item.monthlyLimit && pastMonthItemOrderCounts.get(item.uuid) + quantityRequested > item.monthlyLimit) {
-        throw new UserError(`This order exceeds the monthly limit for ${item.itemName}`);
+      if (!!itemWithQuantity.item.monthlyLimit
+        && pastMonthItemOrderCounts.get(uuid) + itemWithQuantity.quantity > itemWithQuantity.item.monthlyLimit) {
+        throw new UserError(`This order exceeds the monthly limit for ${itemWithQuantity.item.itemName}`);
       }
     }
 
@@ -829,7 +832,9 @@ export default class MerchStoreService {
       const order = ordersByOrderItem.get(orderedItem.uuid);
       if (MerchStoreService.doesItemCountTowardsOrderLimits(orderedItem, order)) {
         const { uuid: itemUuid } = orderedItem.option.item;
-        if (counts.has(itemUuid)) counts.set(itemUuid, counts.get(itemUuid) + 1);
+        if (counts.has(itemUuid)) {
+          counts.set(itemUuid, counts.get(itemUuid) + 1);
+        }
       }
     }
     return counts;
@@ -847,13 +852,21 @@ export default class MerchStoreService {
   }
 
   private static countItemRequestedQuantities(order: MerchItemOptionAndQuantity[],
-    itemOptions: Map<string, MerchandiseItemOptionModel>): Map<MerchandiseItemModel, number> {
-    const requestedQuantitiesByMerchItem = new Map<MerchandiseItemModel, number>();
+    itemOptions: Map<string, MerchandiseItemOptionModel>): Map<string, MerchItemWithQuantity> {
+    const requestedQuantitiesByMerchItem = new Map<string, MerchItemWithQuantity>();
     for (let i = 0; i < order.length; i += 1) {
-      const { item } = itemOptions.get(order[i].option);
+      const option = itemOptions.get(order[i].option);
+
+      const { item } = option;
       const quantityRequested = order[i].quantity;
-      if (!requestedQuantitiesByMerchItem.has(item)) requestedQuantitiesByMerchItem.set(item, 0);
-      requestedQuantitiesByMerchItem.set(item, requestedQuantitiesByMerchItem.get(item) + quantityRequested);
+
+      if (!requestedQuantitiesByMerchItem.has(item.uuid)) {
+        requestedQuantitiesByMerchItem.set(item.uuid, {
+          item,
+          quantity: 0,
+        });
+      }
+      requestedQuantitiesByMerchItem.get(item.uuid).quantity += quantityRequested;
     }
     return requestedQuantitiesByMerchItem;
   }
