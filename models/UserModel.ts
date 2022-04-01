@@ -5,6 +5,7 @@ import { ActivityModel } from './ActivityModel';
 import { AttendanceModel } from './AttendanceModel';
 import { OrderModel } from './OrderModel';
 import { FeedbackModel } from './FeedbackModel';
+import { StockTransactionModel } from './StockTransactionModel';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
@@ -70,6 +71,9 @@ export class UserModel extends BaseEntity {
 
   @OneToMany((type) => FeedbackModel, (feedback) => feedback.user, { cascade: true })
   feedback: FeedbackModel;
+
+  @OneToMany((type) => StockTransactionModel, (txn) => txn.owner, { cascade: true })
+  stocksOwned: StockTransactionModel[];
 
   public async verifyPass(pass: string): Promise<boolean> {
     return bcrypt.compare(pass, this.hash);

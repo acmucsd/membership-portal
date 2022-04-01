@@ -1,4 +1,4 @@
-import { FeedbackStatus, FeedbackType } from './Enums';
+import { FeedbackStatus, FeedbackType, StockBroker } from './Enums';
 import { Uuid } from '.';
 
 // REQUEST TYPES
@@ -278,4 +278,19 @@ export interface EditOrderPickupEventRequest {
 
 export interface GetCartRequest {
   items: string[];
+}
+
+export interface Stock {
+  symbol: string;
+  price: number;
+}
+
+export interface CreateStockRequest {
+  stock: Stock;
+}
+
+export interface StockTransactionRequest {
+  symbol: string
+  broker: StockBroker;
+  shares: number;
 }

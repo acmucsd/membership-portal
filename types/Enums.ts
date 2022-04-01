@@ -81,3 +81,16 @@ export enum OrderPickupEventStatus {
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED',
 }
+
+export enum StockTransactionType {
+  BUY = 'BUY',
+  SELL = 'SELL',
+}
+
+// need help with these enums...
+export enum StockBroker {
+  SNU_BROKERGE_SERVICES = 'SNU_BROKERAGE_SERVICES',
+  SHAH_BROKERAGE_SERVIES = 'SHAH_BROKERAGE_SERVICES',
+  ROBINHOOD_MARKETS = 'ROBINHOOD_ARKETS',
+  ACM_CAT_CAFE_AND_STOCK_BROKERAGE = 'ACM_CAT_CAFE_AND_BROKERAGE',
+}

@@ -77,4 +77,8 @@ export default class PermissionsService {
   private static canDistributeMerch(user: UserModel) {
     return user.isAdmin() || user.isMerchStoreManager() || user.isMerchStoreDistributor();
   }
+
+  public static canCreateStocks(user: UserModel) {
+    return user.isAdmin();
+  }
 }
