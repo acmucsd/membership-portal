@@ -41,7 +41,9 @@ export default class StockMarketService {
       const stock = await stockRepository.getStockBySymbol(symbol);
       const totalPrice = stock.currentPrice * shares;
       await Repositories.user(txn).upsertUser(user, { credits: totalPrice });
-      console.log('https://testing.members.acmucsd.com');
+
+      console.log('https://testing.members.acmucsd.com/checkin?code=');
+      
       return Repositories.stockTransaction(txn).addBuyTransaction(stock, shares, broker, user);
     });
   }
