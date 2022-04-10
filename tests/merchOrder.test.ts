@@ -705,18 +705,21 @@ describe('merch orders', () => {
 
     await Promise.all(members.map(async (member) => {
       await member.reload();
-      // members whose orders were previously fulfilled or cancelled shouldn't get refunded,
+      // members whose orders were previously fulfilled, cancelled, or placed shouldn't get refunded,
       // whereas all other members should
-      if (member === fulfilledOrderMember || member === cancelledOrderMember) {
+      if (member === fulfilledOrderMember || member === cancelledOrderMember || member === placedOrderMember) {
         expect(member.credits).toEqual(8000);
       } else {
         expect(member.credits).toEqual(10000);
       }
       // orders that were fulfilled should remain fulfilled,
-      // whereas all other orders should be cancelled
+      // placed orders should remain placed,
+      // and all other orders should be cancelled
       const updatedOrder = await conn.manager.findOne(OrderModel, { user: member });
       if (member === fulfilledOrderMember) {
         expect(updatedOrder.status).toEqual(OrderStatus.FULFILLED);
+      } else if (member === placedOrderMember) {
+        expect(updatedOrder.status).toEqual(OrderStatus.PLACED);
       } else {
         expect(updatedOrder.status).toEqual(OrderStatus.CANCELLED);
       }

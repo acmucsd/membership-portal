@@ -903,7 +903,6 @@ export default class MerchStoreService {
 
   private static pendingOrderStatuses(): OrderStatus[] {
     return [
-      OrderStatus.PLACED,
       OrderStatus.PARTIALLY_FULFILLED,
       OrderStatus.PICKUP_CANCELLED,
       OrderStatus.PICKUP_MISSED,
