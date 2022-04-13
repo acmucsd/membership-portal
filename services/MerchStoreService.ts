@@ -1018,7 +1018,8 @@ export default class MerchStoreService {
       if (!MerchStoreService.isActivePickupEvent(pickupEvent)) {
         throw new UserError('Cannot complete a pickup event that isn\'t currently active');
       }
-      if (!(MerchStoreService.isPickupEventHappeningToday(pickupEvent) || MerchStoreService.isPickupEventPast(pickupEvent))) {
+      if (!(MerchStoreService.isPickupEventHappeningToday(pickupEvent)
+        || MerchStoreService.isPickupEventPast(pickupEvent))) {
         throw new UserError('Cannot complete a pickup event that\'s not happening today or has past');
       }
 
