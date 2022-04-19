@@ -884,7 +884,11 @@ export default class MerchStoreService {
     return moment().isSame(moment(pickupEvent.start), 'day');
   }
 
-  private static isPickupEventPast(pickupEvent: OrderPickupEventModel): boolean {
+  private static isFuturePickupEvent(pickupEvent: OrderPickupEventModel): boolean {
+    return moment().isBefore(moment(pickupEvent.start), 'day');
+  }
+
+  private static isPastPickupEvent(pickupEvent: OrderPickupEventModel): boolean {
     return moment().isAfter(moment(pickupEvent.start), 'day');
   }
 
@@ -1018,9 +1022,8 @@ export default class MerchStoreService {
       if (!MerchStoreService.isActivePickupEvent(pickupEvent)) {
         throw new UserError('Cannot complete a pickup event that isn\'t currently active');
       }
-      if (!(MerchStoreService.isPickupEventHappeningToday(pickupEvent)
-        || MerchStoreService.isPickupEventPast(pickupEvent))) {
-        throw new UserError('Cannot complete a pickup event that\'s not happening today or has past');
+      if (MerchStoreService.isFuturePickupEvent(pickupEvent)) {
+        throw new UserError('Cannot complete a pickup event that\'s hasn\'t happened yet');
       }
 
       await orderPickupEventRepository.upsertPickupEvent(pickupEvent, { status: OrderPickupEventStatus.COMPLETED });
