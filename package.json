@@ -1,5 +1,11 @@
 {
   "name": "@acmucsd/membership-portal",
+  "private": true,
+  "workspaces": [
+    "@acmucsd/membership-portal-api",
+    "@acmucsd/membership-portal-impl",
+    "@acmucsd/membership-portal-types"
+  ],
   "version": "2.10.0",
   "description": "REST API for ACM UCSD's membership portal.",
   "main": "index.d.ts",
