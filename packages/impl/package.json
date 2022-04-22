@@ -1,8 +1,12 @@
 {
-  "name": "@acmucsd/membership-portal-types",
+  "name": "@acmucsd/membership-portal-impl",
   "version": "1.0.0",
-  "description": "",
+  "description": "ACM UCSD Membership Portal API Implementation",
   "main": "index.js",
+  "engines": {
+    "node": "^14.0.0",
+    "yarn": "^1.22.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

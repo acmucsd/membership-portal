@@ -1,8 +1,12 @@
 {
-  "name": "@acmucsd/membership-portal-api",
+  "name": "@acmucsd/membership-portal-types",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": "^14.0.0",
+    "yarn": "^1.22.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
