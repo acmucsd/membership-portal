@@ -1203,6 +1203,35 @@ describe('merch order pickup events', () => {
     expect(completedPickupEvent.pickupEvent.status).toEqual(OrderPickupEventStatus.COMPLETED);
   });
 
+  test('test that you can\'t complete a pick up event before the event starts', async () => {
+    const conn = await DatabaseConnection.get();
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const pickupEventToComplete = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(merchDistributor)
+      .createOrderPickupEvents(pickupEventToComplete)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderPickupCancelled(anything(), anything(), anything()))
+      .thenResolve();
+
+    // update the pickup events to have passed yesterday
+    const completedPickupEventUuid = { uuid: pickupEventToComplete.uuid };
+    const pickupEventUpdates = {
+      start: moment().add(1, 'hours').toDate(),
+      end: moment().add(3, 'hours').toDate(),
+    };
+    await conn.manager.update(OrderPickupEventModel, completedPickupEventUuid, pickupEventUpdates);
+
+    // mark pickup event as complete
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+
+    await expect(merchController.completePickupEvent(completedPickupEventUuid, merchDistributor))
+      .rejects.toThrow('Cannot complete a pickup event that\'s hasn\'t happened yet');
+  });
+
   test('pickup events that have previously been completed/cancelled cannot be completed/cancelled again', async () => {
     const conn = await DatabaseConnection.get();
     const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });

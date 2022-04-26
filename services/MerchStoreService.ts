@@ -885,11 +885,11 @@ export default class MerchStoreService {
   }
 
   private static isFuturePickupEvent(pickupEvent: OrderPickupEventModel): boolean {
-    return moment().isBefore(moment(pickupEvent.start), 'day');
+    return moment().isBefore(moment(pickupEvent.start));
   }
 
   private static isPastPickupEvent(pickupEvent: OrderPickupEventModel): boolean {
-    return moment().isAfter(moment(pickupEvent.start), 'day');
+    return moment().isAfter(moment(pickupEvent.start));
   }
 
   public async cancelAllPendingOrders(user: UserModel): Promise<void> {
