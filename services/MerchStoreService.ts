@@ -884,6 +884,10 @@ export default class MerchStoreService {
     return moment().isSame(moment(pickupEvent.start), 'day');
   }
 
+  private static isFuturePickupEvent(pickupEvent: OrderPickupEventModel): boolean {
+    return moment().isBefore(moment(pickupEvent.start));
+  }
+
   public async cancelAllPendingOrders(user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const merchOrderRepository = Repositories.merchOrder(txn);
@@ -1014,8 +1018,8 @@ export default class MerchStoreService {
       if (!MerchStoreService.isActivePickupEvent(pickupEvent)) {
         throw new UserError('Cannot complete a pickup event that isn\'t currently active');
       }
-      if (!MerchStoreService.isPickupEventHappeningToday(pickupEvent)) {
-        throw new UserError('Cannot complete a pickup event that\'s not happening today');
+      if (MerchStoreService.isFuturePickupEvent(pickupEvent)) {
+        throw new UserError('Cannot complete a pickup event that\'s hasn\'t happened yet');
       }
 
       await orderPickupEventRepository.upsertPickupEvent(pickupEvent, { status: OrderPickupEventStatus.COMPLETED });
