@@ -1,0 +1,54 @@
+Arguments: 
+  /home/shrav/.nvm/versions/node/v14.15.3/bin/node /home/shrav/.nvm/versions/node/v14.15.3/bin/yarn
+
+PATH: 
+  /home/shrav/.nvm/versions/node/v14.15.3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/Program Files (x86)/Intel/Intel(R) Management Engine Components/iCLS/:/mnt/c/Program Files/Intel/Intel(R) Management Engine Components/iCLS/:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files (x86)/Intel/Intel(R) Management Engine Components/DAL:/mnt/c/Program Files/Intel/Intel(R) Management Engine Components/DAL:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/ProgramData/DockerDesktop/version-bin:/mnt/c/Users/shrav/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/shrav/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Program Files/JetBrains/IntelliJ IDEA 2021.2.3/bin:/mnt/c/Users/shrav/AppData/Local/JetBrains/IntelliJ IDEA Community Edition 2021.2.3/bin:/mnt/c/Users/shrav/AppData/Local/Programs/Hyper/resources/bin:/usr/local/go/bin
+
+Yarn version: 
+  1.22.17
+
+Node version: 
+  14.15.3
+
+Platform: 
+  linux x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/@acmucsd%2fmembership-portal-types: Not found
+      at Request.params.callback [as _callback] (/home/shrav/.nvm/versions/node/v14.15.3/lib/node_modules/yarn/lib/cli.js:67029:18)
+      at Request.self.callback (/home/shrav/.nvm/versions/node/v14.15.3/lib/node_modules/yarn/lib/cli.js:140883:22)
+      at Request.emit (events.js:315:20)
+      at Request.<anonymous> (/home/shrav/.nvm/versions/node/v14.15.3/lib/node_modules/yarn/lib/cli.js:141855:10)
+      at Request.emit (events.js:315:20)
+      at IncomingMessage.<anonymous> (/home/shrav/.nvm/versions/node/v14.15.3/lib/node_modules/yarn/lib/cli.js:141777:12)
+      at Object.onceWrapper (events.js:421:28)
+      at IncomingMessage.emit (events.js:327:22)
+      at endReadableNT (internal/streams/readable.js:1327:12)
+      at processTicksAndRejections (internal/process/task_queues.js:80:21)
+
+npm manifest: 
+  {
+    "name": "@acmucsd/membership-portal-impl",
+    "version": "1.0.0",
+    "description": "ACM UCSD Membership Portal API Implementation",
+    "main": "index.js",
+    "engines": {
+      "node": "^14.0.0",
+      "yarn": "^1.22.0"
+    },
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+      "@acmucsd/membership-portal-types": "1.0.0"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

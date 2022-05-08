@@ -26,7 +26,10 @@
     "db:seed:create": "ts-node ./node_modules/typeorm/cli.js migration:create -c seed -n",
     "db:seed": "ts-node tests/Seeds.ts",
     "publish-package": "cp package.json build && yarn publish build --access public",
-    "update-package": "yarn version --patch && yarn publish-package"
+    "update-package": "yarn version --patch && yarn publish-package",
+    "lerna-bootstrap": "lerna bootstrap",
+    "lerna-changed": "lerna changed",
+    "lerna-publish": "lerna publish"
   },
   "repository": {
     "type": "git",
