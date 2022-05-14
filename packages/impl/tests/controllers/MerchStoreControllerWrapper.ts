@@ -2,9 +2,9 @@ import * as moment from 'moment';
 import { Connection } from 'typeorm';
 import { MerchStoreController } from '../../api/controllers/MerchStoreController';
 import { UuidParam } from '../../api/validators/GenericRequests';
-import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
-import { UserModel } from '../../models/UserModel';
-import { FulfillMerchOrderRequest } from '../../types';
+import { OrderPickupEventModel } from '../../database/models/OrderPickupEventModel';
+import { UserModel } from '../../database/models/UserModel';
+import { FulfillMerchOrderRequest } from '@acmucsd/membership-portal-types';
 
 /**
  * Wrapper class over MerchStoreController for performing merch controller

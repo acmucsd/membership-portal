@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { FeedbackStatus, FeedbackType, PublicFeedback, Uuid } from '../types';
+import { FeedbackStatus, FeedbackType, PublicFeedback, Uuid } from '@acmucsd/membership-portal-types';
 import { UserModel } from './UserModel';
 
 @Entity('Feedback')

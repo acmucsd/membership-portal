@@ -8,7 +8,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Uuid, PublicOrder, OrderStatus, PublicOrderWithItems } from '../types';
+import { Uuid, PublicOrder, OrderStatus, PublicOrderWithItems } from '@acmucsd/membership-portal-types';
 import { UserModel } from './UserModel';
 import { OrderItemModel } from './OrderItemModel';
 import { OrderPickupEventModel } from './OrderPickupEventModel';

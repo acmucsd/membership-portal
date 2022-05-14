@@ -4,8 +4,8 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
-import { OrderItemPriceAndQuantity } from 'types/internal';
-import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
+import { OrderItemPriceAndQuantity } from '../types';
+import { MerchandiseItemOptionModel } from '../database/models/MerchandiseItemOptionModel';
 import {
   Uuid,
   PublicMerchCollection,
@@ -23,16 +23,16 @@ import {
   OrderPickupEventEdit,
   PublicMerchItemWithPurchaseLimits,
   OrderPickupEventStatus,
-} from '../types';
-import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
-import { OrderModel } from '../models/OrderModel';
-import { UserModel } from '../models/UserModel';
-import Repositories, { TransactionsManager } from '../repositories';
-import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
+} from '@acmucsd/membership-portal-types';
+import { MerchandiseItemModel } from '../database/models/MerchandiseItemModel';
+import { OrderModel } from '../database/models/OrderModel';
+import { UserModel } from '../database/models/UserModel';
+import Repositories, { TransactionsManager } from '../database/repositories';
+import { MerchandiseCollectionModel } from '../database/models/MerchandiseCollectionModel';
 import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
 import { UserError } from '../utils/Errors';
-import { OrderItemModel } from '../models/OrderItemModel';
-import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
+import { OrderItemModel } from '../database/models/OrderItemModel';
+import { OrderPickupEventModel } from '../database/models/OrderPickupEventModel';
 
 @Service()
 export default class MerchStoreService {

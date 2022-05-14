@@ -18,7 +18,7 @@ import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import UserAccountService from '../../services/UserAccountService';
 import StorageService from '../../services/StorageService';
 import PermissionsService from '../../services/PermissionsService';
-import { UserModel } from '../../models/UserModel';
+import { UserModel } from '../../database/models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
 
 @UseBefore(UserAuthentication)

@@ -1,5 +1,5 @@
 import { UseBefore, JsonController, Get, QueryParams } from 'routing-controllers';
-import { GetLeaderboardResponse } from 'types';
+import { GetLeaderboardResponse } from '@acmucsd/membership-portal-types';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import UserAccountService from '../../services/UserAccountService';
 import { SlidingLeaderboardQueryParams } from '../validators/LeaderboardControllerRequests';

@@ -1,5 +1,5 @@
 import * as faker from 'faker';
-import { Feedback, FeedbackType } from '../../types';
+import { Feedback, FeedbackType } from '@acmucsd/membership-portal-types';
 import FactoryUtils from './FactoryUtils';
 
 export class FeedbackFactory {

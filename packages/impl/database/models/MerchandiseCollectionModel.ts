@@ -1,5 +1,5 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn } from 'typeorm';
-import { Uuid, PublicMerchCollection } from '../types';
+import { Uuid, PublicMerchCollection } from '@acmucsd/membership-portal-types';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
 
 @Entity('MerchandiseCollections')

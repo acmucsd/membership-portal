@@ -4,11 +4,11 @@ import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
-import { UserRepository } from '../repositories/UserRepository';
-import { Uuid, ActivityType, UserState, UserRegistration } from '../types';
+import { UserRepository } from '../database/repositories/UserRepository';
+import { Uuid, ActivityType, UserState, UserRegistration } from '@acmucsd/membership-portal-types';
 import { Config } from '../config';
-import { UserModel } from '../models/UserModel';
-import Repositories, { TransactionsManager } from '../repositories';
+import { UserModel } from '../database/models/UserModel';
+import Repositories, { TransactionsManager } from '../database/repositories';
 
 interface AuthToken {
   uuid: Uuid;

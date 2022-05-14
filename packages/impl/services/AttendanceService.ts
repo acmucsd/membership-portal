@@ -3,14 +3,14 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { BadRequestError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
-import { ActivityType, PublicAttendance, Uuid } from '../types';
+import { ActivityType, PublicAttendance, Uuid } from '@acmucsd/membership-portal-types';
 import { Config } from '../config';
-import { UserModel } from '../models/UserModel';
-import { EventModel } from '../models/EventModel';
-import { AttendanceModel } from '../models/AttendanceModel';
+import { UserModel } from '../database/models/UserModel';
+import { EventModel } from '../database/models/EventModel';
+import { AttendanceModel } from '../database/models/AttendanceModel';
 import { UserError } from '../utils/Errors';
-import Repositories, { TransactionsManager } from '../repositories';
-import { Activity, Attendance } from '../types/internal';
+import Repositories, { TransactionsManager } from '../database/repositories';
+import { Activity, Attendance } from '../types';
 
 @Service()
 export default class AttendanceService {

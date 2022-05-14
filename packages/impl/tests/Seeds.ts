@@ -1,5 +1,5 @@
 import * as moment from 'moment';
-import { UserAccessType } from '../types';
+import { UserAccessType } from '@acmucsd/membership-portal-types';
 import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
 
 function getGraduationYear(n: number) {

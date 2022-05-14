@@ -1,10 +1,10 @@
 import { EntityRepository, Raw } from 'typeorm';
 import * as moment from 'moment';
-import { ActivityScope, ActivityType, Uuid } from '../types';
+import { ActivityScope, ActivityType, Uuid } from '@acmucsd/membership-portal-types';
 import { UserModel } from '../models/UserModel';
 import { ActivityModel } from '../models/ActivityModel';
 import { BaseRepository } from './BaseRepository';
-import { Activity, ActivityTypeToScope } from '../types/internal';
+import { Activity, ActivityTypeToScope } from '../../types';
 
 @EntityRepository(ActivityModel)
 export class ActivityRepository extends BaseRepository<ActivityModel> {

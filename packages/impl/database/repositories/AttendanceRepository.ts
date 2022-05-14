@@ -1,10 +1,10 @@
 import { EntityRepository } from 'typeorm';
-import { Uuid } from '../types';
+import { Uuid } from '@acmucsd/membership-portal-types';
 import { AttendanceModel } from '../models/AttendanceModel';
 import { UserModel } from '../models/UserModel';
 import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
-import { Attendance } from '../types/internal';
+import { Attendance } from '../../types';
 
 @EntityRepository(AttendanceModel)
 export class AttendanceRepository extends BaseRepository<AttendanceModel> {

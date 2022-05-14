@@ -2,7 +2,7 @@ import { EntityRepository } from 'typeorm';
 import { FeedbackModel } from '../models/FeedbackModel';
 import { UserModel } from '../models/UserModel';
 import { BaseRepository } from './BaseRepository';
-import { Uuid } from '../types';
+import { Uuid } from '@acmucsd/membership-portal-types';
 
 @EntityRepository(FeedbackModel)
 export class FeedbackRepository extends BaseRepository<FeedbackModel> {

@@ -37,7 +37,7 @@ import {
   MerchOrderEdit as IMerchOrderEdit,
   OrderPickupEvent as IOrderPickupEvent,
   OrderPickupEventEdit as IOrderPickupEventEdit,
-} from '../../types';
+} from '@acmucsd/membership-portal-types';
 
 export class MerchCollection implements IMerchCollection {
   @IsDefined()

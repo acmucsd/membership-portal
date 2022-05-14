@@ -1,5 +1,5 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, JoinColumn, OneToMany } from 'typeorm';
-import { Uuid, PublicOrderPickupEvent, OrderPickupEventStatus } from '../types';
+import { Uuid, PublicOrderPickupEvent, OrderPickupEventStatus } from '@acmucsd/membership-portal-types';
 import { OrderModel } from './OrderModel';
 
 @Entity('OrderPickupEvents')

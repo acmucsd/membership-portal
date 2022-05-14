@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { UserModel } from '../../models/UserModel';
+import { UserModel } from '../../database/models/UserModel';
 import { UserController } from './UserController';
 import { AuthController } from './AuthController';
 import { EventController } from './EventController';

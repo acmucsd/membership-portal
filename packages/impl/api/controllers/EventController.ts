@@ -4,7 +4,7 @@ import {
 import EventService from '../../services/EventService';
 import { UserAuthentication, OptionalUserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { UserModel } from '../../models/UserModel';
+import { UserModel } from '../../database/models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
 import StorageService from '../../services/StorageService';
 import AttendanceService from '../../services/AttendanceService';
@@ -18,7 +18,7 @@ import {
   UpdateEventCoverResponse,
   GetFutureEventsResponse,
   GetPastEventsResponse,
-} from '../../types';
+} from '@acmucsd/membership-portal-types';
 import { UuidParam } from '../validators/GenericRequests';
 import {
   EventSearchOptions,

@@ -1,4 +1,4 @@
-import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
+import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '@acmucsd/membership-portal-types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 

@@ -2,10 +2,10 @@ import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError } from 'routing-controllers';
-import { FeedbackModel } from '../models/FeedbackModel';
-import { UserModel } from '../models/UserModel';
-import Repositories, { TransactionsManager } from '../repositories';
-import { PublicFeedback, Feedback, Uuid, ActivityType, FeedbackStatus } from '../types';
+import { FeedbackModel } from '../database/models/FeedbackModel';
+import { UserModel } from '../database/models/UserModel';
+import Repositories, { TransactionsManager } from '../database/repositories';
+import { PublicFeedback, Feedback, Uuid, ActivityType, FeedbackStatus } from '@acmucsd/membership-portal-types';
 import { UserError } from '../utils/Errors';
 import { Config } from '../config';
 

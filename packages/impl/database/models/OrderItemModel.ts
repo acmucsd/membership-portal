@@ -1,5 +1,5 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { Uuid, PublicOrderItem } from '../types';
+import { Uuid, PublicOrderItem } from '@acmucsd/membership-portal-types';
 import { OrderModel } from './OrderModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
 

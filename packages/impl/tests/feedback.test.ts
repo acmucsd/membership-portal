@@ -2,7 +2,7 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { FeedbackFactory } from './data/FeedbackFactory';
-import { ActivityScope, ActivityType, FeedbackStatus, UserAccessType } from '../types';
+import { ActivityScope, ActivityType, FeedbackStatus, UserAccessType } from '@acmucsd/membership-portal-types';
 import { Feedback } from '../api/validators/FeedbackControllerRequests';
 import { Config } from '../config';
 import { ControllerFactory } from './controllers';

@@ -1,5 +1,5 @@
-import { Uuid } from '../types';
-import { UserModel } from '../models/UserModel';
+import { Uuid } from '@acmucsd/membership-portal-types';
+import { UserModel } from '../database/models/UserModel';
 
 export interface AuthActionMetadata {
   trace_id: string;

@@ -1,5 +1,5 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
-import { EventSearchOptions, Uuid } from '../types';
+import { EventSearchOptions, Uuid } from '@acmucsd/membership-portal-types';
 import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
 

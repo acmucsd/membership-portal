@@ -1,8 +1,8 @@
 import { EntityRepository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { Activity } from '../types/internal';
+import { Activity } from '../../types';
 import { UserModel } from '../models/UserModel';
-import { Uuid } from '../types';
+import { Uuid } from '@acmucsd/membership-portal-types';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(UserModel)

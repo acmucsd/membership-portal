@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc && cp -r templates build/templates",
     "start": "node build/index.js",
-    "test": "jest --config jest.config.json --runInBand",
+    "test": "cd ./packages/impl && jest --config jest.config.json --runInBand",
     "dev": "nodemon -L -e ts -i node_modules -i .git -V index.ts",
     "lint": "eslint ./ --ext .ts",
     "lint:fix": "eslint ./ --ext .ts --fix",

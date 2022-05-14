@@ -45,10 +45,10 @@ import {
   CompleteOrderPickupEventResponse,
   GetOrderPickupEventResponse,
   CancelOrderPickupEventResponse,
-} from '../../types';
+} from '@acmucsd/membership-portal-types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { UserModel } from '../../models/UserModel';
+import { UserModel } from '../../database/models/UserModel';
 import MerchStoreService from '../../services/MerchStoreService';
 import {
   CreateMerchCollectionRequest,

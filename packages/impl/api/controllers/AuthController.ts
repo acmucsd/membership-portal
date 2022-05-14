@@ -8,7 +8,7 @@ import {
   VerifyEmailResponse,
   ResendEmailVerificationResponse,
   EmailModificationResponse,
-} from 'types';
+} from '@acmucsd/membership-portal-types';
 import UserAccountService from '../../services/UserAccountService';
 import UserAuthService from '../../services/UserAuthService';
 import { logger as log } from '../../utils/Logger';
@@ -23,7 +23,7 @@ import {
 import { authActionMetadata } from '../../utils/AuthActionMetadata';
 import { OptionalUserAuthentication, UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { UserModel } from '../../models/UserModel';
+import { UserModel } from '../../database/models/UserModel';
 import { EmailParam, AccessCodeParam } from '../validators/GenericRequests';
 
 @JsonController('/auth')

@@ -2,7 +2,7 @@ import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
-import { Uuid } from '../types';
+import { Uuid } from '@acmucsd/membership-portal-types';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(MerchandiseCollectionModel)

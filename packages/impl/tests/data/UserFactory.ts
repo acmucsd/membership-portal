@@ -1,8 +1,8 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
-import { UserAccessType, UserState } from '../../types';
-import { UserModel } from '../../models/UserModel';
+import { UserAccessType, UserState } from '@acmucsd/membership-portal-types';
+import { UserModel } from '../../database/models/UserModel';
 import FactoryUtils from './FactoryUtils';
 
 export class UserFactory {

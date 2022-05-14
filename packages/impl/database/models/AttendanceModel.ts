@@ -1,5 +1,5 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
-import { PublicAttendance, Uuid } from '../types';
+import { PublicAttendance, Uuid } from '@acmucsd/membership-portal-types';
 import { UserModel } from './UserModel';
 import { EventModel } from './EventModel';
 

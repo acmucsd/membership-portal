@@ -1,5 +1,5 @@
 import { Min, IsEmail, IsUUID, IsHexadecimal, Length } from 'class-validator';
-import { Pagination as IPagination, Uuid } from '../../types';
+import { Pagination as IPagination, Uuid } from '@acmucsd/membership-portal-types';
 
 export class Pagination implements IPagination {
   @Min(0)

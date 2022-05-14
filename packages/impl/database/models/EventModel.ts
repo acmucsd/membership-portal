@@ -1,6 +1,6 @@
 import * as moment from 'moment';
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { PublicEvent, Uuid } from '../types';
+import { PublicEvent, Uuid } from '@acmucsd/membership-portal-types';
 import { AttendanceModel } from './AttendanceModel';
 
 @Entity('Events')

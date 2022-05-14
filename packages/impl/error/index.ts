@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { ApiResponse, CustomErrorBody } from 'types';
+import { ApiResponse, CustomErrorBody } from '@acmucsd/membership-portal-types';
 import { HttpError } from 'routing-controllers';
 import { Config } from '../config';
 import { logger as log } from '../utils/Logger';

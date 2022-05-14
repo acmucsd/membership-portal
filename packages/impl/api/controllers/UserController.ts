@@ -1,7 +1,7 @@
 import {
   JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body,
 } from 'routing-controllers';
-import { UserModel } from '../../models/UserModel';
+import { UserModel } from '../../database/models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
 import StorageService from '../../services/StorageService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
@@ -14,7 +14,7 @@ import {
   GetUserResponse,
   GetCurrentUserResponse,
   PatchUserResponse,
-} from '../../types';
+} from '@acmucsd/membership-portal-types';
 import { UuidParam } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
 

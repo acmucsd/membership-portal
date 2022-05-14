@@ -2,10 +2,10 @@ import { JsonController, Get, Post, UseBefore, Params, ForbiddenError, Body } fr
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { AttendEventRequest } from '../validators/AttendanceControllerRequests';
-import { UserModel } from '../../models/UserModel';
+import { UserModel } from '../../database/models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
-import { GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '../../types';
+import { GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '@acmucsd/membership-portal-types';
 import { UuidParam } from '../validators/GenericRequests';
 
 @UseBefore(UserAuthentication)

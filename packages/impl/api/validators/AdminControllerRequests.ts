@@ -6,7 +6,7 @@ import {
   SubmitAttendanceForUsersRequest as ISubmitAttendanceForUsersRequest,
   Milestone as IMilestone,
   Bonus as IBonus,
-} from '../../types';
+} from '@acmucsd/membership-portal-types';
 
 export class Milestone implements IMilestone {
   @IsDefined()

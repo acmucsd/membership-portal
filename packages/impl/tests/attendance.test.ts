@@ -1,7 +1,7 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
-import { ActivityType, UserAccessType } from '../types';
+import { ActivityType, UserAccessType } from '@acmucsd/membership-portal-types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 

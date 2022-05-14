@@ -8,7 +8,7 @@ import {
   Feedback as IFeedback,
   FeedbackType,
   FeedbackStatus,
-} from '../../types';
+} from '@acmucsd/membership-portal-types';
 
 export class Feedback implements IFeedback {
   @IsDefined()

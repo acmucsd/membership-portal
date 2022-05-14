@@ -2,10 +2,10 @@ import * as fs from 'fs';
 import * as ts from 'typescript';
 
 describe('order of migrations', () => {
-  const dirname = './migrations/';
+  const dirname = './database/migrations/';
   const migrations = fs
     .readdirSync(dirname)
-    .map((filename) => `./migrations/${filename}`)
+    .map((filename) => `./database/migrations/${filename}`)
     .filter((filename) => filename.endsWith('.ts'));
 
   test('filename prefixes are incremented and not duplicated', () => {

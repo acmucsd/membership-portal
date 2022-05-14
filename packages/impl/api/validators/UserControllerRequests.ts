@@ -5,7 +5,7 @@ import {
   PasswordUpdate as IPasswordUpdate,
   PatchUserRequest as IPatchUserRequest,
   UserPatches as IUserPatches,
-} from '../../types';
+} from '@acmucsd/membership-portal-types';
 import { PasswordChange } from './AuthControllerRequests';
 
 export class PasswordUpdate extends PasswordChange implements IPasswordUpdate {

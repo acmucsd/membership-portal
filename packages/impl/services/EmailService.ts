@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { logger as log } from '../utils/Logger';
 import { Config } from '../config';
-import { Uuid } from '../types';
+import { Uuid } from '@acmucsd/membership-portal-types';
 
 type EmailData = MailDataRequired;
 

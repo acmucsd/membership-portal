@@ -10,7 +10,7 @@ import {
   UserRegistration as IUserRegistration,
   PasswordChange as IPasswordChange,
   EmailModificationRequest as IEmailModificationRequest,
-} from '../../types';
+} from '@acmucsd/membership-portal-types';
 
 export class UserRegistration implements IUserRegistration {
   @IsDefined()

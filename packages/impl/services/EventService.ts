@@ -2,9 +2,9 @@ import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
-import { EventModel } from '../models/EventModel';
-import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
-import Repositories, { TransactionsManager } from '../repositories';
+import { EventModel } from '../database/models/EventModel';
+import { Uuid, PublicEvent, Event, EventSearchOptions } from '@acmucsd/membership-portal-types';
+import Repositories, { TransactionsManager } from '../database/repositories';
 import { UserError } from '../utils/Errors';
 
 @Service()

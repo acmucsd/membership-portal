@@ -1,6 +1,6 @@
-import { EventModel } from '../../models/EventModel';
-import { UserModel } from '../../models/UserModel';
-import { ActivityScope, ActivityType } from '../Enums';
+import { EventModel } from '../database/models/EventModel';
+import { UserModel } from '../database/models/UserModel';
+import { ActivityScope, ActivityType } from '@acmucsd/membership-portal-types';
 
 export type Attendance = {
   user: UserModel,

@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { PrivateProfile, PublicProfile, Uuid, UserAccessType, UserState } from '../types';
+import { PrivateProfile, PublicProfile, Uuid, UserAccessType, UserState } from '@acmucsd/membership-portal-types';
 import { ActivityModel } from './ActivityModel';
 import { AttendanceModel } from './AttendanceModel';
 import { OrderModel } from './OrderModel';

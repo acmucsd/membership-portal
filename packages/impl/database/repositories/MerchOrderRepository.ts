@@ -1,5 +1,5 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
-import { OrderStatus, Uuid } from '../types';
+import { OrderStatus, Uuid } from '@acmucsd/membership-portal-types';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import { OrderItemModel } from '../models/OrderItemModel';

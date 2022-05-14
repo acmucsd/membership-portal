@@ -1,13 +1,13 @@
-import { ActivityType } from '../types';
-import { ActivityModel } from '../models/ActivityModel';
-import { AttendanceModel } from '../models/AttendanceModel';
-import { EventModel } from '../models/EventModel';
-import { UserModel } from '../models/UserModel';
+import { ActivityType } from '@acmucsd/membership-portal-types';
+import { ActivityModel } from '../database/models/ActivityModel';
+import { AttendanceModel } from '../database/models/AttendanceModel';
+import { EventModel } from '../database/models/EventModel';
+import { UserModel } from '../database/models/UserModel';
 import { DatabaseConnection, UserFactory, EventFactory, MerchFactory, PortalState } from './data';
-import { OrderModel } from '../models/OrderModel';
+import { OrderModel } from '../database/models/OrderModel';
 import { FeedbackFactory } from './data/FeedbackFactory';
-import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
-import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
+import { MerchandiseItemModel } from '../database/models/MerchandiseItemModel';
+import { MerchandiseCollectionModel } from '../database/models/MerchandiseCollectionModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

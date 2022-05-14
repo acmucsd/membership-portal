@@ -3,7 +3,7 @@ import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
-import Repositories, { TransactionsManager } from '../repositories';
+import Repositories, { TransactionsManager } from '../database/repositories';
 import {
   Uuid,
   PublicProfile,
@@ -12,9 +12,9 @@ import {
   Milestone,
   UserPatches,
   UserState,
-} from '../types';
-import { UserRepository } from '../repositories/UserRepository';
-import { UserModel } from '../models/UserModel';
+} from '@acmucsd/membership-portal-types';
+import { UserRepository } from '../database/repositories/UserRepository';
+import { UserModel } from '../database/models/UserModel';
 
 @Service()
 export default class UserAccountService {

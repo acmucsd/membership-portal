@@ -7,7 +7,7 @@ import {
   PatchEventRequest as IPatchEventRequest,
   SubmitEventFeedbackRequest as ISubmitEventFeedbackRequest,
   Event as IEvent,
-} from '../../types';
+} from '@acmucsd/membership-portal-types';
 import { IsValidEventFeedback } from '../decorators/Validators';
 
 export class OptionalEventProperties implements IOptionalEventProperties {

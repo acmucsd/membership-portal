@@ -1,7 +1,7 @@
 import {
   Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn, OneToMany,
 } from 'typeorm';
-import { Uuid, PublicMerchItem, PublicCartMerchItem } from '../types';
+import { Uuid, PublicMerchItem, PublicCartMerchItem } from '@acmucsd/membership-portal-types';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
 

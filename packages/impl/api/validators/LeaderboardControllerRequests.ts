@@ -1,5 +1,5 @@
 import { Min } from 'class-validator';
-import { SlidingLeaderboardQueryParams as ISlidingLeaderboardQueryParams } from '../../types';
+import { SlidingLeaderboardQueryParams as ISlidingLeaderboardQueryParams } from '@acmucsd/membership-portal-types';
 import { Pagination } from './GenericRequests';
 
 export class SlidingLeaderboardQueryParams extends Pagination implements ISlidingLeaderboardQueryParams {

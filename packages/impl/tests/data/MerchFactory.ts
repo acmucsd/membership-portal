@@ -1,11 +1,11 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
-import { MerchItemOptionMetadata, OrderPickupEventStatus } from '../../types';
-import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
-import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
-import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
-import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
+import { MerchItemOptionMetadata, OrderPickupEventStatus } from '@acmucsd/membership-portal-types';
+import { OrderPickupEventModel } from '../../database/models/OrderPickupEventModel';
+import { MerchandiseCollectionModel } from '../../database/models/MerchandiseCollectionModel';
+import { MerchandiseItemModel } from '../../database/models/MerchandiseItemModel';
+import { MerchandiseItemOptionModel } from '../../database/models/MerchandiseItemOptionModel';
 import FactoryUtils from './FactoryUtils';
 
 export class MerchFactory {

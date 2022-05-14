@@ -1,7 +1,7 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
-import { EventModel } from '../../models/EventModel';
+import { EventModel } from '../../database/models/EventModel';
 import FactoryUtils from './FactoryUtils';
 
 export class EventFactory {

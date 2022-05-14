@@ -1,5 +1,5 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
-import { ActivityScope, ActivityType, PublicActivity, Uuid } from '../types';
+import { ActivityScope, ActivityType, PublicActivity, Uuid } from '@acmucsd/membership-portal-types';
 import { UserModel } from './UserModel';
 
 @Entity('Activities')
