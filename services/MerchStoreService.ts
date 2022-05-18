@@ -713,11 +713,9 @@ export default class MerchStoreService {
       let order = await orderRepository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
 
-      // check if pickup event is happening today
-      // (we don't check if it's ongoing in case the event needs to start earlier for any reason
-      // or if someone comes a few minutes earlier)
+      // check if pickup event hasn't started (items can only be fulfilled during or after pickup events)
       const { pickupEvent } = order;
-      if (!MerchStoreService.isPickupEventHappeningToday(pickupEvent)) {
+      if (MerchStoreService.isFuturePickupEvent(pickupEvent)) {
         throw new UserError('Cannot fulfill items of an order that has a pickup event not happening today');
       }
       // check if order is in PLACED status (by order state machine design)
