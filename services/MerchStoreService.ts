@@ -716,7 +716,7 @@ export default class MerchStoreService {
       // check if pickup event hasn't started (items can only be fulfilled during or after pickup events)
       const { pickupEvent } = order;
       if (MerchStoreService.isFuturePickupEvent(pickupEvent)) {
-        throw new UserError('Cannot fulfill items of an order that has a pickup event not happening today');
+        throw new UserError('Cannot fulfill items of an order that has a pickup event that hasn\'t started yet');
       }
       // check if order is in PLACED status (by order state machine design)
       if (order.status !== OrderStatus.PLACED) {
