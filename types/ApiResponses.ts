@@ -1,4 +1,6 @@
-import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus } from './Enums';
+import {
+  ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus, UserAccessType,
+} from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
 
 // RESPONSE TYPES
@@ -300,7 +302,7 @@ export interface PublicProfile {
 
 export interface PrivateProfile extends PublicProfile {
   email: string,
-  accessType: string,
+  accessType: UserAccessType,
   state: string,
   credits: number,
 }
