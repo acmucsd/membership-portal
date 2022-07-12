@@ -146,6 +146,7 @@ export interface PublicMerchCollection {
   title: string;
   themeColorHex?: string;
   description: string;
+  archived?: boolean;
   items: PublicMerchItem[];
   createdAt: Date;
 }
