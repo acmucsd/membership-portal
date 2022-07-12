@@ -1,5 +1,5 @@
 import {
-  ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus, UserAccessType,
+  ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus, OrderStatus, UserAccessType,
 } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
 
@@ -206,7 +206,7 @@ export interface PublicOrder {
   uuid: Uuid;
   user: PublicProfile;
   totalCost: number;
-  status: string;
+  status: OrderStatus;
   orderedAt: Date;
   pickupEvent: PublicOrderPickupEvent;
 }
