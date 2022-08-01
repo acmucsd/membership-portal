@@ -14,6 +14,7 @@ import {
   GetUserResponse,
   GetCurrentUserResponse,
   PatchUserResponse,
+  UpdateResumeResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
@@ -53,6 +54,16 @@ export class UserController {
     @AuthenticatedUser() user: UserModel): Promise<UpdateProfilePictureResponse> {
     const profilePicture = await this.storageService.upload(file, MediaType.PROFILE_PICTURE, user.uuid);
     const updatedUser = await this.userAccountService.updateProfilePicture(user, profilePicture);
+    return { error: null, user: updatedUser.getFullUserProfile() };
+  }
+
+  @Post('/resume')
+  async updateResume(@UploadedFile('file',
+    { options: StorageService.getFileOptions(MediaType.RESUME) }) file: File,
+    @AuthenticatedUser() user: UserModel): Promise<UpdateResumeResponse> {
+    const resume = await this.storageService.upload(file, MediaType.RESUME, user.uuid);
+    const updatedUser = await this.userAccountService.updateResume(user, resume);
+
     return { error: null, user: updatedUser.getFullUserProfile() };
   }
 

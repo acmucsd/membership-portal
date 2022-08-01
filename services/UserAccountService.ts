@@ -102,6 +102,12 @@ export default class UserAccountService {
       .upsertUser(user, { profilePicture }));
   }
 
+  public async updateResume(user: UserModel, resume: string): Promise<UserModel> {
+    return this.transactions.readWrite(async (txn) => Repositories
+      .user(txn)
+      .upsertUser(user, { resume }));
+  }
+
   public async getCurrentUserActivityStream(uuid: Uuid): Promise<PublicActivity[]> {
     const stream = await this.transactions.readOnly(async (txn) => Repositories
       .activity(txn)

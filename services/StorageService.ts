@@ -75,6 +75,13 @@ export default class StorageService {
           uploadPath: Config.file.MERCH_PHOTO_UPLOAD_PATH,
         };
       }
+      case MediaType.RESUME: {
+        return {
+          type: MediaType.RESUME,
+          maxFileSize: Config.file.MAX_RESUME_FILE_SIZE,
+          uploadPath: Config.file.RESUME_UPLOAD_PATH,
+        };
+      }
       default: {
         throw new InternalServerError('Invalid media type for file');
       }

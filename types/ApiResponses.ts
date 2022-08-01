@@ -303,6 +303,7 @@ export interface PrivateProfile extends PublicProfile {
   accessType: string,
   state: string,
   credits: number,
+  resume: string,
 }
 
 export interface PublicFeedback {
@@ -320,6 +321,10 @@ export interface GetUserActivityStreamResponse extends ApiResponse {
 }
 
 export interface UpdateProfilePictureResponse extends ApiResponse {
+  user: PrivateProfile;
+}
+
+export interface UpdateResumeResponse extends ApiResponse {
   user: PrivateProfile;
 }
 

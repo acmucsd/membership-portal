@@ -27,6 +27,9 @@ export class UserModel extends BaseEntity {
   @Column('varchar', { length: 255, nullable: true })
   profilePicture: string;
 
+  @Column('varchar', { length: 255, nullable: true })
+  resume: string;
+
   @Column('varchar', { length: 255, default: UserAccessType.STANDARD })
   accessType: UserAccessType;
 
@@ -130,6 +133,7 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
       credits: this.credits,
+      resume: this.resume,
     };
   }
 }
