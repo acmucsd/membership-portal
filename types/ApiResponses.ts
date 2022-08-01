@@ -301,6 +301,7 @@ export interface PublicProfile {
 export interface PrivateProfile extends PublicProfile {
   email: string,
   accessType: string,
+  resumeOptedIn: boolean,
   state: string,
   credits: number,
 }

@@ -107,7 +107,7 @@ export class UserModel extends BaseEntity {
   }
 
   public isResumeOptedIn(): boolean {
-    return this.isResumeOptedIn;
+    return this.resumeOptedIn;
   }
 
   public getPublicProfile(): PublicProfile {

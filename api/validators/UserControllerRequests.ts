@@ -29,6 +29,8 @@ export class UserPatches implements IUserPatches {
   @Allow()
   bio?: string;
 
+  resumeOptedIn?: boolean;
+
   @Type(() => PasswordUpdate)
   @ValidateNested()
   @HasMatchingPasswords()
