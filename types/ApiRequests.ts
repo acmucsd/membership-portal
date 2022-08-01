@@ -59,6 +59,7 @@ export interface UserPatches {
   major?: string;
   graduationYear?: number;
   bio?: string;
+  resumeOptedIn: boolean;
   passwordChange?: PasswordUpdate;
 }
 
