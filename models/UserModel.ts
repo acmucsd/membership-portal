@@ -49,7 +49,7 @@ export class UserModel extends BaseEntity {
   })
   bio: string;
 
-  @Column('boolean')
+  @Column('boolean', { default: false })
   resumeOptedIn: boolean;
 
   @Column('integer', { default: 0 })
