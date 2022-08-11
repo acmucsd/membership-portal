@@ -41,6 +41,10 @@ export class UserFactory {
       major: UserFactory.major(),
       points: 0,
       credits: 0,
+      linkedin: `https://www.linkedin.com/in/${firstName}${lastName}/`,
+      instagram: `https://www.instagram.com/${firstName}${lastName}/`,
+      facebook: `https://www.facebook.com/profile.php?id=${uuid}`,
+      portfolio: `https://www.linkedin.com/in/${firstName}${lastName}/`,
     });
     return UserModel.merge(fake, substitute);
   }

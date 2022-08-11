@@ -60,6 +60,10 @@ export interface UserPatches {
   graduationYear?: number;
   bio?: string;
   passwordChange?: PasswordUpdate;
+  linkedin?: string;
+  instagram?: string;
+  facebook?: string;
+  portfolio?: string;
 }
 
 export interface PatchUserRequest {

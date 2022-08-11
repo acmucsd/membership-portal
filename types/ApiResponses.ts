@@ -296,6 +296,10 @@ export interface PublicProfile {
   major: string,
   bio: string,
   points: number,
+  linkedin: string,
+  instagram: string,
+  facebook: string,
+  portfolio: string,
 }
 
 export interface PrivateProfile extends PublicProfile {

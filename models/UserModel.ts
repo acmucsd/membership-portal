@@ -56,6 +56,18 @@ export class UserModel extends BaseEntity {
   @Column('integer', { default: 0 })
   credits: number;
 
+  @Column('varchar', { length: 255, default: '' })
+  linkedin: string;
+
+  @Column('varchar', { length: 255, default: '' })
+  instagram: string;
+
+  @Column('varchar', { length: 255, default: '' })
+  facebook: string;
+
+  @Column('varchar', { length: 255, default: '' })
+  portfolio: string;
+
   @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)' })
   lastLogin: Date;
 
@@ -113,6 +125,10 @@ export class UserModel extends BaseEntity {
       major: this.major,
       bio: this.bio,
       points: this.points,
+      linkedin: this.linkedin,
+      instagram: this.instagram,
+      facebook: this.facebook,
+      portfolio: this.portfolio,
     };
   }
 
@@ -130,6 +146,10 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
       credits: this.credits,
+      linkedin: this.linkedin,
+      instagram: this.instagram,
+      facebook: this.facebook,
+      portfolio: this.portfolio,
     };
   }
 }
