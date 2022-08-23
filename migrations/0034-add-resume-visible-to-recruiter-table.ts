@@ -5,7 +5,7 @@ const TABLE_NAME = 'Users';
 export class AddResumeVisibleToRecruiterTable1659580706753 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(TABLE_NAME, new TableColumn({
-      name: 'resumeVisitbleToRecruiter',
+      name: 'resumeVisibleToRecruiter',
       type: 'boolean',
       isNullable: false,
       default: false,
@@ -14,6 +14,6 @@ export class AddResumeVisibleToRecruiterTable1659580706753 implements MigrationI
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropColumn(TABLE_NAME, 'resumeVisitbleToRecruiter');
+    await queryRunner.dropColumn(TABLE_NAME, 'resumeVisibleToRecruiter');
   }
 }

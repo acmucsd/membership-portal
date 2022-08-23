@@ -41,7 +41,7 @@ export class UserFactory {
       major: UserFactory.major(),
       points: 0,
       credits: 0,
-      resumeVisitbleToRecruiter: false,
+      resumeVisibleToRecruiter: false,
     });
     return UserModel.merge(fake, substitute);
   }

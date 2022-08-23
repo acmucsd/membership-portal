@@ -50,7 +50,7 @@ export class UserModel extends BaseEntity {
   bio: string;
 
   @Column('boolean', { default: false })
-  resumeVisitbleToRecruiter: boolean;
+  resumeVisibleToRecruiter: boolean;
 
   @Column('integer', { default: 0 })
   @Index('leaderboard_index')
@@ -131,7 +131,7 @@ export class UserModel extends BaseEntity {
       graduationYear: this.graduationYear,
       major: this.major,
       bio: this.bio,
-      resumeVisitbleToRecruiter: this.resumeVisitbleToRecruiter,
+      resumeVisibleToRecruiter: this.resumeVisibleToRecruiter,
       points: this.points,
       credits: this.credits,
     };

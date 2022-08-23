@@ -29,7 +29,7 @@ export class UserPatches implements IUserPatches {
   @Allow()
   bio?: string;
 
-  resumeVisitbleToRecruiter?: boolean;
+  resumeVisibleToRecruiter?: boolean;
 
   @Type(() => PasswordUpdate)
   @ValidateNested()

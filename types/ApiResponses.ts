@@ -301,7 +301,7 @@ export interface PublicProfile {
 export interface PrivateProfile extends PublicProfile {
   email: string,
   accessType: string,
-  resumeVisitbleToRecruiter: boolean,
+  resumeVisibleToRecruiter: boolean,
   state: string,
   credits: number,
 }
