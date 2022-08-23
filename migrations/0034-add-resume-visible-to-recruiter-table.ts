@@ -9,7 +9,7 @@ export class AddResumeVisibleToRecruiterTable1659580706753 implements MigrationI
       type: 'boolean',
       isNullable: false,
       default: false,
-    })); 
+    }));
     // maybe flag-like data? int has 32-bits = 32 different visibility choice
   }
 
