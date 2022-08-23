@@ -50,7 +50,7 @@ export class UserModel extends BaseEntity {
   bio: string;
 
   @Column('boolean', { default: false })
-  resumeOptedIn: boolean;
+  resumeVisitbleToRecruiter: boolean;
 
   @Column('integer', { default: 0 })
   @Index('leaderboard_index')
@@ -106,10 +106,6 @@ export class UserModel extends BaseEntity {
     return this.accessType === UserAccessType.MERCH_STORE_DISTRIBUTOR;
   }
 
-  public isResumeOptedIn(): boolean {
-    return this.resumeOptedIn;
-  }
-
   public getPublicProfile(): PublicProfile {
     return {
       uuid: this.uuid,
@@ -135,7 +131,7 @@ export class UserModel extends BaseEntity {
       graduationYear: this.graduationYear,
       major: this.major,
       bio: this.bio,
-      resumeOptedIn: this.resumeOptedIn,
+      resumeVisitbleToRecruiter: this.resumeVisitbleToRecruiter,
       points: this.points,
       credits: this.credits,
     };
