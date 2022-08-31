@@ -17,9 +17,8 @@ import EventService from '../../services/EventService';
 import MerchStoreService from '../../services/MerchStoreService';
 
 export class ControllerFactory {
-  public static user(conn: Connection): UserController {
+  public static user(conn: Connection, storageService = new StorageService()): UserController {
     const userAccountService = new UserAccountService(conn.manager);
-    const storageService = new StorageService();
     return new UserController(userAccountService, storageService);
   }
 
