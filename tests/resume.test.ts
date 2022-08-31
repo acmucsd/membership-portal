@@ -1,5 +1,4 @@
 import { BadRequestError } from 'routing-controllers';
-import { logger as log } from '../utils/Logger';
 import { Config } from '../config';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, PortalState, UserFactory } from './data';
