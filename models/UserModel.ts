@@ -6,6 +6,7 @@ import { AttendanceModel } from './AttendanceModel';
 import { OrderModel } from './OrderModel';
 import { FeedbackModel } from './FeedbackModel';
 import { ResumeModel } from './ResumeModel';
+import { UserSocialMediaUrlsModel } from './UserSocialMediaUrlsModel';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
@@ -74,6 +75,9 @@ export class UserModel extends BaseEntity {
 
   @OneToMany((type) => ResumeModel, (resume) => resume.user, { cascade: true })
   resumes: ResumeModel[];
+
+  @OneToMany((type) => UserSocialMediaUrlsModel, (userSocialMediaUrl) => userSocialMediaUrl.user, { cascade: true })
+  userSocialMediaUrl: UserSocialMediaUrlsModel;
 
   public async verifyPass(pass: string): Promise<boolean> {
     return bcrypt.compare(pass, this.hash);

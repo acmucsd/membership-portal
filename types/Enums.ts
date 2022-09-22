@@ -83,3 +83,10 @@ export enum OrderPickupEventStatus {
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED',
 }
+
+export enum SocialMediaType {
+  LINKEDIN = 'LINKEDIN',
+  INSTAGRAM = 'INSTAGRAM',
+  FACEBOOK = 'FACEBOOK',
+  PORTFOLIO = 'PORTFOLIO',
+}

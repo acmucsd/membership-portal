@@ -1,7 +1,7 @@
 import {
   ValidatorConstraintInterface, registerDecorator, ValidationOptions, ValidatorConstraint,
 } from 'class-validator';
-import { PasswordChange, FeedbackType, FeedbackStatus, OrderStatus } from '../../types';
+import { PasswordChange, FeedbackType, FeedbackStatus, OrderStatus, SocialMediaType } from '../../types';
 
 function templatedValidationDecorator(
   validator: ValidatorConstraintInterface | Function, validationOptions?: ValidationOptions,
@@ -152,4 +152,19 @@ class OrderStatusValidator implements ValidatorConstraintInterface {
 
 export function IsValidOrderStatus(validationOptions?: ValidationOptions) {
   return templatedValidationDecorator(OrderStatusValidator, validationOptions);
+}
+
+@ValidatorConstraint()
+class UserSocialMediaUrlTypeValidator implements ValidatorConstraintInterface {
+  validate(socialMediaType: SocialMediaType): boolean {
+    return Object.values(SocialMediaType).includes(socialMediaType);
+  }
+
+  defaultMessage(): string {
+    return 'Social media type must be one of [\'LINKEDIN\', \'INSTAGRAM\', \'FACEBOOK\', \'PORTFOLIO\']';
+  }
+}
+
+export function IsValidSocialMediaUrlType(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(UserSocialMediaUrlTypeValidator, validationOptions);
 }
