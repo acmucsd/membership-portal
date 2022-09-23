@@ -50,20 +50,4 @@ describe('upload resume', () => {
       await userController.updateResume(image, member);
     }).rejects.toThrow(BadRequestError);
   });
-
-  test('file too big', async () => {
-    const conn = await DatabaseConnection.get();
-    const member = UserFactory.fake();
-    await new PortalState()
-      .createUsers(member)
-      .write();
-
-    const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE + 1);
-    const fileLocation = 'fake location';
-
-    const userController = ControllerFactory.user(conn, Mocks.storage(fileLocation));
-    expect(async () => {
-      await userController.updateResume(resume, member);
-    }).rejects.toThrow();
-  });
 });
