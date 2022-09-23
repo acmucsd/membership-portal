@@ -2,6 +2,7 @@ import {
   JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body, BadRequestError,
 } from 'routing-controllers';
 import path = require('path');
+import { lastIndexOf } from 'underscore';
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
 import StorageService from '../../services/StorageService';
@@ -64,7 +65,8 @@ export class UserController {
     @AuthenticatedUser() user: UserModel): Promise<UpdateResumeResponse> {
     if (path.extname(file.originalname) !== '.pdf') throw new BadRequestError('Filetype must be \'.pdf\'');
     await this.storageService.clearFolder(MediaType.RESUME, user.uuid);
-    const resume = await this.storageService.uploadToFolder(file, MediaType.RESUME, file.filename, user.uuid);
+    const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
+    const resume = await this.storageService.uploadToFolder(file, MediaType.RESUME, fileName, user.uuid);
     const updatedUser = await this.userAccountService.updateResume(user, resume);
 
     return { error: null, user: updatedUser.getFullUserProfile() };
