@@ -63,7 +63,8 @@ export class UserController {
     { options: StorageService.getFileOptions(MediaType.RESUME) }) file: File,
     @AuthenticatedUser() user: UserModel): Promise<UpdateResumeResponse> {
     if (path.extname(file.originalname) !== '.pdf') throw new BadRequestError('Filetype must be \'.pdf\'');
-    const resume = await this.storageService.upload(file, MediaType.RESUME, user.uuid);
+    await this.storageService.clearFolder(MediaType.RESUME, user.uuid);
+    const resume = await this.storageService.uploadToFolder(file, MediaType.RESUME, file.filename, user.uuid);
     const updatedUser = await this.userAccountService.updateResume(user, resume);
 
     return { error: null, user: updatedUser.getFullUserProfile() };

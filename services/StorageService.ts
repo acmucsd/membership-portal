@@ -2,7 +2,7 @@ import { Service } from 'typedi';
 import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as multer from 'multer';
-import { InternalServerError } from 'routing-controllers';
+import { ContentType, InternalServerError } from 'routing-controllers';
 import { Config } from '../config';
 import { MediaType } from '../types';
 
@@ -23,6 +23,31 @@ export default class StorageService {
     credentials: Config.s3.credentials,
   });
 
+  public async clearFolder(mediaType: MediaType, folder: string): Promise<string> {
+    const { uploadPath } = StorageService.getMediaConfig(mediaType);
+    const params = {
+      Bucket: Config.s3.bucket,
+      Prefix: `${uploadPath}/${folder}`,
+    };
+
+    const listedObjects = await this.s3.listObjectsV2(params).promise();
+
+    if (listedObjects.Contents.length === 0) return;
+
+    const deleteParams = {
+      Bucket: Config.s3.bucket,
+      Delete: { Objects: [] },
+    };
+
+    listedObjects.Contents.forEach(({ Key }) => {
+      deleteParams.Delete.Objects.push({ Key });
+    });
+
+    await this.s3.deleteObjects(deleteParams).promise();
+
+    if (listedObjects.IsTruncated) await this.clearFolder(mediaType, folder);
+  }
+
   public async upload(file: File, mediaType: MediaType, fileName: string): Promise<string> {
     const { uploadPath } = StorageService.getMediaConfig(mediaType);
     const params = {
@@ -30,6 +55,18 @@ export default class StorageService {
       Body: file.buffer,
       Bucket: Config.s3.bucket,
       Key: `${uploadPath}/${fileName}${path.extname(file.originalname)}`,
+    };
+    const data = await this.s3.upload(params).promise();
+    return data.Location;
+  }
+
+  public async uploadToFolder(file: File, mediaType: MediaType, fileName: string, folder: string): Promise<string> {
+    const { uploadPath } = StorageService.getMediaConfig(mediaType);
+    const params = {
+      ACL: 'public-read',
+      Body: file.buffer,
+      Bucket: Config.s3.bucket,
+      Key: `${uploadPath}/${folder}/${fileName}${path.extname(file.originalname)}`,
     };
     const data = await this.s3.upload(params).promise();
     return data.Location;
