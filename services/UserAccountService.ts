@@ -3,6 +3,7 @@ import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
+import { ResumeModel } from '../models/ResumeModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -102,10 +103,13 @@ export default class UserAccountService {
       .upsertUser(user, { profilePicture }));
   }
 
-  public async updateResume(user: UserModel, resume: string): Promise<UserModel> {
+  public async updateResume(user: UserModel, resumeURL: string): Promise<ResumeModel> {
     return this.transactions.readWrite(async (txn) => Repositories
-      .user(txn)
-      .upsertUser(user, { resume }));
+      .resume(txn)
+      .upsertResume(ResumeModel.create({
+        user,
+        url: resumeURL,
+      })));
   }
 
   public async getCurrentUserActivityStream(uuid: Uuid): Promise<PublicActivity[]> {

@@ -32,7 +32,7 @@ describe('upload resume', () => {
     const userController = ControllerFactory.user(conn, Mocks.storage(fileLocation));
     const response = await userController.updateResume(resume, member);
     expect(response.error).toBe(null);
-    expect(response.user.resume).toBe(fileLocation);
+    expect(response.resume.url).toBe(fileLocation);
   });
 
   test('wrong filetype', async () => {

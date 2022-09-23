@@ -66,10 +66,10 @@ export class UserController {
     if (path.extname(file.originalname) !== '.pdf') throw new BadRequestError('Filetype must be \'.pdf\'');
     await this.storageService.clearFolder(MediaType.RESUME, user.uuid);
     const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
-    const resume = await this.storageService.uploadToFolder(file, MediaType.RESUME, fileName, user.uuid);
-    const updatedUser = await this.userAccountService.updateResume(user, resume);
+    const url = await this.storageService.uploadToFolder(file, MediaType.RESUME, fileName, user.uuid);
+    const model = await this.userAccountService.updateResume(user, url);
 
-    return { error: null, user: updatedUser.getFullUserProfile() };
+    return { error: null, resume: model };
   }
 
   @Get('/:uuid')

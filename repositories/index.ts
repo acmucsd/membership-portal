@@ -7,6 +7,7 @@ import { MerchOrderRepository, OrderItemRepository, OrderPickupEventRepository }
 import { MerchCollectionRepository, MerchItemRepository, MerchItemOptionRepository } from './MerchStoreRepository';
 import { ActivityRepository } from './ActivityRepository';
 import { LeaderboardRepository } from './LeaderboardRepository';
+import { ResumeRepository } from './ResumeRepository';
 
 export default class Repositories {
   public static activity(transactionalEntityManager: EntityManager): ActivityRepository {
@@ -51,6 +52,10 @@ export default class Repositories {
 
   public static user(transactionalEntityManager: EntityManager): UserRepository {
     return transactionalEntityManager.getCustomRepository(UserRepository);
+  }
+
+  public static resume(transactionalEntityManager: EntityManager): ResumeRepository {
+    return transactionalEntityManager.getCustomRepository(ResumeRepository);
   }
 
   public static feedback(transactionalEntityManager: EntityManager): FeedbackRepository {

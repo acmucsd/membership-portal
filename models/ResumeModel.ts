@@ -2,7 +2,7 @@ import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGenera
 import { Uuid } from '../types';
 import { UserModel } from './UserModel';
 
-@Entity('Resume')
+@Entity('Resumes')
 export class ResumeModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
