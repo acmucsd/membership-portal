@@ -2,7 +2,7 @@ import { Service } from 'typedi';
 import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as multer from 'multer';
-import { ContentType, InternalServerError } from 'routing-controllers';
+import { InternalServerError } from 'routing-controllers';
 import { Config } from '../config';
 import { MediaType } from '../types';
 

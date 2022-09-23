@@ -1,8 +1,6 @@
 import {
-  JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body, BadRequestError,
+  JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body,
 } from 'routing-controllers';
-import path = require('path');
-import { lastIndexOf } from 'underscore';
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
 import StorageService from '../../services/StorageService';
@@ -16,7 +14,6 @@ import {
   GetUserResponse,
   GetCurrentUserResponse,
   PatchUserResponse,
-  UpdateResumeResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
@@ -57,19 +54,6 @@ export class UserController {
     const profilePicture = await this.storageService.upload(file, MediaType.PROFILE_PICTURE, user.uuid);
     const updatedUser = await this.userAccountService.updateProfilePicture(user, profilePicture);
     return { error: null, user: updatedUser.getFullUserProfile() };
-  }
-
-  @Post('/resume')
-  async updateResume(@UploadedFile('file',
-    { options: StorageService.getFileOptions(MediaType.RESUME) }) file: File,
-    @AuthenticatedUser() user: UserModel): Promise<UpdateResumeResponse> {
-    if (path.extname(file.originalname) !== '.pdf') throw new BadRequestError('Filetype must be \'.pdf\'');
-    await this.storageService.clearFolder(MediaType.RESUME, user.uuid);
-    const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
-    const url = await this.storageService.uploadToFolder(file, MediaType.RESUME, fileName, user.uuid);
-    const model = await this.userAccountService.updateResume(user, url);
-
-    return { error: null, resume: model };
   }
 
   @Get('/:uuid')
