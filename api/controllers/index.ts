@@ -8,10 +8,12 @@ import { AdminController } from './AdminController';
 import { MerchStoreController } from './MerchStoreController';
 import { LeaderboardController } from './LeaderboardController';
 import { FeedbackController } from './FeedbackController';
+import { ResumeController } from './ResumeController';
 
 export const controllers = [
   AuthController,
   UserController,
+  ResumeController,
   EventController,
   AttendanceController,
   LeaderboardController,

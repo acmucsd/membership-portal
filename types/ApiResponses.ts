@@ -321,6 +321,10 @@ export interface GetUserActivityStreamResponse extends ApiResponse {
   activity: PublicActivity[];
 }
 
+export interface GetResumesListResponse extends ApiResponse {
+  resumes: ResumeModel[];
+}
+
 export interface UpdateProfilePictureResponse extends ApiResponse {
   user: PrivateProfile;
 }
