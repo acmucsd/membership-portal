@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Uuid } from '../types';
 import { UserModel } from './UserModel';
 
@@ -8,6 +8,8 @@ export class ResumeModel extends BaseEntity {
   uuid: Uuid;
 
   @ManyToOne((type) => UserModel, (user) => user.uuid, { nullable: false })
+  @JoinColumn({ name: 'user' })
+  @Index('resumes_by_user_index')
   user: UserModel;
 
   @Column('boolean', { default: false, nullable: false })

@@ -37,7 +37,7 @@ export class AddResumeTable1663900724564 implements MigrationInterface {
 
     await queryRunner.createIndices(TABLE_NAME, [
       new TableIndex({
-        name: 'resumes_user',
+        name: 'resumes_by_user_index',
         columnNames: ['user'],
       }),
     ]);

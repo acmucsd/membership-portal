@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany, OneToOne } from 'typeorm';
+import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { PrivateProfile, PublicProfile, Uuid, UserAccessType, UserState } from '../types';
 import { ActivityModel } from './ActivityModel';
@@ -72,7 +72,7 @@ export class UserModel extends BaseEntity {
   @OneToMany((type) => FeedbackModel, (feedback) => feedback.user, { cascade: true })
   feedback: FeedbackModel;
 
-  @OneToMany((type) => ResumeModel, (resume) => resume.uuid, { cascade: true })
+  @OneToMany((type) => ResumeModel, (resume) => resume.user, { cascade: true })
   resumes: ResumeModel[];
 
   public async verifyPass(pass: string): Promise<boolean> {
