@@ -134,6 +134,7 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
       credits: this.credits,
+      resumes: this.resumes,
     };
   }
 }
