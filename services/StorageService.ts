@@ -3,6 +3,7 @@ import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as multer from 'multer';
 import { InternalServerError } from 'routing-controllers';
+import AmazonS3URI = require('amazon-s3-uri');
 import { Config } from '../config';
 import { MediaType } from '../types';
 
@@ -23,29 +24,20 @@ export default class StorageService {
     credentials: Config.s3.credentials,
   });
 
-  public async clearFolder(mediaType: MediaType, folder: string): Promise<string> {
-    const { uploadPath } = StorageService.getMediaConfig(mediaType);
-    const params = {
-      Bucket: Config.s3.bucket,
-      Prefix: `${uploadPath}/${folder}`,
-    };
-
-    const listedObjects = await this.s3.listObjectsV2(params).promise();
-
-    if (listedObjects.Contents.length === 0) return;
-
+  public async deleteAtUrl(url: string) : Promise<void> {
+    const { bucket, key } = AmazonS3URI(url);
     const deleteParams = {
-      Bucket: Config.s3.bucket,
-      Delete: { Objects: [] },
+      Bucket: bucket,
+      Key: key,
     };
 
-    listedObjects.Contents.forEach(({ Key }) => {
-      deleteParams.Delete.Objects.push({ Key });
-    });
+    await this.s3.deleteObject(deleteParams).promise();
+  }
 
-    await this.s3.deleteObjects(deleteParams).promise();
-
-    if (listedObjects.IsTruncated) await this.clearFolder(mediaType, folder);
+  public async deleteAtUrls(urls: string[]): Promise<void> {
+    const results = [];
+    urls.forEach((url) => results.push(this.deleteAtUrl(url)));
+    await Promise.all(results);
   }
 
   public async upload(file: File, mediaType: MediaType, fileName: string): Promise<string> {

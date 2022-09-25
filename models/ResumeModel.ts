@@ -12,7 +12,7 @@ export class ResumeModel extends BaseEntity {
   @Index('resumes_by_user_index')
   user: UserModel;
 
-  @Column('boolean', { default: false, nullable: false })
+  @Column('boolean', { default: true, nullable: false })
   isResumeVisible: boolean;
 
   @Column('varchar', { length: 255, nullable: false })

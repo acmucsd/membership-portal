@@ -14,19 +14,20 @@ export default class ResumeService {
   }
 
   public async updateResume(user: UserModel, resumeURL: string): Promise<ResumeModel> {
-    return this.transactions.readWrite(async (txn) => Repositories
-      .resume(txn)
-      .upsertResume(ResumeModel.create({
-        user,
-        url: resumeURL,
-      })));
-  }
-
-  public async deleteUserResumes(user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const resumeRepository = Repositories.resume(txn);
       const resumes = await resumeRepository.findAllByUserUuid(user.uuid);
       await resumeRepository.deleteResumes(resumes);
+      return resumeRepository.upsertResume(ResumeModel.create({
+        user,
+        url: resumeURL,
+      }));
     });
+  }
+
+  public async getUserResumes(user: UserModel): Promise<ResumeModel[]> {
+    return this.transactions.readWrite(async (txn) => Repositories
+      .resume(txn)
+      .findAllByUserUuid(user.uuid));
   }
 }
