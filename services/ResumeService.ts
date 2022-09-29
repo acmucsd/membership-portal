@@ -16,7 +16,7 @@ export default class ResumeService {
 
   public async getVisibleResumes() : Promise<ResumeModel[]> {
     const resumes = await this.transactions.readOnly(async (txn) => Repositories
-    .resume(txn).findVisible());
+      .resume(txn).findVisibleResumes());
     if (!resumes) throw new NotFoundError('Resumes was not found');
     return resumes;
   }

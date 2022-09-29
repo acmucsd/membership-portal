@@ -1,4 +1,4 @@
-import { ResumeModel } from 'models/ResumeModel';
+import { ResumeModel } from '../models/ResumeModel';
 import { EntityRepository } from 'typeorm';
 import { BaseRepository } from './BaseRepository';
 import { Uuid } from '../types';
@@ -6,7 +6,7 @@ import { UserModel } from '../models/UserModel';
 
 @EntityRepository(ResumeModel)
 export class ResumeRepository extends BaseRepository<ResumeModel> {
-  public async findVisible(): Promise<ResumeModel[]> {
+  public async findVisibleResumes(): Promise<ResumeModel[]> {
     return this.repository.find({
         isResumeVisible: true,
     });
@@ -16,7 +16,7 @@ export class ResumeRepository extends BaseRepository<ResumeModel> {
     return this.repository.findOne({ uuid });
   }
 
-  public async findByUser(user: UserModel): Promise<ResumeModel[]> {
+  public async findAllByUser(user: UserModel): Promise<ResumeModel[]> {
     return this.repository.find({ user });
   }
 }

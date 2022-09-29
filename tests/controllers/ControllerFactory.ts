@@ -15,8 +15,8 @@ import UserAuthService from '../../services/UserAuthService';
 import EmailService from '../../services/EmailService';
 import EventService from '../../services/EventService';
 import MerchStoreService from '../../services/MerchStoreService';
-import { ResumeController } from 'api/controllers/ResumeController';
-import ResumeService from 'services/ResumeService';
+import { ResumeController } from '../../api/controllers/ResumeController';
+import ResumeService from '../../services/ResumeService';
 
 export class ControllerFactory {
   public static user(conn: Connection): UserController {
