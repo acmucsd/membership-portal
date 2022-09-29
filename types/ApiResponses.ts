@@ -1,6 +1,6 @@
+import { ResumeModel } from 'models/ResumeModel';
 import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
-import { ResumeModel } from 'models/ResumeModel';
 
 // RESPONSE TYPES
 

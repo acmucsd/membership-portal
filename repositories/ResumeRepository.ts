@@ -1,5 +1,5 @@
-import { ResumeModel } from '../models/ResumeModel';
 import { EntityRepository } from 'typeorm';
+import { ResumeModel } from '../models/ResumeModel';
 import { BaseRepository } from './BaseRepository';
 import { Uuid } from '../types';
 import { UserModel } from '../models/UserModel';
@@ -8,7 +8,7 @@ import { UserModel } from '../models/UserModel';
 export class ResumeRepository extends BaseRepository<ResumeModel> {
   public async findVisibleResumes(): Promise<ResumeModel[]> {
     return this.repository.find({
-        isResumeVisible: true,
+      isResumeVisible: true,
     });
   }
 
