@@ -1,5 +1,5 @@
 import { ResumeModel } from "models/ResumeModel";
-import Repositories, { TransactionsManager } from "repositories";
+import Repositories, { TransactionsManager } from "../repositories";
 import { NotFoundError } from "routing-controllers";
 import { Service } from "typedi";
 import { EntityManager } from "typeorm";
