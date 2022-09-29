@@ -5,6 +5,7 @@ import { UserModel } from '../../models/UserModel';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { GetResumesListResponse } from '../../types';
+import PermissionsService from 'services/PermissionsService';
 
 @UseBefore(UserAuthentication)
 @JsonController('/resume')
@@ -18,7 +19,7 @@ export class ResumeController {
   @Get()
   async getAllVisibleResumes(@Params() params: UuidParam,
     @AuthenticatedUser() currentUser: UserModel): Promise<GetResumesListResponse> {
-    const resumes = await this.resumeService.getVisibleResumes();
+    const resumes = await this.resumeService.getVisibleResumes(PermissionsService.canSeeAllVisibleResumes(currentUser));
     return { error: null, resumes };
   }
 }

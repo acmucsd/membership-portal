@@ -14,7 +14,8 @@ export default class ResumeService {
     this.transactions = new TransactionsManager(entityManager);
   }
 
-  public async getVisibleResumes() : Promise<ResumeModel[]> {
+  public async getVisibleResumes(canSeeAllVisibleResumes = false) : Promise<ResumeModel[]> {
+    if (!canSeeAllVisibleResumes) return [];
     const resumes = await this.transactions.readOnly(async (txn) => Repositories
       .resume(txn).findVisibleResumes());
     if (!resumes) throw new NotFoundError('Resumes was not found');

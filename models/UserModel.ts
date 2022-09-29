@@ -6,6 +6,7 @@ import { AttendanceModel } from './AttendanceModel';
 import { OrderModel } from './OrderModel';
 import { FeedbackModel } from './FeedbackModel';
 import { ResumeModel } from './ResumeModel';
+import { ResumeRepository } from '../repositories/ResumeRepository';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
@@ -121,6 +122,7 @@ export class UserModel extends BaseEntity {
   }
 
   public getFullUserProfile(): PrivateProfile {
+    const resumes = await ResumeRepository.findAllByUser(this); // TODO: somehow get to userresume
     return {
       uuid: this.uuid,
       email: this.email,
@@ -134,7 +136,7 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
       credits: this.credits,
-      resumes: this.resumes,
+      resumes,
     };
   }
 }
