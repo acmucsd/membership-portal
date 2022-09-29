@@ -1,11 +1,11 @@
 import { JsonController, Params, Get, UseBefore } from 'routing-controllers';
+import PermissionsService from 'services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import ResumeService from '../../services/ResumeService';
 import { UserModel } from '../../models/UserModel';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { GetResumesListResponse } from '../../types';
-import PermissionsService from 'services/PermissionsService';
 
 @UseBefore(UserAuthentication)
 @JsonController('/resume')
