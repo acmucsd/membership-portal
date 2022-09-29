@@ -1,5 +1,5 @@
-import { UserAuthentication } from '../middleware/UserAuthentication';
 import { JsonController, Params, Get, UseBefore } from 'routing-controllers';
+import { UserAuthentication } from '../middleware/UserAuthentication';
 import ResumeService from '../../services/ResumeService';
 import { UserModel } from '../../models/UserModel';
 import { UuidParam } from '../validators/GenericRequests';
