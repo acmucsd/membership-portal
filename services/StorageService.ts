@@ -34,12 +34,6 @@ export default class StorageService {
     await this.s3.deleteObject(deleteParams).promise();
   }
 
-  public async deleteAtUrls(urls: string[]): Promise<void> {
-    const results = [];
-    urls.forEach((url) => results.push(this.deleteAtUrl(url)));
-    await Promise.all(results);
-  }
-
   public async upload(file: File, mediaType: MediaType, fileName: string): Promise<string> {
     const { uploadPath } = StorageService.getMediaConfig(mediaType);
     const params = {

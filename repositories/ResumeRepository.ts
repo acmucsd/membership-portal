@@ -4,18 +4,20 @@ import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(ResumeModel)
 export class ResumeRepository extends BaseRepository<ResumeModel> {
-  public async deleteResumes(resumes: ResumeModel[]) : Promise<ResumeModel[]> {
-    return this.repository.remove(resumes);
+  public async deleteResume(resume: ResumeModel) : Promise<ResumeModel> {
+    return this.repository.remove(resume);
   }
 
-  public async findAllByUserUuid(uuid: string): Promise<ResumeModel[]> {
-    return this.repository.find({
+  public async findByUserUuid(uuid: string): Promise<ResumeModel> {
+    const resume = await this.repository.findOne({
       where: {
         user: {
           uuid,
         },
       },
     });
+
+    return resume;
   }
 
   public async upsertResume(resume: ResumeModel, changes?: Partial<ResumeModel>): Promise<ResumeModel> {

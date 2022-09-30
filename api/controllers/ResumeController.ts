@@ -25,8 +25,8 @@ export class ResumeController {
     @AuthenticatedUser() user: UserModel): Promise<UpdateResumeResponse> {
     if (path.extname(file.originalname) !== '.pdf') throw new BadRequestError('Filetype must be \'.pdf\'');
 
-    const oldResumes = await this.resumeService.getUserResumes(user);
-    await this.storageService.deleteAtUrls(oldResumes.map((resume) => resume.url));
+    const oldResume = await this.resumeService.getUserResume(user);
+    if (oldResume) { await this.storageService.deleteAtUrl(oldResume.url); }
 
     const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
     const url = await this.storageService.uploadToFolder(file, MediaType.RESUME, fileName, user.uuid);

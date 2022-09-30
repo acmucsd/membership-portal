@@ -1,4 +1,6 @@
 import { BadRequestError } from 'routing-controllers';
+import { anything, instance, verify } from 'ts-mockito';
+import { MediaType } from '../types';
 import { ResumeModel } from '../models/ResumeModel';
 import { Config } from '../config';
 import { ControllerFactory } from './controllers';
@@ -30,10 +32,15 @@ describe('upload resume', () => {
     const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
     const fileLocation = 'fake location';
 
-    const resumeController = ControllerFactory.resume(conn, Mocks.storage(fileLocation));
+    const storageService = Mocks.storage(fileLocation);
+    const storageSvcInstance = instance(storageService);
+    const resumeController = ControllerFactory.resume(conn, storageSvcInstance);
     const response = await resumeController.updateResume(resume, member);
     expect(response.error).toBe(null);
     expect(response.resume.url).toBe(fileLocation);
+
+    verify(storageService.deleteAtUrl(fileLocation)).never();
+    verify(storageService.uploadToFolder(resume, MediaType.RESUME, anything(), anything())).called();
   });
 
   test('updating resume deletes all previous resumes', async () => {
@@ -46,7 +53,9 @@ describe('upload resume', () => {
     const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
     const fileLocation = 'fake location';
 
-    const resumeController = ControllerFactory.resume(conn, Mocks.storage(fileLocation));
+    const storageService = Mocks.storage(fileLocation);
+    const storageSvcInstance = instance(storageService);
+    const resumeController = ControllerFactory.resume(conn, storageSvcInstance);
     const response = await resumeController.updateResume(resume, member);
     expect(response.error).toBe(null);
 
@@ -62,6 +71,9 @@ describe('upload resume', () => {
     });
 
     expect(userResumes.length).toBe(1);
+    verify(storageService.deleteAtUrl(fileLocation)).called();
+    verify(storageService.uploadToFolder(resume, MediaType.RESUME, anything(), anything())).called();
+    verify(storageService.uploadToFolder(newResume, MediaType.RESUME, anything(), anything())).called();
   });
 
   test('wrong filetype', async () => {

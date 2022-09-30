@@ -16,8 +16,9 @@ export default class ResumeService {
   public async updateResume(user: UserModel, resumeURL: string): Promise<ResumeModel> {
     return this.transactions.readWrite(async (txn) => {
       const resumeRepository = Repositories.resume(txn);
-      const resumes = await resumeRepository.findAllByUserUuid(user.uuid);
-      await resumeRepository.deleteResumes(resumes);
+      const oldResume = await resumeRepository.findByUserUuid(user.uuid);
+      if (oldResume) await resumeRepository.deleteResume(oldResume);
+
       return resumeRepository.upsertResume(ResumeModel.create({
         user,
         url: resumeURL,
@@ -25,9 +26,9 @@ export default class ResumeService {
     });
   }
 
-  public async getUserResumes(user: UserModel): Promise<ResumeModel[]> {
+  public async getUserResume(user: UserModel): Promise<ResumeModel> {
     return this.transactions.readWrite(async (txn) => Repositories
       .resume(txn)
-      .findAllByUserUuid(user.uuid));
+      .findByUserUuid(user.uuid));
   }
 }
