@@ -14,6 +14,7 @@ export class FileFactory {
       buffer,
       encoding: '7bit',
       size,
+      // the below fields are unused for in-memory multer storage but are still required by type def
       stream: null,
       destination: null,
       path: null,
@@ -31,7 +32,6 @@ export class FileFactory {
       buffer,
       encoding: '7bit',
       size,
-      // the below fields are unused for in-memory multer storage but are still required by type def
       stream: null,
       destination: null,
       path: null,

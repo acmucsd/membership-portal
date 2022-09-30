@@ -33,8 +33,7 @@ describe('upload resume', () => {
     const fileLocation = 'fake location';
 
     const storageService = Mocks.storage(fileLocation);
-    const storageSvcInstance = instance(storageService);
-    const resumeController = ControllerFactory.resume(conn, storageSvcInstance);
+    const resumeController = ControllerFactory.resume(conn, instance(storageService));
     const response = await resumeController.updateResume(resume, member);
     expect(response.error).toBe(null);
     expect(response.resume.url).toBe(fileLocation);
@@ -54,8 +53,7 @@ describe('upload resume', () => {
     const fileLocation = 'fake location';
 
     const storageService = Mocks.storage(fileLocation);
-    const storageSvcInstance = instance(storageService);
-    const resumeController = ControllerFactory.resume(conn, storageSvcInstance);
+    const resumeController = ControllerFactory.resume(conn, instance(storageService));
     const response = await resumeController.updateResume(resume, member);
     expect(response.error).toBe(null);
 
@@ -76,7 +74,7 @@ describe('upload resume', () => {
     verify(storageService.uploadToFolder(newResume, MediaType.RESUME, anything(), anything())).called();
   });
 
-  test('wrong filetype', async () => {
+  test('uploading resumes with the wrong filetype throws an error', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     await new PortalState()

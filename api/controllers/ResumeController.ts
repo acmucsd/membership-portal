@@ -1,5 +1,5 @@
 import { JsonController, UseBefore, Post, UploadedFile, BadRequestError } from 'routing-controllers';
-import path = require('path');
+import * as path from 'path';
 import StorageService from '../../services/StorageService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import ResumeService from '../../services/ResumeService';
@@ -26,7 +26,7 @@ export class ResumeController {
     if (path.extname(file.originalname) !== '.pdf') throw new BadRequestError('Filetype must be \'.pdf\'');
 
     const oldResume = await this.resumeService.getUserResume(user);
-    if (oldResume) { await this.storageService.deleteAtUrl(oldResume.url); }
+    if (oldResume) await this.storageService.deleteAtUrl(oldResume.url);
 
     const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
     const url = await this.storageService.uploadToFolder(file, MediaType.RESUME, fileName, user.uuid);
