@@ -1,5 +1,5 @@
 import { JsonController, Params, Get, UseBefore, ForbiddenError } from 'routing-controllers';
-import PermissionsService from 'services/PermissionsService';
+import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import ResumeService from '../../services/ResumeService';
 import { UserModel } from '../../models/UserModel';
