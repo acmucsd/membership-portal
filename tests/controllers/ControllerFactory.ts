@@ -22,7 +22,8 @@ export class ControllerFactory {
   public static user(conn: Connection): UserController {
     const userAccountService = new UserAccountService(conn.manager);
     const storageService = new StorageService();
-    return new UserController(userAccountService, storageService);
+    const resumeService = new ResumeService(conn.manager);
+    return new UserController(userAccountService, storageService, resumeService);
   }
 
   public static resume(conn: Connection): ResumeController {

@@ -4,6 +4,7 @@ import {
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
 import StorageService from '../../services/StorageService';
+import ResumeService from '../../services/ResumeService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import {
@@ -25,9 +26,12 @@ export class UserController {
 
   private storageService: StorageService;
 
-  constructor(userAccountService: UserAccountService, storageService: StorageService) {
+  private resumeService: ResumeService;
+
+  constructor(userAccountService: UserAccountService, storageService: StorageService, resumeService: ResumeService) {
     this.userAccountService = userAccountService;
     this.storageService = storageService;
+    this.resumeService = resumeService;
   }
 
   @Get('/:uuid/activity/')
@@ -67,6 +71,7 @@ export class UserController {
 
   @Get()
   async getCurrentUser(@AuthenticatedUser() user: UserModel): Promise<GetCurrentUserResponse> {
+    await this.resumeService.updateUserResumes(user);
     return { error: null, user: user.getFullUserProfile() };
   }
 

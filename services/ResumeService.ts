@@ -1,4 +1,5 @@
 import { ResumeModel } from 'models/ResumeModel';
+import { UserModel } from 'models/UserModel';
 import { NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
@@ -18,5 +19,11 @@ export default class ResumeService {
       .resume(txn).findVisibleResumes());
     if (!resumes) throw new NotFoundError('Resumes was not found');
     return resumes;
+  }
+
+  public async updateUserResumes(user: UserModel) {
+    if (!user) throw new NotFoundError('User is null');
+    await this.transactions.readWrite(async (txn) => user.updateResumes(Repositories
+      .resume(txn))); // not entirely sure readwrite is the one to use here
   }
 }
