@@ -1,9 +1,10 @@
-import { ResumeModel } from 'models/ResumeModel';
-import { UserModel } from 'models/UserModel';
 import { NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 import { InjectManager } from 'typeorm-typedi-extensions';
+import { ResumeModel } from '../models/ResumeModel';
+import { UserModel } from '../models/UserModel';
+import { PrivateProfile } from '../types';
 import Repositories, { TransactionsManager } from '../repositories';
 
 @Service()
@@ -21,9 +22,11 @@ export default class ResumeService {
     return resumes;
   }
 
-  public async updateUserResumes(user: UserModel) {
-    if (!user) throw new NotFoundError('User is null');
-    await this.transactions.readWrite(async (txn) => user.updateResumes(Repositories
-      .resume(txn))); // not entirely sure readwrite is the one to use here
+  public async getFullUserProfile(user: UserModel) : Promise<PrivateProfile>{
+    return this.transactions.readOnly(async (txn) => {
+      const userProfile = user.getFullUserProfile();
+      userProfile.resumes = await Repositories.resume(txn).findAllByUser(user);
+      return userProfile;
+    });
   }
 }

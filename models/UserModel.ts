@@ -121,11 +121,7 @@ export class UserModel extends BaseEntity {
     };
   }
 
-  async updateResumes(resumeRepository : ResumeRepository) {
-    this.resumes = await resumeRepository.findAllByUser(this);
-  }
-
-  // call ResumeService.updateUserResumes before calling this function for accurate resume fetching
+  // resume here is always null by design
   public getFullUserProfile(): PrivateProfile {
     return {
       uuid: this.uuid,

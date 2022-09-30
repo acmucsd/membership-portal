@@ -71,8 +71,8 @@ export class UserController {
 
   @Get()
   async getCurrentUser(@AuthenticatedUser() user: UserModel): Promise<GetCurrentUserResponse> {
-    await this.resumeService.updateUserResumes(user);
-    return { error: null, user: user.getFullUserProfile() };
+    const userProfile = await this.resumeService.getFullUserProfile(user);
+    return { error: null, user: userProfile };
   }
 
   @Patch()
