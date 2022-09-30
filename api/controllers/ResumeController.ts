@@ -13,7 +13,7 @@ export class ResumeController {
 
   constructor(resumeService: ResumeService) {
     this.resumeService = resumeService;
-  } 
+  }
 
   @Get()
   async getAllVisibleResumes(@AuthenticatedUser() currentUser: UserModel): Promise<GetResumesListResponse> {
