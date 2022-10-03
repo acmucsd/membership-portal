@@ -20,6 +20,7 @@ export enum MediaType {
   PROFILE_PICTURE = 'PROFILE_PICTURE',
   BANNER = 'BANNER',
   MERCH_PHOTO = 'MERCH_PHOTO',
+  RESUME = 'RESUME',
 }
 
 export enum ActivityType {

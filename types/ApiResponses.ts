@@ -329,6 +329,10 @@ export interface UpdateProfilePictureResponse extends ApiResponse {
   user: PrivateProfile;
 }
 
+export interface UpdateResumeResponse extends ApiResponse {
+  resume: ResumeModel;
+}
+
 export interface GetUserResponse extends ApiResponse {
   user: PrivateProfile | PublicProfile;
 }

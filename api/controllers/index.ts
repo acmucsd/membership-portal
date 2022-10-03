@@ -20,6 +20,7 @@ export const controllers = [
   AdminController,
   MerchStoreController,
   FeedbackController,
+  ResumeController,
 ];
 
 // this merges our custom properties into Express's Request type

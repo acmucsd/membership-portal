@@ -1018,6 +1018,11 @@ ajv@^8.0.1:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
+amazon-s3-uri@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/amazon-s3-uri/-/amazon-s3-uri-0.1.1.tgz#37afdfa88352ee0c22ac12ea6417a7c725f2b90b"
+  integrity sha512-LklZtJ3lgTFdVpy/5ln0okxdgMdnRmFLRg9FGcJ7DeB5Ez5TCs1DHdmVovcPIxW9tQlA1+QLpGNg1Ig6hv768A==
+
 ansi-align@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/ansi-align/-/ansi-align-3.0.1.tgz#0cdf12e111ace773a86e9a1fad1225c43cb19a59"
