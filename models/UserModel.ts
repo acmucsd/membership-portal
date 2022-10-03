@@ -6,7 +6,6 @@ import { AttendanceModel } from './AttendanceModel';
 import { OrderModel } from './OrderModel';
 import { FeedbackModel } from './FeedbackModel';
 import { ResumeModel } from './ResumeModel';
-import { ResumeRepository } from '../repositories/ResumeRepository';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {

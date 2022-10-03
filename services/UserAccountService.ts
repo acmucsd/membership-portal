@@ -148,7 +148,7 @@ export default class UserAccountService {
   }
 
   // this differs from calling UserModel directly bc it fills the resume field as well
-  public async getFullUserProfile(user: UserModel) : Promise<PrivateProfile>{
+  public async getFullUserProfile(user: UserModel) : Promise<PrivateProfile> {
     return this.transactions.readOnly(async (txn) => {
       const userProfile = user.getFullUserProfile();
       userProfile.resumes = await Repositories.resume(txn).findAllByUser(user);

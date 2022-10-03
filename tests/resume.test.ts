@@ -1,13 +1,12 @@
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
 import { anything, instance, verify } from 'ts-mockito';
-import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType, MediaType } from '../types';
+import { UserAccessType, MediaType } from '../types';
 import { ResumeModel } from '../models/ResumeModel';
 import { Config } from '../config';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
+import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { FileFactory } from './data/FileFactory';
 import Mocks from './mocks/MockFactory';
-import { omit } from 'underscore';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -23,11 +22,11 @@ afterAll(async () => {
 });
 
 describe('resume fetching', () => {
-  test('only admin can fetch and only the visible resumes', async() => {
+  test('only admin can fetch and only the visible resumes', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const member = UserFactory.fake();
-    
+
     await new PortalState()
       .createUsers(admin, member)
       .write();
@@ -48,8 +47,8 @@ describe('resume fetching', () => {
     const response = await resumeController.getAllVisibleResumes(admin);
     expect(response.error).toBeNull();
     expect(response.resumes).toContainEqual(uploadedResume);
-  })
-})
+  });
+});
 
 describe('upload resume', () => {
   test('authenticated user can upload resume', async () => {

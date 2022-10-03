@@ -1,5 +1,6 @@
-
-import { JsonController, Params, Get, UseBefore, ForbiddenError, Post, UploadedFile, BadRequestError } from 'routing-controllers';
+import { 
+  JsonController, Get, UseBefore, ForbiddenError, Post, UploadedFile, BadRequestError 
+} from 'routing-controllers';
 import * as path from 'path';
 import PermissionsService from '../../services/PermissionsService';
 import StorageService from '../../services/StorageService';
@@ -36,7 +37,7 @@ export class ResumeController {
 
     return { error: null, resume: model };
   }
-  
+
   @Get()
   async getAllVisibleResumes(@AuthenticatedUser() currentUser: UserModel): Promise<GetResumesListResponse> {
     if (!PermissionsService.canSeeAllVisibleResumes(currentUser)) throw new ForbiddenError();

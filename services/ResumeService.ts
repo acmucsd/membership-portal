@@ -1,4 +1,3 @@
-
 import { NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
@@ -21,7 +20,7 @@ export default class ResumeService {
     if (!resumes) throw new NotFoundError('Resumes was not found');
     return resumes;
   }
-  
+
   public async updateResume(user: UserModel, resumeURL: string): Promise<ResumeModel> {
     return this.transactions.readWrite(async (txn) => {
       const resumeRepository = Repositories.resume(txn);
