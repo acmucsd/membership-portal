@@ -13,7 +13,7 @@ export class ResumeModel extends BaseEntity {
   user: UserModel;
 
   @Column('boolean', { default: true, nullable: false })
-  isResumeVisible: boolean;
+  isResumeVisible: boolean = true;
 
   @Column('varchar', { length: 255, nullable: false })
   url: string;

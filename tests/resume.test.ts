@@ -1,4 +1,4 @@
-import { BadRequestError } from 'routing-controllers';
+import { BadRequestError, ForbiddenError } from 'routing-controllers';
 import { anything, instance, verify } from 'ts-mockito';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType, MediaType } from '../types';
 import { ResumeModel } from '../models/ResumeModel';
@@ -7,6 +7,7 @@ import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { FileFactory } from './data/FileFactory';
 import Mocks from './mocks/MockFactory';
+import { omit } from 'underscore';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -20,6 +21,35 @@ afterAll(async () => {
   await DatabaseConnection.clear();
   await DatabaseConnection.close();
 });
+
+describe('resume fetching', () => {
+  test('only admin can fetch and only the visible resumes', async() => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const member = UserFactory.fake();
+    
+    await new PortalState()
+      .createUsers(admin, member)
+      .write();
+
+    const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
+    const fileLocation = 'fake location';
+
+    const storageService = Mocks.storage(fileLocation);
+    const resumeController = ControllerFactory.resume(conn, instance(storageService));
+    const uploadedResume = (await resumeController.updateResume(resume, member)).resume;
+    delete uploadedResume.user;
+
+    // throws permissions error for member
+    expect(resumeController.getAllVisibleResumes(member))
+      .rejects.toThrow(ForbiddenError);
+
+    // get response resumes
+    const response = await resumeController.getAllVisibleResumes(admin);
+    expect(response.error).toBeNull();
+    expect(response.resumes).toContainEqual(uploadedResume);
+  })
+})
 
 describe('upload resume', () => {
   test('authenticated user can upload resume', async () => {
