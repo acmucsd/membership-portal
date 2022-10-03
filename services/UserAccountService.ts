@@ -12,6 +12,7 @@ import {
   Milestone,
   UserPatches,
   UserState,
+  PrivateProfile,
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
@@ -144,5 +145,14 @@ export default class UserAccountService {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .getAllEmails());
+  }
+
+  // this differs from calling UserModel directly bc it fills the resume field as well
+  public async getFullUserProfile(user: UserModel) : Promise<PrivateProfile>{
+    return this.transactions.readOnly(async (txn) => {
+      const userProfile = user.getFullUserProfile();
+      userProfile.resumes = await Repositories.resume(txn).findAllByUser(user);
+      return userProfile;
+    });
   }
 }
