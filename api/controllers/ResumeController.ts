@@ -1,5 +1,5 @@
-import { 
-  JsonController, Get, UseBefore, ForbiddenError, Post, UploadedFile, BadRequestError 
+import {
+  JsonController, Get, UseBefore, ForbiddenError, Post, UploadedFile, BadRequestError,
 } from 'routing-controllers';
 import * as path from 'path';
 import PermissionsService from '../../services/PermissionsService';
