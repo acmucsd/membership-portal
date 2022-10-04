@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Uuid } from '../types';
+import { PublicResume, Uuid } from '../types';
 import { UserModel } from './UserModel';
 
 @Entity('Resumes')
@@ -20,4 +20,14 @@ export class ResumeModel extends BaseEntity {
 
   @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)', nullable: false })
   lastUpdated: Date;
+
+  public getPublicResume(): PublicResume {
+    return {
+      uuid: this.uuid,
+      user: this.user.uuid,
+      isResumeVisible: this.isResumeVisible,
+      url: this.url,
+      lastUpdated: this.lastUpdated,
+    };
+  }
 }
