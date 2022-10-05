@@ -37,6 +37,7 @@ export const ActivityTypeToScope = {
   [ActivityType.ACCOUNT_RESET_PASS]: ActivityScope.HIDDEN,
   [ActivityType.ACCOUNT_RESET_PASS_REQUEST]: ActivityScope.HIDDEN,
   [ActivityType.ACCOUNT_UPDATE_INFO]: ActivityScope.HIDDEN,
+  [ActivityType.RESUME_UPLOAD]: ActivityScope.HIDDEN,
 };
 
 export type OrderItemPriceAndQuantity = {
