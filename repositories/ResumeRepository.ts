@@ -12,10 +12,6 @@ export class ResumeRepository extends BaseRepository<ResumeModel> {
     });
   }
 
-  public async findByUuid(uuid: Uuid): Promise<ResumeModel> {
-    return this.repository.findOne({ uuid });
-  }
-
   public async findAllByUser(user: UserModel): Promise<ResumeModel[]> {
     return this.repository.find({ user });
   }

@@ -28,21 +28,27 @@ describe('resume fetching', () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const member = UserFactory.fake();
-    const resume = ResumeFactory.fake({ userId: member.id });
+    const resume = ResumeFactory.fake({ user: member, isResumeVisible: true });
+    const resumeInvisible = ResumeFactory.fake({ user: member, isResumeVisible: false });
 
     await new PortalState()
       .createUsers(admin, member)
       .createResumes(member, resume)
       .write();
 
+    const resumeController = ControllerFactory.resume(conn);
+
     // throws permissions error for member
     expect(resumeController.getAllVisibleResumes(member))
       .rejects.toThrow(ForbiddenError);
 
     // get response resumes
+    const expected = resume;
+    delete expected.user;
     const response = await resumeController.getAllVisibleResumes(admin);
     expect(response.error).toBeNull();
-    expect(response.resumes).toContainEqual(uploadedResume);
+    expect(response.resumes).toContainEqual(expected);
+    expect(response.resumes).toHaveLength(1); // only the visible resume is shown
   });
 });
 
