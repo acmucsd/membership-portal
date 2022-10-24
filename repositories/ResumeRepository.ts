@@ -1,7 +1,6 @@
 import { EntityRepository } from 'typeorm';
 import { ResumeModel } from '../models/ResumeModel';
 import { BaseRepository } from './BaseRepository';
-import { Uuid } from '../types';
 import { UserModel } from '../models/UserModel';
 
 @EntityRepository(ResumeModel)

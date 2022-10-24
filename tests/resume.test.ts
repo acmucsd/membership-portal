@@ -33,7 +33,7 @@ describe('resume fetching', () => {
 
     await new PortalState()
       .createUsers(admin, member)
-      .createResumes(member, resume)
+      .createResumes(member, resume, resumeInvisible)
       .write();
 
     const resumeController = ControllerFactory.resume(conn);
