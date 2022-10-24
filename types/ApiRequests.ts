@@ -279,3 +279,12 @@ export interface EditOrderPickupEventRequest {
 export interface GetCartRequest {
   items: string[];
 }
+
+// RESUMES
+export interface ResumePatches {
+  isResumeVisible?: boolean;
+}
+
+export interface PatchResumeRequest {
+  resume: ResumePatches;
+}

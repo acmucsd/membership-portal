@@ -15,6 +15,7 @@ import { OrderItemModel } from '../../models/OrderItemModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
 import { DatabaseConnection } from './DatabaseConnection';
 import { MerchFactory } from '.';
+import { ResumeModel } from '../../models/ResumeModel';
 
 export class PortalState {
   users: UserModel[] = [];
@@ -33,6 +34,8 @@ export class PortalState {
 
   feedback: FeedbackModel[] = [];
 
+  resumes: ResumeModel[] = [];
+
   public from(state: PortalState): PortalState {
     // deep clones all around for immutable PortalStates
     this.users = rfdc()(state.users);
@@ -43,6 +46,7 @@ export class PortalState {
     this.orderPickupEvents = rfdc()(state.orderPickupEvents);
     this.orders = rfdc()(state.orders);
     this.feedback = rfdc()(state.feedback);
+    this.resumes = rfdc()(state.resumes);
     return this;
   }
 
@@ -57,6 +61,7 @@ export class PortalState {
       this.orderPickupEvents = await txn.save(this.orderPickupEvents);
       this.orders = await txn.save(this.orders);
       this.feedback = await txn.save(this.feedback);
+      this.resumes = await txn.save(this.resumes);
     });
   }
 
@@ -199,6 +204,18 @@ export class PortalState {
   private getDateDuring(event: EventModel) {
     const { start, end } = event;
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+  }
+
+  public createResumes(user: UserModel, ...resumes: ResumeModel[]): PortalState {
+    for (let r = 0; r < resumes.length; r += 1) {
+      const resume = resumes[r];
+      this.resumes.push(ResumeModel.create({ ...resume, user }));
+      this.activities.push(ActivityModel.create({
+        user,
+        type: ActivityType.RESUME_UPLOAD,
+      }));
+    }
+    return this;
   }
 }
 

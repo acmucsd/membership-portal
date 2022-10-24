@@ -24,11 +24,15 @@ export class ResumeRepository extends BaseRepository<ResumeModel> {
     return this.repository.remove(resume);
   }
 
-  public async findByUserUuid(uuid: string): Promise<ResumeModel> {
+  public async findByUuid(uuid: string): Promise<ResumeModel> {
+    return this.repository.findOne({ uuid }, { relations: ['user'] });
+  }
+
+  public async findByUserUuid(user: string): Promise<ResumeModel> {
     const resume = await this.repository.findOne({
       where: {
         user: {
-          uuid,
+          uuid: user,
         },
       },
     });

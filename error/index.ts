@@ -1,6 +1,6 @@
 import * as express from 'express';
-import { ApiResponse, CustomErrorBody } from 'types';
 import { HttpError } from 'routing-controllers';
+import { ApiResponse, CustomErrorBody } from '../types';
 import { Config } from '../config';
 import { logger as log } from '../utils/Logger';
 

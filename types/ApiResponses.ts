@@ -1,4 +1,3 @@
-import { ResumeModel } from 'models/ResumeModel';
 import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
 
@@ -330,7 +329,7 @@ export interface UpdateProfilePictureResponse extends ApiResponse {
 }
 
 export interface UpdateResumeResponse extends ApiResponse {
-  resume: ResumeModel;
+  resume: PublicResume;
 }
 
 export interface GetUserResponse extends ApiResponse {
@@ -393,3 +392,15 @@ export interface CompleteOrderPickupEventResponse extends ApiResponse {
 }
 
 export interface CancelAllPendingOrdersResponse extends ApiResponse {}
+
+export interface PublicResume {
+  uuid: Uuid;
+  user: Uuid;
+  isResumeVisible: boolean;
+  url: string;
+  lastUpdated: Date;
+}
+
+export interface PatchResumeResponse extends ApiResponse {
+  resume: PublicResume;
+}

@@ -1,7 +1,8 @@
-import { NotFoundError } from 'routing-controllers';
+import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 import { InjectManager } from 'typeorm-typedi-extensions';
+import { ActivityType, ResumePatches } from '../types';
 import { ResumeModel } from '../models/ResumeModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
@@ -27,10 +28,30 @@ export default class ResumeService {
       const oldResume = await resumeRepository.findByUserUuid(user.uuid);
       if (oldResume) await resumeRepository.deleteResume(oldResume);
 
-      return resumeRepository.upsertResume(ResumeModel.create({
+      const resume = await resumeRepository.upsertResume(ResumeModel.create({
         user,
         url: resumeURL,
       }));
+
+      await Repositories.activity(txn).logActivity({
+        type: ActivityType.RESUME_UPLOAD,
+        user,
+      });
+
+      return resume;
+    });
+  }
+
+  public async patchResume(uuid: string, patches: ResumePatches, user: UserModel) {
+    return this.transactions.readWrite(async (txn) => {
+      const resumeRepository = Repositories.resume(txn);
+      const resume = await resumeRepository.findByUuid(uuid);
+
+      if (resume.user.uuid !== user.uuid) {
+        throw new ForbiddenError('Cannot update a resume of another user');
+      }
+
+      return resumeRepository.upsertResume(resume, patches);
     });
   }
 
