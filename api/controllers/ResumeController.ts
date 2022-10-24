@@ -17,7 +17,7 @@ import { UserAuthentication } from '../middleware/UserAuthentication';
 import ResumeService from '../../services/ResumeService';
 import { UserModel } from '../../models/UserModel';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { File, MediaType, GetResumesListResponse, PatchResumeResponse, UpdateResumeResponse } from '../../types';
+import { File, MediaType, GetVisibleResumesResponse, PatchResumeResponse, UpdateResumeResponse } from '../../types';
 import { PatchResumeRequest } from '../validators/ResumeControllerRequests';
 import { UuidParam } from '../validators/GenericRequests';
 
@@ -59,7 +59,7 @@ export class ResumeController {
   }
 
   @Get()
-  async getAllVisibleResumes(@AuthenticatedUser() currentUser: UserModel): Promise<GetResumesListResponse> {
+  async getAllVisibleResumes(@AuthenticatedUser() currentUser: UserModel): Promise<GetVisibleResumesResponse> {
     if (!PermissionsService.canSeeAllVisibleResumes(currentUser)) throw new ForbiddenError();
     const resumes = await this.resumeService.getVisibleResumes();
     return { error: null, resumes };

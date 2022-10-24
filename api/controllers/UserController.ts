@@ -26,12 +26,9 @@ export class UserController {
 
   private storageService: StorageService;
 
-  private resumeService: ResumeService;
-
   constructor(userAccountService: UserAccountService, storageService: StorageService, resumeService: ResumeService) {
     this.userAccountService = userAccountService;
     this.storageService = storageService;
-    this.resumeService = resumeService;
   }
 
   @Get('/:uuid/activity/')

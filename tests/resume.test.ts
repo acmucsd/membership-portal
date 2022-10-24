@@ -28,18 +28,12 @@ describe('resume fetching', () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const member = UserFactory.fake();
+    const resume = ResumeFactory.fake({ userId: member.id });
 
     await new PortalState()
       .createUsers(admin, member)
+      .createResumes(member, resume)
       .write();
-
-    const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = 'fake location';
-
-    const storageService = Mocks.storage(fileLocation);
-    const resumeController = ControllerFactory.resume(conn, instance(storageService));
-    const uploadedResume = (await resumeController.updateResume(resume, member)).resume;
-    delete uploadedResume.user;
 
     // throws permissions error for member
     expect(resumeController.getAllVisibleResumes(member))

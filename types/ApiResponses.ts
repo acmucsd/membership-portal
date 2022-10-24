@@ -1,5 +1,6 @@
 import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
+import { ResumeModel } from 'models/ResumeModel';
 
 // RESPONSE TYPES
 
@@ -320,7 +321,7 @@ export interface GetUserActivityStreamResponse extends ApiResponse {
   activity: PublicActivity[];
 }
 
-export interface GetResumesListResponse extends ApiResponse {
+export interface GetVisibleResumesResponse extends ApiResponse {
   resumes: ResumeModel[];
 }
 
