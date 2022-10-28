@@ -1,14 +1,14 @@
-import { BadRequestError, ForbiddenError } from "routing-controllers";
-import { anything, instance, verify } from "ts-mockito";
-import { ActivityType, UserAccessType, MediaType } from "../types";
-import { ResumeModel } from "../models/ResumeModel";
-import { Config } from "../config";
-import { ControllerFactory } from "./controllers";
-import { DatabaseConnection, PortalState, UserFactory } from "./data";
-import { FileFactory } from "./data/FileFactory";
-import Mocks from "./mocks/MockFactory";
-import { ResumeFactory } from "./data/ResumeFactory";
-import { ActivityModel } from "../models/ActivityModel";
+import { BadRequestError, ForbiddenError } from 'routing-controllers';
+import { anything, instance, verify } from 'ts-mockito';
+import { ActivityType, UserAccessType, MediaType } from '../types';
+import { ResumeModel } from '../models/ResumeModel';
+import { Config } from '../config';
+import { ControllerFactory } from './controllers';
+import { DatabaseConnection, PortalState, UserFactory } from './data';
+import { FileFactory } from './data/FileFactory';
+import Mocks from './mocks/MockFactory';
+import { ResumeFactory } from './data/ResumeFactory';
+import { ActivityModel } from '../models/ActivityModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -23,8 +23,8 @@ afterAll(async () => {
   await DatabaseConnection.close();
 });
 
-describe("resume fetching", () => {
-  test("only admins can get all visible resumes", async () => {
+describe('resume fetching', () => {
+  test('only admins can get all visible resumes', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const member = UserFactory.fake();
@@ -39,7 +39,7 @@ describe("resume fetching", () => {
 
     // throws permissions error for member
     expect(resumeController.getAllVisibleResumes(member)).rejects.toThrow(
-      ForbiddenError
+      ForbiddenError,
     );
 
     // get response resumes
@@ -55,7 +55,7 @@ describe("resume fetching", () => {
     });
   });
 
-  test("admins cannot get invisible resumes", async () => {
+  test('admins cannot get invisible resumes', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const member = UserFactory.fake();
@@ -73,19 +73,19 @@ describe("resume fetching", () => {
   });
 });
 
-describe("upload resume", () => {
-  test("authenticated user can upload resume", async () => {
+describe('upload resume', () => {
+  test('authenticated user can upload resume', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     await new PortalState().createUsers(member).write();
 
     const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = "fake location";
+    const fileLocation = 'fake location';
 
     const storageService = Mocks.storage(fileLocation);
     const resumeController = ControllerFactory.resume(
       conn,
-      instance(storageService)
+      instance(storageService),
     );
     const response = await resumeController.uploadResume(resume, member);
     expect(response.error).toBe(null);
@@ -97,8 +97,8 @@ describe("upload resume", () => {
         resume,
         MediaType.RESUME,
         anything(),
-        anything()
-      )
+        anything(),
+      ),
     ).called();
 
     const activity = await conn.manager.findOne(ActivityModel, {
@@ -107,18 +107,18 @@ describe("upload resume", () => {
     expect(activity).toBeDefined();
   });
 
-  test("updating resume deletes all previous resumes", async () => {
+  test('updating resume deletes all previous resumes', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     await new PortalState().createUsers(member).write();
 
     const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = "fake location";
+    const fileLocation = 'fake location';
 
     const storageService = Mocks.storage(fileLocation);
     const resumeController = ControllerFactory.resume(
       conn,
-      instance(storageService)
+      instance(storageService),
     );
     const response = await resumeController.uploadResume(resume, member);
     expect(response.error).toBe(null);
@@ -141,30 +141,30 @@ describe("upload resume", () => {
         resume,
         MediaType.RESUME,
         anything(),
-        anything()
-      )
+        anything(),
+      ),
     ).called();
     verify(
       storageService.uploadToFolder(
         newResume,
         MediaType.RESUME,
         anything(),
-        anything()
-      )
+        anything(),
+      ),
     ).called();
   });
 
-  test("uploading resumes with the wrong filetype throws an error", async () => {
+  test('uploading resumes with the wrong filetype throws an error', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     await new PortalState().createUsers(member).write();
 
     const image = FileFactory.image(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = "fake location";
+    const fileLocation = 'fake location';
 
     const userController = ControllerFactory.resume(
       conn,
-      Mocks.storage(fileLocation)
+      Mocks.storage(fileLocation),
     );
     expect(async () => {
       await userController.uploadResume(image, member);
@@ -172,8 +172,8 @@ describe("upload resume", () => {
   });
 });
 
-describe("patch resume", () => {
-  test("passing in resume patches properly persists in database", async () => {
+describe('patch resume', () => {
+  test('passing in resume patches properly persists in database', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const resume = ResumeFactory.fake({ isResumeVisible: false });
@@ -195,7 +195,7 @@ describe("patch resume", () => {
     expect(updatedResume.isResumeVisible).toBe(true);
   });
 
-  test("patching a resume for another user throws a ForbiddenError", async () => {
+  test('patching a resume for another user throws a ForbiddenError', async () => {
     const conn = await DatabaseConnection.get();
     const [member, anotherMember] = UserFactory.create(2);
     const resume = ResumeFactory.fake({ isResumeVisible: false });
@@ -209,7 +209,7 @@ describe("patch resume", () => {
     const params = { uuid: resume.uuid };
     const resumeController = ControllerFactory.resume(conn);
     await expect(
-      resumeController.patchResume(params, request, anotherMember)
+      resumeController.patchResume(params, request, anotherMember),
     ).rejects.toThrowError(ForbiddenError);
   });
 });

@@ -16,7 +16,6 @@ import StorageService from '../../services/StorageService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import ResumeService from '../../services/ResumeService';
 import { UserModel } from '../../models/UserModel';
-import { ResumeModel } from '../../models/ResumeModel';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { File, MediaType, GetVisibleResumesResponse, PatchResumeResponse, UpdateResumeResponse } from '../../types';
 import { PatchResumeRequest } from '../validators/ResumeControllerRequests';
