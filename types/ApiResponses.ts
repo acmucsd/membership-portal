@@ -322,7 +322,7 @@ export interface GetUserActivityStreamResponse extends ApiResponse {
 }
 
 export interface GetVisibleResumesResponse extends ApiResponse {
-  resumes: ResumeModel[];
+  resumes: PublicResume[];
 }
 
 export interface UpdateProfilePictureResponse extends ApiResponse {
@@ -396,7 +396,7 @@ export interface CancelAllPendingOrdersResponse extends ApiResponse {}
 
 export interface PublicResume {
   uuid: Uuid;
-  user: Uuid;
+  user: PublicProfile;
   isResumeVisible: boolean;
   url: string;
   lastUpdated: Date;

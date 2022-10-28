@@ -147,7 +147,10 @@ export default class UserAccountService {
       .getAllEmails());
   }
 
-  // this differs from calling UserModel directly bc it fills the resume field as well
+  /**
+   * UserAccountService::getFullUserProfile() differs from UserModel::getFullUserProfile() in that it also returns any
+   * user data that needs to be joined from other tables (e.g. resumes)
+   */
   public async getFullUserProfile(user: UserModel) : Promise<PrivateProfile> {
     return this.transactions.readOnly(async (txn) => {
       const userProfile = user.getFullUserProfile();

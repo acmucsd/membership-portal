@@ -16,6 +16,7 @@ import StorageService from '../../services/StorageService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import ResumeService from '../../services/ResumeService';
 import { UserModel } from '../../models/UserModel';
+import { ResumeModel } from '../../models/ResumeModel';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { File, MediaType, GetVisibleResumesResponse, PatchResumeResponse, UpdateResumeResponse } from '../../types';
 import { PatchResumeRequest } from '../validators/ResumeControllerRequests';
@@ -59,9 +60,9 @@ export class ResumeController {
   }
 
   @Get()
-  async getAllVisibleResumes(@AuthenticatedUser() currentUser: UserModel): Promise<GetVisibleResumesResponse> {
-    if (!PermissionsService.canSeeAllVisibleResumes(currentUser)) throw new ForbiddenError();
-    const resumes = await this.resumeService.getVisibleResumes();
+  async getAllVisibleResumes(@AuthenticatedUser() user: UserModel): Promise<GetVisibleResumesResponse> {
+    if (!PermissionsService.canSeeAllVisibleResumes(user)) throw new ForbiddenError();
+    const resumes = (await this.resumeService.getVisibleResumes()).map((resume) => resume.getPublicResume());
     return { error: null, resumes };
   }
 }

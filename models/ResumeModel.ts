@@ -7,13 +7,13 @@ export class ResumeModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
-  @ManyToOne((type) => UserModel, (user) => user.uuid, { nullable: false })
+  @ManyToOne((type) => UserModel, (user) => user.uuid, { eager: true, nullable: false })
   @JoinColumn({ name: 'user' })
   @Index('resumes_by_user_index')
   user: UserModel;
 
   @Column('boolean', { default: true, nullable: false })
-  isResumeVisible: boolean = false;
+  isResumeVisible: boolean;
 
   @Column('varchar', { length: 255, nullable: false })
   url: string;
@@ -24,7 +24,7 @@ export class ResumeModel extends BaseEntity {
   public getPublicResume(): PublicResume {
     return {
       uuid: this.uuid,
-      user: this.user.uuid,
+      user: this.user.getPublicProfile(),
       isResumeVisible: this.isResumeVisible,
       url: this.url,
       lastUpdated: this.lastUpdated,

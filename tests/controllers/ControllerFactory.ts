@@ -21,8 +21,7 @@ import ResumeService from '../../services/ResumeService';
 export class ControllerFactory {
   public static user(conn: Connection, storageService = new StorageService()): UserController {
     const userAccountService = new UserAccountService(conn.manager);
-    const resumeService = new ResumeService(conn.manager);
-    return new UserController(userAccountService, storageService, resumeService);
+    return new UserController(userAccountService, storageService);
   }
 
   public static resume(conn: Connection, storageService = new StorageService()): ResumeController {

@@ -4,7 +4,6 @@ import {
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
 import StorageService from '../../services/StorageService';
-import ResumeService from '../../services/ResumeService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import {
@@ -22,11 +21,11 @@ import { PatchUserRequest } from '../validators/UserControllerRequests';
 @UseBefore(UserAuthentication)
 @JsonController('/user')
 export class UserController {
-  private userAccountService: UserAccountService;
 
+  private userAccountService: UserAccountService;
   private storageService: StorageService;
 
-  constructor(userAccountService: UserAccountService, storageService: StorageService, resumeService: ResumeService) {
+  constructor(userAccountService: UserAccountService, storageService: StorageService) {
     this.userAccountService = userAccountService;
     this.storageService = storageService;
   }
