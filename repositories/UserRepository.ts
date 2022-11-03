@@ -22,6 +22,10 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.findOne({ uuid });
   }
 
+  public async findByHandle(handle: string): Promise<UserModel> {
+    return this.repository.findOne({ handle });
+  }
+
   public async findByEmail(email: string): Promise<UserModel> {
     return this.repository.findOne({ email });
   }

@@ -54,6 +54,7 @@ export interface PasswordUpdate extends PasswordChange {
 }
 
 export interface UserPatches {
+  handle?: string;
   firstName?: string;
   lastName?: string;
   major?: string;

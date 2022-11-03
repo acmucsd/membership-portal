@@ -48,6 +48,37 @@ export function IsValidName(validationOptions?: ValidationOptions) {
 }
 
 @ValidatorConstraint()
+class HandleValidator implements ValidatorConstraintInterface {
+  validate(handle: string): boolean {
+    if (handle.length <= 0) {
+      return false;
+    }
+
+    // Validate alphanumeric
+    let i = 0;
+    const len = handle.length;
+    for (i; i < len; i += 1) {
+      const c = handle.charCodeAt(i);
+      if (!(c > 47 && c < 58) // numeric (0-9)
+        && !(c > 64 && c < 91) // upper alpha (A-Z)
+        && !(c > 96 && c < 123)) { // lower alpha (a-z)
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  defaultMessage(): string {
+    return 'Your handle must be alphanumeric and non-empty';
+  }
+}
+
+export function IsValidHandle(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(HandleValidator, validationOptions);
+}
+
+@ValidatorConstraint()
 class PasswordValidator implements ValidatorConstraintInterface {
   private MIN_LENGTH = 8;
 

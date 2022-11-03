@@ -32,6 +32,14 @@ export default class UserAccountService {
     return user;
   }
 
+  public async findByHandle(handle: string): Promise<UserModel> {
+    const user = await this.transactions.readOnly(async (txn) => Repositories
+      .user(txn)
+      .findByHandle(handle));
+    if (!user) throw new NotFoundError('User was not found');
+    return user;
+  }
+
   public async verifyEmail(accessCode: string): Promise<void> {
     await this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
@@ -81,6 +89,13 @@ export default class UserAccountService {
         throw new BadRequestError('Incorrect password');
       }
       changes.hash = await UserRepository.generateHash(newPassword);
+    }
+    if (userPatches.handle) {
+      this.transactions.readOnly(async (txn) => {
+        if (Repositories.user(txn).findByHandle(userPatches.handle)) {
+          throw new BadRequestError('Custom handle already in use');
+        }
+      });
     }
     return this.transactions.readWrite(async (txn) => {
       const updatedFields = Object.keys(userPatches).join(', ');

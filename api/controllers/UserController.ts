@@ -1,5 +1,5 @@
 import {
-  JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body,
+  JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body, QueryParams,
 } from 'routing-controllers';
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
@@ -62,6 +62,17 @@ export class UserController {
       return this.getCurrentUser(currentUser);
     }
     const user = await this.userAccountService.findByUuid(params.uuid);
+    return { error: null, user: user.getPublicProfile() };
+  }
+
+  @Get('/u/:handle')
+  async getUserByHandle(@QueryParams() params: { handle: string },
+    @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
+    if (params.handle === currentUser.handle) {
+      return this.getCurrentUser(currentUser);
+    }
+
+    const user = await this.userAccountService.findByHandle(params.handle);
     return { error: null, user: user.getPublicProfile() };
   }
 
