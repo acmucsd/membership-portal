@@ -325,6 +325,10 @@ export interface UpdateProfilePictureResponse extends ApiResponse {
   user: PrivateProfile;
 }
 
+export interface UpdateResumeResponse extends ApiResponse {
+  resume: PublicResume;
+}
+
 export interface GetUserResponse extends ApiResponse {
   user: PrivateProfile | PublicProfile;
 }
@@ -385,3 +389,15 @@ export interface CompleteOrderPickupEventResponse extends ApiResponse {
 }
 
 export interface CancelAllPendingOrdersResponse extends ApiResponse {}
+
+export interface PublicResume {
+  uuid: Uuid;
+  user: Uuid;
+  isResumeVisible: boolean;
+  url: string;
+  lastUpdated: Date;
+}
+
+export interface PatchResumeResponse extends ApiResponse {
+  resume: PublicResume;
+}

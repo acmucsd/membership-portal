@@ -20,6 +20,7 @@ export enum MediaType {
   PROFILE_PICTURE = 'PROFILE_PICTURE',
   BANNER = 'BANNER',
   MERCH_PHOTO = 'MERCH_PHOTO',
+  RESUME = 'RESUME',
 }
 
 export enum ActivityType {
@@ -42,6 +43,7 @@ export enum ActivityType {
   ORDER_PARTIALLY_FULFILLED = 'ORDER_PARTIALLY_FULFILLED',
   ORDER_MISSED = 'ORDER_MISSED',
   PENDING_ORDERS_CANCELLED = 'PENDING_ORDERS_CANCELLED',
+  RESUME_UPLOAD = 'RESUME_UPLOAD',
 }
 
 export enum ActivityScope {

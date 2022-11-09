@@ -15,12 +15,18 @@ import UserAuthService from '../../services/UserAuthService';
 import EmailService from '../../services/EmailService';
 import EventService from '../../services/EventService';
 import MerchStoreService from '../../services/MerchStoreService';
+import ResumeService from '../../services/ResumeService';
+import { ResumeController } from '../../api/controllers/ResumeController';
 
 export class ControllerFactory {
-  public static user(conn: Connection): UserController {
+  public static user(conn: Connection, storageService = new StorageService()): UserController {
     const userAccountService = new UserAccountService(conn.manager);
-    const storageService = new StorageService();
     return new UserController(userAccountService, storageService);
+  }
+
+  public static resume(conn: Connection, storageService = new StorageService()): ResumeController {
+    const resumeService = new ResumeService(conn.manager);
+    return new ResumeController(resumeService, storageService);
   }
 
   public static feedback(conn: Connection): FeedbackController {

@@ -3,6 +3,7 @@ import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as multer from 'multer';
 import { InternalServerError } from 'routing-controllers';
+import AmazonS3URI = require('amazon-s3-uri');
 import { Config } from '../config';
 import { MediaType } from '../types';
 
@@ -23,6 +24,16 @@ export default class StorageService {
     credentials: Config.s3.credentials,
   });
 
+  public async deleteAtUrl(url: string) : Promise<void> {
+    const { bucket, key } = AmazonS3URI(url);
+    const deleteParams = {
+      Bucket: bucket,
+      Key: key,
+    };
+
+    await this.s3.deleteObject(deleteParams).promise();
+  }
+
   public async upload(file: File, mediaType: MediaType, fileName: string): Promise<string> {
     const { uploadPath } = StorageService.getMediaConfig(mediaType);
     const params = {
@@ -30,6 +41,18 @@ export default class StorageService {
       Body: file.buffer,
       Bucket: Config.s3.bucket,
       Key: `${uploadPath}/${fileName}${path.extname(file.originalname)}`,
+    };
+    const data = await this.s3.upload(params).promise();
+    return data.Location;
+  }
+
+  public async uploadToFolder(file: File, mediaType: MediaType, fileName: string, folder: string): Promise<string> {
+    const { uploadPath } = StorageService.getMediaConfig(mediaType);
+    const params = {
+      ACL: 'public-read',
+      Body: file.buffer,
+      Bucket: Config.s3.bucket,
+      Key: `${uploadPath}/${folder}/${fileName}${path.extname(file.originalname)}`,
     };
     const data = await this.s3.upload(params).promise();
     return data.Location;
@@ -73,6 +96,13 @@ export default class StorageService {
           type: MediaType.MERCH_PHOTO,
           maxFileSize: Config.file.MAX_MERCH_PHOTO_FILE_SIZE,
           uploadPath: Config.file.MERCH_PHOTO_UPLOAD_PATH,
+        };
+      }
+      case MediaType.RESUME: {
+        return {
+          type: MediaType.RESUME,
+          maxFileSize: Config.file.MAX_RESUME_FILE_SIZE,
+          uploadPath: Config.file.RESUME_UPLOAD_PATH,
         };
       }
       default: {

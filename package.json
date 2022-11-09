@@ -38,6 +38,7 @@
   "homepage": "https://github.com/acmucsd/membership-portal#readme",
   "dependencies": {
     "@sendgrid/mail": "^7.4.4",
+    "amazon-s3-uri": "^0.1.1",
     "aws-sdk": "^2.906.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
