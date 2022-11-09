@@ -57,9 +57,6 @@ export class UserModel extends BaseEntity {
   @Column('integer', { default: 0 })
   credits: number;
 
-  @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)' })
-  lastLogin: Date;
-
   @OneToMany((type) => ActivityModel, (activity) => activity.user, { cascade: true })
   activities: ActivityModel[];
 
