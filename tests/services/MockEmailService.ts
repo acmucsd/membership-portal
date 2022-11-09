@@ -36,6 +36,12 @@ export class MockEmailService extends EmailService {
     return result;
   }
 
+  public async sendAutomatedOrderCancellation(email: string, firstName: string, order: OrderInfo) {
+    const result = await super.sendAutomatedOrderCancellation(email, firstName, order);
+    expect(result).toEqual(true);
+    return result;
+  }
+
   public async sendOrderPickupMissed(email: string, firstName: string, order: OrderInfo) {
     const result = await super.sendOrderPickupMissed(email, firstName, order);
     expect(result).toEqual(true);

@@ -108,6 +108,22 @@ export class MerchFactory {
     return MerchFactory.fakeOrderPickupEvent({ start, end, ...substitute });
   }
 
+  public static fakeOngoingOrderPickupEvent(substitute?: Partial<OrderPickupEventModel>): OrderPickupEventModel {
+    const minutesPassed = FactoryUtils.getRandomNumber(30, 60, 15);
+    const minutesRemaining = FactoryUtils.getRandomNumber(30, 60, 15);
+    const start = moment().subtract(minutesPassed).toDate();
+    const end = moment().add(minutesRemaining).toDate();
+    return MerchFactory.fakeOrderPickupEvent({ start, end, ...substitute });
+  }
+
+  public static fakePastOrderPickupEvent(substitute?: Partial<OrderPickupEventModel>): OrderPickupEventModel {
+    const daysBefore = FactoryUtils.getRandomNumber(3, 10);
+    const duration = FactoryUtils.getRandomNumber(30, 180, 30);
+    const start = moment().subtract(daysBefore, 'days').toDate();
+    const end = moment(start).add(duration, 'minutes').toDate();
+    return MerchFactory.fakeOrderPickupEvent({ start, end, ...substitute });
+  }
+
   private static createOptions(n: number): MerchandiseItemOptionModel[] {
     if (n === 1) return [MerchFactory.fakeOption()];
 

@@ -9,6 +9,7 @@ import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
 import { MockEmailService } from './services';
+import { UserModel } from '../models/UserModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -156,6 +157,69 @@ describe('merch orders', () => {
     const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
     const orderPlacedActivity = memberActivityStream.activity[memberActivityStream.activity.length - 1];
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_FULFILLED);
+  });
+
+  test('merch items can be fulfilled for ongoing and past pickup events', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const option = MerchFactory.fakeOption({
+      quantity: 2,
+      price: 2000,
+      discountPercentage: 0,
+    });
+    const pastPickupEvent = MerchFactory.fakePastOrderPickupEvent();
+    const ongoingPickupEvent = MerchFactory.fakeOngoingOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(member, merchDistributor)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(pastPickupEvent, ongoingPickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], pastPickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], ongoingPickupEvent)
+      .write();
+
+    const emailService = new MockEmailService().mock();
+
+    const pastOrder = await conn.manager.findOne(OrderModel,
+      { pickupEvent: pastPickupEvent },
+      { relations: ['items'] });
+    const ongoingOrder = await conn.manager.findOne(OrderModel,
+      { pickupEvent: ongoingPickupEvent },
+      { relations: ['items'] });
+
+    // fulfill past order
+    const pastOrderUuid = { uuid: pastOrder.uuid };
+    const fulfillPastOrderItemsRequest = {
+      items: [
+        {
+          uuid: pastOrder.items[0].uuid,
+        },
+      ],
+    };
+
+    const merchStoreController = ControllerFactory.merchStore(conn, instance(emailService));
+    await merchStoreController.fulfillMerchOrderItems(pastOrderUuid, fulfillPastOrderItemsRequest, merchDistributor);
+
+    await pastOrder.reload();
+    expect(pastOrder.status).toEqual(OrderStatus.FULFILLED);
+
+    // fulfill ongoing order
+    const ongoingOrderUuid = { uuid: ongoingOrder.uuid };
+    const fulfillOngoingOrderItemsRequest = {
+      items: [
+        {
+          uuid: ongoingOrder.items[0].uuid,
+        },
+      ],
+    };
+
+    await merchStoreController.fulfillMerchOrderItems(ongoingOrderUuid,
+      fulfillOngoingOrderItemsRequest,
+      merchDistributor);
+
+    await ongoingOrder.reload();
+    expect(ongoingOrder.status).toEqual(OrderStatus.FULFILLED);
   });
 
   test('members can have orders partially fulfilled by store distributors', async () => {
@@ -553,11 +617,69 @@ describe('merch orders', () => {
       .rejects.toThrow(`Not allowed to order: ${[option.uuid]}`);
   });
 
+  test('order route accurately verifies monthly and lifetime limits', async () => {
+    const conn = await DatabaseConnection.get();
+    const optionMetadataType = faker.datatype.hexaDecimal(10);
+    const option1 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option2 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option3 = MerchFactory.fakeOptionWithType(optionMetadataType);
+    const option4 = MerchFactory.fakeOptionWithType(optionMetadataType);
+
+    const item = MerchFactory.fakeItem({
+      options: [option1, option2],
+      monthlyLimit: 1,
+      lifetimeLimit: 1,
+    });
+    const item2 = MerchFactory.fakeItem({
+      options: [option3, option4],
+      monthlyLimit: 1,
+      lifetimeLimit: 2,
+    });
+
+    const orderPickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+    const member = UserFactory.fake({
+      accessType: UserAccessType.STANDARD,
+      credits: option1.price + option2.price + option3.price + option4.price,
+    });
+
+    await new PortalState()
+      .createUsers(member)
+      .createOrderPickupEvents(orderPickupEvent)
+      .createMerchItem(item)
+      .createMerchItem(item2)
+      .write();
+
+    await member.reload();
+
+    const emailService = new MockEmailService().mock();
+
+    // Test Lifetime limit
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placeMerchOrderRequest = {
+      order: [{ option: option1.uuid, quantity: 1 }, { option: option2.uuid, quantity: 1 }],
+      pickupEvent: orderPickupEvent.uuid,
+    };
+
+    await expect(merchController.placeMerchOrder(placeMerchOrderRequest, member)).rejects.toThrowError(
+      `This order exceeds the lifetime limit for ${item.itemName}`,
+    );
+
+    // Test Monthly limit
+    const placeMerchOrderRequest2 = {
+      order: [{ option: option3.uuid, quantity: 1 }, { option: option4.uuid, quantity: 1 }],
+      pickupEvent: orderPickupEvent.uuid,
+    };
+
+    await expect(merchController.placeMerchOrder(placeMerchOrderRequest2, member)).rejects.toThrowError(
+      `This order exceeds the monthly limit for ${item2.itemName}`,
+    );
+  });
+
   test('store managers, but not store distributors, can cancel all pending orders for all users', async () => {
     const conn = await DatabaseConnection.get();
-    const member1 = UserFactory.fake({ credits: 10000 });
-    const member2 = UserFactory.fake({ credits: 10000 });
-    const member3 = UserFactory.fake({ credits: 10000 });
+    const members = UserFactory.create(6).map((member) => UserModel.merge(member, { credits: 10000 }));
+    const [placedOrderMember, cancelledOrderMember, fulfilledOrderMember,
+      partiallyFulfilledOrderMember, pickupCancelledMember, pickupMissedMember] = members;
     const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
     const storeManager = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_MANAGER });
     const affordableOption = MerchFactory.fakeOption({
@@ -575,49 +697,55 @@ describe('merch orders', () => {
     const order = [{ option: affordableOption, quantity: 1 }];
 
     await new PortalState()
-      .createUsers(member1, member2, member3, merchDistributor, storeManager)
+      .createUsers(...members, merchDistributor, storeManager)
       .createMerchItem(merchItem)
       .createOrderPickupEvents(pickupEvent)
-      .orderMerch(member1, order, pickupEvent)
-      .orderMerch(member2, order, pickupEvent)
-      .orderMerch(member3, order, pickupEvent)
+      .orderMerch(placedOrderMember, order, pickupEvent)
+      .orderMerch(cancelledOrderMember, order, pickupEvent)
+      .orderMerch(fulfilledOrderMember, order, pickupEvent)
+      .orderMerch(partiallyFulfilledOrderMember, order, pickupEvent)
+      .orderMerch(pickupCancelledMember, order, pickupEvent)
+      .orderMerch(pickupMissedMember, order, pickupEvent)
       .write();
+
+    // change order statuses of orders to every possible order status
+    await conn.manager.update(OrderModel, { user: cancelledOrderMember }, { status: OrderStatus.CANCELLED });
+    await conn.manager.update(OrderModel, { user: fulfilledOrderMember }, { status: OrderStatus.FULFILLED });
+    await conn.manager.update(OrderModel, { user: partiallyFulfilledOrderMember },
+      { status: OrderStatus.PARTIALLY_FULFILLED });
+    await conn.manager.update(OrderModel, { user: pickupCancelledMember }, { status: OrderStatus.PICKUP_CANCELLED });
+    await conn.manager.update(OrderModel, { user: pickupMissedMember }, { status: OrderStatus.PICKUP_MISSED });
 
     const emailService = new MockEmailService().mock();
 
-    // fulfill member1's order, leaving the other two orders as PLACED
-    const order1 = await conn.manager.findOne(OrderModel, { user: member1 }, { relations: ['items'] });
-    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
-    const itemsToFulfill = order1.items.map((item) => ({ uuid: item.uuid }));
-    const fulfillmentParams = { uuid: order1.uuid };
-    const fulfillmentRequest = { items: itemsToFulfill };
-    await MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, fulfillmentParams,
-      fulfillmentRequest, merchDistributor, conn, pickupEvent);
-
-    // cancell all pending orders
+    // cancel all pending orders
+    const merchController = ControllerFactory.merchStore(conn, emailService);
     await merchController.cancelAllPendingMerchOrders(storeManager);
     // (making sure that store distributors cannot)
     expect(merchController.cancelAllPendingMerchOrders(merchDistributor))
       .rejects.toThrow(ForbiddenError);
 
-    // refresh points
-    await member1.reload();
-    await member2.reload();
-    await member3.reload();
-
-    // member who's order is fulfilled shouldn't get refunded
-    expect(member1.credits).toEqual(8000);
-    expect(member2.credits).toEqual(10000);
-    expect(member3.credits).toEqual(10000);
-
-    const fulfilledOrder = await conn.manager.findOne(OrderModel, { user: member1 }, { relations: ['items'] });
-    expect(fulfilledOrder.status).toEqual(OrderStatus.FULFILLED);
-
-    const cancelledOrder1 = await conn.manager.findOne(OrderModel, { user: member2 }, { relations: ['items'] });
-    expect(cancelledOrder1.status).toEqual(OrderStatus.CANCELLED);
-
-    const cancelledOrder2 = await conn.manager.findOne(OrderModel, { user: member3 }, { relations: ['items'] });
-    expect(cancelledOrder2.status).toEqual(OrderStatus.CANCELLED);
+    await Promise.all(members.map(async (member) => {
+      await member.reload();
+      // members whose orders were previously fulfilled, cancelled, or placed shouldn't get refunded,
+      // whereas all other members should
+      if (member === fulfilledOrderMember || member === cancelledOrderMember || member === placedOrderMember) {
+        expect(member.credits).toEqual(8000);
+      } else {
+        expect(member.credits).toEqual(10000);
+      }
+      // orders that were fulfilled should remain fulfilled,
+      // placed orders should remain placed,
+      // and all other orders should be cancelled
+      const updatedOrder = await conn.manager.findOne(OrderModel, { user: member });
+      if (member === fulfilledOrderMember) {
+        expect(updatedOrder.status).toEqual(OrderStatus.FULFILLED);
+      } else if (member === placedOrderMember) {
+        expect(updatedOrder.status).toEqual(OrderStatus.PLACED);
+      } else {
+        expect(updatedOrder.status).toEqual(OrderStatus.CANCELLED);
+      }
+    }));
 
     // check pending order cancellation activity
     const adminActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(merchDistributor);
@@ -1036,6 +1164,92 @@ describe('merch order pickup events', () => {
     // check pickup event's status has been updated
     const completedPickupEvent = await merchController.getOnePickupEvent(pickupEventUuid, merchDistributor);
     expect(completedPickupEvent.pickupEvent.status).toEqual(OrderPickupEventStatus.COMPLETED);
+  });
+
+  test('past pickup events can be completed', async () => {
+    const conn = await DatabaseConnection.get();
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const pickupEventToComplete = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(merchDistributor)
+      .createOrderPickupEvents(pickupEventToComplete)
+      .write();
+
+    const emailService = new MockEmailService().mock();
+
+    // update the pickup events to have passed yesterday
+    const completedPickupEventUuid = { uuid: pickupEventToComplete.uuid };
+    const pickupEventUpdates = {
+      start: moment().subtract(1, 'day').startOf('day').toDate(),
+      end: moment().subtract(1, 'day').startOf('day').add(2, 'hours')
+        .toDate(),
+    };
+    await conn.manager.update(OrderPickupEventModel, completedPickupEventUuid, pickupEventUpdates);
+
+    // mark pickup event as complete
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    await merchController.completePickupEvent(completedPickupEventUuid, merchDistributor);
+
+    // check pickup event's status has been updated
+    const completedPickupEvent = await merchController.getOnePickupEvent(completedPickupEventUuid, merchDistributor);
+    expect(completedPickupEvent.pickupEvent.status).toEqual(OrderPickupEventStatus.COMPLETED);
+  });
+
+  test('distributors cannot complete a pickup event before the event starts', async () => {
+    const conn = await DatabaseConnection.get();
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const pickupEventToComplete = MerchFactory.fakeFutureOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(merchDistributor)
+      .createOrderPickupEvents(pickupEventToComplete)
+      .write();
+
+    const emailService = new MockEmailService().mock();
+
+    // update the pickup event to be 1 hour from now
+    const completedPickupEventUuid = { uuid: pickupEventToComplete.uuid };
+    const pickupEventUpdates = {
+      start: moment().add(1, 'hours').toDate(),
+      end: moment().add(3, 'hours').toDate(),
+    };
+    await conn.manager.update(OrderPickupEventModel, completedPickupEventUuid, pickupEventUpdates);
+
+    // mark pickup event as complete
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+
+    await expect(merchController.completePickupEvent(completedPickupEventUuid, merchDistributor))
+      .rejects.toThrow('Cannot complete a pickup event that\'s hasn\'t happened yet');
+  });
+
+  test('distributors can complete a pickup event during or after the event', async () => {
+    const conn = await DatabaseConnection.get();
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const ongoingPickupEvent = MerchFactory.fakeOngoingOrderPickupEvent();
+    const pastPickupEvent = MerchFactory.fakePastOrderPickupEvent();
+
+    await new PortalState()
+      .createUsers(merchDistributor)
+      .createOrderPickupEvents(ongoingPickupEvent, pastPickupEvent)
+      .write();
+
+    const emailService = new MockEmailService().mock();
+
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+
+    const ongoingPickupEventUuid = { uuid: ongoingPickupEvent.uuid };
+    await merchController.completePickupEvent(ongoingPickupEventUuid, merchDistributor);
+
+    const completedOngoingPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
+      { uuid: ongoingPickupEvent.uuid });
+    expect(completedOngoingPickupEvent.status).toEqual(OrderPickupEventStatus.COMPLETED);
+
+    const pastPickupEventUuid = { uuid: pastPickupEvent.uuid };
+    await merchController.completePickupEvent(pastPickupEventUuid, merchDistributor);
+
+    const completedPastPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { uuid: pastPickupEvent.uuid });
+    expect(completedPastPickupEvent.status).toEqual(OrderPickupEventStatus.COMPLETED);
   });
 
   test('pickup events that have previously been completed/cancelled cannot be completed/cancelled again', async () => {

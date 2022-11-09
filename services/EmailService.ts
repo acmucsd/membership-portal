@@ -21,6 +21,9 @@ export default class EmailService {
 
   private static readonly orderCancellationTemplate = EmailService.readTemplate('orderCancellation.ejs');
 
+  private static readonly automatedOrderCancellationTemplate = EmailService
+    .readTemplate('cancelPendingOrdersConfirmation.ejs');
+
   private static readonly orderPickupMissedTemplate = EmailService.readTemplate('orderPickupMissed.ejs');
 
   private static readonly orderPickupCancelledTemplate = EmailService.readTemplate('orderPickupCancelled.ejs');
@@ -112,6 +115,26 @@ export default class EmailService {
       return true;
     } catch (error) {
       log.warn(`Failed to send order cancellation email to ${email}`, { error });
+      return false;
+    }
+  }
+
+  public async sendAutomatedOrderCancellation(email: string, firstName: string, order: OrderInfo): Promise<boolean> {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Merch Store - Automated Order Cancellation',
+        html: ejs.render(EmailService.automatedOrderCancellationTemplate, {
+          firstName,
+          order,
+          orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
+        }),
+      };
+      await this.sendEmail(data);
+      return true;
+    } catch (error) {
+      log.warn(`Failed to send automated order cancellation email to ${email}`, { error });
       return false;
     }
   }
