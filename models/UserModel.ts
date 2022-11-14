@@ -6,7 +6,7 @@ import { AttendanceModel } from './AttendanceModel';
 import { OrderModel } from './OrderModel';
 import { FeedbackModel } from './FeedbackModel';
 import { ResumeModel } from './ResumeModel';
-import { UserSocialMediaUrlsModel } from './UserSocialMediaUrlsModel';
+import { UserSocialMediaModel } from './UserSocialMediaModel';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
@@ -76,8 +76,8 @@ export class UserModel extends BaseEntity {
   @OneToMany((type) => ResumeModel, (resume) => resume.user, { cascade: true })
   resumes: ResumeModel[];
 
-  @OneToMany((type) => UserSocialMediaUrlsModel, (userSocialMediaUrl) => userSocialMediaUrl.user, { cascade: true })
-  userSocialMediaUrl: UserSocialMediaUrlsModel;
+  @OneToMany((type) => UserSocialMediaModel, (userSocialMedia) => userSocialMedia.user, { cascade: true })
+  userSocialMedia: UserSocialMediaModel[];
 
   public async verifyPass(pass: string): Promise<boolean> {
     return bcrypt.compare(pass, this.hash);
@@ -121,6 +121,7 @@ export class UserModel extends BaseEntity {
       major: this.major,
       bio: this.bio,
       points: this.points,
+      userSocialMedia: this.userSocialMedia,
     };
   }
 
@@ -138,6 +139,7 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
       credits: this.credits,
+      userSocialMedia: this.userSocialMedia,
     };
   }
 }

@@ -300,6 +300,7 @@ export interface PublicProfile {
   major: string,
   bio: string,
   points: number,
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface PrivateProfile extends PublicProfile {
@@ -320,10 +321,10 @@ export interface PublicFeedback {
   type: FeedbackType;
 }
 
-export interface PublicUserSocialMediaUrl {
+export interface PublicUserSocialMedia {
   uuid: Uuid,
   user: PublicProfile,
-  socialMediaType: SocialMediaType,
+  type: SocialMediaType,
   url: string
 }
 
@@ -367,17 +368,19 @@ export interface UpdateFeedbackStatusResponse extends ApiResponse {
   feedback: PublicFeedback;
 }
 
-export interface GetUserSocialMediaUrlResponse extends ApiResponse {
-  userSocialMediaUrls: PublicUserSocialMediaUrl[];
+export interface GetUserSocialMediaResponse extends ApiResponse {
+  userSocialMedias: PublicUserSocialMedia[];
 }
 
-export interface InsertSocialMediaUrlResponse extends ApiResponse {
-  userSocialMediaUrl: PublicUserSocialMediaUrl;
+export interface InsertSocialMediaResponse extends ApiResponse {
+  userSocialMedia: PublicUserSocialMedia;
 }
 
-export interface UpdateSocialMediaUrlResponse extends ApiResponse {
-  userSocialMediaUrl: PublicUserSocialMediaUrl;
+export interface UpdateSocialMediaResponse extends ApiResponse {
+  userSocialMedia: PublicUserSocialMedia;
 }
+
+export interface DeleteSocialMediaResponse extends ApiResponse {}
 
 export interface PublicOrderPickupEvent {
   uuid: Uuid;

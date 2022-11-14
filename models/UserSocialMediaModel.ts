@@ -1,9 +1,9 @@
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
 import { UserModel } from './UserModel';
-import { Uuid, SocialMediaType, PublicUserSocialMediaUrl } from '../types';
+import { Uuid, SocialMediaType, PublicUserSocialMedia } from '../types';
 
-@Entity('UserSocialMediaUrls')
-export class UserSocialMediaUrlsModel extends BaseEntity {
+@Entity('UserSocialMedias')
+export class UserSocialMediaModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
@@ -13,16 +13,16 @@ export class UserSocialMediaUrlsModel extends BaseEntity {
   user: UserModel;
 
   @Column('varchar', { length: 255 })
-  socialMediaType: SocialMediaType;
+  type: SocialMediaType;
 
   @Column('varchar', { length: 255 })
   url: string;
 
-  public getPublicSocialMediaUrl(): PublicUserSocialMediaUrl {
+  public getPublicSocialMedia(): PublicUserSocialMedia {
     return {
       uuid: this.uuid,
       user: this.user,
-      socialMediaType: this.socialMediaType,
+      type: this.type,
       url: this.url,
     };
   }

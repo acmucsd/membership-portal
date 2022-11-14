@@ -155,16 +155,16 @@ export function IsValidOrderStatus(validationOptions?: ValidationOptions) {
 }
 
 @ValidatorConstraint()
-class UserSocialMediaUrlTypeValidator implements ValidatorConstraintInterface {
-  validate(socialMediaType: SocialMediaType): boolean {
-    return Object.values(SocialMediaType).includes(socialMediaType);
+class UserSocialMediaTypeValidator implements ValidatorConstraintInterface {
+  validate(type: SocialMediaType): boolean {
+    return Object.values(SocialMediaType).includes(type);
   }
 
   defaultMessage(): string {
-    return 'Social media type must be one of [\'LINKEDIN\', \'INSTAGRAM\', \'FACEBOOK\', \'PORTFOLIO\']';
+    return `Social media type must be one of ${JSON.stringify(Object.values(SocialMediaType))}`;
   }
 }
 
-export function IsValidSocialMediaUrlType(validationOptions?: ValidationOptions) {
-  return templatedValidationDecorator(UserSocialMediaUrlTypeValidator, validationOptions);
+export function IsValidSocialMediaType(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(UserSocialMediaTypeValidator, validationOptions);
 }

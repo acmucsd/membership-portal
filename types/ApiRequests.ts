@@ -49,8 +49,8 @@ export interface Feedback {
   type: FeedbackType;
 }
 
-export interface SocialMediaUrl {
-  socialMediaType: SocialMediaType,
+export interface SocialMedia {
+  type: SocialMediaType,
   url: string
 }
 
@@ -79,11 +79,11 @@ export interface UpdateFeedbackStatusRequest {
   status: FeedbackStatus;
 }
 
-export interface InsertUserSocialMediaUrlRequest {
-  socialMediaUrl: SocialMediaUrl;
+export interface InsertUserSocialMediaRequest {
+  socialMedia: SocialMedia;
 }
 
-export interface UpdateUserSocialMediaUrlRequest {
+export interface UpdateUserSocialMediaRequest {
   url: string;
 }
 

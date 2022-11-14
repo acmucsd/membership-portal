@@ -1,9 +1,11 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class AddUserSocialMediaUrlsTable1663760514239 implements MigrationInterface {
+const TABLE_NAME = 'UserSocialMedias';
+
+export class AddUserSocialMediasTable1663760514239 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(new Table({
-      name: 'UserSocialMediaUrls',
+      name: TABLE_NAME,
       columns: [
         {
           name: 'uuid',
@@ -17,7 +19,7 @@ export class AddUserSocialMediaUrlsTable1663760514239 implements MigrationInterf
           type: 'uuid',
         },
         {
-          name: 'socialMediaType',
+          name: 'type',
           type: 'varchar(255)',
         },
         {
@@ -27,7 +29,7 @@ export class AddUserSocialMediaUrlsTable1663760514239 implements MigrationInterf
       ],
       indices: [
         {
-          name: 'social_media_url_by_user_index',
+          name: 'social_media_by_user_index',
           columnNames: ['user'],
         },
       ],
@@ -43,6 +45,6 @@ export class AddUserSocialMediaUrlsTable1663760514239 implements MigrationInterf
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('UserSocialMediaUrls');
+    await queryRunner.dropTable(TABLE_NAME);
   }
 }
