@@ -1,4 +1,3 @@
-import { ResumeModel } from '../models/ResumeModel';
 import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
 
@@ -304,7 +303,7 @@ export interface PrivateProfile extends PublicProfile {
   accessType: string,
   state: string,
   credits: number,
-  resumes: ResumeModel[],
+  resumes: PublicResume[],
 }
 
 export interface PublicFeedback {
