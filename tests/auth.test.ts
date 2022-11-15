@@ -62,6 +62,7 @@ describe('account registration', () => {
       points: 0,
       uuid: registerResponse.user.uuid,
       profilePicture: null,
+      userSocialMedia: [],
     });
 
     // check that email verification is sent
