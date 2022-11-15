@@ -17,7 +17,8 @@ export default class ResumeService {
 
   public async getVisibleResumes() : Promise<ResumeModel[]> {
     const resumes = await this.transactions.readOnly(async (txn) => Repositories
-      .resume(txn).findVisibleResumes());
+      .resume(txn).
+      findVisibleResumes());
     return resumes;
   }
 

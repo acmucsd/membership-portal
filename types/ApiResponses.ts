@@ -1,4 +1,4 @@
-import { ResumeModel } from 'models/ResumeModel';
+import { ResumeModel } from '../models/ResumeModel';
 import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
 
@@ -396,7 +396,7 @@ export interface CancelAllPendingOrdersResponse extends ApiResponse {}
 
 export interface PublicResume {
   uuid: Uuid;
-  user: PublicProfile;
+  user?: PublicProfile;
   isResumeVisible: boolean;
   url: string;
   lastUpdated: Date;

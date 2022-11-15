@@ -7,7 +7,10 @@ import { UserModel } from '../models/UserModel';
 export class ResumeRepository extends BaseRepository<ResumeModel> {
   public async findVisibleResumes(): Promise<ResumeModel[]> {
     return this.repository.find({
-      isResumeVisible: true,
+      relations: ['user'],
+      where: {
+        isResumeVisible: true,
+      },
     });
   }
 

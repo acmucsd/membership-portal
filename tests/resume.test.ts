@@ -55,7 +55,7 @@ describe('resume fetching', () => {
     });
   });
 
-  test('admins cannot get invisible resumes', async () => {
+  test('admins cannot get hidden resumes', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const member = UserFactory.fake();
@@ -77,7 +77,9 @@ describe('upload resume', () => {
   test('authenticated user can upload resume', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
-    await new PortalState().createUsers(member).write();
+    await new PortalState()
+      .createUsers(member)
+      .write();
 
     const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
     const fileLocation = 'fake location';

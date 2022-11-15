@@ -61,7 +61,7 @@ export class ResumeController {
   @Get()
   async getAllVisibleResumes(@AuthenticatedUser() user: UserModel): Promise<GetVisibleResumesResponse> {
     if (!PermissionsService.canSeeAllVisibleResumes(user)) throw new ForbiddenError();
-    const resumes = (await this.resumeService.getVisibleResumes()).map((resume) => resume.getPublicResume());
-    return { error: null, resumes };
+    const resumes = await this.resumeService.getVisibleResumes();
+    return { error: null, resumes: resumes.map((resume) => resume.getPublicResume()) };
   }
 }

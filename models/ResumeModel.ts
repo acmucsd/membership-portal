@@ -7,7 +7,7 @@ export class ResumeModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
-  @ManyToOne((type) => UserModel, (user) => user.uuid, { eager: true, nullable: false })
+  @ManyToOne((type) => UserModel, (user) => user.uuid, { nullable: false })
   @JoinColumn({ name: 'user' })
   @Index('resumes_by_user_index')
   user: UserModel;
