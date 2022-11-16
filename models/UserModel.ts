@@ -120,7 +120,6 @@ export class UserModel extends BaseEntity {
     };
   }
 
-  // resume here is always null by design
   public getFullUserProfile(): PrivateProfile {
     return {
       uuid: this.uuid,
@@ -135,7 +134,6 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
       credits: this.credits,
-      resumes: this.resumes,
     };
   }
 }

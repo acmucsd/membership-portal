@@ -305,7 +305,7 @@ export interface PrivateProfile extends PublicProfile {
   accessType: UserAccessType,
   state: string,
   credits: number,
-  resumes: PublicResume[],
+  resumes?: PublicResume[],
 }
 
 export interface PublicFeedback {
