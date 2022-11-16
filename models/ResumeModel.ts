@@ -22,12 +22,13 @@ export class ResumeModel extends BaseEntity {
   lastUpdated: Date;
 
   public getPublicResume(): PublicResume {
-    return {
+    const publicResume: PublicResume = {
       uuid: this.uuid,
-      user: this.user.uuid,
       isResumeVisible: this.isResumeVisible,
       url: this.url,
       lastUpdated: this.lastUpdated,
     };
+    if (this.user) publicResume.user = this.user.getPublicProfile();
+    return publicResume;
   }
 }

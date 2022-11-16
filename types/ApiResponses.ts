@@ -305,6 +305,7 @@ export interface PrivateProfile extends PublicProfile {
   accessType: UserAccessType,
   state: string,
   credits: number,
+  resumes?: PublicResume[],
 }
 
 export interface PublicFeedback {
@@ -319,6 +320,10 @@ export interface PublicFeedback {
 
 export interface GetUserActivityStreamResponse extends ApiResponse {
   activity: PublicActivity[];
+}
+
+export interface GetVisibleResumesResponse extends ApiResponse {
+  resumes: PublicResume[];
 }
 
 export interface UpdateProfilePictureResponse extends ApiResponse {
@@ -392,7 +397,7 @@ export interface CancelAllPendingOrdersResponse extends ApiResponse {}
 
 export interface PublicResume {
   uuid: Uuid;
-  user: Uuid;
+  user?: PublicProfile;
   isResumeVisible: boolean;
   url: string;
   lastUpdated: Date;

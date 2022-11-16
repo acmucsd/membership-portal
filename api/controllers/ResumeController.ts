@@ -1,20 +1,23 @@
 import {
   JsonController,
+  Get,
   UseBefore,
   Post,
   UploadedFile,
+  ForbiddenError,
   BadRequestError,
   Patch,
   Body,
   Params,
 } from 'routing-controllers';
 import * as path from 'path';
+import PermissionsService from '../../services/PermissionsService';
 import StorageService from '../../services/StorageService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import ResumeService from '../../services/ResumeService';
 import { UserModel } from '../../models/UserModel';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { File, MediaType, PatchResumeResponse, UpdateResumeResponse } from '../../types';
+import { File, MediaType, GetVisibleResumesResponse, PatchResumeResponse, UpdateResumeResponse } from '../../types';
 import { PatchResumeRequest } from '../validators/ResumeControllerRequests';
 import { UuidParam } from '../validators/GenericRequests';
 
@@ -53,5 +56,12 @@ export class ResumeController {
     @AuthenticatedUser() user: UserModel): Promise<PatchResumeResponse> {
     const resume = await this.resumeService.patchResume(params.uuid, patchResumeRequest.resume, user);
     return { error: null, resume: resume.getPublicResume() };
+  }
+
+  @Get()
+  async getAllVisibleResumes(@AuthenticatedUser() user: UserModel): Promise<GetVisibleResumesResponse> {
+    if (!PermissionsService.canSeeAllVisibleResumes(user)) throw new ForbiddenError();
+    const resumes = await this.resumeService.getVisibleResumes();
+    return { error: null, resumes: resumes.map((resume) => resume.getPublicResume()) };
   }
 }
