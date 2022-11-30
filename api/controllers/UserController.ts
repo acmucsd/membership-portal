@@ -1,5 +1,5 @@
 import {
-  JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body, QueryParams,
+  JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body,
 } from 'routing-controllers';
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
@@ -15,7 +15,7 @@ import {
   GetCurrentUserResponse,
   PatchUserResponse,
 } from '../../types';
-import { UuidParam } from '../validators/GenericRequests';
+import { HandleParam, UuidParam } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
 
 @UseBefore(UserAuthentication)
@@ -66,7 +66,7 @@ export class UserController {
   }
 
   @Get('/u/:handle')
-  async getUserByHandle(@QueryParams() params: { handle: string },
+  async getUserByHandle(@Params() params: HandleParam,
     @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
     if (params.handle === currentUser.handle) {
       return this.getCurrentUser(currentUser);

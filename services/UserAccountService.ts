@@ -91,8 +91,9 @@ export default class UserAccountService {
       changes.hash = await UserRepository.generateHash(newPassword);
     }
     if (userPatches.handle) {
-      this.transactions.readOnly(async (txn) => {
-        if (Repositories.user(txn).findByHandle(userPatches.handle)) {
+      await this.transactions.readOnly(async (txn) => {
+        const foundUser = await Repositories.user(txn).findByHandle(userPatches.handle);
+        if (foundUser) {
           throw new BadRequestError('Custom handle already in use');
         }
       });
