@@ -44,10 +44,10 @@ async function seed(): Promise<void> {
     lastName: 'Hariharan',
   });
   const STAFF_AI = UserFactory.fake({
-    email: 'stao@ucsd.edu',
+    email: 'tkwan@ucsd.edu',
     accessType: UserAccessType.STAFF,
-    firstName: 'Stone',
-    lastName: 'Tao',
+    firstName: 'Trevor',
+    lastName: 'Kwan',
   });
 
   const MEMBER_FRESHMAN = UserFactory.fake({
@@ -59,18 +59,18 @@ async function seed(): Promise<void> {
     graduationYear: getGraduationYear(4),
   });
   const MEMBER_SOPHOMORE = UserFactory.fake({
-    email: 'jpan@ucsd.edu',
+    email: 'r1truong@ucsd.edu',
     accessType: UserAccessType.STANDARD,
-    firstName: 'Paul',
-    lastName: 'Pan',
+    firstName: 'Ryan',
+    lastName: 'Truong',
     points: 800,
     graduationYear: getGraduationYear(3),
   });
   const MEMBER_JUNIOR = UserFactory.fake({
-    email: 'asudhart@ucsd.edu',
+    email: 'rzsun@ucsd.edu',
     accessType: UserAccessType.STANDARD,
-    firstName: 'Andrea',
-    lastName: 'Sudharta',
+    firstName: 'Raymond',
+    lastName: 'Sun',
     graduationYear: getGraduationYear(2),
   });
   const MEMBER_SENIOR = UserFactory.fake({
