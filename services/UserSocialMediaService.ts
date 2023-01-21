@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 import { InjectManager } from 'typeorm-typedi-extensions';
-import { NotFoundError } from 'routing-controllers';
+import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { UserError } from '../utils/Errors';
 import { UserSocialMediaModel } from '../models/UserSocialMediaModel';
 import { UserModel } from '../models/UserModel';
@@ -16,9 +16,9 @@ export default class UserSocialMediaService {
     this.transactions = new TransactionsManager(entityManager);
   }
 
-  public async getSocialMediasForUser(user: UserModel): Promise<PublicUserSocialMedia[]> {
+  public async getSocialMediaForUser(user: UserModel): Promise<PublicUserSocialMedia[]> {
     const userSocialMedia = await this.transactions.readOnly(async (txn) => Repositories.userSocialMedia(txn)
-      .getSocialMediasForUser(user));
+      .getSocialMediaForUser(user));
     return userSocialMedia.map((sm) => sm.getPublicSocialMedia());
   }
 
@@ -32,22 +32,25 @@ export default class UserSocialMediaService {
     return addedSocialMedia.getPublicSocialMedia();
   }
 
-  public async updateSocialMediaByUuid(uuid: Uuid, url: string): Promise<PublicUserSocialMedia> {
+  public async updateSocialMediaByUuid(user: UserModel,
+    uuid: Uuid,
+    changes: Partial<UserSocialMediaModel>): Promise<PublicUserSocialMedia> {
     const updatedSocialMedia = await this.transactions.readWrite(async (txn) => {
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
       const socialMedia = await userSocialMediaRepository.findByUuid(uuid);
       if (!socialMedia) throw new NotFoundError('Social media URL not found');
-
-      return userSocialMediaRepository.upsertSocialMedia(socialMedia, { url });
+      if (user.uuid !== socialMedia.user.uuid) throw new ForbiddenError('User does not own social media entity');
+      return userSocialMediaRepository.upsertSocialMedia(socialMedia, changes);
     });
     return updatedSocialMedia.getPublicSocialMedia();
   }
 
-  public async deleteSocialMediaByUuid(uuid: Uuid): Promise<PublicUserSocialMedia> {
+  public async deleteSocialMediaByUuid(user: UserModel, uuid: Uuid): Promise<PublicUserSocialMedia> {
     const updatedSocialMedia = await this.transactions.readWrite(async (txn) => {
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
       const socialMedia = await userSocialMediaRepository.findByUuid(uuid);
       if (!socialMedia) throw new NotFoundError('Social media URL not found');
+      if (user.uuid !== socialMedia.user.uuid) throw new ForbiddenError('User does not own social media entity');
       return userSocialMediaRepository.deleteSocialMedia(socialMedia);
     });
     return updatedSocialMedia.getPublicSocialMedia();

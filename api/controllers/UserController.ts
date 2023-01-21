@@ -36,7 +36,8 @@ export class UserController {
   private storageService: StorageService;
 
   constructor(userAccountService: UserAccountService,
-    storageService: StorageService, userSocialMediaService: UserSocialMediaService) {
+    storageService: StorageService,
+    userSocialMediaService: UserSocialMediaService) {
     this.userAccountService = userAccountService;
     this.storageService = storageService;
     this.userSocialMediaService = userSocialMediaService;
@@ -101,15 +102,17 @@ export class UserController {
 
   @Patch('/socialMedia/:uuid')
   async updateSocialMediaForUser(@Params() params: UuidParam,
-    @Body() updateSocialMediaRequest: UpdateSocialMediaRequest): Promise<UpdateSocialMediaResponse> {
+    @Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
+    @AuthenticatedUser() user: UserModel): Promise<UpdateSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
-      .updateSocialMediaByUuid(params.uuid, updateSocialMediaRequest.url);
+      .updateSocialMediaByUuid(user, params.uuid, updateSocialMediaRequest.socialMedia);
     return { error: null, userSocialMedia };
   }
 
   @Delete('/socialMedia/:uuid')
-  async deleteSocialMediaForUser(@Params() params: UuidParam): Promise<DeleteSocialMediaResponse> {
-    await this.userSocialMediaService.deleteSocialMediaByUuid(params.uuid);
+  async deleteSocialMediaForUser(@Params() params: UuidParam,
+    @AuthenticatedUser() user: UserModel): Promise<DeleteSocialMediaResponse> {
+    await this.userSocialMediaService.deleteSocialMediaByUuid(user, params.uuid);
     return { error: null };
   }
 }

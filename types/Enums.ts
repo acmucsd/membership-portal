@@ -89,4 +89,8 @@ export enum SocialMediaType {
   INSTAGRAM = 'INSTAGRAM',
   FACEBOOK = 'FACEBOOK',
   PORTFOLIO = 'PORTFOLIO',
+  TWITTER = 'TWITTER',
+  GITHUB = 'GITHUB',
+  EMAIL = 'EMAIL',
+  DEVPOST = 'DEVPOST',
 }

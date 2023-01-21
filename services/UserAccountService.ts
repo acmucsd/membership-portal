@@ -155,7 +155,7 @@ export default class UserAccountService {
     return this.transactions.readOnly(async (txn) => {
       const userProfile = user.getFullUserProfile();
       userProfile.resumes = await Repositories.resume(txn).findAllByUser(user);
-      userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediasForUser(user);
+      userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
       return userProfile;
     });
   }
@@ -163,7 +163,7 @@ export default class UserAccountService {
   public async getPublicProfile(user: UserModel) : Promise<PublicProfile> {
     return this.transactions.readOnly(async (txn) => {
       const userProfile = user.getPublicProfile();
-      userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediasForUser(user);
+      userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
       return userProfile;
     });
   }

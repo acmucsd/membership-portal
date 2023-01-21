@@ -300,7 +300,7 @@ export interface PublicProfile {
   major: string,
   bio: string,
   points: number,
-  userSocialMedia: PublicUserSocialMedia[];
+  userSocialMedia?: PublicUserSocialMedia[];
 }
 
 export interface PrivateProfile extends PublicProfile {
@@ -323,7 +323,7 @@ export interface PublicFeedback {
 
 export interface PublicUserSocialMedia {
   uuid: Uuid,
-  user: PublicProfile,
+  user?: PublicProfile,
   type: SocialMediaType,
   url: string
 }
@@ -369,7 +369,7 @@ export interface UpdateFeedbackStatusResponse extends ApiResponse {
 }
 
 export interface GetUserSocialMediaResponse extends ApiResponse {
-  userSocialMedias: PublicUserSocialMedia[];
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface InsertSocialMediaResponse extends ApiResponse {

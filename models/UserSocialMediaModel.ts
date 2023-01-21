@@ -1,15 +1,14 @@
-import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
 import { UserModel } from './UserModel';
 import { Uuid, SocialMediaType, PublicUserSocialMedia } from '../types';
 
-@Entity('UserSocialMedias')
+@Entity('UserSocialMedia')
 export class UserSocialMediaModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
-  @ManyToOne((type) => UserModel, (user) => user.feedback, { onDelete: 'CASCADE' })
+  @ManyToOne((type) => UserModel, (user) => user.userSocialMedia, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user' })
-  @Index({ unique: true })
   user: UserModel;
 
   @Column('varchar', { length: 255 })
@@ -19,11 +18,12 @@ export class UserSocialMediaModel extends BaseEntity {
   url: string;
 
   public getPublicSocialMedia(): PublicUserSocialMedia {
-    return {
+    const publicSocialMedia: PublicUserSocialMedia = {
       uuid: this.uuid,
-      user: this.user,
       type: this.type,
       url: this.url,
     };
+    if (this.user) publicSocialMedia.user = this.user.getPublicProfile();
+    return publicSocialMedia;
   }
 }

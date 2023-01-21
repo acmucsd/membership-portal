@@ -18,6 +18,11 @@ export class SocialMedia implements ISocialMedia {
   url: string;
 }
 
+export class SocialMediaPatches {
+  @IsNotEmpty()
+  url?: string;
+}
+
 export class InsertSocialMediaRequest implements IInsertUserSocialMediaRequest {
   @Type(() => SocialMedia)
   @ValidateNested()
@@ -26,7 +31,8 @@ export class InsertSocialMediaRequest implements IInsertUserSocialMediaRequest {
 }
 
 export class UpdateSocialMediaRequest implements IUpdateUserSocialMediaRequest {
+  @Type(() => SocialMediaPatches)
+  @ValidateNested()
   @IsDefined()
-  @IsNotEmpty()
-  url: string;
+  socialMedia: SocialMediaPatches;
 }

@@ -112,7 +112,7 @@ export class UserModel extends BaseEntity {
   }
 
   public getPublicProfile(): PublicProfile {
-    return {
+    const publicProfile: PublicProfile = {
       uuid: this.uuid,
       firstName: this.firstName,
       lastName: this.lastName,
@@ -121,12 +121,13 @@ export class UserModel extends BaseEntity {
       major: this.major,
       bio: this.bio,
       points: this.points,
-      userSocialMedia: this.userSocialMedia,
     };
+    if (this.userSocialMedia) publicProfile.userSocialMedia = this.userSocialMedia;
+    return publicProfile;
   }
 
   public getFullUserProfile(): PrivateProfile {
-    return {
+    const fullUserProfile: PrivateProfile = {
       uuid: this.uuid,
       email: this.email,
       firstName: this.firstName,
@@ -139,7 +140,8 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
       credits: this.credits,
-      userSocialMedia: this.userSocialMedia,
     };
+    if (this.userSocialMedia) fullUserProfile.userSocialMedia = this.userSocialMedia;
+    return fullUserProfile;
   }
 }

@@ -84,7 +84,7 @@ export interface InsertUserSocialMediaRequest {
 }
 
 export interface UpdateUserSocialMediaRequest {
-  url: string;
+  socialMedia: Partial<SocialMedia>;
 }
 
 // LEADERBOARD
