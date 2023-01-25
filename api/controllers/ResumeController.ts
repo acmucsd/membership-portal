@@ -18,7 +18,7 @@ import ResumeService from '../../services/ResumeService';
 import { UserModel } from '../../models/UserModel';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { File, MediaType, GetVisibleResumesResponse, PatchResumeResponse, UpdateResumeResponse } from '../../types';
-import { PatchResumeRequest } from '../validators/ResumeControllerRequests';
+import { PatchResumeRequest, UploadResumeRequest } from '../validators/ResumeControllerRequests';
 import { UuidParam } from '../validators/GenericRequests';
 
 @UseBefore(UserAuthentication)
@@ -36,6 +36,7 @@ export class ResumeController {
   @Post()
   async uploadResume(@UploadedFile('file',
     { options: StorageService.getFileOptions(MediaType.RESUME) }) file: File,
+    @Body() uploadResumeRequest: UploadResumeRequest,
     @AuthenticatedUser() user: UserModel): Promise<UpdateResumeResponse> {
     if (path.extname(file.originalname) !== '.pdf') throw new BadRequestError('Filetype must be \'.pdf\'');
 
@@ -44,7 +45,7 @@ export class ResumeController {
 
     const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
     const url = await this.storageService.uploadToFolder(file, MediaType.RESUME, fileName, user.uuid);
-    const resume = await this.resumeService.updateResume(user, url);
+    const resume = await this.resumeService.updateResume(user, url, uploadResumeRequest.isResumeVisible);
 
     return { error: null, resume: resume.getPublicResume() };
   }

@@ -74,7 +74,7 @@ describe('resume fetching', () => {
 });
 
 describe('upload resume', () => {
-  test('authenticated user can upload resume', async () => {
+  test('an authenticated user can upload a resume with visibility details', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     await new PortalState()
@@ -89,9 +89,12 @@ describe('upload resume', () => {
       conn,
       instance(storageService),
     );
-    const response = await resumeController.uploadResume(resume, member);
+    const request = { isResumeVisible: true };
+    const response = await resumeController.uploadResume(resume, request, member);
+
     expect(response.error).toBe(null);
     expect(response.resume.url).toBe(fileLocation);
+    expect(response.resume.isResumeVisible).toBe(true);
 
     verify(storageService.deleteAtUrl(fileLocation)).never();
     verify(
@@ -122,11 +125,12 @@ describe('upload resume', () => {
       conn,
       instance(storageService),
     );
-    const response = await resumeController.uploadResume(resume, member);
+    const request = { isResumeVisible: true };
+    const response = await resumeController.uploadResume(resume, request, member);
     expect(response.error).toBe(null);
 
     const newResume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const response1 = await resumeController.uploadResume(newResume, member);
+    const response1 = await resumeController.uploadResume(newResume, request, member);
     expect(response1.error).toBe(null);
 
     const repository = conn.getRepository(ResumeModel);
@@ -164,13 +168,14 @@ describe('upload resume', () => {
     const image = FileFactory.image(Config.file.MAX_RESUME_FILE_SIZE / 2);
     const fileLocation = 'fake location';
 
-    const userController = ControllerFactory.resume(
+    const resumeController = ControllerFactory.resume(
       conn,
       Mocks.storage(fileLocation),
     );
-    expect(async () => {
-      await userController.uploadResume(image, member);
-    }).rejects.toThrow(BadRequestError);
+    const request = { isResumeVisible: true };
+
+    await expect(resumeController.uploadResume(image, request, member))
+      .rejects.toThrow(BadRequestError);
   });
 });
 
