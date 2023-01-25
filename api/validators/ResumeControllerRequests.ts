@@ -9,6 +9,7 @@ import {
 export class UploadResumeRequest implements IUploadResumeRequest {
   // IsBooleanString is used here instead of IsBoolean since multipart/form-data
   // field types are all string or files (no boolean types)
+  @IsDefined()
   @IsBooleanString()
   isResumeVisible: boolean;
 }
