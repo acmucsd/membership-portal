@@ -22,7 +22,7 @@ export default class ResumeService {
     return resumes;
   }
 
-  public async updateResume(user: UserModel, resumeURL: string): Promise<ResumeModel> {
+  public async updateResume(user: UserModel, resumeURL: string, isResumeVisible: boolean): Promise<ResumeModel> {
     return this.transactions.readWrite(async (txn) => {
       const resumeRepository = Repositories.resume(txn);
       const oldResume = await resumeRepository.findByUserUuid(user.uuid);
@@ -30,6 +30,7 @@ export default class ResumeService {
 
       const resume = await resumeRepository.upsertResume(ResumeModel.create({
         user,
+        isResumeVisible,
         url: resumeURL,
       }));
 
