@@ -13,6 +13,7 @@ import { ActivityScope, ActivityType, Feedback } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { OrderItemModel } from '../../models/OrderItemModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
+import { UserSocialMediaModel } from '../../models/UserSocialMediaModel';
 import { DatabaseConnection } from './DatabaseConnection';
 import { MerchFactory } from '.';
 import { ResumeModel } from '../../models/ResumeModel';
@@ -36,6 +37,8 @@ export class PortalState {
 
   resumes: ResumeModel[] = [];
 
+  userSocialMedias: UserSocialMediaModel[] = [];
+
   public from(state: PortalState): PortalState {
     // deep clones all around for immutable PortalStates
     this.users = rfdc()(state.users);
@@ -47,6 +50,7 @@ export class PortalState {
     this.orders = rfdc()(state.orders);
     this.feedback = rfdc()(state.feedback);
     this.resumes = rfdc()(state.resumes);
+    this.userSocialMedias = rfdc()(state.userSocialMedias);
     return this;
   }
 
@@ -62,6 +66,7 @@ export class PortalState {
       this.orders = await txn.save(this.orders);
       this.feedback = await txn.save(this.feedback);
       this.resumes = await txn.save(this.resumes);
+      this.userSocialMedias = await txn.save(this.userSocialMedias);
     });
   }
 
