@@ -6,7 +6,7 @@ import { UserError } from '../utils/Errors';
 import { UserSocialMediaModel } from '../models/UserSocialMediaModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
-import { Uuid, PublicUserSocialMedia, SocialMedia } from '../types';
+import { Uuid, SocialMedia } from '../types';
 
 @Service()
 export default class UserSocialMediaService {
@@ -16,43 +16,49 @@ export default class UserSocialMediaService {
     this.transactions = new TransactionsManager(entityManager);
   }
 
-  public async getSocialMediaForUser(user: UserModel): Promise<PublicUserSocialMedia[]> {
+  public async getSocialMediaForUser(user: UserModel): Promise<UserSocialMediaModel[]> {
     const userSocialMedia = await this.transactions.readOnly(async (txn) => Repositories.userSocialMedia(txn)
       .getSocialMediaForUser(user));
-    return userSocialMedia.map((sm) => sm.getPublicSocialMedia());
+    return userSocialMedia;
   }
 
   public async insertSocialMediaForUser(user: UserModel, socialMedia: SocialMedia) {
     const addedSocialMedia = await this.transactions.readWrite(async (txn) => {
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
       const isNewSocialMediaType = await userSocialMediaRepository.isNewSocialMediaTypeForUser(user, socialMedia.type);
-      if (!isNewSocialMediaType) throw new UserError('Social media URL of this type has been created for this user');
+      if (!isNewSocialMediaType) {
+        throw new UserError('Social media URL of this type has already been created for this user');
+      }
       return userSocialMediaRepository.upsertSocialMedia(UserSocialMediaModel.create({ ...socialMedia, user }));
     });
-    return addedSocialMedia.getPublicSocialMedia();
+    return addedSocialMedia;
   }
 
   public async updateSocialMediaByUuid(user: UserModel,
     uuid: Uuid,
-    changes: Partial<UserSocialMediaModel>): Promise<PublicUserSocialMedia> {
+    changes: Partial<UserSocialMediaModel>): Promise<UserSocialMediaModel> {
     const updatedSocialMedia = await this.transactions.readWrite(async (txn) => {
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
       const socialMedia = await userSocialMediaRepository.findByUuid(uuid);
       if (!socialMedia) throw new NotFoundError('Social media URL not found');
-      if (user.uuid !== socialMedia.user.uuid) throw new ForbiddenError('User does not own social media entity');
+      if (user.uuid !== socialMedia.user.uuid) {
+        throw new ForbiddenError('User cannot update a social media URL of another user');
+      }
       return userSocialMediaRepository.upsertSocialMedia(socialMedia, changes);
     });
-    return updatedSocialMedia.getPublicSocialMedia();
+    return updatedSocialMedia;
   }
 
-  public async deleteSocialMediaByUuid(user: UserModel, uuid: Uuid): Promise<PublicUserSocialMedia> {
+  public async deleteSocialMediaByUuid(user: UserModel, uuid: Uuid): Promise<UserSocialMediaModel> {
     const updatedSocialMedia = await this.transactions.readWrite(async (txn) => {
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
       const socialMedia = await userSocialMediaRepository.findByUuid(uuid);
       if (!socialMedia) throw new NotFoundError('Social media URL not found');
-      if (user.uuid !== socialMedia.user.uuid) throw new ForbiddenError('User does not own social media entity');
+      if (user.uuid !== socialMedia.user.uuid) {
+        throw new ForbiddenError('User cannot delete a social media URL of another user');
+      }
       return userSocialMediaRepository.deleteSocialMedia(socialMedia);
     });
-    return updatedSocialMedia.getPublicSocialMedia();
+    return updatedSocialMedia;
   }
 }

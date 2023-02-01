@@ -97,7 +97,7 @@ export class UserController {
     @AuthenticatedUser() user: UserModel): Promise<InsertSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
       .insertSocialMediaForUser(user, insertSocialMediaRequest.socialMedia);
-    return { error: null, userSocialMedia };
+    return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
   }
 
   @Patch('/socialMedia/:uuid')
@@ -106,7 +106,7 @@ export class UserController {
     @AuthenticatedUser() user: UserModel): Promise<UpdateSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
       .updateSocialMediaByUuid(user, params.uuid, updateSocialMediaRequest.socialMedia);
-    return { error: null, userSocialMedia };
+    return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
   }
 
   @Delete('/socialMedia/:uuid')

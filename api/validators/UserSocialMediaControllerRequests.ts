@@ -5,6 +5,7 @@ import {
   InsertUserSocialMediaRequest as IInsertUserSocialMediaRequest,
   UpdateUserSocialMediaRequest as IUpdateUserSocialMediaRequest,
   SocialMedia as ISocialMedia,
+  SocialMediaPatches as ISocialMediaPatches,
   SocialMediaType,
 } from '../../types';
 
@@ -18,7 +19,7 @@ export class SocialMedia implements ISocialMedia {
   url: string;
 }
 
-export class SocialMediaPatches {
+export class SocialMediaPatches implements ISocialMediaPatches {
   @IsNotEmpty()
   url?: string;
 }

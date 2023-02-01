@@ -122,7 +122,9 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
     };
-    if (this.userSocialMedia) publicProfile.userSocialMedia = this.userSocialMedia;
+    if (this.userSocialMedia) {
+      publicProfile.userSocialMedia = this.userSocialMedia.map((sm) => sm.getPublicSocialMedia());
+    }
     return publicProfile;
   }
 
@@ -141,7 +143,9 @@ export class UserModel extends BaseEntity {
       points: this.points,
       credits: this.credits,
     };
-    if (this.userSocialMedia) fullUserProfile.userSocialMedia = this.userSocialMedia;
+    if (this.userSocialMedia) {
+      fullUserProfile.userSocialMedia = this.userSocialMedia.map((sm) => sm.getPublicSocialMedia());
+    }
     return fullUserProfile;
   }
 }
