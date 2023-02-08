@@ -37,7 +37,7 @@ export class PortalState {
 
   resumes: ResumeModel[] = [];
 
-  userSocialMedias: UserSocialMediaModel[] = [];
+  userSocialMediaList: UserSocialMediaModel[] = [];
 
   public from(state: PortalState): PortalState {
     // deep clones all around for immutable PortalStates
@@ -50,7 +50,7 @@ export class PortalState {
     this.orders = rfdc()(state.orders);
     this.feedback = rfdc()(state.feedback);
     this.resumes = rfdc()(state.resumes);
-    this.userSocialMedias = rfdc()(state.userSocialMedias);
+    this.userSocialMediaList = rfdc()(state.userSocialMediaList);
     return this;
   }
 
@@ -66,7 +66,7 @@ export class PortalState {
       this.orders = await txn.save(this.orders);
       this.feedback = await txn.save(this.feedback);
       this.resumes = await txn.save(this.resumes);
-      this.userSocialMedias = await txn.save(this.userSocialMedias);
+      this.userSocialMediaList = await txn.save(this.userSocialMediaList);
     });
   }
 
@@ -116,6 +116,11 @@ export class PortalState {
 
   public createOrderPickupEvents(...pickupEvents: OrderPickupEventModel[]): PortalState {
     this.orderPickupEvents = this.orderPickupEvents.concat(pickupEvents);
+    return this;
+  }
+
+  public createUserSocialMedia(...userSocialMediaList: UserSocialMediaModel[]): PortalState {
+    this.userSocialMediaList = this.userSocialMediaList.concat(userSocialMediaList);
     return this;
   }
 

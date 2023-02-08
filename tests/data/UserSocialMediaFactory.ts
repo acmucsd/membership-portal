@@ -1,21 +1,23 @@
 import * as faker from 'faker';
-import { SocialMediaType, SocialMedia } from '../../types';
+import { v4 as uuid } from 'uuid';
+import { UserSocialMediaModel } from '../../models/UserSocialMediaModel';
+import { SocialMediaType } from '../../types';
 import FactoryUtils from './FactoryUtils';
+import { UserFactory } from './UserFactory';
 
 export class UserSocialMediaFactory {
-  public static create(n: number) {
+  public static create(n: number): UserSocialMediaModel[] {
     return FactoryUtils.create(n, UserSocialMediaFactory.fake);
   }
 
-  public static fake(substitute?: Partial<SocialMedia>): SocialMedia {
-    const fake = {
+  public static fake(substitute?: Partial<UserSocialMediaModel>): UserSocialMediaModel {
+    const fake = UserSocialMediaModel.create({
+      uuid: uuid(),
+      user: UserFactory.fake(),
       type: UserSocialMediaFactory.randomSocialMediaType(),
       url: faker.internet.url(),
-    };
-    return {
-      ...fake,
-      ...substitute,
-    };
+    });
+    return UserSocialMediaModel.merge(fake, substitute);
   }
 
   private static randomSocialMediaType(): SocialMediaType {
