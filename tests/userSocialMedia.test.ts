@@ -80,6 +80,23 @@ describe('social media URL update', () => {
     await expect(userController.updateSocialMediaForUser(uuidParams, socialMediaParams, unauthorizedMember))
       .rejects.toThrow(errorMessage);
   });
+
+  test('is invalidated when invalid uuid is passed in', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+
+    await new PortalState()
+      .createUsers(member)
+      .write();
+
+    const userController = ControllerFactory.user(conn);
+
+    const errorMessage = 'Social media URL not found';
+    const uuidParams = { uuid: faker.datatype.uuid() };
+    const socialMediaParams = { socialMedia: { url: faker.internet.url() } };
+    await expect(userController.updateSocialMediaForUser(uuidParams, socialMediaParams, member))
+      .rejects.toThrow(errorMessage);
+  });
 });
 
 describe('social media URL delete', () => {
