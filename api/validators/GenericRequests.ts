@@ -20,6 +20,7 @@ export class UuidParam {
 
 export class HandleParam {
   @IsAlphanumeric()
+  @Length(3, 32)
   handle: string;
 }
 

@@ -3,6 +3,7 @@ import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
+import * as faker from 'faker';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -38,6 +39,17 @@ export default class UserAccountService {
       .findByHandle(handle));
     if (!user) throw new NotFoundError('User was not found');
     return user;
+  }
+
+  public static generateDefaultHandle(firstName: string, lastName: string): string {
+    const nameString = `${firstName}-${lastName}`.toLowerCase().slice(0, 25);
+
+    // Hexadecimals look like 0x1b9Dle so we have to truncate the fixed '0x'.
+    const hashValue = faker.datatype.hexaDecimal(6).slice(2);
+
+    const handle = `${nameString}-${hashValue}`;
+
+    return handle;
   }
 
   public async verifyEmail(accessCode: string): Promise<void> {

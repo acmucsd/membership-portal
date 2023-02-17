@@ -65,7 +65,7 @@ export class UserController {
     return { error: null, user: user.getPublicProfile() };
   }
 
-  @Get('/u/:handle')
+  @Get('/handle/:handle')
   async getUserByHandle(@Params() params: HandleParam,
     @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
     if (params.handle === currentUser.handle) {

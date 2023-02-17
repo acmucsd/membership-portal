@@ -9,6 +9,7 @@ import { Uuid, ActivityType, UserState, UserRegistration } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
+import UserAccountService from './UserAccountService';
 
 interface AuthToken {
   uuid: Uuid;
@@ -32,6 +33,7 @@ export default class UserAuthService {
         ...registration,
         hash: await UserRepository.generateHash(registration.password),
         accessCode: UserAuthService.generateAccessCode(),
+        handle: UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName),
       }));
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({

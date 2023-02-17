@@ -16,6 +16,13 @@ export class AddHandleColumnToUsersTable1667512340166 implements MigrationInterf
       columnNames: ['handle'],
       isUnique: true,
     }));
+
+    await queryRunner.query(`
+      UPDATE "${TABLE_NAME}"
+      SET handle = "firstName" || '-' || "lastName" || '-' || substr(md5(random()::text), 0, 7)
+    `);
+
+    await queryRunner.query(`ALTER TABLE "${TABLE_NAME}" ALTER COLUMN "handle" SET NOT NULL`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
