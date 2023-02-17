@@ -20,7 +20,7 @@ export class OptionalEventProperties implements IOptionalEventProperties {
   @IsNotEmpty()
   thumbnail?: string;
 
-  @IsNotEmpty()
+  @Allow()
   eventLink?: string;
 
   @Allow()

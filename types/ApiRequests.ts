@@ -282,6 +282,12 @@ export interface GetCartRequest {
 }
 
 // RESUMES
+/* Request object does not have nested property because the API request is of
+type multipart/form-data which does not support nested properties */
+export interface UploadResumeRequest {
+  isResumeVisible?: boolean
+}
+
 export interface ResumePatches {
   isResumeVisible?: boolean;
 }

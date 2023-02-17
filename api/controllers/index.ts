@@ -13,6 +13,7 @@ import { ResumeController } from './ResumeController';
 export const controllers = [
   AuthController,
   UserController,
+  ResumeController,
   EventController,
   AttendanceController,
   LeaderboardController,

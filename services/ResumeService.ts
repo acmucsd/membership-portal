@@ -15,7 +15,14 @@ export default class ResumeService {
     this.transactions = new TransactionsManager(entityManager);
   }
 
-  public async updateResume(user: UserModel, resumeURL: string): Promise<ResumeModel> {
+  public async getVisibleResumes() : Promise<ResumeModel[]> {
+    const resumes = await this.transactions.readOnly(async (txn) => Repositories
+      .resume(txn)
+      .findVisibleResumes());
+    return resumes;
+  }
+
+  public async updateResume(user: UserModel, resumeURL: string, isResumeVisible: boolean): Promise<ResumeModel> {
     return this.transactions.readWrite(async (txn) => {
       const resumeRepository = Repositories.resume(txn);
       const oldResume = await resumeRepository.findByUserUuid(user.uuid);
@@ -23,6 +30,7 @@ export default class ResumeService {
 
       const resume = await resumeRepository.upsertResume(ResumeModel.create({
         user,
+        isResumeVisible,
         url: resumeURL,
       }));
 

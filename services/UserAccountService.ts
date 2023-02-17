@@ -13,6 +13,7 @@ import {
   Milestone,
   UserPatches,
   UserState,
+  PrivateProfile,
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
@@ -172,5 +173,17 @@ export default class UserAccountService {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .getAllEmails());
+  }
+
+  /**
+   * UserAccountService::getFullUserProfile() differs from UserModel::getFullUserProfile() in that it also returns any
+   * user data that needs to be joined from other tables (e.g. resumes)
+   */
+  public async getFullUserProfile(user: UserModel) : Promise<PrivateProfile> {
+    return this.transactions.readOnly(async (txn) => {
+      const userProfile = user.getFullUserProfile();
+      userProfile.resumes = await Repositories.resume(txn).findAllByUser(user);
+      return userProfile;
+    });
   }
 }

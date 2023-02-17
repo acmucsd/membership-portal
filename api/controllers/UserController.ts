@@ -78,7 +78,8 @@ export class UserController {
 
   @Get()
   async getCurrentUser(@AuthenticatedUser() user: UserModel): Promise<GetCurrentUserResponse> {
-    return { error: null, user: user.getFullUserProfile() };
+    const userProfile = await this.userAccountService.getFullUserProfile(user);
+    return { error: null, user: userProfile };
   }
 
   @Patch()

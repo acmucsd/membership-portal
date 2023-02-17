@@ -1,4 +1,6 @@
-import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus } from './Enums';
+import {
+  ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus, OrderStatus, UserAccessType,
+} from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
 
 // RESPONSE TYPES
@@ -203,7 +205,7 @@ export interface PublicOrder {
   uuid: Uuid;
   user: PublicProfile;
   totalCost: number;
-  status: string;
+  status: OrderStatus;
   orderedAt: Date;
   pickupEvent: PublicOrderPickupEvent;
 }
@@ -301,9 +303,10 @@ export interface PublicProfile {
 
 export interface PrivateProfile extends PublicProfile {
   email: string,
-  accessType: string,
+  accessType: UserAccessType,
   state: string,
   credits: number,
+  resumes?: PublicResume[],
 }
 
 export interface PublicFeedback {
@@ -318,6 +321,10 @@ export interface PublicFeedback {
 
 export interface GetUserActivityStreamResponse extends ApiResponse {
   activity: PublicActivity[];
+}
+
+export interface GetVisibleResumesResponse extends ApiResponse {
+  resumes: PublicResume[];
 }
 
 export interface UpdateProfilePictureResponse extends ApiResponse {
@@ -391,7 +398,7 @@ export interface CancelAllPendingOrdersResponse extends ApiResponse {}
 
 export interface PublicResume {
   uuid: Uuid;
-  user: Uuid;
+  user?: PublicProfile;
   isResumeVisible: boolean;
   url: string;
   lastUpdated: Date;
