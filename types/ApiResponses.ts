@@ -406,3 +406,5 @@ export interface PublicResume {
 export interface PatchResumeResponse extends ApiResponse {
   resume: PublicResume;
 }
+
+export interface DeleteResumeResponse extends ApiResponse {}
