@@ -18,7 +18,8 @@ import { UserAuthentication } from '../middleware/UserAuthentication';
 import ResumeService from '../../services/ResumeService';
 import { UserModel } from '../../models/UserModel';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { File, MediaType, GetVisibleResumesResponse, PatchResumeResponse, UpdateResumeResponse, DeleteResumeResponse } from '../../types';
+import { File, MediaType, GetVisibleResumesResponse,
+  PatchResumeResponse, UpdateResumeResponse, DeleteResumeResponse } from '../../types';
 import { PatchResumeRequest, UploadResumeRequest } from '../validators/ResumeControllerRequests';
 import { UuidParam } from '../validators/GenericRequests';
 
@@ -71,6 +72,7 @@ export class ResumeController {
   async deleteResume(@AuthenticatedUser() user: UserModel): Promise<DeleteResumeResponse> {
     const resume = await this.resumeService.getUserResume(user);
     if (resume) await this.storageService.deleteAtUrl(resume.url);
-    return { error: null }
+    await this.resumeService.deleteResume(user);
+    return { error: null };
   }
 }

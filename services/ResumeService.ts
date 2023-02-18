@@ -61,4 +61,13 @@ export default class ResumeService {
       .resume(txn)
       .findByUserUuid(user.uuid));
   }
+
+  public async deleteResume(user: UserModel): Promise<ResumeModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const resumeRepository = Repositories.resume(txn);
+      const resume = await resumeRepository.findByUserUuid(user.uuid);
+      if (resume) await resumeRepository.deleteResume(resume);
+      return resume;
+    });
+  }
 }

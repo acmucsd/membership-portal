@@ -220,3 +220,29 @@ describe('patch resume', () => {
     ).rejects.toThrowError(ForbiddenError);
   });
 });
+
+describe('delete resume', () => {
+  test('delete resume route successfully deletes user resume', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    await new PortalState().createUsers(member).write();
+
+    const resumeFile = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
+    const fileLocation = 'fake location';
+
+    const storageService = Mocks.storage(fileLocation);
+    const resumeController = ControllerFactory.resume(
+      conn,
+      instance(storageService),
+    );
+    const request = { isResumeVisible: true };
+    await resumeController.uploadResume(resumeFile, request, member);
+
+    resumeController.deleteResume(member);
+
+    const repository = conn.getRepository(ResumeModel);
+    const resumesStored = await repository.find({ user: member });
+
+    expect(resumesStored).toHaveLength(0);
+  });
+});
