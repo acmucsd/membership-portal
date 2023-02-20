@@ -31,6 +31,7 @@ export interface UserRegistration {
   password: string;
   graduationYear: number;
   major: string;
+  handle?: string;
 }
 
 export interface EmailModificationRequest {

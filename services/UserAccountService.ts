@@ -104,12 +104,15 @@ export default class UserAccountService {
       changes.hash = await UserRepository.generateHash(newPassword);
     }
     if (userPatches.handle) {
-      await this.transactions.readOnly(async (txn) => {
-        const foundUser = await Repositories.user(txn).findByHandle(userPatches.handle);
-        if (foundUser) {
-          throw new BadRequestError('Custom handle already in use');
-        }
-      });
+      const handleIsTaken = await this.transactions.readOnly(
+        async (txn) => {
+          const userRepository = Repositories.user(txn);
+          const findUser = await userRepository.findByHandle(userPatches.handle);
+          if (findUser) return true;
+          return false;
+        },
+      );
+      if (handleIsTaken) throw new BadRequestError('This handle is already in use.');
     }
     return this.transactions.readWrite(async (txn) => {
       const updatedFields = Object.keys(userPatches).join(', ');
