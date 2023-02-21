@@ -22,8 +22,8 @@ export class UserPatches implements IUserPatches {
   @IsValidName()
   firstName?: string;
 
-  @Length(3, 32)
   @IsAlphanumeric()
+  @Length(3, 32)
   handle?: string;
 
   @IsValidName()

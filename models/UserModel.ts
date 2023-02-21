@@ -12,7 +12,7 @@ export class UserModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
-  @Column('varchar', { length: 255, nullable: true })
+  @Column('varchar', { length: 255, nullable: false })
   @Index({ unique: true })
   handle: string;
 

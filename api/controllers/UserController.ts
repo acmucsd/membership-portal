@@ -15,7 +15,7 @@ import {
   GetCurrentUserResponse,
   PatchUserResponse,
 } from '../../types';
-import { HandleParam, UuidParam } from '../validators/GenericRequests';
+import { UserHandleParam, UuidParam } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
 
 @UseBefore(UserAuthentication)
@@ -66,7 +66,7 @@ export class UserController {
   }
 
   @Get('/handle/:handle')
-  async getUserByHandle(@Params() params: HandleParam,
+  async getUserByHandle(@Params() params: UserHandleParam,
     @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
     if (params.handle === currentUser.handle) {
       return this.getCurrentUser(currentUser);

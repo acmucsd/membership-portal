@@ -18,7 +18,7 @@ export class UuidParam {
   uuid: Uuid;
 }
 
-export class HandleParam {
+export class UserHandleParam {
   @IsAlphanumeric()
   @Length(3, 32)
   handle: string;

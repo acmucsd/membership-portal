@@ -4,6 +4,7 @@ const TABLE_NAME = 'Users';
 
 export class AddHandleColumnToUsersTable1667512340166 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Add "handle" column to "Users" table as nullable initially since it does not contain any data
     await queryRunner.addColumn(TABLE_NAME, new TableColumn({
       name: 'handle',
       type: 'varchar(255)',
@@ -17,11 +18,14 @@ export class AddHandleColumnToUsersTable1667512340166 implements MigrationInterf
       isUnique: true,
     }));
 
+    // Populate the "handle" column of "Users" table in every row with a default value
+    // formatted as {firstName}{lastName}{hash}
     await queryRunner.query(`
       UPDATE "${TABLE_NAME}"
       SET handle = "firstName" || "lastName" || substr(md5(random()::text), 0, 7)
     `);
 
+    // Restrict "handle" column to be non-nullable now that all rows contain a valid unique handle string
     await queryRunner.query(`ALTER TABLE "${TABLE_NAME}" ALTER COLUMN "handle" SET NOT NULL`);
   }
 

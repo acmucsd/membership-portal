@@ -99,22 +99,22 @@ describe('account registration', () => {
       .never();
   });
 
-  test('User cannot register with existing handle', async () => {
+  test('User cannot register with a handle that is already in use', async () => {
     const conn = await DatabaseConnection.get();
-    const [loggedInUser, otherUser] = UserFactory.create(2);
+    const existingMember = UserFactory.fake();
 
     await new PortalState()
-      .createUsers(otherUser)
+      .createUsers(existingMember)
       .write();
 
     const user = {
-      email: loggedInUser.email,
+      email: 'acm@ucsd.edu',
       firstName: 'ACM',
       lastName: 'UCSD',
       password: 'password',
       major: UserFactory.major(),
       graduationYear: UserFactory.graduationYear(),
-      handle: otherUser.handle,
+      handle: existingMember.handle,
     };
 
     const emailService = mock(EmailService);
@@ -129,12 +129,12 @@ describe('account registration', () => {
       .never();
   });
 
-  test('User can include an optional handle to be set', async () => {
+  test('User can register with an optional handle to be set', async () => {
     const conn = await DatabaseConnection.get();
-    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const existingMember = UserFactory.fake();
 
     await new PortalState()
-      .createUsers(admin)
+      .createUsers(existingMember)
       .write();
 
     const user = {
@@ -156,8 +156,8 @@ describe('account registration', () => {
     const registerResponse = await authController.register(registerRequest, FactoryUtils.randomHexString());
 
     // check that member is registered as expected
-    const params = { uuid: registerResponse.user.uuid };
-    const getUserResponse = await ControllerFactory.user(conn).getUser(params, admin);
+    const params = { handle: registerResponse.user.handle };
+    const getUserResponse = await ControllerFactory.user(conn).getUserByHandle(params, existingMember);
     expect(getUserResponse.user).toStrictEqual({
       firstName: user.firstName,
       lastName: user.lastName,

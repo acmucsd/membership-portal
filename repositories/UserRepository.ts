@@ -26,6 +26,11 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.findOne({ handle });
   }
 
+  public async isHandleTaken(handle: string): Promise<boolean> {
+    const profile = await this.findByHandle(handle);
+    return profile !== undefined;
+  }
+
   public async findByEmail(email: string): Promise<UserModel> {
     return this.repository.findOne({ email });
   }

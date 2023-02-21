@@ -42,14 +42,17 @@ export default class UserAccountService {
     return user;
   }
 
+  /**
+   * Generate a default user handle in the format of "[firstName][lastName][6 digit has]"
+   * @param firstName User's first name
+   * @param lastName User's last name
+   * @returns default user handle
+   */
   public static generateDefaultHandle(firstName: string, lastName: string): string {
-    const nameString = `${firstName}${lastName}`.toLowerCase().slice(0, 25);
-
+    const nameString = `${firstName}${lastName}`.toLowerCase().slice(0, 26);
     // Hexadecimals look like 0x1b9Dle so we have to truncate the fixed '0x'.
     const hashValue = faker.datatype.hexaDecimal(6).slice(2);
-
     const handle = `${nameString}${hashValue}`;
-
     return handle;
   }
 
@@ -103,18 +106,12 @@ export default class UserAccountService {
       }
       changes.hash = await UserRepository.generateHash(newPassword);
     }
-    if (userPatches.handle) {
-      const handleIsTaken = await this.transactions.readOnly(
-        async (txn) => {
-          const userRepository = Repositories.user(txn);
-          const findUser = await userRepository.findByHandle(userPatches.handle);
-          if (findUser) return true;
-          return false;
-        },
-      );
-      if (handleIsTaken) throw new BadRequestError('This handle is already in use.');
-    }
     return this.transactions.readWrite(async (txn) => {
+      if (userPatches.handle) {
+        const userRepository = Repositories.user(txn);
+        const isHandleTaken = await userRepository.isHandleTaken(userPatches.handle);
+        if (isHandleTaken) throw new BadRequestError('This handle is already in use.');
+      }
       const updatedFields = Object.keys(userPatches).join(', ');
       const activity = {
         user,

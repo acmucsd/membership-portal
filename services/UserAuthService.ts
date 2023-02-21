@@ -30,15 +30,16 @@ export default class UserAuthService {
       const emailAlreadyUsed = !!(await userRepository.findByEmail(registration.email));
       if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
       if (registration.handle) {
-        const userHandleTaken = !!(await userRepository.findByHandle(registration.handle));
+        const userHandleTaken = await userRepository.isHandleTaken(registration.handle);
         if (userHandleTaken) throw new BadRequestError('This handle is already in use.');
       }
+      const userHandle = registration?.handle
+         ?? UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName);
       const user = await userRepository.upsertUser(UserModel.create({
         ...registration,
         hash: await UserRepository.generateHash(registration.password),
         accessCode: UserAuthService.generateAccessCode(),
-        handle: registration?.handle
-          ?? UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName),
+        handle: userHandle,
       }));
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
