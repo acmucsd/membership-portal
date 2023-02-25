@@ -238,7 +238,7 @@ describe('delete resume', () => {
     const request = { isResumeVisible: true };
     await resumeController.uploadResume(resumeFile, request, member);
 
-    resumeController.deleteResume(member);
+    await resumeController.deleteResume(member);
 
     const repository = conn.getRepository(ResumeModel);
     const resumesStored = await repository.find({ user: member });
