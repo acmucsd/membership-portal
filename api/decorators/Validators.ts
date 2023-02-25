@@ -48,6 +48,23 @@ export function IsValidName(validationOptions?: ValidationOptions) {
 }
 
 @ValidatorConstraint()
+class HandleValidator implements ValidatorConstraintInterface {
+  regex = /^[a-zA-Z0-9-]+$/;
+
+  validate(handle: string): boolean {
+    return handle.search(this.regex) !== -1;
+  }
+
+  defaultMessage(): string {
+    return 'Your handle contains invalid characters.';
+  }
+}
+
+export function IsValidHandle(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(HandleValidator, validationOptions);
+}
+
+@ValidatorConstraint()
 class PasswordValidator implements ValidatorConstraintInterface {
   private MIN_LENGTH = 8;
 

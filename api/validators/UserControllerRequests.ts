@@ -1,10 +1,17 @@
-import { ValidateNested, IsDefined, Allow, IsAlphanumeric, Length } from 'class-validator';
+import {
+  ValidateNested,
+  IsDefined,
+  Allow,
+  Length,
+  ValidateIf,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   IsValidName,
   IsValidMajor,
   IsValidGraduationYear,
   HasMatchingPasswords,
+  IsValidHandle,
 } from '../decorators/Validators';
 import {
   PasswordUpdate as IPasswordUpdate,
@@ -22,7 +29,7 @@ export class UserPatches implements IUserPatches {
   @IsValidName()
   firstName?: string;
 
-  @IsAlphanumeric()
+  @IsValidHandle()
   @Length(3, 32)
   handle?: string;
 
