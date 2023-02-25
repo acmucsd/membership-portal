@@ -69,10 +69,9 @@ export class ResumeController {
   }
 
   @Delete()
-  async deleteResume(@AuthenticatedUser() user: UserModel): Promise<DeleteResumeResponse> {
-    const resume = await this.resumeService.getUserResume(user);
+  async deleteResume(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel): Promise<DeleteResumeResponse> {
+    const resume = await this.resumeService.deleteResume(params.uuid, user);
     if (resume) await this.storageService.deleteAtUrl(resume.url);
-    await this.resumeService.deleteResume(user);
     return { error: null };
   }
 }

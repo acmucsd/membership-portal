@@ -225,24 +225,52 @@ describe('delete resume', () => {
   test('delete resume route successfully deletes user resume', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
-    await new PortalState().createUsers(member).write();
+    const resume = ResumeFactory.fake({ isResumeVisible: false });
+    await new PortalState()
+      .createUsers(member)
+      .createResumes(member, resume)
+      .write();
 
-    const resumeFile = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = 'fake location';
-
-    const storageService = Mocks.storage(fileLocation);
-    const resumeController = ControllerFactory.resume(
-      conn,
-      instance(storageService),
-    );
-    const request = { isResumeVisible: true };
-    await resumeController.uploadResume(resumeFile, request, member);
-
-    await resumeController.deleteResume(member);
+    const params = { uuid: resume.uuid };
+    const resumeController = ControllerFactory.resume(conn);
+    await resumeController.deleteResume(params, member);
 
     const repository = conn.getRepository(ResumeModel);
     const resumesStored = await repository.find({ user: member });
 
     expect(resumesStored).toHaveLength(0);
+  });
+
+  test('delete resume for another user throws a ForbiddenError', async () => {
+    const conn = await DatabaseConnection.get();
+    const [member, anotherMember] = UserFactory.create(2);
+    const resume = ResumeFactory.fake({ isResumeVisible: false });
+    await new PortalState()
+      .createUsers(member)
+      .createResumes(member, resume)
+      .write();
+
+    const params = { uuid: resume.uuid };
+    const resumeController = ControllerFactory.resume(conn);
+
+    await expect(
+      resumeController.deleteResume(params, anotherMember)
+    ).rejects.toThrowError(ForbiddenError);
+  });
+
+  test('delete resume when there is no resume throws an NotFoundError', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const resume = ResumeFactory.fake({ isResumeVisible: false });
+    await new PortalState()
+      .createUsers(member)
+      .write();
+
+    const params = { uuid: resume.uuid };
+    const resumeController = ControllerFactory.resume(conn);
+
+    await expect(
+      resumeController.deleteResume(params, member)
+    ).rejects.toThrowError(ForbiddenError);
   });
 });

@@ -1,4 +1,4 @@
-import { ForbiddenError } from 'routing-controllers';
+import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 import { InjectManager } from 'typeorm-typedi-extensions';
@@ -62,11 +62,13 @@ export default class ResumeService {
       .findByUserUuid(user.uuid));
   }
 
-  public async deleteResume(user: UserModel): Promise<ResumeModel> {
+  public async deleteResume(uuid: string, user: UserModel): Promise<ResumeModel> {
     return this.transactions.readWrite(async (txn) => {
       const resumeRepository = Repositories.resume(txn);
-      const resume = await resumeRepository.findByUserUuid(user.uuid);
-      if (resume) await resumeRepository.deleteResume(resume);
+      const resume = await resumeRepository.findByUuid(uuid);
+      if (resume.user != user) throw new ForbiddenError('Cannot delete a resume of another user');
+      if (!resume) throw new NotFoundError('Cannot find a resume of given uuid');
+      await resumeRepository.deleteResume(resume);
       return resume;
     });
   }
