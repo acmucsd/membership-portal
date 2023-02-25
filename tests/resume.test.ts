@@ -260,7 +260,7 @@ describe('delete resume', () => {
     const resumeController = ControllerFactory.resume(conn);
 
     await expect(
-      resumeController.deleteResume(params, anotherMember)
+      resumeController.deleteResume(params, anotherMember),
     ).rejects.toThrowError(ForbiddenError);
   });
 
@@ -276,7 +276,7 @@ describe('delete resume', () => {
     const resumeController = ControllerFactory.resume(conn);
 
     await expect(
-      resumeController.deleteResume(params, member)
+      resumeController.deleteResume(params, member),
     ).rejects.toThrowError(NotFoundError);
   });
 });

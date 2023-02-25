@@ -1,7 +1,7 @@
 import { anything, mock, when } from 'ts-mockito';
 import StorageService from '../../services/StorageService';
 
-const DEFAULT_FILE_URL = 's3.amazonaws.com/default-file-url.pdf'
+const DEFAULT_FILE_URL = 's3.amazonaws.com/default-file-url.pdf';
 
 export default class Mocks {
   public static storage(fileLocation = DEFAULT_FILE_URL): StorageService {
