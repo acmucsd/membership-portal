@@ -66,8 +66,8 @@ export default class ResumeService {
     return this.transactions.readWrite(async (txn) => {
       const resumeRepository = Repositories.resume(txn);
       const resume = await resumeRepository.findByUuid(uuid);
-      if (resume.user != user) throw new ForbiddenError('Cannot delete a resume of another user');
       if (!resume) throw new NotFoundError('Cannot find a resume of given uuid');
+      if (resume.user.uuid != user.uuid) throw new ForbiddenError('Cannot delete a resume of another user');
       await resumeRepository.deleteResume(resume);
       return resume;
     });

@@ -1,4 +1,4 @@
-import { BadRequestError, ForbiddenError } from 'routing-controllers';
+import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { anything, instance, verify } from 'ts-mockito';
 import { ActivityType, UserAccessType, MediaType } from '../types';
 import { ResumeModel } from '../models/ResumeModel';
@@ -82,7 +82,7 @@ describe('upload resume', () => {
       .write();
 
     const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = 'fake location';
+    const fileLocation = 's3.amazon.com/upload-resume.pdf';
 
     const storageService = Mocks.storage(fileLocation);
     const resumeController = ControllerFactory.resume(
@@ -118,7 +118,7 @@ describe('upload resume', () => {
     await new PortalState().createUsers(member).write();
 
     const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = 'fake location';
+    const fileLocation = 's3.amazon.com/upload-resume.pdf';
 
     const storageService = Mocks.storage(fileLocation);
     const resumeController = ControllerFactory.resume(
@@ -166,7 +166,7 @@ describe('upload resume', () => {
     await new PortalState().createUsers(member).write();
 
     const image = FileFactory.image(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = 'fake location';
+    const fileLocation = 's3.amazon.com/upload-resume.pdf';
 
     const resumeController = ControllerFactory.resume(
       conn,
@@ -225,26 +225,32 @@ describe('delete resume', () => {
   test('delete resume route successfully deletes user resume', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
-    const resume = ResumeFactory.fake({ isResumeVisible: false });
+    const resume = ResumeFactory.fake({ isResumeVisible: false, user: member });
     await new PortalState()
       .createUsers(member)
       .createResumes(member, resume)
       .write();
 
     const params = { uuid: resume.uuid };
-    const resumeController = ControllerFactory.resume(conn);
+
+    const storageService = Mocks.storage();
+    const resumeController = ControllerFactory.resume(
+      conn,
+      instance(storageService),
+    );
     await resumeController.deleteResume(params, member);
 
     const repository = conn.getRepository(ResumeModel);
     const resumesStored = await repository.find({ user: member });
 
     expect(resumesStored).toHaveLength(0);
+    verify(storageService.deleteAtUrl(resume.url)).called();
   });
 
   test('delete resume for another user throws a ForbiddenError', async () => {
     const conn = await DatabaseConnection.get();
     const [member, anotherMember] = UserFactory.create(2);
-    const resume = ResumeFactory.fake({ isResumeVisible: false });
+    const resume = ResumeFactory.fake({ isResumeVisible: false, user: member });
     await new PortalState()
       .createUsers(member)
       .createResumes(member, resume)
@@ -271,6 +277,6 @@ describe('delete resume', () => {
 
     await expect(
       resumeController.deleteResume(params, member)
-    ).rejects.toThrowError(ForbiddenError);
+    ).rejects.toThrowError(NotFoundError);
   });
 });
