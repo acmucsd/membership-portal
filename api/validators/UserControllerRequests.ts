@@ -3,7 +3,6 @@ import {
   IsDefined,
   Allow,
   Length,
-  ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {

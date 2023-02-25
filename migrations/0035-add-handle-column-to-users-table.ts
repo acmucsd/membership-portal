@@ -22,7 +22,7 @@ export class AddHandleColumnToUsersTable1667512340166 implements MigrationInterf
     // formatted as {firstName}{lastName}{hash}
     await queryRunner.query(`
       UPDATE "${TABLE_NAME}"
-      SET handle = "firstName" || "lastName" || substr(md5(random()::text), 0, 7)
+      SET handle = "firstName" || '-' || "lastName" || '-' || substr(md5(random()::text), 0, 7)
     `);
 
     // Restrict "handle" column to be non-nullable now that all rows contain a valid unique handle string

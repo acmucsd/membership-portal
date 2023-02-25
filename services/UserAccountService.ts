@@ -49,10 +49,10 @@ export default class UserAccountService {
    * @returns default user handle
    */
   public static generateDefaultHandle(firstName: string, lastName: string): string {
-    const nameString = `${firstName}${lastName}`.toLowerCase().slice(0, 26);
+    const nameString = `${firstName}-${lastName}`.toLowerCase().slice(0, 25);
     // Hexadecimals look like 0x1b9Dle so we have to truncate the fixed '0x'.
     const hashValue = faker.datatype.hexaDecimal(6).slice(2);
-    const handle = `${nameString}${hashValue}`;
+    const handle = `${nameString}-${hashValue}`;
     return handle;
   }
 
