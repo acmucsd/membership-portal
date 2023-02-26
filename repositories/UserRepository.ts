@@ -1,8 +1,9 @@
 import { EntityRepository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import FactoryUtils from 'tests/data/FactoryUtils';
 import { Activity } from '../types/internal';
 import { UserModel } from '../models/UserModel';
-import { Uuid } from '../types';
+import { UserAccessType, UserState, Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(UserModel)
@@ -81,5 +82,24 @@ export class UserRepository extends BaseRepository<UserModel> {
         credits: () => `credits + ${points * 100}`,
       })
       .execute();
+  }
+
+  public async deleteUser(user: UserModel) {
+    const clearedSensitiveFields: Partial<UserModel> = {
+      email: `deleted-user-${FactoryUtils.randomHexString()}@ucsd.edu`,
+      profilePicture: null,
+      firstName: 'Deleted',
+      lastName: 'User',
+      graduationYear: 0,
+      major: 'Deleted',
+      points: 0,
+      credits: 0,
+      lastLogin: new Date(0),
+      bio: null,
+      accessType: UserAccessType.RESTRICTED,
+      state: UserState.BLOCKED,
+    };
+    const deletedUser = { ...user, ...clearedSensitiveFields };
+    return this.repository.save(deletedUser);
   }
 }

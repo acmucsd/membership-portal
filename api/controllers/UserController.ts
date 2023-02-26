@@ -1,5 +1,5 @@
 import {
-  JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body,
+  JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body, Delete,
 } from 'routing-controllers';
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
@@ -14,6 +14,7 @@ import {
   GetUserResponse,
   GetCurrentUserResponse,
   PatchUserResponse,
+  DeleteUserResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
@@ -76,5 +77,11 @@ export class UserController {
     @AuthenticatedUser() user: UserModel): Promise<PatchUserResponse> {
     const patchedUser = await this.userAccountService.update(user, patchUserRequest.user);
     return { error: null, user: patchedUser.getFullUserProfile() };
+  }
+
+  @Delete()
+  async deleteAccount(@AuthenticatedUser() user: UserModel): Promise<DeleteUserResponse> {
+    await this.userAccountService.delete(user);
+    return { error: null };
   }
 }
