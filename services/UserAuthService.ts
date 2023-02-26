@@ -33,7 +33,7 @@ export default class UserAuthService {
         const userHandleTaken = await userRepository.isHandleTaken(registration.handle);
         if (userHandleTaken) throw new BadRequestError('This handle is already in use.');
       }
-      const userHandle = registration?.handle
+      const userHandle = registration.handle
          ?? UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName);
       const user = await userRepository.upsertUser(UserModel.create({
         ...registration,

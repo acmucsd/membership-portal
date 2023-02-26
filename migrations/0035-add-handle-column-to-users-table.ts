@@ -19,10 +19,10 @@ export class AddHandleColumnToUsersTable1667512340166 implements MigrationInterf
     }));
 
     // Populate the "handle" column of "Users" table in every row with a default value
-    // formatted as {firstName}{lastName}{hash}
+    // formatted as {firstName}-{lastName}-{hash} truncated to 32 characters
     await queryRunner.query(`
       UPDATE "${TABLE_NAME}"
-      SET handle = "firstName" || '-' || "lastName" || '-' || substr(md5(random()::text), 0, 7)
+      SET handle = substr("firstName" || '-' || "lastName", 0, 26) || '-' || substr(md5(random()::text), 0, 7)
     `);
 
     // Restrict "handle" column to be non-nullable now that all rows contain a valid unique handle string

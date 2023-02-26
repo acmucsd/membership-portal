@@ -49,6 +49,7 @@ export function IsValidName(validationOptions?: ValidationOptions) {
 
 @ValidatorConstraint()
 class HandleValidator implements ValidatorConstraintInterface {
+  // Matches a full string containing only alphanumeric characters and dashes
   regex = /^[a-zA-Z0-9-]+$/;
 
   validate(handle: string): boolean {
@@ -56,7 +57,7 @@ class HandleValidator implements ValidatorConstraintInterface {
   }
 
   defaultMessage(): string {
-    return 'Your handle contains invalid characters.';
+    return 'Your handle can only contain dashes and alphanumeric characters.';
   }
 }
 

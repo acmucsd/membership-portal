@@ -1,9 +1,17 @@
 import 'reflect-metadata'; // this shim is required
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
+import * as faker from 'faker';
 import { UserPatches } from '../api/validators/UserControllerRequests';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, PortalState, UserFactory } from './data';
+
+// Required to pass class-validator validation on user patch even for optional fields
+const passwordChange = {
+  password: 'mypassword',
+  newPassword: 'mypassword',
+  confirmPassword: 'mypassword',
+};
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -86,11 +94,7 @@ describe('Update to Invalid User Handle', () => {
     const user = UserFactory.fake({ handle: 'a' });
 
     const errors = await validate(plainToClass(UserPatches, { ...user,
-      passwordChange: {
-        password: 'mypassword',
-        newPassword: 'mypassword',
-        confirmPassword: 'mypassword',
-      } }));
+      passwordChange }));
 
     expect(errors).toBeDefined();
     expect(errors).toHaveLength(1);
@@ -104,14 +108,10 @@ describe('Update to Invalid User Handle', () => {
 
   test('Update handle error: too long', async () => {
     const MAX_LEN = 32;
-    const user = UserFactory.fake({ handle: 'a'.repeat(2 * MAX_LEN) });
+    const user = UserFactory.fake({ handle: faker.datatype.hexaDecimal(2 * MAX_LEN) });
 
     const errors = await validate(plainToClass(UserPatches, { ...user,
-      passwordChange: {
-        password: 'mypassword',
-        newPassword: 'mypassword',
-        confirmPassword: 'mypassword',
-      } }));
+      passwordChange }));
 
     expect(errors).toBeDefined();
     expect(errors).toHaveLength(1);
@@ -127,11 +127,7 @@ describe('Update to Invalid User Handle', () => {
     const user = UserFactory.fake({ handle: 'abc!' });
 
     const errors = await validate(plainToClass(UserPatches, { ...user,
-      passwordChange: {
-        password: 'mypassword',
-        newPassword: 'mypassword',
-        confirmPassword: 'mypassword',
-      } }));
+      passwordChange }));
 
     expect(errors).toBeDefined();
     expect(errors).toHaveLength(1);
@@ -140,19 +136,15 @@ describe('Update to Invalid User Handle', () => {
     expect(Object.keys(errors[0].constraints)).toHaveLength(1);
     expect(errors[0].constraints.HandleValidator).toBeDefined();
     expect(errors[0].constraints.HandleValidator)
-      .toBe('Your handle contains invalid characters.');
+      .toBe('Your handle can only contain dashes and alphanumeric characters.');
   });
 
-  test('Update handle error: too long and invalid characters', async () => {
+  test('Update handle error: too short and invalid characters', async () => {
     const MIN_LENGTH = 3;
     const user = UserFactory.fake({ handle: 'a!' });
 
     const errors = await validate(plainToClass(UserPatches, { ...user,
-      passwordChange: {
-        password: 'mypassword',
-        newPassword: 'mypassword',
-        confirmPassword: 'mypassword',
-      } }));
+      passwordChange }));
 
     expect(errors).toBeDefined();
     expect(errors).toHaveLength(1);
@@ -164,6 +156,6 @@ describe('Update to Invalid User Handle', () => {
       .toBe(`handle must be longer than or equal to ${MIN_LENGTH} characters`);
     expect(errors[0].constraints.HandleValidator).toBeDefined();
     expect(errors[0].constraints.HandleValidator)
-      .toBe('Your handle contains invalid characters.');
+      .toBe('Your handle can only contain dashes and alphanumeric characters.');
   });
 });

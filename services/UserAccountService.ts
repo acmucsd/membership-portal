@@ -30,7 +30,7 @@ export default class UserAccountService {
     const user = await this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .findByUuid(uuid));
-    if (!user) throw new NotFoundError('User was not found');
+    if (!user) throw new NotFoundError('No user associated with this handle was found');
     return user;
   }
 
@@ -38,15 +38,12 @@ export default class UserAccountService {
     const user = await this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .findByHandle(handle));
-    if (!user) throw new NotFoundError('User was not found');
+    if (!user) throw new NotFoundError('No user associated with this handle was found');
     return user;
   }
 
   /**
-   * Generate a default user handle in the format of "[firstName][lastName][6 digit has]"
-   * @param firstName User's first name
-   * @param lastName User's last name
-   * @returns default user handle
+   * Generate a default user handle in the format of "[firstName]-[lastName]-[6 digit has]" truncated to 32 characters
    */
   public static generateDefaultHandle(firstName: string, lastName: string): string {
     const nameString = `${firstName}-${lastName}`.toLowerCase().slice(0, 25);
