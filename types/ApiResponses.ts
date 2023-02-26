@@ -346,6 +346,8 @@ export interface PatchUserResponse extends ApiResponse {
   user: PrivateProfile;
 }
 
+export interface DeleteUserResponse extends ApiResponse {}
+
 export interface GetFeedbackResponse extends ApiResponse {
   feedback: PublicFeedback[];
 }

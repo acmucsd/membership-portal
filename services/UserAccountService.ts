@@ -97,6 +97,10 @@ export default class UserAccountService {
     });
   }
 
+  public async delete(user: UserModel): Promise<UserModel> {
+    return this.transactions.readWrite(async (txn) => Repositories.user(txn).deleteUser(user));
+  }
+
   public async updateProfilePicture(user: UserModel, profilePicture: string): Promise<UserModel> {
     return this.transactions.readWrite(async (txn) => Repositories
       .user(txn)
