@@ -22,7 +22,7 @@ describe('social media URL submission', () => {
   test('properly persists on successful submission', async () => {
     const conn = await DatabaseConnection.get();
     let member = UserFactory.fake();
-    const userSocialMedia = UserSocialMediaFactory.fake({ user: member, type: SocialMediaType.FACEBOOK });
+    const userSocialMedia = UserSocialMediaFactory.fake({ user: member });
 
     await new PortalState()
       .createUsers(member)
@@ -47,7 +47,7 @@ describe('social media URL submission', () => {
 
     await new PortalState()
       .createUsers(member)
-      .createUserSocialMedia(userSocialMedia)
+      .createUserSocialMedia(member, userSocialMedia)
       .write();
 
     const userController = ControllerFactory.user(conn);
@@ -68,7 +68,7 @@ describe('social media URL update', () => {
 
     await new PortalState()
       .createUsers(member, unauthorizedMember)
-      .createUserSocialMedia(userSocialMedia)
+      .createUserSocialMedia(member, userSocialMedia)
       .write();
 
     const userController = ControllerFactory.user(conn);
@@ -81,7 +81,7 @@ describe('social media URL update', () => {
       .rejects.toThrow(errorMessage);
   });
 
-  test('is invalidated when invalid uuid is passed in', async () => {
+  test('is invalidated when the entity for a uuid is not found', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
 
@@ -92,9 +92,9 @@ describe('social media URL update', () => {
     const userController = ControllerFactory.user(conn);
 
     const errorMessage = 'Social media URL not found';
-    const uuidParams = { uuid: faker.datatype.uuid() };
+    const missingEntityUuid = { uuid: faker.datatype.uuid() };
     const socialMediaParams = { socialMedia: { url: faker.internet.url() } };
-    await expect(userController.updateSocialMediaForUser(uuidParams, socialMediaParams, member))
+    await expect(userController.updateSocialMediaForUser(missingEntityUuid, socialMediaParams, member))
       .rejects.toThrow(errorMessage);
   });
 });
@@ -108,7 +108,7 @@ describe('social media URL delete', () => {
 
     await new PortalState()
       .createUsers(member, unauthorizedMember)
-      .createUserSocialMedia(userSocialMedia)
+      .createUserSocialMedia(member, userSocialMedia)
       .write();
 
     const userController = ControllerFactory.user(conn);
