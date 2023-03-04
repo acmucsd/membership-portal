@@ -6,6 +6,7 @@ import { AttendanceModel } from './AttendanceModel';
 import { OrderModel } from './OrderModel';
 import { FeedbackModel } from './FeedbackModel';
 import { ResumeModel } from './ResumeModel';
+import { UserSocialMediaModel } from './UserSocialMediaModel';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
@@ -75,6 +76,9 @@ export class UserModel extends BaseEntity {
   @OneToMany((type) => ResumeModel, (resume) => resume.user, { cascade: true })
   resumes: ResumeModel[];
 
+  @OneToMany((type) => UserSocialMediaModel, (userSocialMedia) => userSocialMedia.user, { cascade: true })
+  userSocialMedia: UserSocialMediaModel[];
+
   public async verifyPass(pass: string): Promise<boolean> {
     return bcrypt.compare(pass, this.hash);
   }
@@ -108,7 +112,7 @@ export class UserModel extends BaseEntity {
   }
 
   public getPublicProfile(): PublicProfile {
-    return {
+    const publicProfile: PublicProfile = {
       uuid: this.uuid,
       firstName: this.firstName,
       lastName: this.lastName,
@@ -118,10 +122,14 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
     };
+    if (this.userSocialMedia) {
+      publicProfile.userSocialMedia = this.userSocialMedia.map((sm) => sm.getPublicSocialMedia());
+    }
+    return publicProfile;
   }
 
   public getFullUserProfile(): PrivateProfile {
-    return {
+    const fullUserProfile: PrivateProfile = {
       uuid: this.uuid,
       email: this.email,
       firstName: this.firstName,
@@ -135,5 +143,9 @@ export class UserModel extends BaseEntity {
       points: this.points,
       credits: this.credits,
     };
+    if (this.userSocialMedia) {
+      fullUserProfile.userSocialMedia = this.userSocialMedia.map((sm) => sm.getPublicSocialMedia());
+    }
+    return fullUserProfile;
   }
 }
