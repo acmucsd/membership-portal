@@ -53,11 +53,9 @@ jobs:
       - run:
           command: yarn test
   image:
-    environment:
-      BUILDX_PLATFORMS: linux/amd64,linux/arm64
     working_directory: /app
     docker:
-      - image: docker:20.10.2
+      - image: jdrouet/docker-with-buildx:stable
     steps:
       - checkout
       - setup_remote_docker:
@@ -67,20 +65,6 @@ jobs:
             - v1-{{ .Branch }}
           paths:
             - /caches/app.tar
-      - run:
-          name: Install buildx for building images for both amd64 and arm64 architectures
-          # Script adapted from https://github.com/metcalfc/docker-circleci-example/blob/main/.circleci/config.yml
-          command: |
-            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.10.4/buildx-v0.10.4.linux-amd64"
-            curl --output docker-buildx \
-              --silent --show-error --location --fail --retry 3 \
-              "$BUILDX_BINARY_URL"
-            mkdir -p ~/.docker/cli-plugins
-            mv docker-buildx ~/.docker/cli-plugins/
-            chmod a+x ~/.docker/cli-plugins/docker-buildx
-            docker buildx install
-            # Run binfmt
-            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
       - run:
           name: Load Docker image layer cache
           command: |
@@ -119,22 +103,12 @@ workflows:
   version: 2
   test_and_deploy:
     jobs:
-      - build
-      - lint
-      - test
       - image:
-          requires:
-            - build
-            - lint
-            - test
           filters:
             branches:
               only: shravan/docker-multi-platform-builds
       - deploy:
           requires:
-            - build
-            - lint
-            - test
             - image
           filters:
             branches:
