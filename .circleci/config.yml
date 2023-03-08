@@ -95,7 +95,7 @@ jobs:
               --tag acmucsd/membership-portal-api:test-platform-latest \
               --push .
       - save_cache:
-          key: v1-{{ .Branch }}
+          key: v1-{{ .Branch }}-{{ epoch }}
           paths:
             - /caches/docker-buildx
 
