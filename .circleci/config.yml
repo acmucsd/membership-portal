@@ -76,7 +76,7 @@ jobs:
 
             docker buildx build \
               --platform linux/amd64,linux/arm64 \
-              --cache-from type=local,dest=/caches/docker-buildx \
+              --cache-from type=local,src=/caches/docker-buildx \
               --cache-to type=local,dest=/caches/docker-buildx,mode=max \
               --tag acmucsd/membership-portal-api:test-platform-latest \
               --push .
