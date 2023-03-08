@@ -70,6 +70,20 @@ jobs:
             - /caches/docker-buildx
       - run:
           name: Push application Docker image
+          # The below command builds, tags, and pushes the docker image in a single step.
+          # There isn't a way to separate these steps - that is how buildx was designed.
+          # Caching is done for both loading the image and storing the image,
+          # and the platforms specified are both amd64 (i.e. x86) and arm64,
+          # meaning that both AWS Graviton instances and regular AMD
+          # instances can both use this image. Because both architectures need to be built,
+          # the build process will take longer than it historically has.
+
+          # the 'docker buildx create' command below creates a new builder instance that is capable
+          # of building multi-platform images, since the default instance does not
+          # have that capability by default.
+
+          # See https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/
+          # for details
           command: |
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
             docker buildx create --name multi_platform_builder --use
