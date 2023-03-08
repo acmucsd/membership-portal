@@ -53,6 +53,8 @@ jobs:
       - run:
           command: yarn test
   image:
+    environment:
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64
     working_directory: /app
     docker:
       - image: docker:20.10.2
@@ -65,6 +67,20 @@ jobs:
             - v1-{{ .Branch }}
           paths:
             - /caches/app.tar
+      - run:
+          name: Install buildx for building images for both amd64 and arm64 architectures
+          # Script adapted from https://github.com/metcalfc/docker-circleci-example/blob/main/.circleci/config.yml
+          command: |
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.10.4/buildx-v0.10.4.linux-amd64"
+            curl --output docker-buildx \
+              --silent --show-error --location --fail --retry 3 \
+              "$BUILDX_BINARY_URL"
+            mkdir -p ~/.docker/cli-plugins
+            mv docker-buildx ~/.docker/cli-plugins/
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            docker buildx install
+            # Run binfmt
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
       - run:
           name: Load Docker image layer cache
           command: |
@@ -87,8 +103,9 @@ jobs:
           name: Push application Docker image
           command: |
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
-            docker tag app "acmucsd/membership-portal-api:latest"
-            docker push "acmucsd/membership-portal-api:latest"
+            docker buildx create --name multi_platform_builder --use
+            docker buildx build --platform "$BUILDX_PLATFORMS" -t acmucsd/membership-portal-api:test-platform-latest --push ./app
+
   deploy:
     machine:
       enabled: true
@@ -96,8 +113,7 @@ jobs:
       - checkout
       - run:
           command: |
-            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.app.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api --imageName acmucsd/membership-portal-api:latest
-            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.app.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:latest
+            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.testing.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:test-platform-latest
 
 workflows:
   version: 2
@@ -113,7 +129,7 @@ workflows:
             - test
           filters:
             branches:
-              only: master
+              only: shravan/docker-multi-platform-builds
       - deploy:
           requires:
             - build
@@ -122,4 +138,4 @@ workflows:
             - image
           filters:
             branches:
-              only: master
+              only: shravan/docker-multi-platform-builds
