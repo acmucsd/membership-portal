@@ -91,7 +91,7 @@ jobs:
             docker buildx build \
               --platform linux/amd64,linux/arm64 \
               -t acmucsd/membership-portal-api:test-platform-latest \
-              --cache-from=app
+              --cache-from=app \
               --push .
 
   deploy:
