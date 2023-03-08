@@ -83,7 +83,7 @@ jobs:
       - save_cache:
           key: v1-{{ .Branch }}
           paths:
-            - /caches/docker-cache
+            - /caches/docker-buildx
 
   deploy:
     machine:
