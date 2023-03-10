@@ -57,8 +57,6 @@ jobs:
     docker:
       # Image and code adapted from https://www.docker.com/blog/multi-arch-build-what-about-circleci/
       - image: jdrouet/docker-with-buildx:stable
-    environment:
-      GIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -7)
     steps:
       - checkout
       - setup_remote_docker:
@@ -87,6 +85,7 @@ jobs:
           # See https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/
           # for details
           command: |
+            GIT_HASH = (echo $CIRCLE_SHA1 | cut -c -7)
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
             docker buildx create --name multi_platform_builder --use
 
@@ -94,7 +93,7 @@ jobs:
               --platform linux/amd64,linux/arm64 \
               --cache-from type=local,src=/caches/docker-buildx \
               --cache-to type=local,dest=/caches/docker-buildx,mode=max \
-              --tag acmucsd/membership-portal-api:${GIT_HASH} \
+              --tag acmucsd/membership-portal-api:$GIT_HASH \
               --push .
       - save_cache:
           key: v1-{{ .Branch }}-{{ epoch }}
@@ -110,7 +109,8 @@ jobs:
       - checkout
       - run:
           command: |
-            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.testing.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:${GIT_HASH}
+            GIT_HASH = (echo $CIRCLE_SHA1 | cut -c -7)
+            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.testing.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:$GIT_HASH
 
 workflows:
   version: 2
