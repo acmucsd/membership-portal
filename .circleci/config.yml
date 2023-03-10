@@ -1,10 +1,5 @@
 version: 2.1
 
-parameters:
-  git-hash:
-    type: string
-    default: $(echo $CIRCLE_SHA1 | cut -c -7)
-
 jobs:
   build:
     docker:
@@ -63,7 +58,7 @@ jobs:
       # Image and code adapted from https://www.docker.com/blog/multi-arch-build-what-about-circleci/
       - image: jdrouet/docker-with-buildx:stable
     environment:
-      GIT_HASH: << pipeline.parameters.git-hash >>
+      GIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -7)
     steps:
       - checkout
       - setup_remote_docker:
@@ -108,7 +103,7 @@ jobs:
 
   deploy:
     environment:
-      GIT_HASH: << pipeline.parameters.git-hash >>
+      GIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -7)
     machine:
       enabled: true
     steps:
