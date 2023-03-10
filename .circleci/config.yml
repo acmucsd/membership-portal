@@ -84,8 +84,6 @@ jobs:
 
           # See https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/
           # for details
-
-          # TODO: tag both the git hash AND latest in the build command once prod ready
           command: |
             GIT_HASH=$(echo $CIRCLE_SHA1 | cut -c -7)
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
@@ -96,6 +94,7 @@ jobs:
               --cache-from type=local,src=/caches/docker-buildx \
               --cache-to type=local,dest=/caches/docker-buildx,mode=max \
               --tag acmucsd/membership-portal-api:latest \
+              --tag acmucsd/membership-portal-api:$GIT_HASH \
               --push .
       - save_cache:
           key: v1-{{ .Branch }}-{{ epoch }}
@@ -112,20 +111,30 @@ jobs:
       - run:
           command: |
             GIT_HASH=$(echo $CIRCLE_SHA1 | cut -c -7)
-            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.testing.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:latest
-            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.testing.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api --imageName acmucsd/membership-portal-api:latest
+            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:$GIT_HASH
+            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api --imageName acmucsd/membership-portal-api:$GIT_HASH
 
 workflows:
   version: 2
   test_and_deploy:
     jobs:
+      - build
+      - lint
+      - test
       - image:
+          requires:
+            - build
+            - lint
+            - test
           filters:
             branches:
-              only: shravan/caprover-testing-deployment
+              only: master
       - deploy:
           requires:
+            - build
+            - lint
+            - test
             - image
           filters:
             branches:
-              only: shravan/caprover-testing-deployment
+              only: master
