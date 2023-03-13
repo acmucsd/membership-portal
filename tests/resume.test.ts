@@ -216,8 +216,8 @@ describe('patch resume', () => {
     const resumeController = ControllerFactory.resume(conn);
     await expect(
       resumeController.patchResume(params, request, anotherMember),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"Cannot update a resume of another user"',
+    ).rejects.toThrow(
+      'Cannot update a resume of another user',
     );
   });
 });
@@ -261,8 +261,8 @@ describe('delete resume', () => {
 
     await expect(
       resumeController.deleteResume(params, anotherMember),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      '"Cannot delete a resume that belongs to another user"',
+    ).rejects.toThrow(
+      'Cannot delete a resume that belongs to another user',
     );
   });
 
@@ -279,6 +279,6 @@ describe('delete resume', () => {
 
     await expect(
       resumeController.deleteResume(params, member),
-    ).rejects.toThrowErrorMatchingInlineSnapshot('"Resume not found"');
+    ).rejects.toThrow('Resume not found');
   });
 });
