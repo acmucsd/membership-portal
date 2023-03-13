@@ -74,7 +74,7 @@ describe('resume fetching', () => {
 });
 
 describe('upload resume', () => {
-  const fileLocation = 's3.amazon.com/upload-resume.pdf';
+  const fileLocation = 'https://s3.amazonaws.com/upload-resume.pdf';
 
   test('an authenticated user can upload a resume with visibility details', async () => {
     const conn = await DatabaseConnection.get();
