@@ -115,7 +115,6 @@ jobs:
             docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api --imageName acmucsd/membership-portal-api:$GIT_HASH
 
 workflows:
-  version: 2
   test_and_deploy:
     jobs:
       - build
