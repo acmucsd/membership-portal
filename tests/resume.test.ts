@@ -74,6 +74,8 @@ describe('resume fetching', () => {
 });
 
 describe('upload resume', () => {
+  const fileLocation = 'https://s3.amazonaws.com/upload-resume.pdf';
+
   test('an authenticated user can upload a resume with visibility details', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
@@ -82,7 +84,6 @@ describe('upload resume', () => {
       .write();
 
     const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = 'fake location';
 
     const storageService = Mocks.storage(fileLocation);
     const resumeController = ControllerFactory.resume(
@@ -118,7 +119,6 @@ describe('upload resume', () => {
     await new PortalState().createUsers(member).write();
 
     const resume = FileFactory.pdf(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = 'fake location';
 
     const storageService = Mocks.storage(fileLocation);
     const resumeController = ControllerFactory.resume(
@@ -166,7 +166,6 @@ describe('upload resume', () => {
     await new PortalState().createUsers(member).write();
 
     const image = FileFactory.image(Config.file.MAX_RESUME_FILE_SIZE / 2);
-    const fileLocation = 'fake location';
 
     const resumeController = ControllerFactory.resume(
       conn,
@@ -217,6 +216,69 @@ describe('patch resume', () => {
     const resumeController = ControllerFactory.resume(conn);
     await expect(
       resumeController.patchResume(params, request, anotherMember),
-    ).rejects.toThrowError(ForbiddenError);
+    ).rejects.toThrow(
+      'Cannot update a resume of another user',
+    );
+  });
+});
+
+describe('delete resume', () => {
+  test('delete resume route successfully deletes user resume', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const resume = ResumeFactory.fake({ user: member });
+    await new PortalState()
+      .createUsers(member)
+      .createResumes(member, resume)
+      .write();
+
+    const params = { uuid: resume.uuid };
+
+    const storageService = Mocks.storage();
+    const resumeController = ControllerFactory.resume(
+      conn,
+      instance(storageService),
+    );
+    await resumeController.deleteResume(params, member);
+
+    const resumesStored = await conn.manager.find(ResumeModel, { user: member });
+
+    expect(resumesStored).toHaveLength(0);
+    verify(storageService.deleteAtUrl(resume.url)).called();
+  });
+
+  test('delete resume for another user throws a ForbiddenError', async () => {
+    const conn = await DatabaseConnection.get();
+    const [member, anotherMember] = UserFactory.create(2);
+    const resume = ResumeFactory.fake({ user: member });
+    await new PortalState()
+      .createUsers(member)
+      .createResumes(member, resume)
+      .write();
+
+    const params = { uuid: resume.uuid };
+    const resumeController = ControllerFactory.resume(conn);
+
+    await expect(
+      resumeController.deleteResume(params, anotherMember),
+    ).rejects.toThrow(
+      'Cannot delete a resume that belongs to another user',
+    );
+  });
+
+  test('delete resume when there is no resume throws an NotFoundError', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const resume = ResumeFactory.fake();
+    await new PortalState()
+      .createUsers(member)
+      .write();
+
+    const params = { uuid: resume.uuid };
+    const resumeController = ControllerFactory.resume(conn);
+
+    await expect(
+      resumeController.deleteResume(params, member),
+    ).rejects.toThrow('Resume not found');
   });
 });

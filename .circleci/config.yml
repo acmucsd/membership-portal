@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 jobs:
   build:
@@ -55,52 +55,72 @@ jobs:
   image:
     working_directory: /app
     docker:
-      - image: docker:20.10.2
+      # This image is used for docker buildx compatibilities, which allows us to
+      # build to both x86 and ARM architectures. This allows us to use
+      # t4g (AWS Graviton instances backed by ARM architecture) and t3a instances
+      # (our old instance type) on AWS EC2. More details on the actual usage
+      # are below in the command section
+
+      # Image and code adapted from https://www.docker.com/blog/multi-arch-build-what-about-circleci/
+      - image: jdrouet/docker-with-buildx:stable
     steps:
       - checkout
       - setup_remote_docker:
           version: 20.10.2
+      # Caching done for docker images and stored for future workflows.
+      ## https://circleci.com/docs/caching
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
           paths:
-            - /caches/app.tar
+            - /caches/docker-buildx
       - run:
-          name: Load Docker image layer cache
+          name: Push application Docker image
+          # The below command builds, tags, and pushes the docker image in a single step.
+          # There isn't a way to separate these steps - that is how buildx was designed.
+          # Caching is done for both loading the image and storing the image,
+          # and the platforms specified are both amd64 (i.e. x86) and arm64,
+          # meaning that both AWS Graviton instances and regular AMD
+          # instances can both use this image. Because both architectures need to be built,
+          # the build process will take longer than it historically has.
+
+          # the 'docker buildx create' command below creates a new builder instance that is capable
+          # of building multi-platform images, since the default instance does not
+          # have that capability by default.
+
+          # See https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/
+          # for details
           command: |
-            set +o pipefail
-            docker load -i /caches/app.tar | true
-      - run:
-          name: Build application Docker image
-          command: |
-            docker build --cache-from=app -t app .
-      - run:
-          name: Save Docker image layer cache
-          command: |
-            mkdir -p /caches
-            docker save -o /caches/app.tar app
+            GIT_HASH=$(echo $CIRCLE_SHA1 | cut -c -7)
+            echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
+            docker buildx create --name multi_platform_builder --use
+
+            docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              --cache-from type=local,src=/caches/docker-buildx \
+              --cache-to type=local,dest=/caches/docker-buildx,mode=max \
+              --tag acmucsd/membership-portal-api:latest \
+              --tag acmucsd/membership-portal-api:$GIT_HASH \
+              --push .
       - save_cache:
           key: v1-{{ .Branch }}-{{ epoch }}
           paths:
-            - /caches/app.tar
-      - run:
-          name: Push application Docker image
-          command: |
-            echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
-            docker tag app "acmucsd/membership-portal-api:latest"
-            docker push "acmucsd/membership-portal-api:latest"
+            - /caches/docker-buildx
+
   deploy:
+    environment:
+      GIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -7)
     machine:
       enabled: true
     steps:
       - checkout
       - run:
           command: |
-            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.app.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api --imageName acmucsd/membership-portal-api:latest
-            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.app.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:latest
+            GIT_HASH=$(echo $CIRCLE_SHA1 | cut -c -7)
+            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:$GIT_HASH
+            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api --imageName acmucsd/membership-portal-api:$GIT_HASH
 
 workflows:
-  version: 2
   test_and_deploy:
     jobs:
       - build
