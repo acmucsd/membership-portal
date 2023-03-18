@@ -174,12 +174,21 @@ export default class UserAccountService {
 
   /**
    * UserAccountService::getFullUserProfile() differs from UserModel::getFullUserProfile() in that it also returns any
-   * user data that needs to be joined from other tables (e.g. resumes)
+   * user data that needs to be joined from other tables (e.g. resumes and social media URLs)
    */
   public async getFullUserProfile(user: UserModel) : Promise<PrivateProfile> {
     return this.transactions.readOnly(async (txn) => {
       const userProfile = user.getFullUserProfile();
       userProfile.resumes = await Repositories.resume(txn).findAllByUser(user);
+      userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
+      return userProfile;
+    });
+  }
+
+  public async getPublicProfile(user: UserModel) : Promise<PublicProfile> {
+    return this.transactions.readOnly(async (txn) => {
+      const userProfile = user.getPublicProfile();
+      userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
       return userProfile;
     });
   }

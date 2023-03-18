@@ -17,11 +17,13 @@ import EventService from '../../services/EventService';
 import MerchStoreService from '../../services/MerchStoreService';
 import { ResumeController } from '../../api/controllers/ResumeController';
 import ResumeService from '../../services/ResumeService';
+import UserSocialMediaService from '../../services/UserSocialMediaService';
 
 export class ControllerFactory {
   public static user(conn: Connection, storageService = new StorageService()): UserController {
     const userAccountService = new UserAccountService(conn.manager);
-    return new UserController(userAccountService, storageService);
+    const userSocialMediaService = new UserSocialMediaService(conn.manager);
+    return new UserController(userAccountService, storageService, userSocialMediaService);
   }
 
   public static resume(conn: Connection, storageService = new StorageService()): ResumeController {

@@ -13,6 +13,7 @@ import { ActivityScope, ActivityType, Feedback } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { OrderItemModel } from '../../models/OrderItemModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
+import { UserSocialMediaModel } from '../../models/UserSocialMediaModel';
 import { DatabaseConnection } from './DatabaseConnection';
 import { MerchFactory } from '.';
 import { ResumeModel } from '../../models/ResumeModel';
@@ -36,6 +37,8 @@ export class PortalState {
 
   resumes: ResumeModel[] = [];
 
+  userSocialMedia: UserSocialMediaModel[] = [];
+
   public from(state: PortalState): PortalState {
     // deep clones all around for immutable PortalStates
     this.users = rfdc()(state.users);
@@ -47,6 +50,7 @@ export class PortalState {
     this.orders = rfdc()(state.orders);
     this.feedback = rfdc()(state.feedback);
     this.resumes = rfdc()(state.resumes);
+    this.userSocialMedia = rfdc()(state.userSocialMedia);
     return this;
   }
 
@@ -62,6 +66,7 @@ export class PortalState {
       this.orders = await txn.save(this.orders);
       this.feedback = await txn.save(this.feedback);
       this.resumes = await txn.save(this.resumes);
+      this.userSocialMedia = await txn.save(this.userSocialMedia);
     });
   }
 
@@ -111,6 +116,14 @@ export class PortalState {
 
   public createOrderPickupEvents(...pickupEvents: OrderPickupEventModel[]): PortalState {
     this.orderPickupEvents = this.orderPickupEvents.concat(pickupEvents);
+    return this;
+  }
+
+  public createUserSocialMedia(user: UserModel, ...userSocialMedia: UserSocialMediaModel[]): PortalState {
+    for (let s = 0; s < userSocialMedia.length; s += 1) {
+      const sm = userSocialMedia[s];
+      this.userSocialMedia.push(UserSocialMediaModel.create({ ...sm, user }));
+    }
     return this;
   }
 

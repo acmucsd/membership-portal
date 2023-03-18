@@ -1,5 +1,7 @@
 import {
-  ActivityScope, ActivityType, FeedbackStatus, FeedbackType, OrderPickupEventStatus, OrderStatus, UserAccessType,
+  ActivityScope, ActivityType, FeedbackStatus,
+  FeedbackType, OrderPickupEventStatus,
+  OrderStatus, UserAccessType, SocialMediaType,
 } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
 
@@ -299,6 +301,7 @@ export interface PublicProfile {
   major: string,
   bio: string,
   points: number,
+  userSocialMedia?: PublicUserSocialMedia[];
 }
 
 export interface PrivateProfile extends PublicProfile {
@@ -317,6 +320,13 @@ export interface PublicFeedback {
   timestamp: Date;
   status: FeedbackStatus;
   type: FeedbackType;
+}
+
+export interface PublicUserSocialMedia {
+  uuid: Uuid,
+  user?: PublicProfile,
+  type: SocialMediaType,
+  url: string
 }
 
 export interface GetUserActivityStreamResponse extends ApiResponse {
@@ -358,6 +368,20 @@ export interface SubmitFeedbackResponse extends ApiResponse {
 export interface UpdateFeedbackStatusResponse extends ApiResponse {
   feedback: PublicFeedback;
 }
+
+export interface GetUserSocialMediaResponse extends ApiResponse {
+  userSocialMedia: PublicUserSocialMedia[];
+}
+
+export interface InsertSocialMediaResponse extends ApiResponse {
+  userSocialMedia: PublicUserSocialMedia;
+}
+
+export interface UpdateSocialMediaResponse extends ApiResponse {
+  userSocialMedia: PublicUserSocialMedia;
+}
+
+export interface DeleteSocialMediaResponse extends ApiResponse {}
 
 export interface PublicOrderPickupEvent {
   uuid: Uuid;
@@ -407,3 +431,5 @@ export interface PublicResume {
 export interface PatchResumeResponse extends ApiResponse {
   resume: PublicResume;
 }
+
+export interface DeleteResumeResponse extends ApiResponse {}

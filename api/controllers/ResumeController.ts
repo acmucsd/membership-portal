@@ -9,6 +9,7 @@ import {
   Patch,
   Body,
   Params,
+  Delete,
 } from 'routing-controllers';
 import * as path from 'path';
 import PermissionsService from '../../services/PermissionsService';
@@ -17,7 +18,8 @@ import { UserAuthentication } from '../middleware/UserAuthentication';
 import ResumeService from '../../services/ResumeService';
 import { UserModel } from '../../models/UserModel';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { File, MediaType, GetVisibleResumesResponse, PatchResumeResponse, UpdateResumeResponse } from '../../types';
+import { File, MediaType, GetVisibleResumesResponse,
+  PatchResumeResponse, UpdateResumeResponse, DeleteResumeResponse } from '../../types';
 import { PatchResumeRequest, UploadResumeRequest } from '../validators/ResumeControllerRequests';
 import { UuidParam } from '../validators/GenericRequests';
 
@@ -64,5 +66,12 @@ export class ResumeController {
     if (!PermissionsService.canSeeAllVisibleResumes(user)) throw new ForbiddenError();
     const resumes = await this.resumeService.getVisibleResumes();
     return { error: null, resumes: resumes.map((resume) => resume.getPublicResume()) };
+  }
+
+  @Delete()
+  async deleteResume(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel): Promise<DeleteResumeResponse> {
+    const resume = await this.resumeService.deleteResume(params.uuid, user);
+    await this.storageService.deleteAtUrl(resume.url);
+    return { error: null };
   }
 }
