@@ -1,4 +1,4 @@
-import { FeedbackStatus, FeedbackType } from './Enums';
+import { FeedbackStatus, FeedbackType, SocialMediaType } from './Enums';
 import { Uuid } from '.';
 
 // REQUEST TYPES
@@ -49,6 +49,11 @@ export interface Feedback {
   type: FeedbackType;
 }
 
+export interface SocialMedia {
+  type: SocialMediaType,
+  url: string
+}
+
 export interface PasswordUpdate extends PasswordChange {
   password: string;
 }
@@ -72,6 +77,18 @@ export interface SubmitFeedbackRequest {
 
 export interface UpdateFeedbackStatusRequest {
   status: FeedbackStatus;
+}
+
+export interface InsertUserSocialMediaRequest {
+  socialMedia: SocialMedia;
+}
+
+export interface SocialMediaPatches {
+  url?: string;
+}
+
+export interface UpdateUserSocialMediaRequest {
+  socialMedia: SocialMediaPatches;
 }
 
 // LEADERBOARD
