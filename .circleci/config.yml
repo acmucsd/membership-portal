@@ -55,6 +55,12 @@ jobs:
   image:
     working_directory: /app
     docker:
+      # This image is used for docker buildx compatibilities, which allows us to
+      # build to both x86 and ARM architectures. This allows us to use
+      # t4g (AWS Graviton instances backed by ARM architecture) and t3a instances
+      # (our old instance type) on AWS EC2. More details on the actual usage
+      # are below in the command section
+
       # Image and code adapted from https://www.docker.com/blog/multi-arch-build-what-about-circleci/
       - image: jdrouet/docker-with-buildx:stable
     steps:
