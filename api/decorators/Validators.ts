@@ -49,15 +49,15 @@ export function IsValidName(validationOptions?: ValidationOptions) {
 
 @ValidatorConstraint()
 class HandleValidator implements ValidatorConstraintInterface {
-  // Matches a full string containing only alphanumeric characters and dashes
-  regex = /^[a-zA-Z0-9-]+$/;
+  // Matches a full string containing only lowercase letters, numbers, and dashes
+  regex = /^[a-z0-9-]+$/;
 
   validate(handle: string): boolean {
     return handle.search(this.regex) !== -1;
   }
 
   defaultMessage(): string {
-    return 'Your handle can only contain dashes and alphanumeric characters.';
+    return 'Your handle can only contain dashes and lowercase alphanumeric characters.';
   }
 }
 
