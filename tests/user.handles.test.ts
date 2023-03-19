@@ -108,7 +108,7 @@ describe('Update to Invalid User Handle', () => {
 
   test('Update handle error: too long', async () => {
     const MAX_LEN = 32;
-    const user = UserFactory.fake({ handle: faker.datatype.hexaDecimal(2 * MAX_LEN) });
+    const user = UserFactory.fake({ handle: faker.datatype.hexaDecimal(2 * MAX_LEN).toLowerCase() });
 
     const errors = await validate(plainToClass(UserPatches, { ...user,
       passwordChange }));
@@ -136,7 +136,7 @@ describe('Update to Invalid User Handle', () => {
     expect(Object.keys(errors[0].constraints)).toHaveLength(1);
     expect(errors[0].constraints.HandleValidator).toBeDefined();
     expect(errors[0].constraints.HandleValidator)
-      .toBe('Your handle can only contain dashes and alphanumeric characters.');
+      .toBe('Your handle can only contain dashes and lowercase alphanumeric characters.');
   });
 
   test('Update handle error: too short and invalid characters', async () => {
@@ -156,6 +156,6 @@ describe('Update to Invalid User Handle', () => {
       .toBe(`handle must be longer than or equal to ${MIN_LENGTH} characters`);
     expect(errors[0].constraints.HandleValidator).toBeDefined();
     expect(errors[0].constraints.HandleValidator)
-      .toBe('Your handle can only contain dashes and alphanumeric characters.');
+      .toBe('Your handle can only contain dashes and lowercase alphanumeric characters.');
   });
 });
