@@ -134,7 +134,7 @@ export default class UserAuthService {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       let user = await userRepository.findByEmail(email);
-      if (!user) throw new NotFoundError();
+      if (!user) throw new NotFoundError('There is no account associated with that email');
       user = await userRepository.upsertUser(user, {
         state: UserState.PASSWORD_RESET,
         accessCode: UserAuthService.generateAccessCode(),
