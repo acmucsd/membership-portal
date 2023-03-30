@@ -19,7 +19,7 @@ import {
   UpdateSocialMediaResponse,
   DeleteSocialMediaResponse,
 } from '../../types';
-import { UuidParam } from '../validators/GenericRequests';
+import { UserHandleParam, UuidParam } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
 import {
   InsertSocialMediaRequest,
@@ -77,6 +77,17 @@ export class UserController {
     const user = await this.userAccountService.findByUuid(params.uuid);
     const userProfile = await this.userAccountService.getPublicProfile(user);
     return { error: null, user: userProfile };
+  }
+
+  @Get('/handle/:handle')
+  async getUserByHandle(@Params() params: UserHandleParam,
+    @AuthenticatedUser() currentUser: UserModel): Promise<GetUserResponse> {
+    if (params.handle === currentUser.handle) {
+      return this.getCurrentUser(currentUser);
+    }
+
+    const user = await this.userAccountService.findByHandle(params.handle);
+    return { error: null, user: user.getPublicProfile() };
   }
 
   @Get()
