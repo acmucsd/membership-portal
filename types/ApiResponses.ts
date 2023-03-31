@@ -293,6 +293,7 @@ export interface PublicActivity {
 
 export interface PublicProfile {
   uuid: Uuid,
+  handle: string,
   firstName: string,
   lastName: string,
   profilePicture: string,
