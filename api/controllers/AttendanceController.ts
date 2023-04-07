@@ -1,7 +1,8 @@
 import { JsonController, Get, Post, UseBefore, Params, ForbiddenError, Body } from 'routing-controllers';
+import EmailService from 'services/EmailService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { AttendEventRequest, AttendEventUnregisteredRequest } from '../validators/AttendanceControllerRequests';
+import { AttendEventRequest, AttendViaExpressCheckinRequest } from '../validators/AttendanceControllerRequests';
 import { UserModel } from '../../models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
@@ -12,8 +13,11 @@ import { UuidParam } from '../validators/GenericRequests';
 export class AttendanceController {
   private attendanceService: AttendanceService;
 
-  constructor(attendanceService: AttendanceService) {
+  private emailService: EmailService;
+
+  constructor(attendanceService: AttendanceService, emailService: EmailService) {
     this.attendanceService = attendanceService;
+    this.emailService = emailService;
   }
 
   @UseBefore(UserAuthentication)
@@ -40,9 +44,11 @@ export class AttendanceController {
     return { error: null, event };
   }
 
-  @Post('/express')
-  async attendEventUnregistered(@Body() body: AttendEventUnregisteredRequest): Promise<AttendEventResponse> {
-    const { event } = await this.attendanceService.attendEventUnregistered(body.attendanceCode, body.email);
+  @Post('/expressCheckin')
+  async attendViaExpressCheckin(@Body() body: AttendViaExpressCheckinRequest): Promise<AttendEventResponse> {
+    const { email, attendanceCode } = body;
+    const { event } = await this.attendanceService.attendViaExpressCheckin(attendanceCode, email);
+    await this.emailService.sendExpressCheckinConfirmation(email, event.title);
     return { error: null, event };
   }
 }

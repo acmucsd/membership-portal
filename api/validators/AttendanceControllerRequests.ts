@@ -1,7 +1,7 @@
 import { IsDefined, IsNotEmpty, Allow, IsEmail } from 'class-validator';
 import {
   AttendEventRequest as IAttendEventRequest,
-  AttendEventUnregisteredRequest as IAttendEventUnregisteredRequest
+  AttendViaExpressCheckinRequest as IAttendViaExpressCheckinRequest,
 } from '../../types';
 
 export class AttendEventRequest implements IAttendEventRequest {
@@ -13,7 +13,7 @@ export class AttendEventRequest implements IAttendEventRequest {
   asStaff?: boolean;
 }
 
-export class AttendEventUnregisteredRequest implements IAttendEventUnregisteredRequest {
+export class AttendViaExpressCheckinRequest implements IAttendViaExpressCheckinRequest {
   @IsDefined()
   @IsNotEmpty()
   attendanceCode: string;

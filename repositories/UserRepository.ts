@@ -43,7 +43,7 @@ export class UserRepository extends BaseRepository<UserModel> {
 
   public async isEmailInUse(email: string): Promise<boolean> {
     const user = this.findByEmail(email);
-    return !!user
+    return !!user;
   }
 
   public async findByAccessCode(accessCode: string): Promise<UserModel> {

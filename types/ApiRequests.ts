@@ -162,7 +162,7 @@ export interface AttendEventRequest {
   asStaff?: boolean;
 }
 
-export interface AttendEventUnregisteredRequest {
+export interface AttendViaExpressCheckinRequest {
   attendanceCode: string;
   email: string;
 }

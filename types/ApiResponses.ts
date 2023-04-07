@@ -61,6 +61,12 @@ export interface AttendEventResponse extends ApiResponse {
   event: PublicEvent;
 }
 
+export interface PublicExpressCheckin {
+  email: string;
+  event: PublicEvent;
+  timestamp: Date;
+}
+
 // AUTH
 
 export interface RegistrationResponse extends ApiResponse {

@@ -13,7 +13,6 @@ export enum UserState {
   ACTIVE = 'ACTIVE',
   BLOCKED = 'BLOCKED',
   PASSWORD_RESET = 'PASSWORD_RESET',
-  EXPRESS_CHECKIN = 'EXPRESS_CHECKIN'
 }
 
 export enum MediaType {

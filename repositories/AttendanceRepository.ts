@@ -1,4 +1,5 @@
 import { EntityRepository } from 'typeorm';
+import { ExpressCheckinModel } from '../models/ExpressCheckinModel';
 import { Uuid } from '../types';
 import { AttendanceModel } from '../models/AttendanceModel';
 import { UserModel } from '../models/UserModel';
@@ -46,5 +47,17 @@ export class AttendanceRepository extends BaseRepository<AttendanceModel> {
   public async submitEventFeedback(attendance: AttendanceModel, feedback: string[]): Promise<AttendanceModel> {
     attendance.feedback = feedback;
     return this.repository.save(attendance);
+  }
+}
+
+@EntityRepository(ExpressCheckinModel)
+export class ExpressCheckinRepository extends BaseRepository<ExpressCheckinModel> {
+  public async hasUserUsedExpressCheckin(email: string): Promise<boolean> {
+    const count = await this.repository.count({ where: { email } });
+    return count > 0;
+  }
+
+  public async createExpressCheckin(email: string, event: EventModel): Promise<ExpressCheckinModel> {
+    return this.repository.create(ExpressCheckinModel.create({ email, event }));
   }
 }
