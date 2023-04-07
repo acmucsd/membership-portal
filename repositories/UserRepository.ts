@@ -42,8 +42,8 @@ export class UserRepository extends BaseRepository<UserModel> {
   }
 
   public async isEmailInUse(email: string): Promise<boolean> {
-    const user = this.findByEmail(email);
-    return !!user;
+    const user = await this.findByEmail(email);
+    return user !== undefined;
   }
 
   public async findByAccessCode(accessCode: string): Promise<UserModel> {

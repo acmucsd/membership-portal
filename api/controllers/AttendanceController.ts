@@ -1,5 +1,5 @@
 import { JsonController, Get, Post, UseBefore, Params, ForbiddenError, Body } from 'routing-controllers';
-import EmailService from 'services/EmailService';
+import EmailService from '../../services/EmailService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { AttendEventRequest, AttendViaExpressCheckinRequest } from '../validators/AttendanceControllerRequests';
