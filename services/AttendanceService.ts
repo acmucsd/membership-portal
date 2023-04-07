@@ -71,6 +71,18 @@ export default class AttendanceService {
     });
   }
 
+  public async attendEventUnregistered(attendanceCode: string, email: string): Promise<PublicAttendance> {
+    return this.transactions.readWrite(async (txn) => {
+      const userRepository = Repositories.user(txn);
+      const isEmailInUse = await userRepository.isEmailInUse(email);
+      if (isEmailInUse) {
+        throw new UserError('This email already has an account registered to it.')
+      }
+
+      return null;
+    });
+  }
+
   public async submitAttendanceForUsers(emails: string[], eventUuid: Uuid, asStaff = false,
     proxyUser: UserModel): Promise<PublicAttendance[]> {
     return this.transactions.readWrite(async (txn) => {

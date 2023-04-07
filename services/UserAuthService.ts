@@ -27,7 +27,7 @@ export default class UserAuthService {
   public async registerUser(registration: UserRegistration): Promise<UserModel> {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
-      const emailAlreadyUsed = !!(await userRepository.findByEmail(registration.email));
+      const emailAlreadyUsed = await userRepository.isEmailInUse(registration.email);
       if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
       if (registration.handle) {
         const userHandleTaken = await userRepository.isHandleTaken(registration.handle);

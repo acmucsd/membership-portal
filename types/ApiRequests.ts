@@ -162,6 +162,11 @@ export interface AttendEventRequest {
   asStaff?: boolean;
 }
 
+export interface AttendEventUnregisteredRequest {
+  attendanceCode: string;
+  email: string;
+}
+
 export interface SubmitEventFeedbackRequest {
   feedback: string[];
 }
