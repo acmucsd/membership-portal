@@ -68,7 +68,7 @@ export class ResumeController {
     return { error: null, resumes: resumes.map((resume) => resume.getPublicResume()) };
   }
 
-  @Delete()
+  @Delete('/:uuid')
   async deleteResume(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel): Promise<DeleteResumeResponse> {
     const resume = await this.resumeService.deleteResume(params.uuid, user);
     await this.storageService.deleteAtUrl(resume.url);

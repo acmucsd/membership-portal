@@ -48,6 +48,7 @@ export default class ResumeService {
       const resumeRepository = Repositories.resume(txn);
       const resume = await resumeRepository.findByUuid(uuid);
 
+      if (!resume) throw new NotFoundError('Resume not found');
       if (resume.user.uuid !== user.uuid) {
         throw new ForbiddenError('Cannot update a resume of another user');
       }
