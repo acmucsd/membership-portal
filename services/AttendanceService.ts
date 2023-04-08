@@ -78,28 +78,33 @@ export default class AttendanceService {
 
   public async attendViaExpressCheckin(attendanceCode: string, email: string): Promise<PublicExpressCheckin> {
     return this.transactions.readWrite(async (txn) => {
-      const expressCheckinRepository = Repositories.expressCheckin(txn);
-      const userRepository = Repositories.user(txn);
+      const event = await Repositories.event(txn).findByAttendanceCode(attendanceCode);
 
-      const hasUserUsedExpressCheckin = await expressCheckinRepository.hasUserUsedExpressCheckin(email);
-      if (hasUserUsedExpressCheckin) {
-        throw new UserError(
-          'You have already done an express check-in before. '
-          + 'Please complete your account registration to attend this event!',
-        );
+      this.validateEventToAttend(event);
+
+      const expressCheckinRepository = Repositories.expressCheckin(txn);
+
+      const pastExpressCheckin = await expressCheckinRepository.getPastExpressCheckin(email);
+      if (pastExpressCheckin) {
+        if (pastExpressCheckin.event.uuid === event.uuid) {
+          throw new UserError(
+            'You have already successfully checked into this event!',
+          );
+        } else {
+          throw new UserError(
+            'You have already done an express check-in before for a previous event. '
+            + 'Please complete your account registration to attend this event!',
+          );
+        }
       }
 
-      const isEmailInUse = await userRepository.isEmailInUse(email);
+      const isEmailInUse = await Repositories.user(txn).isEmailInUse(email);
       if (isEmailInUse) {
         throw new UserError(
           'This email already has an account registered to it. '
           + 'Please login to your account to check-in to this event!',
         );
       }
-
-      const event = await Repositories.event(txn).findByAttendanceCode(attendanceCode);
-
-      this.validateEventToAttend(event);
 
       const expressCheckin = await expressCheckinRepository.createExpressCheckin(email, event);
       return expressCheckin.getPublicExpressCheckin();

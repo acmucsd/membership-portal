@@ -52,9 +52,8 @@ export class AttendanceRepository extends BaseRepository<AttendanceModel> {
 
 @EntityRepository(ExpressCheckinModel)
 export class ExpressCheckinRepository extends BaseRepository<ExpressCheckinModel> {
-  public async hasUserUsedExpressCheckin(email: string): Promise<boolean> {
-    const count = await this.repository.count({ where: { email } });
-    return count > 0;
+  public async getPastExpressCheckin(email: string): Promise<ExpressCheckinModel> {
+    return this.repository.findOne({ where: { email }, relations: ['event'] });
   }
 
   public async createExpressCheckin(email: string, event: EventModel): Promise<ExpressCheckinModel> {

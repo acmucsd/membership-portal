@@ -61,7 +61,7 @@ export class EventModel extends BaseEntity {
   attendances: AttendanceModel[];
 
   @OneToMany((type) => ExpressCheckinModel, (expressCheckin) => expressCheckin.event, { cascade: true })
-  expressCheckins: AttendanceModel[];
+  expressCheckins: ExpressCheckinModel[];
 
   public getPublicEvent(canSeeAttendanceCode = false): PublicEvent {
     const publicEvent: PublicEvent = {

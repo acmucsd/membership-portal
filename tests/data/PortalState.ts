@@ -17,6 +17,7 @@ import { UserSocialMediaModel } from '../../models/UserSocialMediaModel';
 import { DatabaseConnection } from './DatabaseConnection';
 import { MerchFactory } from '.';
 import { ResumeModel } from '../../models/ResumeModel';
+import { ExpressCheckinModel } from '../../models/ExpressCheckinModel';
 
 export class PortalState {
   users: UserModel[] = [];
@@ -39,6 +40,8 @@ export class PortalState {
 
   userSocialMedia: UserSocialMediaModel[] = [];
 
+  expressCheckins: ExpressCheckinModel[] = [];
+
   public from(state: PortalState): PortalState {
     // deep clones all around for immutable PortalStates
     this.users = rfdc()(state.users);
@@ -51,6 +54,7 @@ export class PortalState {
     this.feedback = rfdc()(state.feedback);
     this.resumes = rfdc()(state.resumes);
     this.userSocialMedia = rfdc()(state.userSocialMedia);
+    this.expressCheckins = rfdc()(state.expressCheckins);
     return this;
   }
 
@@ -67,6 +71,7 @@ export class PortalState {
       this.feedback = await txn.save(this.feedback);
       this.resumes = await txn.save(this.resumes);
       this.userSocialMedia = await txn.save(this.userSocialMedia);
+      this.expressCheckins = await txn.save(this.expressCheckins);
     });
   }
 
@@ -228,6 +233,15 @@ export class PortalState {
         type: ActivityType.RESUME_UPLOAD,
       }));
     }
+    return this;
+  }
+
+  public createExpressCheckin(email: string, event: EventModel): PortalState {
+    this.expressCheckins.push(ExpressCheckinModel.create({
+      email,
+      event,
+    }));
+
     return this;
   }
 }
