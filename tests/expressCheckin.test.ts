@@ -66,7 +66,7 @@ describe('express check-in', () => {
       .toThrow('This email already has an account registered to it. '
              + 'Please login to your account to check-in to this event!'));
 
-    verify(emailService.sendExpressCheckinConfirmation(newUserEmail, event.title)).never();
+    verify(emailService.sendExpressCheckinConfirmation(anything(), anything())).never();
   });
 
   test('throws proper error when user already used express checkin for the same event', async () => {
