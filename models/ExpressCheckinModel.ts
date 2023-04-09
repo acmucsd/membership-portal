@@ -15,7 +15,7 @@ export class ExpressCheckinModel extends BaseEntity {
   @JoinColumn({ name: 'event' })
   event: EventModel;
 
-  @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)', nullable: false })
+  @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)' })
   timestamp: Date;
 
   public getPublicExpressCheckin(): PublicExpressCheckin {
