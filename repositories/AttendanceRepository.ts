@@ -57,6 +57,6 @@ export class ExpressCheckinRepository extends BaseRepository<ExpressCheckinModel
   }
 
   public async createExpressCheckin(email: string, event: EventModel): Promise<ExpressCheckinModel> {
-    return this.repository.create(ExpressCheckinModel.create({ email, event }));
+    return this.repository.save(ExpressCheckinModel.create({ email, event }));
   }
 }

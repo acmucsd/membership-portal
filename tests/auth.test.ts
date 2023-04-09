@@ -7,11 +7,13 @@ import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import EmailService from '../services/EmailService';
 import UserAuthService from '../services/UserAuthService';
-import { UserAccessType, UserState } from '../types';
+import { ActivityType, UserAccessType, UserState } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, PortalState, UserFactory } from './data';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import FactoryUtils from './data/FactoryUtils';
 import { UserRegistrationFactory } from './data/UserRegistrationFactory';
+import { AttendanceModel } from '../models/AttendanceModel';
+import { ActivityModel } from '../models/ActivityModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -61,6 +63,13 @@ describe('account registration', () => {
       userSocialMedia: [],
     });
 
+    // check that no express checkin was processed
+    const attendances = await conn.manager.find(AttendanceModel);
+    expect(attendances).toHaveLength(0);
+
+    const attendanceActivities = await conn.manager.find(ActivityModel, { where: { type: ActivityType.ATTEND_EVENT } });
+    expect(attendanceActivities).toHaveLength(0);
+
     // check that email verification is sent
     verify(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
       .called();
@@ -90,7 +99,7 @@ describe('account registration', () => {
       .never();
   });
 
-  test('User cannot register with a handle that is already in use', async () => {
+  test('user cannot register with a handle that is already in use', async () => {
     const conn = await DatabaseConnection.get();
     const existingMember = UserFactory.fake();
 
@@ -114,7 +123,7 @@ describe('account registration', () => {
       .never();
   });
 
-  test('User registration with a full name longer than 32 characters truncates handle to exactly 32 characters',
+  test('user registration with a full name longer than 32 characters truncates handle to exactly 32 characters',
     async () => {
       const conn = await DatabaseConnection.get();
       const existingMember = UserFactory.fake();
@@ -139,7 +148,7 @@ describe('account registration', () => {
       expect(registerResponse.user.handle.length).toBe(32);
     });
 
-  test('User can register with an optional handle to be set', async () => {
+  test('user can register with an optional handle to be set', async () => {
     const conn = await DatabaseConnection.get();
     const existingMember = UserFactory.fake();
 
@@ -166,6 +175,53 @@ describe('account registration', () => {
 
     // check that email verification is sent
     verify(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+      .called();
+  });
+
+  test('user who registers after an express checkin has their attendance properly logged', async () => {
+    const conn = await DatabaseConnection.get();
+    // email can have uppercases in it, so we should test that lowercase emails
+    // are used by SendGrid / written to the database when an uppercase email is sent
+    // in the request
+    const newUserEmail = faker.internet.email();
+    const lowercasedEmail = newUserEmail.toLowerCase();
+    const pastEvent = EventFactory.fake(EventFactory.daysBefore(5));
+
+    await new PortalState()
+      .createEvents(pastEvent)
+      .createExpressCheckin(lowercasedEmail, pastEvent)
+      .write();
+
+    const userToRegister = UserRegistrationFactory.fake({
+      email: newUserEmail,
+    });
+
+    // register user
+    const emailService = mock(EmailService);
+    when(emailService.sendEmailVerification(lowercasedEmail, userToRegister.firstName, anyString()))
+      .thenResolve();
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const registerRequest = { user: userToRegister };
+    const registerResponse = await authController.register(registerRequest, FactoryUtils.randomHexString());
+    const { user } = registerResponse;
+
+    // check that points for event were logged and that attendance and activity objects were persisted
+    expect(user.points).toEqual(pastEvent.pointValue);
+
+    const attendances = await conn.manager.find(AttendanceModel, { relations: ['event', 'user'] });
+    expect(attendances).toHaveLength(1);
+    expect(attendances[0].event.uuid).toEqual(pastEvent.uuid);
+    expect(attendances[0].user.uuid).toEqual(user.uuid);
+
+    const attendanceActivities = await conn.manager.find(
+      ActivityModel,
+      { where: { type: ActivityType.ATTEND_EVENT }, relations: ['user'] },
+    );
+    expect(attendanceActivities).toHaveLength(1);
+    expect(attendanceActivities[0].user.uuid).toEqual(user.uuid);
+
+    // verify email was sent
+    verify(emailService.sendEmailVerification(lowercasedEmail, user.firstName, anyString()))
       .called();
   });
 });

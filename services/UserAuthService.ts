@@ -4,6 +4,7 @@ import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
+import { ExpressCheckinModel } from 'models/ExpressCheckinModel';
 import { UserRepository } from '../repositories/UserRepository';
 import { Uuid, ActivityType, UserState, UserRegistration } from '../types';
 import { Config } from '../config';
@@ -27,27 +28,59 @@ export default class UserAuthService {
   public async registerUser(registration: UserRegistration): Promise<UserModel> {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
-      const emailAlreadyUsed = await userRepository.isEmailInUse(registration.email);
+
+      const { email } = registration;
+      const emailAlreadyUsed = await userRepository.isEmailInUse(email);
       if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
+
       if (registration.handle) {
         const userHandleTaken = await userRepository.isHandleTaken(registration.handle);
         if (userHandleTaken) throw new BadRequestError('This handle is already in use.');
       }
       const userHandle = registration.handle
          ?? UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName);
+
       const user = await userRepository.upsertUser(UserModel.create({
         ...registration,
         hash: await UserRepository.generateHash(registration.password),
         accessCode: UserAuthService.generateAccessCode(),
         handle: userHandle,
       }));
+
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
         user,
         type: ActivityType.ACCOUNT_CREATE,
       });
+
+      const expressCheckin = await Repositories.expressCheckin(txn).getPastExpressCheckin(email);
+      if (expressCheckin) {
+        await this.processExpressCheckin(user, expressCheckin, txn);
+      }
+
       return user;
     });
+  }
+
+  /**
+   * Creates the attendance and activity records and awards user points
+   * given the express checkin details.
+   */
+  private async processExpressCheckin(user: UserModel,
+    expressCheckin: ExpressCheckinModel,
+    txn: EntityManager): Promise<void> {
+    const { event } = expressCheckin;
+
+    await Repositories.attendance(txn).writeAttendance({
+      user,
+      event,
+      asStaff: false,
+    });
+    await Repositories.activity(txn).logActivity({
+      user,
+      type: ActivityType.ATTEND_EVENT,
+    });
+    await Repositories.user(txn).addPoints(user, event.pointValue);
   }
 
   public async modifyEmail(user: UserModel, proposedEmail: string): Promise<UserModel> {

@@ -84,6 +84,14 @@ export default class AttendanceService {
 
       const expressCheckinRepository = Repositories.expressCheckin(txn);
 
+      const isEmailInUse = await Repositories.user(txn).isEmailInUse(email);
+      if (isEmailInUse) {
+        throw new UserError(
+          'This email already has an account registered to it. '
+          + 'Please login to your account to check-in to this event!',
+        );
+      }
+
       const pastExpressCheckin = await expressCheckinRepository.getPastExpressCheckin(email);
       if (pastExpressCheckin) {
         if (pastExpressCheckin.event.uuid === event.uuid) {
@@ -96,14 +104,6 @@ export default class AttendanceService {
             + 'Please complete your account registration to attend this event!',
           );
         }
-      }
-
-      const isEmailInUse = await Repositories.user(txn).isEmailInUse(email);
-      if (isEmailInUse) {
-        throw new UserError(
-          'This email already has an account registered to it. '
-          + 'Please login to your account to check-in to this event!',
-        );
       }
 
       const expressCheckin = await expressCheckinRepository.createExpressCheckin(email, event);

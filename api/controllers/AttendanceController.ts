@@ -46,6 +46,7 @@ export class AttendanceController {
 
   @Post('/expressCheckin')
   async attendViaExpressCheckin(@Body() body: AttendViaExpressCheckinRequest): Promise<AttendEventResponse> {
+    body.email = body.email.toLowerCase();
     const { email, attendanceCode } = body;
     const { event } = await this.attendanceService.attendViaExpressCheckin(attendanceCode, email);
     await this.emailService.sendExpressCheckinConfirmation(email, event.title);

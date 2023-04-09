@@ -4,6 +4,7 @@ import { anything, instance, mock, verify, when } from 'ts-mockito';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import EmailService from '../services/EmailService';
+import { ExpressCheckinModel } from '../models/ExpressCheckinModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -24,10 +25,13 @@ describe('express check-in', () => {
     const event = EventFactory.fake(EventFactory.ongoing());
     await new PortalState().createEvents(event).write();
 
+    // email can have uppercases in it, so we should test that lowercase emails
+    // are used by SendGrid / written to the database
     const newUserEmail = faker.internet.email();
+    const lowercasedEmail = newUserEmail.toLowerCase();
 
     const emailService = mock(EmailService);
-    when(emailService.sendExpressCheckinConfirmation(newUserEmail, event.title)).thenResolve();
+    when(emailService.sendExpressCheckinConfirmation(lowercasedEmail, event.title)).thenResolve();
     const attendanceController = ControllerFactory.attendance(conn, instance(emailService));
 
     const request = {
@@ -39,7 +43,12 @@ describe('express check-in', () => {
     expect(response.error).toBeNull();
     expect(response.event).toStrictEqual(event.getPublicEvent());
 
-    verify(emailService.sendExpressCheckinConfirmation(newUserEmail, event.title)).called();
+    const expressCheckins = await conn.manager.find(ExpressCheckinModel, { relations: ['event'] });
+    expect(expressCheckins).toHaveLength(1);
+    expect(expressCheckins[0].email).toEqual(newUserEmail.toLowerCase());
+    expect(expressCheckins[0].event).toEqual(event);
+
+    verify(emailService.sendExpressCheckinConfirmation(lowercasedEmail, event.title)).called();
   });
 
   test('throws proper error when user already has a registered account', async () => {

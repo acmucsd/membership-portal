@@ -238,7 +238,7 @@ export class PortalState {
 
   public createExpressCheckin(email: string, event: EventModel): PortalState {
     this.expressCheckins.push(ExpressCheckinModel.create({
-      email,
+      email: email.toLowerCase(),
       event,
     }));
 
