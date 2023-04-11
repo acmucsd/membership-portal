@@ -9,6 +9,7 @@ import { Uuid, ActivityType, UserState, UserRegistration } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
+import UserAccountService from './UserAccountService';
 
 interface AuthToken {
   uuid: Uuid;
@@ -28,10 +29,17 @@ export default class UserAuthService {
       const userRepository = Repositories.user(txn);
       const emailAlreadyUsed = !!(await userRepository.findByEmail(registration.email));
       if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
+      if (registration.handle) {
+        const userHandleTaken = await userRepository.isHandleTaken(registration.handle);
+        if (userHandleTaken) throw new BadRequestError('This handle is already in use.');
+      }
+      const userHandle = registration.handle
+         ?? UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName);
       const user = await userRepository.upsertUser(UserModel.create({
         ...registration,
         hash: await UserRepository.generateHash(registration.password),
         accessCode: UserAuthService.generateAccessCode(),
+        handle: userHandle,
       }));
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
@@ -134,7 +142,7 @@ export default class UserAuthService {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       let user = await userRepository.findByEmail(email);
-      if (!user) throw new NotFoundError();
+      if (!user) throw new NotFoundError('There is no account associated with that email');
       user = await userRepository.upsertUser(user, {
         state: UserState.PASSWORD_RESET,
         accessCode: UserAuthService.generateAccessCode(),

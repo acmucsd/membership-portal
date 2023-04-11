@@ -1,7 +1,7 @@
 import {
   ValidatorConstraintInterface, registerDecorator, ValidationOptions, ValidatorConstraint,
 } from 'class-validator';
-import { PasswordChange, FeedbackType, FeedbackStatus, OrderStatus } from '../../types';
+import { PasswordChange, FeedbackType, FeedbackStatus, OrderStatus, SocialMediaType } from '../../types';
 
 function templatedValidationDecorator(
   validator: ValidatorConstraintInterface | Function, validationOptions?: ValidationOptions,
@@ -45,6 +45,24 @@ class NameValidator implements ValidatorConstraintInterface {
 
 export function IsValidName(validationOptions?: ValidationOptions) {
   return templatedValidationDecorator(NameValidator, validationOptions);
+}
+
+@ValidatorConstraint()
+class HandleValidator implements ValidatorConstraintInterface {
+  // Matches a full string containing only lowercase letters, numbers, and dashes
+  regex = /^[a-z0-9-]+$/;
+
+  validate(handle: string): boolean {
+    return handle.search(this.regex) !== -1;
+  }
+
+  defaultMessage(): string {
+    return 'Your handle can only contain dashes and lowercase alphanumeric characters.';
+  }
+}
+
+export function IsValidHandle(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(HandleValidator, validationOptions);
 }
 
 @ValidatorConstraint()
@@ -152,4 +170,19 @@ class OrderStatusValidator implements ValidatorConstraintInterface {
 
 export function IsValidOrderStatus(validationOptions?: ValidationOptions) {
   return templatedValidationDecorator(OrderStatusValidator, validationOptions);
+}
+
+@ValidatorConstraint()
+class UserSocialMediaTypeValidator implements ValidatorConstraintInterface {
+  validate(type: SocialMediaType): boolean {
+    return Object.values(SocialMediaType).includes(type);
+  }
+
+  defaultMessage(): string {
+    return `Social media type must be one of ${JSON.stringify(Object.values(SocialMediaType))}`;
+  }
+}
+
+export function IsValidSocialMediaType(validationOptions?: ValidationOptions) {
+  return templatedValidationDecorator(UserSocialMediaTypeValidator, validationOptions);
 }

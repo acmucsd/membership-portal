@@ -6,5 +6,9 @@
     "**/.git": true,
     "**/build": true,
     "**/node_modules": true,
-  }
+  },
+  "editor.tabSize": 2,
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "all",
+  "files.trimTrailingWhitespace": true
 }

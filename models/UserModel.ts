@@ -5,11 +5,17 @@ import { ActivityModel } from './ActivityModel';
 import { AttendanceModel } from './AttendanceModel';
 import { OrderModel } from './OrderModel';
 import { FeedbackModel } from './FeedbackModel';
+import { ResumeModel } from './ResumeModel';
+import { UserSocialMediaModel } from './UserSocialMediaModel';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
+
+  @Column('varchar', { length: 255, nullable: false })
+  @Index({ unique: true })
+  handle: string;
 
   @Column()
   @Index({ unique: true })
@@ -71,6 +77,12 @@ export class UserModel extends BaseEntity {
   @OneToMany((type) => FeedbackModel, (feedback) => feedback.user, { cascade: true })
   feedback: FeedbackModel;
 
+  @OneToMany((type) => ResumeModel, (resume) => resume.user, { cascade: true })
+  resumes: ResumeModel[];
+
+  @OneToMany((type) => UserSocialMediaModel, (userSocialMedia) => userSocialMedia.user, { cascade: true })
+  userSocialMedia: UserSocialMediaModel[];
+
   public async verifyPass(pass: string): Promise<boolean> {
     return bcrypt.compare(pass, this.hash);
   }
@@ -104,8 +116,9 @@ export class UserModel extends BaseEntity {
   }
 
   public getPublicProfile(): PublicProfile {
-    return {
+    const publicProfile: PublicProfile = {
       uuid: this.uuid,
+      handle: this.handle,
       firstName: this.firstName,
       lastName: this.lastName,
       profilePicture: this.profilePicture,
@@ -114,11 +127,16 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
     };
+    if (this.userSocialMedia) {
+      publicProfile.userSocialMedia = this.userSocialMedia.map((sm) => sm.getPublicSocialMedia());
+    }
+    return publicProfile;
   }
 
   public getFullUserProfile(): PrivateProfile {
-    return {
+    const fullUserProfile: PrivateProfile = {
       uuid: this.uuid,
+      handle: this.handle,
       email: this.email,
       firstName: this.firstName,
       lastName: this.lastName,
@@ -131,5 +149,9 @@ export class UserModel extends BaseEntity {
       points: this.points,
       credits: this.credits,
     };
+    if (this.userSocialMedia) {
+      fullUserProfile.userSocialMedia = this.userSocialMedia.map((sm) => sm.getPublicSocialMedia());
+    }
+    return fullUserProfile;
   }
 }

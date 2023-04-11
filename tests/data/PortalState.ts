@@ -13,8 +13,10 @@ import { ActivityScope, ActivityType, Feedback } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { OrderItemModel } from '../../models/OrderItemModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
+import { UserSocialMediaModel } from '../../models/UserSocialMediaModel';
 import { DatabaseConnection } from './DatabaseConnection';
 import { MerchFactory } from '.';
+import { ResumeModel } from '../../models/ResumeModel';
 
 export class PortalState {
   users: UserModel[] = [];
@@ -33,6 +35,10 @@ export class PortalState {
 
   feedback: FeedbackModel[] = [];
 
+  resumes: ResumeModel[] = [];
+
+  userSocialMedia: UserSocialMediaModel[] = [];
+
   public from(state: PortalState): PortalState {
     // deep clones all around for immutable PortalStates
     this.users = rfdc()(state.users);
@@ -43,6 +49,8 @@ export class PortalState {
     this.orderPickupEvents = rfdc()(state.orderPickupEvents);
     this.orders = rfdc()(state.orders);
     this.feedback = rfdc()(state.feedback);
+    this.resumes = rfdc()(state.resumes);
+    this.userSocialMedia = rfdc()(state.userSocialMedia);
     return this;
   }
 
@@ -57,6 +65,8 @@ export class PortalState {
       this.orderPickupEvents = await txn.save(this.orderPickupEvents);
       this.orders = await txn.save(this.orders);
       this.feedback = await txn.save(this.feedback);
+      this.resumes = await txn.save(this.resumes);
+      this.userSocialMedia = await txn.save(this.userSocialMedia);
     });
   }
 
@@ -106,6 +116,14 @@ export class PortalState {
 
   public createOrderPickupEvents(...pickupEvents: OrderPickupEventModel[]): PortalState {
     this.orderPickupEvents = this.orderPickupEvents.concat(pickupEvents);
+    return this;
+  }
+
+  public createUserSocialMedia(user: UserModel, ...userSocialMedia: UserSocialMediaModel[]): PortalState {
+    for (let s = 0; s < userSocialMedia.length; s += 1) {
+      const sm = userSocialMedia[s];
+      this.userSocialMedia.push(UserSocialMediaModel.create({ ...sm, user }));
+    }
     return this;
   }
 
@@ -199,6 +217,18 @@ export class PortalState {
   private getDateDuring(event: EventModel) {
     const { start, end } = event;
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+  }
+
+  public createResumes(user: UserModel, ...resumes: ResumeModel[]): PortalState {
+    for (let r = 0; r < resumes.length; r += 1) {
+      const resume = resumes[r];
+      this.resumes.push(ResumeModel.create({ ...resume, user }));
+      this.activities.push(ActivityModel.create({
+        user,
+        type: ActivityType.RESUME_UPLOAD,
+      }));
+    }
+    return this;
   }
 }
 

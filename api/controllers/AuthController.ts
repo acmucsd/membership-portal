@@ -8,7 +8,7 @@ import {
   VerifyEmailResponse,
   ResendEmailVerificationResponse,
   EmailModificationResponse,
-} from 'types';
+} from '../../types';
 import UserAccountService from '../../services/UserAccountService';
 import UserAuthService from '../../services/UserAuthService';
 import { logger as log } from '../../utils/Logger';

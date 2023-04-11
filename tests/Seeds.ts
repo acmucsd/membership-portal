@@ -44,10 +44,10 @@ async function seed(): Promise<void> {
     lastName: 'Hariharan',
   });
   const STAFF_AI = UserFactory.fake({
-    email: 'stao@ucsd.edu',
+    email: 'tkwan@ucsd.edu',
     accessType: UserAccessType.STAFF,
-    firstName: 'Stone',
-    lastName: 'Tao',
+    firstName: 'Trevor',
+    lastName: 'Kwan',
   });
 
   const MEMBER_FRESHMAN = UserFactory.fake({
@@ -59,18 +59,18 @@ async function seed(): Promise<void> {
     graduationYear: getGraduationYear(4),
   });
   const MEMBER_SOPHOMORE = UserFactory.fake({
-    email: 'jpan@ucsd.edu',
+    email: 'r1truong@ucsd.edu',
     accessType: UserAccessType.STANDARD,
-    firstName: 'Paul',
-    lastName: 'Pan',
+    firstName: 'Ryan',
+    lastName: 'Truong',
     points: 800,
     graduationYear: getGraduationYear(3),
   });
   const MEMBER_JUNIOR = UserFactory.fake({
-    email: 'asudhart@ucsd.edu',
+    email: 'rzsun@ucsd.edu',
     accessType: UserAccessType.STANDARD,
-    firstName: 'Andrea',
-    lastName: 'Sudharta',
+    firstName: 'Raymond',
+    lastName: 'Sun',
     graduationYear: getGraduationYear(2),
   });
   const MEMBER_SENIOR = UserFactory.fake({
@@ -297,6 +297,17 @@ async function seed(): Promise<void> {
     ...EventFactory.daysAfter(3),
     attendanceCode: 'f0rk',
     ...staffed,
+  });
+  const LONG_ACM_EVENT = EventFactory.fake({
+    title: 'Winter 2022 Census',
+    description: `Fill out our Winter 2022 census at https://acmurl.com/census! We
+    appreciate your input and will continue to take your feedback to improve ACM.
+    After checking in, you will automatically be entered into a raffle for a winter
+    gift set!`,
+    ...general,
+    location: 'Online',
+    ...EventFactory.daysLong(7),
+    attendanceCode: 'c3nsus',
   });
 
   const MERCH_COLLECTION_1 = MerchFactory.fakeCollection({
@@ -547,6 +558,7 @@ async function seed(): Promise<void> {
       PAST_AI_WORKSHOP_2,
       PAST_ACM_PANEL,
       PAST_ACM_SOCIAL_2,
+      LONG_ACM_EVENT,
     )
     .attendEvents([
       STAFF_AI,

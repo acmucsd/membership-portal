@@ -1,4 +1,4 @@
-import { FeedbackStatus, FeedbackType } from './Enums';
+import { FeedbackStatus, FeedbackType, SocialMediaType } from './Enums';
 import { Uuid } from '.';
 
 // REQUEST TYPES
@@ -31,6 +31,7 @@ export interface UserRegistration {
   password: string;
   graduationYear: number;
   major: string;
+  handle?: string;
 }
 
 export interface EmailModificationRequest {
@@ -49,11 +50,17 @@ export interface Feedback {
   type: FeedbackType;
 }
 
+export interface SocialMedia {
+  type: SocialMediaType,
+  url: string
+}
+
 export interface PasswordUpdate extends PasswordChange {
   password: string;
 }
 
 export interface UserPatches {
+  handle?: string;
   firstName?: string;
   lastName?: string;
   major?: string;
@@ -72,6 +79,18 @@ export interface SubmitFeedbackRequest {
 
 export interface UpdateFeedbackStatusRequest {
   status: FeedbackStatus;
+}
+
+export interface InsertUserSocialMediaRequest {
+  socialMedia: SocialMedia;
+}
+
+export interface SocialMediaPatches {
+  url?: string;
+}
+
+export interface UpdateUserSocialMediaRequest {
+  socialMedia: SocialMediaPatches;
 }
 
 // LEADERBOARD
@@ -278,4 +297,19 @@ export interface EditOrderPickupEventRequest {
 
 export interface GetCartRequest {
   items: string[];
+}
+
+// RESUMES
+/* Request object does not have nested property because the API request is of
+type multipart/form-data which does not support nested properties */
+export interface UploadResumeRequest {
+  isResumeVisible?: boolean
+}
+
+export interface ResumePatches {
+  isResumeVisible?: boolean;
+}
+
+export interface PatchResumeRequest {
+  resume: ResumePatches;
 }

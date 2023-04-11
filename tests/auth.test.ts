@@ -2,6 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import { NotFoundError } from 'routing-controllers';
 import { anyString, instance, mock, verify, when } from 'ts-mockito';
+import * as faker from 'faker';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import EmailService from '../services/EmailService';
@@ -10,6 +11,7 @@ import { UserAccessType, UserState } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, PortalState, UserFactory } from './data';
 import FactoryUtils from './data/FactoryUtils';
+import { UserRegistrationFactory } from './data/UserRegistrationFactory';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -33,14 +35,7 @@ describe('account registration', () => {
       .createUsers(admin)
       .write();
 
-    const user = {
-      email: 'acm@ucsd.edu',
-      firstName: 'ACM',
-      lastName: 'UCSD',
-      password: 'password',
-      major: UserFactory.major(),
-      graduationYear: UserFactory.graduationYear(),
-    };
+    const user = UserRegistrationFactory.fake();
 
     // register member
     const emailService = mock(EmailService);
@@ -60,8 +55,10 @@ describe('account registration', () => {
       graduationYear: user.graduationYear,
       bio: null,
       points: 0,
+      handle: registerResponse.user.handle,
       uuid: registerResponse.user.uuid,
       profilePicture: null,
+      userSocialMedia: [],
     });
 
     // check that email verification is sent
@@ -77,14 +74,9 @@ describe('account registration', () => {
       .createUsers(member)
       .write();
 
-    const user = {
+    const user = UserRegistrationFactory.fake({
       email: member.email,
-      firstName: 'ACM',
-      lastName: 'UCSD',
-      password: 'password',
-      major: UserFactory.major(),
-      graduationYear: UserFactory.graduationYear(),
-    };
+    });
 
     const emailService = mock(EmailService);
     when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
@@ -96,6 +88,85 @@ describe('account registration', () => {
 
     verify(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
       .never();
+  });
+
+  test('User cannot register with a handle that is already in use', async () => {
+    const conn = await DatabaseConnection.get();
+    const existingMember = UserFactory.fake();
+
+    await new PortalState()
+      .createUsers(existingMember)
+      .write();
+
+    const user = UserRegistrationFactory.fake({
+      handle: existingMember.handle,
+    });
+
+    const emailService = mock(EmailService);
+    when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+      .thenResolve();
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const registerRequest = { user };
+    await expect(authController.register(registerRequest, FactoryUtils.randomHexString()))
+      .rejects.toThrow('This handle is already in use.');
+
+    verify(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+      .never();
+  });
+
+  test('User registration with a full name longer than 32 characters truncates handle to exactly 32 characters',
+    async () => {
+      const conn = await DatabaseConnection.get();
+      const existingMember = UserFactory.fake();
+
+      await new PortalState()
+        .createUsers(existingMember)
+        .write();
+
+      const user = UserRegistrationFactory.fake({
+        firstName: faker.datatype.string(40),
+        lastName: faker.datatype.string(40),
+      });
+
+      // register member
+      const emailService = mock(EmailService);
+      when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+        .thenResolve();
+      const authController = ControllerFactory.auth(conn, instance(emailService));
+      const registerRequest = { user };
+      const registerResponse = await authController.register(registerRequest, FactoryUtils.randomHexString());
+
+      expect(registerResponse.user.handle.length).toBe(32);
+    });
+
+  test('User can register with an optional handle to be set', async () => {
+    const conn = await DatabaseConnection.get();
+    const existingMember = UserFactory.fake();
+
+    await new PortalState()
+      .createUsers(existingMember)
+      .write();
+
+    const user = UserRegistrationFactory.fake({
+      handle: 'acmadmin',
+    });
+
+    // register member
+    const emailService = mock(EmailService);
+    when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+      .thenResolve();
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const registerRequest = { user };
+    const registerResponse = await authController.register(registerRequest, FactoryUtils.randomHexString());
+
+    // check that member is registered as expected
+    const params = { handle: registerResponse.user.handle };
+    const getUserResponse = await ControllerFactory.user(conn).getUserByHandle(params, existingMember);
+    expect(getUserResponse.user.handle).toBe(user.handle);
+
+    // check that email verification is sent
+    verify(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+      .called();
   });
 });
 

@@ -17,6 +17,7 @@ import {
   GetOneEventResponse,
   UpdateEventCoverResponse,
   GetFutureEventsResponse,
+  GetAllEventsResponse,
   GetPastEventsResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
@@ -80,11 +81,11 @@ export class EventController {
     return { error: null };
   }
 
-  @UseBefore(UserAuthentication)
+  @UseBefore(OptionalUserAuthentication)
   @Get('/:uuid')
   async getOneEvent(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetOneEventResponse> {
-    const canSeeAttendanceCode = PermissionsService.canEditEvents(user);
+    const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const event = await this.eventService.findByUuid(params.uuid, canSeeAttendanceCode);
     return { error: null, event };
   }
@@ -110,7 +111,8 @@ export class EventController {
 
   @UseBefore(OptionalUserAuthentication)
   @Get()
-  async getAllEvents(@QueryParams() options: EventSearchOptions, @AuthenticatedUser() user: UserModel) {
+  async getAllEvents(@QueryParams() options: EventSearchOptions, @AuthenticatedUser() user: UserModel):
+  Promise<GetAllEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const events = await this.eventService.getAllEvents(canSeeAttendanceCode, options);
     return { error: null, events };

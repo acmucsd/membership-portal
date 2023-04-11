@@ -4,7 +4,7 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
-import { OrderItemPriceAndQuantity } from 'types/internal';
+import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,
@@ -449,13 +449,16 @@ export default class MerchStoreService {
     const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
       .countItemRequestedQuantities(originalOrder, itemOptionsToOrder)
       .entries());
+
     for (let i = 0; i < requestedQuantitiesByMerchItem.length; i += 1) {
-      const [item, quantityRequested] = requestedQuantitiesByMerchItem[i];
-      if (!!item.lifetimeLimit && lifetimeItemOrderCounts.get(item.uuid) + quantityRequested > item.lifetimeLimit) {
-        throw new UserError(`This order exceeds the lifetime limit for ${item.itemName}`);
+      const [uuid, itemWithQuantity] = requestedQuantitiesByMerchItem[i];
+      if (!!itemWithQuantity.item.lifetimeLimit
+        && lifetimeItemOrderCounts.get(uuid) + itemWithQuantity.quantity > itemWithQuantity.item.lifetimeLimit) {
+        throw new UserError(`This order exceeds the lifetime limit for ${itemWithQuantity.item.itemName}`);
       }
-      if (!!item.monthlyLimit && pastMonthItemOrderCounts.get(item.uuid) + quantityRequested > item.monthlyLimit) {
-        throw new UserError(`This order exceeds the monthly limit for ${item.itemName}`);
+      if (!!itemWithQuantity.item.monthlyLimit
+        && pastMonthItemOrderCounts.get(uuid) + itemWithQuantity.quantity > itemWithQuantity.item.monthlyLimit) {
+        throw new UserError(`This order exceeds the monthly limit for ${itemWithQuantity.item.itemName}`);
       }
     }
 
@@ -584,18 +587,37 @@ export default class MerchStoreService {
   }
 
   private async refundAndConfirmOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {
+    // refund and restock items
+    const refundedItems = await MerchStoreService.refundAndRestockItems(order, user, txn);
+
+    // send email confirming cancel
+    const orderUpdateInfo = await MerchStoreService.buildOrderCancellationInfo(order, refundedItems, txn);
+    await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+  }
+
+  private async refundAndConfirmAutomatedOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {
+    // refund and restock items
+    const refundedItems = await MerchStoreService.refundAndRestockItems(order, user, txn);
+
+    // send email confirming automated cancel by admin
+    const orderUpdateInfo = await MerchStoreService.buildOrderCancellationInfo(order, refundedItems, txn);
+    await this.emailService.sendAutomatedOrderCancellation(user.email, user.firstName, orderUpdateInfo);
+  }
+
+  private static async buildOrderCancellationInfo(order: OrderModel, refundedItems: OrderItemModel[],
+    txn: EntityManager): Promise<OrderInfo> {
     const orderRepository = Repositories.merchOrder(txn);
     const upsertedOrder = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
+    const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: refundedItems });
+    return MerchStoreService.buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
+  }
 
+  private static async refundAndRestockItems(order: OrderModel, user: UserModel, txn: EntityManager):
+  Promise<OrderItemModel[]> {
     // refund only the items that haven't been fulfilled yet
     const unfulfilledItems = order.items.filter((item) => !item.fulfilled);
     const refundValue = unfulfilledItems.reduce((refund, item) => refund + item.salePriceAtPurchase, 0);
     await MerchStoreService.refundUser(user, refundValue, txn);
-
-    const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: unfulfilledItems });
-    const orderUpdateInfo = await MerchStoreService
-      .buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
-    await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
 
     // restock items that were cancelled
     const optionsToRestock = unfulfilledItems.map((item) => item.option);
@@ -604,6 +626,7 @@ export default class MerchStoreService {
       const quantityUpdate = { quantity: option.quantity + 1 };
       return merchItemOptionRepository.upsertMerchItemOption(option, quantityUpdate);
     }));
+    return unfulfilledItems;
   }
 
   /**
@@ -690,12 +713,10 @@ export default class MerchStoreService {
       let order = await orderRepository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
 
-      // check if pickup event is happening today
-      // (we don't check if it's ongoing in case the event needs to start earlier for any reason
-      // or if someone comes a few minutes earlier)
+      // check if pickup event hasn't started (items can only be fulfilled during or after pickup events)
       const { pickupEvent } = order;
-      if (!MerchStoreService.isPickupEventHappeningToday(pickupEvent)) {
-        throw new UserError('Cannot fulfill items of an order that has a pickup event not happening today');
+      if (MerchStoreService.isFuturePickupEvent(pickupEvent)) {
+        throw new UserError('Cannot fulfill items of an order that has a pickup event that hasn\'t started yet');
       }
       // check if order is in PLACED status (by order state machine design)
       if (order.status !== OrderStatus.PLACED) {
@@ -809,7 +830,9 @@ export default class MerchStoreService {
       const order = ordersByOrderItem.get(orderedItem.uuid);
       if (MerchStoreService.doesItemCountTowardsOrderLimits(orderedItem, order)) {
         const { uuid: itemUuid } = orderedItem.option.item;
-        if (counts.has(itemUuid)) counts.set(itemUuid, counts.get(itemUuid) + 1);
+        if (counts.has(itemUuid)) {
+          counts.set(itemUuid, counts.get(itemUuid) + 1);
+        }
       }
     }
     return counts;
@@ -827,13 +850,21 @@ export default class MerchStoreService {
   }
 
   private static countItemRequestedQuantities(order: MerchItemOptionAndQuantity[],
-    itemOptions: Map<string, MerchandiseItemOptionModel>): Map<MerchandiseItemModel, number> {
-    const requestedQuantitiesByMerchItem = new Map<MerchandiseItemModel, number>();
+    itemOptions: Map<string, MerchandiseItemOptionModel>): Map<string, MerchItemWithQuantity> {
+    const requestedQuantitiesByMerchItem = new Map<string, MerchItemWithQuantity>();
     for (let i = 0; i < order.length; i += 1) {
-      const { item } = itemOptions.get(order[i].option);
+      const option = itemOptions.get(order[i].option);
+
+      const { item } = option;
       const quantityRequested = order[i].quantity;
-      if (!requestedQuantitiesByMerchItem.has(item)) requestedQuantitiesByMerchItem.set(item, 0);
-      requestedQuantitiesByMerchItem.set(item, requestedQuantitiesByMerchItem.get(item) + quantityRequested);
+
+      if (!requestedQuantitiesByMerchItem.has(item.uuid)) {
+        requestedQuantitiesByMerchItem.set(item.uuid, {
+          item,
+          quantity: 0,
+        });
+      }
+      requestedQuantitiesByMerchItem.get(item.uuid).quantity += quantityRequested;
     }
     return requestedQuantitiesByMerchItem;
   }
@@ -851,17 +882,33 @@ export default class MerchStoreService {
     return moment().isSame(moment(pickupEvent.start), 'day');
   }
 
+  private static isFuturePickupEvent(pickupEvent: OrderPickupEventModel): boolean {
+    return moment().isBefore(moment(pickupEvent.start));
+  }
+
   public async cancelAllPendingOrders(user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const merchOrderRepository = Repositories.merchOrder(txn);
-      const pendingOrders = await merchOrderRepository.getAllOrdersForAllUsers(OrderStatus.PLACED);
-      await Promise.all(pendingOrders.map((order) => this.refundAndConfirmOrderCancellation(order, order.user, txn)));
+      const pendingOrders = await merchOrderRepository.getAllOrdersForAllUsers(
+        ...MerchStoreService.pendingOrderStatuses(),
+      );
+      await Promise.all(pendingOrders.map(
+        (order) => this.refundAndConfirmAutomatedOrderCancellation(order, order.user, txn),
+      ));
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
         user,
         type: ActivityType.PENDING_ORDERS_CANCELLED,
       });
     });
+  }
+
+  private static pendingOrderStatuses(): OrderStatus[] {
+    return [
+      OrderStatus.PARTIALLY_FULFILLED,
+      OrderStatus.PICKUP_CANCELLED,
+      OrderStatus.PICKUP_MISSED,
+    ];
   }
 
   public async getPastPickupEvents(): Promise<OrderPickupEventModel[]> {
@@ -969,8 +1016,8 @@ export default class MerchStoreService {
       if (!MerchStoreService.isActivePickupEvent(pickupEvent)) {
         throw new UserError('Cannot complete a pickup event that isn\'t currently active');
       }
-      if (!MerchStoreService.isPickupEventHappeningToday(pickupEvent)) {
-        throw new UserError('Cannot complete a pickup event that\'s not happening today');
+      if (MerchStoreService.isFuturePickupEvent(pickupEvent)) {
+        throw new UserError('Cannot complete a pickup event that\'s hasn\'t happened yet');
       }
 
       await orderPickupEventRepository.upsertPickupEvent(pickupEvent, { status: OrderPickupEventStatus.COMPLETED });

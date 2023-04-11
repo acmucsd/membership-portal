@@ -3,6 +3,7 @@ import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
+import * as faker from 'faker';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -12,6 +13,7 @@ import {
   Milestone,
   UserPatches,
   UserState,
+  PrivateProfile,
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
@@ -28,8 +30,27 @@ export default class UserAccountService {
     const user = await this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .findByUuid(uuid));
-    if (!user) throw new NotFoundError('User was not found');
+    if (!user) throw new NotFoundError('No user associated with this handle was found');
     return user;
+  }
+
+  public async findByHandle(handle: string): Promise<UserModel> {
+    const user = await this.transactions.readOnly(async (txn) => Repositories
+      .user(txn)
+      .findByHandle(handle));
+    if (!user) throw new NotFoundError('No user associated with this handle was found');
+    return user;
+  }
+
+  /**
+   * Generate a default user handle in the format of "[firstName]-[lastName]-[6 digit has]" truncated to 32 characters
+   */
+  public static generateDefaultHandle(firstName: string, lastName: string): string {
+    const nameString = `${firstName}-${lastName}`.slice(0, 25);
+    // Hexadecimals look like 0x1b9Dle so we have to truncate the fixed '0x'.
+    const hashValue = faker.datatype.hexaDecimal(6).slice(2);
+    const handle = `${nameString}-${hashValue}`.toLowerCase();
+    return handle;
   }
 
   public async verifyEmail(accessCode: string): Promise<void> {
@@ -83,6 +104,11 @@ export default class UserAccountService {
       changes.hash = await UserRepository.generateHash(newPassword);
     }
     return this.transactions.readWrite(async (txn) => {
+      if (userPatches.handle) {
+        const userRepository = Repositories.user(txn);
+        const isHandleTaken = await userRepository.isHandleTaken(userPatches.handle);
+        if (isHandleTaken) throw new BadRequestError('This handle is already in use.');
+      }
       const updatedFields = Object.keys(userPatches).join(', ');
       const activity = {
         user,
@@ -144,5 +170,26 @@ export default class UserAccountService {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .getAllEmails());
+  }
+
+  /**
+   * UserAccountService::getFullUserProfile() differs from UserModel::getFullUserProfile() in that it also returns any
+   * user data that needs to be joined from other tables (e.g. resumes and social media URLs)
+   */
+  public async getFullUserProfile(user: UserModel) : Promise<PrivateProfile> {
+    return this.transactions.readOnly(async (txn) => {
+      const userProfile = user.getFullUserProfile();
+      userProfile.resumes = await Repositories.resume(txn).findAllByUser(user);
+      userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
+      return userProfile;
+    });
+  }
+
+  public async getPublicProfile(user: UserModel) : Promise<PublicProfile> {
+    return this.transactions.readOnly(async (txn) => {
+      const userProfile = user.getPublicProfile();
+      userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
+      return userProfile;
+    });
   }
 }
