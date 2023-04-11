@@ -767,7 +767,7 @@ describe('merch orders', () => {
     const merchController = ControllerFactory.merchStore(conn, emailService);
     await merchController.cancelAllPendingMerchOrders(storeManager);
     // (making sure that store distributors cannot)
-    expect(merchController.cancelAllPendingMerchOrders(merchDistributor))
+    await expect(merchController.cancelAllPendingMerchOrders(merchDistributor))
       .rejects.toThrow(ForbiddenError);
 
     await Promise.all(members.map(async (member) => {
