@@ -31,7 +31,7 @@ describe('express check-in', () => {
     const lowercasedEmail = newUserEmail.toLowerCase();
 
     const emailService = mock(EmailService);
-    when(emailService.sendExpressCheckinConfirmation(lowercasedEmail, event.title)).thenResolve();
+    when(emailService.sendExpressCheckinConfirmation(lowercasedEmail, event.title, event.pointValue)).thenResolve();
     const attendanceController = ControllerFactory.attendance(conn, instance(emailService));
 
     const request = {
@@ -48,7 +48,7 @@ describe('express check-in', () => {
     expect(expressCheckins[0].email).toEqual(newUserEmail.toLowerCase());
     expect(expressCheckins[0].event).toEqual(event);
 
-    verify(emailService.sendExpressCheckinConfirmation(lowercasedEmail, event.title)).called();
+    verify(emailService.sendExpressCheckinConfirmation(lowercasedEmail, event.title, event.pointValue)).called();
   });
 
   test('throws proper error when user already has a registered account', async () => {
@@ -75,7 +75,7 @@ describe('express check-in', () => {
       .toThrow('This email already has an account registered to it. '
              + 'Please login to your account to check-in to this event!'));
 
-    verify(emailService.sendExpressCheckinConfirmation(anything(), anything())).never();
+    verify(emailService.sendExpressCheckinConfirmation(anything(), anything(), anything())).never();
   });
 
   test('throws proper error when user already used express checkin for the same event', async () => {
@@ -99,7 +99,7 @@ describe('express check-in', () => {
       .rejects
       .toThrow('You have already successfully checked into this event!'));
 
-    verify(emailService.sendExpressCheckinConfirmation(anything(), anything())).never();
+    verify(emailService.sendExpressCheckinConfirmation(anything(), anything(), anything())).never();
   });
 
   test('throws proper error when user already used express checkin for any previous event', async () => {
@@ -125,6 +125,6 @@ describe('express check-in', () => {
       .toThrow('You have already done an express check-in before for a previous event. '
              + 'Please complete your account registration to attend this event!'));
 
-    verify(emailService.sendExpressCheckinConfirmation(anything(), anything())).never();
+    verify(emailService.sendExpressCheckinConfirmation(anything(), anything(), anything())).never();
   });
 });

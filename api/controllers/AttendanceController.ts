@@ -49,7 +49,7 @@ export class AttendanceController {
     body.email = body.email.toLowerCase();
     const { email, attendanceCode } = body;
     const { event } = await this.attendanceService.attendViaExpressCheckin(attendanceCode, email);
-    await this.emailService.sendExpressCheckinConfirmation(email, event.title);
+    await this.emailService.sendExpressCheckinConfirmation(email, event.title, event.pointValue);
     return { error: null, event };
   }
 }

@@ -228,7 +228,7 @@ export default class EmailService {
     }
   }
 
-  public async sendExpressCheckinConfirmation(email: string, eventName: string) {
+  public async sendExpressCheckinConfirmation(email: string, eventName, pointValue) {
     try {
       const data = {
         to: email,
@@ -236,7 +236,9 @@ export default class EmailService {
         subject: 'ACM UCSD Express Checkin - Complete Your Account Registration',
         html: ejs.render(EmailService.expressCheckinConfirmationTemplate, {
           eventName,
-          link: `${Config.client}/register`,
+          pointValue,
+          registerLink: `${Config.client}/register`,
+          storeLink: `${Config.client}/store`,
         }),
       };
       await this.sendEmail(data);
