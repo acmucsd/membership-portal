@@ -49,7 +49,7 @@ export default class EmailService {
         subject: 'ACM UCSD Membership Portal Password Reset',
         html: ejs.render(EmailService.passwordResetTemplate, {
           firstName,
-          link: `${Config.client}/resetPassword/${code}`,
+          link: `${Config.client}/reset-password/${code}`,
         }),
       };
       await this.sendEmail(data);
@@ -66,7 +66,7 @@ export default class EmailService {
         subject: 'ACM UCSD Membership Portal Email Verification',
         html: ejs.render(EmailService.emailVerificationTemplate, {
           firstName,
-          link: `${Config.client}/verifyEmail/${code}`,
+          link: `${Config.client}/verify-email/${code}`,
         }),
       };
       await this.sendEmail(data);
