@@ -10,5 +10,11 @@
   "editor.tabSize": 2,
   "prettier.singleQuote": true,
   "prettier.trailingComma": "all",
-  "files.trimTrailingWhitespace": true
+  "files.trimTrailingWhitespace": true,
+  "[javascriptreact]": {
+    "editor.tabSize": 2
+  },
+  "[typescriptreact]": {
+    "editor.tabSize": 2
+  }
 }
