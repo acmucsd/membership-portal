@@ -567,7 +567,7 @@ describe('merch orders', () => {
 
     // cancel order
     const { uuid } = placedOrderResponse.order;
-    expect(merchController.cancelMerchOrder({ uuid }, otherMember))
+    await expect(merchController.cancelMerchOrder({ uuid }, otherMember))
       .rejects
       .toThrow('Members cannot cancel other members\' orders');
   });
@@ -617,7 +617,7 @@ describe('merch orders', () => {
         },
       ],
     };
-    expect(MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, uuidParams,
+    await expect(MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, uuidParams,
       fulfillMerchOrderItemsRequest, member, conn, pickupEvent))
       .rejects.toThrow(ForbiddenError);
   });
@@ -767,7 +767,7 @@ describe('merch orders', () => {
     const merchController = ControllerFactory.merchStore(conn, emailService);
     await merchController.cancelAllPendingMerchOrders(storeManager);
     // (making sure that store distributors cannot)
-    expect(merchController.cancelAllPendingMerchOrders(merchDistributor))
+    await expect(merchController.cancelAllPendingMerchOrders(merchDistributor))
       .rejects.toThrow(ForbiddenError);
 
     await Promise.all(members.map(async (member) => {
@@ -849,7 +849,7 @@ describe('merch orders', () => {
       .toStrictEqual(expect.arrayContaining([order1.orders[0], order2.orders[0], order3.orders[0],
         adminOrder.orders[0]]));
 
-    expect(merchStoreController.getMerchOrdersForAllUsers(member1)).rejects.toThrow(ForbiddenError);
+    await expect(merchStoreController.getMerchOrdersForAllUsers(member1)).rejects.toThrow(ForbiddenError);
   });
 
   test('unfulfilled ordered items whose order was cancelled do not count towards order limits for user', async () => {
@@ -1588,7 +1588,7 @@ describe('merch order pickup events', () => {
     // attempt to reschedule pickup event
     const orderUuid = { uuid: placedOrderResponse.order.uuid };
     const pickupEventRequest = { pickupEvent: moreRecentPickupEvent.uuid };
-    expect(merchController.rescheduleOrderPickup(orderUuid, pickupEventRequest, member))
+    await expect(merchController.rescheduleOrderPickup(orderUuid, pickupEventRequest, member))
       .rejects.toThrow('Cannot change order pickup to an event that starts in less than 2 days');
   });
 

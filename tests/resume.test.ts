@@ -38,7 +38,7 @@ describe('resume fetching', () => {
     const resumeController = ControllerFactory.resume(conn);
 
     // throws permissions error for member
-    expect(resumeController.getAllVisibleResumes(member)).rejects.toThrow(
+    await expect(resumeController.getAllVisibleResumes(member)).rejects.toThrow(
       ForbiddenError,
     );
 
