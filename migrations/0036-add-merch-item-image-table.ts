@@ -37,7 +37,7 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
 
     // add images from each item of the merchandise table to the photo table
     await queryRunner.query(
-      `INSERT INTO "${TABLE_NAME}" (merchItem, picture) ` +
+      `INSERT INTO "${TABLE_NAME}" ("merchItem", picture) ` +
       `SELECT uuid, picture FROM "${MERCH_TABLE_NAME}"`
     );
 
@@ -56,7 +56,7 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
     // fill old column with the first image from the photo table
     await queryRunner.query(
       `ALTER TABLE "${MERCH_TABLE_NAME}" ALTER COLUMN picture ` +
-      `SELECT picture FROM "${TABLE_NAME}" GROUP BY merchItem`
+      `SELECT picture FROM "${TABLE_NAME}" GROUP BY "merchItem"`
     );
   }
 

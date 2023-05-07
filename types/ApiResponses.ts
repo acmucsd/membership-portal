@@ -156,7 +156,7 @@ export interface PublicMerchItem {
   uuid: Uuid;
   itemName: string;
   collection?: PublicMerchCollection;
-  picture: string;
+  pictures: string[];
   description: string;
   monthlyLimit: number;
   lifetimeLimit: number;

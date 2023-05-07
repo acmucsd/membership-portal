@@ -20,9 +20,6 @@ export class MerchandiseItemModel extends BaseEntity {
   @JoinColumn({ name: 'collection' })
   collection: MerchandiseCollectionModel;
 
-  @Column('varchar', { length: 255, nullable: true })
-  picture: string;
-
   @Column('text')
   description: string;
 
@@ -38,6 +35,22 @@ export class MerchandiseItemModel extends BaseEntity {
   @Column('boolean', { default: false })
   hasVariantsEnabled: boolean;
 
+  // copied from AttendanceModel
+  // can be empty, default picture is null
+  @Column({
+    type: 'varchar',
+    transformer: {
+      to(value: string[]) {
+        return JSON.stringify(value);
+      },
+      from(value: string) {
+        return JSON.parse(value);
+      },
+    },
+    nullable: true,
+  })
+  pictures: string[];
+
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })
   options: MerchandiseItemOptionModel[];
 
@@ -45,7 +58,7 @@ export class MerchandiseItemModel extends BaseEntity {
     const baseMerchItem: PublicMerchItem = {
       uuid: this.uuid,
       itemName: this.itemName,
-      picture: this.picture,
+      pictures: this.pictures,
       description: this.description,
       options: this.options.map((o) => o.getPublicMerchItemOption()),
       monthlyLimit: this.monthlyLimit,
@@ -61,8 +74,12 @@ export class MerchandiseItemModel extends BaseEntity {
     return {
       uuid: this.uuid,
       itemName: this.itemName,
-      picture: this.picture,
+      picture: this.getDefaultPicture(),
       description: this.description,
     };
+  }
+
+  public getDefaultPicture(): string {
+    return this.pictures.length > 0 ? this.pictures[0] : null;
   }
 }
