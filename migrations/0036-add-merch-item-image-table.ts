@@ -1,7 +1,7 @@
 import {MigrationInterface, QueryRunner, Table, TableColumn, TableIndex } from "typeorm";
 
 const TABLE_NAME = 'MerchandiseItemPhotos';
-const MERCH_TABLE_NAME = 'Merchandise';
+const MERCH_TABLE_NAME = 'MerchandiseItems';
 
 export class addMerchItemImageTable1681777109787 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
