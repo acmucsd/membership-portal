@@ -156,12 +156,12 @@ export interface PublicMerchItem {
   uuid: Uuid;
   itemName: string;
   collection?: PublicMerchCollection;
-  pictures: string[];
   description: string;
   monthlyLimit: number;
   lifetimeLimit: number;
   hidden: boolean;
   hasVariantsEnabled: boolean;
+  pictures: PublicMerchItemPhoto[];
   options: PublicMerchItemOption[];
 }
 
@@ -183,6 +183,13 @@ export interface PublicMerchItemOption {
   quantity: number;
   discountPercentage: number;
   metadata: MerchItemOptionMetadata;
+}
+
+export interface PublicMerchItemPhoto {
+  uuid: Uuid;
+  picture: string;
+  position: number;
+  uploadedAt: Date;
 }
 
 export interface PublicOrderMerchItemOption {

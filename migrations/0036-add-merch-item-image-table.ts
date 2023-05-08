@@ -5,7 +5,7 @@ const MERCH_TABLE_NAME = 'MerchandiseItems';
 
 export class addMerchItemImageTable1681777109787 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // instantiates table with columns: uuid, merchItem, picture
+    // instantiates table with columns: uuid, merchItem, picture, uploadedAt, position
     await queryRunner.createTable(new Table({
       name: TABLE_NAME,
       columns: [
@@ -24,6 +24,15 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
           name: 'picture',
           type: 'varchar(255)',
         },
+        {
+          name: 'uploadedAt',
+          type: 'timestamptz',
+          default: 'CURRENT_TIMESTAMP(6)',
+        },
+        {
+          name: 'position',
+          type: 'integer',
+        },
       ],
     }));
 
@@ -37,8 +46,8 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
 
     // add images from each item of the merchandise table to the photo table
     await queryRunner.query(
-      `INSERT INTO "${TABLE_NAME}" ("merchItem", picture) ` +
-      `SELECT uuid, picture FROM "${MERCH_TABLE_NAME}"`
+      `INSERT INTO "${TABLE_NAME}" ("merchItem", picture, position) ` +
+      `SELECT uuid, picture, 0 AS position FROM "${MERCH_TABLE_NAME}"`
     );
 
     // remove the column from the old table
@@ -55,8 +64,9 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
 
     // fill old column with the first image from the photo table
     await queryRunner.query(
-      `ALTER TABLE "${MERCH_TABLE_NAME}" ALTER COLUMN picture ` +
-      `SELECT picture FROM "${TABLE_NAME}" GROUP BY "merchItem"`
+      `UPDATE "${MERCH_TABLE_NAME}" i` +
+      `SET i.picture=p.picture FROM (SELECT merchItem, picture, min(uploadedAt) FROM "${TABLE_NAME}" GROUP BY merchItem) AS p ` +
+      `WHERE i.uuid = p.merchItem`
     );
   }
 

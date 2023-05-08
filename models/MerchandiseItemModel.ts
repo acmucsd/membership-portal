@@ -4,6 +4,7 @@ import {
 import { Uuid, PublicMerchItem, PublicCartMerchItem } from '../types';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
+import { MerchandiseItemPhotoModel } from './MerchandiseItemPhotoModel';
 
 @Entity('MerchandiseItems')
 export class MerchandiseItemModel extends BaseEntity {
@@ -35,21 +36,8 @@ export class MerchandiseItemModel extends BaseEntity {
   @Column('boolean', { default: false })
   hasVariantsEnabled: boolean;
 
-  // copied from AttendanceModel
-  // can be empty, default picture is null
-  @Column({
-    type: 'varchar',
-    transformer: {
-      to(value: string[]) {
-        return JSON.stringify(value);
-      },
-      from(value: string) {
-        return JSON.parse(value);
-      },
-    },
-    nullable: true,
-  })
-  pictures: string[];
+  @OneToMany((type) => MerchandiseItemPhotoModel, (picture) => picture.merchItem, { cascade: true })
+  pictures: MerchandiseItemPhotoModel[];
 
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })
   options: MerchandiseItemOptionModel[];
@@ -74,12 +62,13 @@ export class MerchandiseItemModel extends BaseEntity {
     return {
       uuid: this.uuid,
       itemName: this.itemName,
-      picture: this.getDefaultPicture(),
+      picture: this.getDefaultPictureUrl(),
       description: this.description,
     };
   }
 
-  public getDefaultPicture(): string {
-    return this.pictures.length > 0 ? this.pictures[0] : null;
+  // get the first index of pictures if possible
+  public getDefaultPictureUrl(): string {
+    return this.pictures.length > 0 ? this.pictures[0].picture : null;
   }
 }

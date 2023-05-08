@@ -384,7 +384,7 @@ export default class MerchStoreService {
         const { item } = option;
         return {
           ...item,
-          picture: item.getDefaultPicture(),
+          picture: item.getDefaultPictureUrl(),
           quantityRequested: oi.quantity,
           salePrice: option.getPrice(),
           total: oi.quantity * option.getPrice(),
@@ -682,7 +682,7 @@ export default class MerchStoreService {
         const { quantity, price } = optionPricesAndQuantities.get(option);
         return {
           ...item,
-          picture: item.getDefaultPicture(),
+          picture: item.getDefaultPictureUrl(),
           quantityRequested: quantity,
           salePrice: price,
           total: quantity * price,
