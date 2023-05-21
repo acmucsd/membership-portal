@@ -18,7 +18,6 @@ import {
   UpdateEventCoverResponse,
   GetFutureEventsResponse,
   GetAllEventsResponse,
-  GetPastEventsResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import {
@@ -42,14 +41,7 @@ export class EventController {
     this.attendanceService = attendanceService;
   }
 
-  @UseBefore(OptionalUserAuthentication)
-  @Get('/past')
-  async getPastEvents(@QueryParams() options: EventSearchOptions,
-    @AuthenticatedUser() user: UserModel): Promise<GetPastEventsResponse> {
-    const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    const events = await this.eventService.getPastEvents(canSeeAttendanceCode, options);
-    return { error: null, events };
-  }
+  /** TODO: Implement GET /past to fetch all past ACM events */
 
   @UseBefore(OptionalUserAuthentication)
   @Get('/future')
