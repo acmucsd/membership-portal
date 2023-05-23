@@ -51,12 +51,12 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
     );
 
     // remove the column from the old table
-    await queryRunner.dropColumn(`"${MERCH_TABLE_NAME}"`, 'picture');
+    await queryRunner.dropColumn(`${MERCH_TABLE_NAME}`, 'picture');
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // create old column (copied from migration #7)
-    await queryRunner.addColumn(`"${MERCH_TABLE_NAME}"`, new TableColumn({
+    await queryRunner.addColumn(`${MERCH_TABLE_NAME}`, new TableColumn({
       name: 'picture',
       type: 'varchar(255)',
       isNullable: true,
@@ -64,8 +64,10 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
 
     // fill old column with the first image from the photo table
     await queryRunner.query(
-      `UPDATE "${MERCH_TABLE_NAME}" i` +
-      `SET i.picture=p.picture FROM (SELECT merchItem, picture, min(uploadedAt) FROM "${TABLE_NAME}" GROUP BY merchItem) AS p ` +
+      `UPDATE "${MERCH_TABLE_NAME}" i ` +
+      `SET i.picture=p.picture FROM (` +
+        `SELECT merchItem, picture, min(uploadedAt) FROM "${TABLE_NAME}" GROUP BY merchItem` +
+      `) AS p ` +
       `WHERE i.uuid = p.merchItem`
     );
   }

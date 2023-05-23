@@ -35,7 +35,7 @@ export class MerchFactory {
     const fake = MerchandiseItemModel.create({
       uuid: uuid(),
       itemName: faker.datatype.hexaDecimal(10),
-      picture: faker.image.cats(),
+      // picture: faker.image.cats(),
       description: faker.lorem.sentences(2),
       hasVariantsEnabled,
       monthlyLimit: FactoryUtils.getRandomNumber(1, 5),
@@ -53,6 +53,8 @@ export class MerchFactory {
     }
     return MerchandiseItemModel.merge(fake, substitute);
   }
+
+  // TODO: fake item photos
 
   public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {
     const fake = MerchandiseItemOptionModel.create({
