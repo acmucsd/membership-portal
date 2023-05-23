@@ -32,6 +32,7 @@ import {
   MerchItem as IMerchItem,
   MerchItemEdit as IMerchItemEdit,
   MerchItemOption as IMerchItemOption,
+  MerchItemPhoto as IMerchItemPhoto,
   MerchItemOptionEdit as IMerchItemOptionEdit,
   MerchItemOptionMetadata as IMerchItemOptionMetadata,
   MerchOrderEdit as IMerchOrderEdit,
@@ -106,6 +107,15 @@ export class MerchItemOption implements IMerchItemOption {
   metadata?: MerchItemOptionMetadata;
 }
 
+export class MerchItemPhoto implements IMerchItemPhoto {
+  @Allow()
+  picture: string;
+
+  @Min(0)
+  @Max(4)
+  position: number;
+}
+
 export class MerchItemOptionEdit implements IMerchItemOptionEdit {
   @IsDefined()
   @IsUUID()
@@ -142,7 +152,7 @@ export class MerchItem implements IMerchItem {
   description: string;
 
   @Allow()
-  picture?: string;
+  pictures?: MerchItemPhoto[];
 
   @Min(0)
   quantity?: number;
@@ -177,7 +187,7 @@ export class MerchItemEdit implements IMerchItemEdit {
   description?: string;
 
   @Allow()
-  picture?: string;
+  pictures?: MerchItemPhoto[];
 
   @Allow()
   hidden?: boolean;

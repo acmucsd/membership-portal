@@ -129,6 +129,7 @@ export class MerchStoreController {
     return { error: null, item };
   }
 
+  // TODO: change to using uploaded photos
   @Post('/item')
   async createMerchItem(@Body() createItemRequest: CreateMerchItemRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateMerchItemResponse> {
@@ -156,6 +157,10 @@ export class MerchStoreController {
     return { error: null };
   }
 
+  // TODO: edit to support multiple photos
+  // User side: admin first upload a few pictures, then drag them around, then click submit
+  //            ^ POST picture/uuid                                       ^ POST picture/indices
+  // User side: upload pictures, cancel??
   @UseBefore(UserAuthentication)
   @Post('/item/picture/:uuid')
   async updateMerchPhoto(@UploadedFile('image',

@@ -238,6 +238,11 @@ export interface MerchItemOptionMetadata {
   position: number;
 }
 
+export interface MerchItemPhoto {
+  picture: string;
+  position: number;
+}
+
 export interface MerchItemOption {
   quantity: number;
   price: number;
