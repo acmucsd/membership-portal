@@ -1,5 +1,6 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
+import { MerchandiseItemPhotoModel } from '../models/MerchandiseItemPhotoModel';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { Uuid } from '../types';
@@ -46,7 +47,7 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
 @EntityRepository(MerchandiseItemModel)
 export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchandiseItemModel> {
-    return this.repository.findOne(uuid, { relations: ['collection', 'options'] });
+    return this.repository.findOne(uuid, { relations: ['collection', 'options', 'pictures'] });
   }
 
   public async upsertMerchItem(item: MerchandiseItemModel, changes?: Partial<MerchandiseItemModel>):

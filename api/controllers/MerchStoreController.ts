@@ -190,7 +190,7 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchOrderResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const order = await this.merchStoreService.findOrderByUuid(params.uuid);
-    if (!PermissionsService.canSeeMerchOrder(user, order)) throw new NotFoundError();
+    if (!PermissionsService.canSeeMerchOrder(user, order.getPublicOrderWithItems())) throw new NotFoundError();
     return { error: null, order: order.getPublicOrderWithItems() };
   }
 

@@ -21,4 +21,5 @@ export class MerchandiseItemPhotoModel extends BaseEntity {
 
   @Column('integer')
   position: number;
+
 }
