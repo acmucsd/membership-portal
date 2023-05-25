@@ -66,9 +66,11 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
     await queryRunner.query(
       `UPDATE "${MERCH_TABLE_NAME}" i ` +
       `SET i.picture=p.picture FROM (` +
-        `SELECT merchItem, picture, min(uploadedAt) FROM "${TABLE_NAME}" GROUP BY merchItem` +
+        `SELECT "merchItem", picture FROM "${TABLE_NAME}" m WHERE "uploadedAt" = (` +
+          `SELECT min("uploadedAt") FROM "${TABLE_NAME}" n WHERE p."merchItem" = m."merchItem" GROUP BY "merchItem"` +
+        `)` +
       `) AS p ` +
-      `WHERE i.uuid = p.merchItem`
+      `WHERE i.uuid = p."merchItem"`
     );
   }
 
