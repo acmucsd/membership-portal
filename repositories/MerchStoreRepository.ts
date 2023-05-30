@@ -40,7 +40,8 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
   public getBaseFindManyQuery(): SelectQueryBuilder<MerchandiseCollectionModel> {
     return this.repository.createQueryBuilder('collection')
       .leftJoinAndSelect('collection.items', 'items')
-      .leftJoinAndSelect('items.options', 'options');
+      .leftJoinAndSelect('items.options', 'options')
+      .leftJoinAndSelect('items.pictures', 'pictures');
   }
 }
 
