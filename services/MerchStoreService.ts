@@ -279,6 +279,30 @@ export default class MerchStoreService {
     });
   }
 
+  /**
+   * TODO: change to item photo, add the delete photo method
+   * Creates an item option. An item option can be added to an item if:
+   *    - the item has variants enabled and the option has the same type as the existing item options
+   *    - the item has variants disabled and has exactly 0 options (only the case if the item is hidden)
+   * @param item merch item uuid
+   * @param option merch item option
+   * @returns created item option
+   */
+  public async createItemPhoto(item: Uuid, picture: string, index: number): Promise<PublicMerchItem> {
+    return this.transactions.readWrite(async (txn) => {
+      const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
+      if (!merchItem) throw new NotFoundError('Merch item not found');
+
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const createdOption = MerchandiseItemOptionModel.create({ ...option, item: merchItem });
+      merchItem.options.push(createdOption);
+      MerchStoreService.verifyItemHasValidOptions(merchItem);
+
+      const upsertedOption = await merchItemOptionRepository.upsertMerchItemOption(createdOption);
+      return upsertedOption.getPublicMerchItemOption();
+    });
+  }
+
   public async findOrderByUuid(uuid: Uuid): Promise<OrderModel> {
     const order = await this.transactions.readOnly(async (txn) => Repositories
       .merchOrder(txn)

@@ -156,7 +156,7 @@ export class MerchStoreController {
     return { error: null };
   }
 
-  // TODO: edit to support multiple photos
+  // TODO: edit to support multiple photos, use a new service method: createItemPhoto()
   // User side: admin create merchItem without picture first so that uuid is
   // User side: admin first upload a few pictures, then drag them around, then click submit
   //            ^ POST picture/uuid                                       ^ POST picture/indices
@@ -168,8 +168,10 @@ export class MerchStoreController {
     @Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<UpdateMerchPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    const index = 0;
     const picture = await this.storageService.upload(file, MediaType.MERCH_PHOTO, params.uuid);
-    const item = await this.merchStoreService.editItem(params.uuid, { picture });
+    // const item = await this.merchStoreService.editItem(params.uuid, { picture, index });
+    const item = await this.merchStoreService.createItemPhoto(params.uuid, picture, index);
     return { error: null, item };
   }
 

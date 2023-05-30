@@ -225,7 +225,7 @@ export interface CommonMerchItemProperties {
   itemName: string;
   collection: string;
   description: string;
-  picture?: string;
+  pictures?: MerchItemPhoto[];
   hidden?: boolean;
   monthlyLimit?: number;
   lifetimeLimit?: number;
