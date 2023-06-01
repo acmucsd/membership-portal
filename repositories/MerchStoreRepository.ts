@@ -108,3 +108,41 @@ export class MerchItemOptionRepository extends BaseRepository<MerchandiseItemOpt
     await this.repository.remove(option);
   }
 }
+
+// basically copied from MerchItem
+@EntityRepository(MerchandiseItemPhotoModel)
+export class MerchItemPhotoRepository extends BaseRepository<MerchandiseItemPhotoModel> {
+  public async findByUuid(uuid: Uuid): Promise<MerchandiseItemPhotoModel> {
+    return this.repository.findOne(uuid, { relations: ['item'] });
+  }
+
+  // for querying a group of pictures together
+  public async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchandiseItemPhotoModel>> {
+    const photos = await this.repository.findByIds(uuids, { relations: ['item'] });
+    return new Map(photos.map((o) => [o.uuid, o]));
+  }
+
+  public async upsertMerchItemPhoto(photo: MerchandiseItemPhotoModel,
+    changes?: Partial<MerchandiseItemPhotoModel>): Promise<MerchandiseItemPhotoModel> {
+    if (changes) photo = MerchandiseItemPhotoModel.merge(photo, changes);
+    return this.repository.save(photo);
+  }
+
+  // public async updateMerchItemOptionsInCollection(collection: string, discountPercentage: number): Promise<void> {
+  //   const qb = this.repository.createQueryBuilder();
+  //   await qb
+  //     .update()
+  //     .set({ discountPercentage })
+  //     .where(`item IN ${qb.subQuery()
+  //       .select('merch.uuid')
+  //       .from(MerchandiseItemModel, 'merch')
+  //       .where('merch.collection = :collection')
+  //       .getQuery()}`)
+  //     .setParameter('collection', collection)
+  //     .execute();
+  // }
+
+  public async deleteMerchItemPhoto(photo: MerchandiseItemPhotoModel): Promise<void> {
+    await this.repository.remove(photo);
+  }
+}
