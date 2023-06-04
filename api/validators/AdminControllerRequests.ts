@@ -4,6 +4,7 @@ import {
   CreateBonusRequest as ICreateBonusRequest,
   CreateMilestoneRequest as ICreateMilestoneRequest,
   SubmitAttendanceForUsersRequest as ISubmitAttendanceForUsersRequest,
+  ModifyUserAccessLevelRequest as IModifyUserAccessLevelRequest,
   Milestone as IMilestone,
   Bonus as IBonus,
 } from '../../types';
@@ -57,4 +58,8 @@ export class SubmitAttendanceForUsersRequest implements ISubmitAttendanceForUser
 
   @Allow()
   asStaff?: boolean;
+}
+
+export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelRequest {
+
 }

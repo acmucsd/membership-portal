@@ -1,9 +1,10 @@
-import { JsonController, Post, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
+import { JsonController, Post, Patch, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   CreateBonusRequest,
   CreateMilestoneRequest,
   SubmitAttendanceForUsersRequest,
+  ModifyUserAccessLevelRequest,
 } from '../validators/AdminControllerRequests';
 import {
   File,
@@ -13,6 +14,7 @@ import {
   UploadBannerResponse,
   GetAllEmailsResponse,
   SubmitAttendanceForUsersResponse,
+  ModifyUserAccessLevelResponse,
 } from '../../types';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import UserAccountService from '../../services/UserAccountService';
@@ -78,5 +80,27 @@ export class AdminController {
     const emails = users.map((e) => e.toLowerCase());
     const attendances = await this.attendanceService.submitAttendanceForUsers(emails, event, asStaff, currentUser);
     return { error: null, attendances };
+  }
+
+  @Patch('/access')
+  async updateUserAccessLevel(@Body() modifyUserAccessLevelRequest: ModifyUserAccessLevelRequest,
+  @AuthenticatedUser() currentUser: UserModel): Promise<ModifyUserAccessLevelResponse> {
+    // check if the user is an admin, if not throw forbidden error
+    if (!PermissionsService.canModifyUserAccessLevel(currentUser)) throw new ForbiddenError();
+
+    // from the request, we need two things -- the uuid of the user they are trying to update
+    // and the access level they are trying to update each user to
+
+    // we need to check if the user they are trying to update exists
+
+
+    // Get users from request
+    const {  } = modifyUserAccessLevelRequest;
+
+
+
+
+    return { error: null, user: null};
+
   }
 }

@@ -81,4 +81,8 @@ export default class PermissionsService {
   public static canSeeAllVisibleResumes(user: UserModel) {
     return user.isAdmin();
   }
+
+  public static canModifyUserAccessLevel(user: UserModel): boolean {
+    return user.isAdmin();
+  }
 }
