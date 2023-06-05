@@ -20,6 +20,8 @@ export default class EventService {
       const eventRepository = Repositories.event(txn);
       const isUnusedAttendanceCode = eventRepository.isUnusedAttendanceCode(event.attendanceCode);
       if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
+      const endAfterStartDate = event.start < event.end;
+      if (!endAfterStartDate) throw new UserError('End date after start date');
       return eventRepository.upsertEvent(EventModel.create(event));
     });
     return eventCreated.getPublicEvent();
