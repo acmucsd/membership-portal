@@ -181,7 +181,7 @@ export class MerchStoreController {
   Promise<DeleteMerchItemPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     await this.merchStoreService.deleteItemPhoto(params.uuid);
-    return {error: null};
+    return { error: null };
   }
 
   @Post('/option/:uuid')
