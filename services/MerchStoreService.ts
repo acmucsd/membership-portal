@@ -328,7 +328,15 @@ export default class MerchStoreService {
 
       const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, merchItem });
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
-      merchItem.pictures.push(createdPhoto);
+      // increment photo index for all photos after the inserted photo
+      const position = properties.position;
+      merchItem.pictures.forEach((photo) => {
+        if (photo.position >= position) {
+          MerchandiseItemPhotoModel.merge(photo, {position: photo.position + 1});
+        }
+      });
+      // insert photo at index
+      merchItem.pictures.splice(position, 0, createdPhoto);
       MerchStoreService.verifyItemHasValidPhotos(merchItem);
 
       const upsertedPhoto = await merchStoreItemPhotoRepository.upsertMerchItemPhoto(createdPhoto);
@@ -352,6 +360,13 @@ export default class MerchStoreService {
       if (merchItem.pictures.length === 1 && !merchItem.hidden) {
         throw new UserError('Cannot delete the only photo for a visible merch item');
       }
+      // decrement photo index for all photos after the inserted photo
+      const position = photo.position;
+      merchItem.pictures.forEach((photo) => {
+        if (photo.position >= position) {
+          MerchandiseItemPhotoModel.merge(photo, {position: Math.max(photo.position - 1, 0)});
+        }
+      });
 
       return merchStoreItemPhotoRepository.deleteMerchItemPhoto(photo);
     });
