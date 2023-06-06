@@ -255,8 +255,8 @@ export interface EditMerchItemResponse extends ApiResponse {
 
 export interface DeleteMerchItemResponse extends ApiResponse {}
 
-export interface UpdateMerchPhotoResponse extends ApiResponse {
-  item: PublicMerchItem;
+export interface CreateMerchPhotoResponse extends ApiResponse {
+  photo: PublicMerchItemPhoto;
 }
 
 export interface CreateMerchItemOptionResponse extends ApiResponse {

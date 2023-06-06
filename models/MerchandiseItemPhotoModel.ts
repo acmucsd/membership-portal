@@ -1,7 +1,6 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Uuid } from '../types';
+import { PublicMerchItemPhoto, Uuid } from '../types';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
-import { integer } from 'aws-sdk/clients/cloudfront';
 
 @Entity('MerchandiseItemPhotos')
 export class MerchandiseItemPhotoModel extends BaseEntity {
@@ -22,4 +21,12 @@ export class MerchandiseItemPhotoModel extends BaseEntity {
   @Column('integer')
   position: number;
 
+  public getPublicMerchItemPhoto(): PublicMerchItemPhoto {
+    return {
+      uuid: this.uuid,
+      picture: this.picture,
+      uploadedAt: this.uploadedAt,
+      position: this.position,
+    }
+  }
 }

@@ -41,7 +41,7 @@ import {
   CancelAllPendingOrdersResponse,
   MediaType,
   File,
-  UpdateMerchPhotoResponse,
+  CreateMerchPhotoResponse,
   CompleteOrderPickupEventResponse,
   GetOrderPickupEventResponse,
   CancelOrderPickupEventResponse,
@@ -63,6 +63,7 @@ import {
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
   GetCartRequest,
+  CreateMerchItemPhotoRequest,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
 import StorageService from '../../services/StorageService';
@@ -156,23 +157,29 @@ export class MerchStoreController {
     return { error: null };
   }
 
-  // TODO: edit to support multiple photos, use a new service method: createItemPhoto()
-  // User side: admin create merchItem without picture first so that uuid is
-  // User side: admin first upload a few pictures, then drag them around, then click submit
-  //            ^ POST picture/uuid                                       ^ POST picture/indices
-  // User side: upload pictures, cancel??
   @UseBefore(UserAuthentication)
   @Post('/item/picture/:uuid')
-  async updateMerchPhoto(@UploadedFile('image',
+  async createMerchItemPhoto(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
+    @Body() createMerchItemPhotoRequest: CreateMerchItemPhotoRequest,
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel): Promise<UpdateMerchPhotoResponse> {
+    @AuthenticatedUser() user: UserModel): Promise<CreateMerchPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    const index = 0;
-    const picture = await this.storageService.upload(file, MediaType.MERCH_PHOTO, params.uuid);
-    // const item = await this.merchStoreService.editItem(params.uuid, { picture, index });
-    const item = await this.merchStoreService.createItemPhoto(params.uuid, picture, index);
-    return { error: null, item };
+
+    // generate a random string for the picture url
+    const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
+    const randomID = fileName + StorageService.getRandomString();
+    const picture = await this.storageService.uploadToFolder(file, MediaType.MERCH_PHOTO, randomID, params.uuid);
+    const photo = await this.merchStoreService.createItemPhoto(params.uuid, {picture, position: createMerchItemPhotoRequest.position});
+
+    return { error: null, photo };
+  }
+
+  @UseBefore(UserAuthentication)
+  @Delete('/item/picture/:uuid')
+  async deleteMerchItemPhoto(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
+  Promise<DeleteMerchItemPhotoResponse> {
+
   }
 
   @Post('/option/:uuid')

@@ -192,6 +192,9 @@ export interface EditMerchItemRequest {
 export interface CreateMerchItemOptionRequest {
   option: MerchItemOption;
 }
+export interface CreateMerchItemPhotoRequest {
+  position: number;
+}
 
 export interface PlaceMerchOrderRequest {
   order: MerchItemOptionAndQuantity[];
@@ -243,6 +246,12 @@ export interface MerchItemPhoto {
   position: number;
 }
 
+export interface MerchItemPhotoEdit {
+  uuid: string;
+  picture?: string;
+  position?: number;
+}
+
 export interface MerchItemOption {
   quantity: number;
   price: number;
@@ -252,6 +261,7 @@ export interface MerchItemOption {
 
 export interface MerchItem extends CommonMerchItemProperties {
   options: MerchItemOption[];
+  photos: MerchItemPhoto[];
 }
 
 export interface MerchItemOptionEdit {
@@ -264,6 +274,7 @@ export interface MerchItemOptionEdit {
 
 export interface MerchItemEdit extends Partial<CommonMerchItemProperties> {
   options?: MerchItemOptionEdit[];
+  photos?: MerchItemPhotoEdit[];
 }
 
 export interface MerchOrderEdit {

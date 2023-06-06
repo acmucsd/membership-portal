@@ -18,6 +18,7 @@ import {
   CreateMerchItemRequest as ICreateMerchItemRequest,
   EditMerchItemRequest as IEditMerchItemRequest,
   CreateMerchItemOptionRequest as ICreateMerchItemOptionRequest,
+  CreateMerchItemPhotoRequest as ICreateMerchItemPhotoRequest,
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   VerifyMerchOrderRequest as IVerifyMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
@@ -32,9 +33,10 @@ import {
   MerchItem as IMerchItem,
   MerchItemEdit as IMerchItemEdit,
   MerchItemOption as IMerchItemOption,
-  MerchItemPhoto as IMerchItemPhoto,
   MerchItemOptionEdit as IMerchItemOptionEdit,
   MerchItemOptionMetadata as IMerchItemOptionMetadata,
+  MerchItemPhoto as IMerchItemPhoto,
+  MerchItemPhotoEdit as IMerchItemPhotoEdit,
   MerchOrderEdit as IMerchOrderEdit,
   OrderPickupEvent as IOrderPickupEvent,
   OrderPickupEventEdit as IOrderPickupEventEdit,
@@ -107,15 +109,6 @@ export class MerchItemOption implements IMerchItemOption {
   metadata?: MerchItemOptionMetadata;
 }
 
-export class MerchItemPhoto implements IMerchItemPhoto {
-  @Allow()
-  picture: string;
-
-  @Min(0)
-  @Max(4)
-  position: number;
-}
-
 export class MerchItemOptionEdit implements IMerchItemOptionEdit {
   @IsDefined()
   @IsUUID()
@@ -139,6 +132,29 @@ export class MerchItemOptionEdit implements IMerchItemOptionEdit {
   metadata?: MerchItemOptionMetadata;
 }
 
+// TODO: use global variable for limit
+export class MerchItemPhoto implements IMerchItemPhoto {
+  @Allow()
+  picture: string;
+
+  @Min(0)
+  @Max(4)
+  position: number;
+}
+
+export class MerchItemPhotoEdit implements IMerchItemPhotoEdit {
+  @IsDefined()
+  @IsUUID()
+  uuid: string;
+
+  @Allow()
+  picture?: string;
+
+  @Min(0)
+  @Max(4)
+  position?: number;
+}
+
 export class MerchItem implements IMerchItem {
   @IsDefined()
   @IsNotEmpty()
@@ -152,7 +168,7 @@ export class MerchItem implements IMerchItem {
   description: string;
 
   @Allow()
-  pictures?: MerchItemPhoto[];
+  photos: MerchItemPhoto[];
 
   @Min(0)
   quantity?: number;
@@ -187,7 +203,7 @@ export class MerchItemEdit implements IMerchItemEdit {
   description?: string;
 
   @Allow()
-  pictures?: MerchItemPhoto[];
+  photos?: MerchItemPhotoEdit[];
 
   @Allow()
   hidden?: boolean;
@@ -301,6 +317,12 @@ export class CreateMerchItemOptionRequest implements ICreateMerchItemOptionReque
   @ValidateNested()
   @IsDefined()
   option: MerchItemOption;
+}
+
+export class CreateMerchItemPhotoRequest implements ICreateMerchItemPhotoRequest {
+  @IsDefined()
+  @Min(0)
+  position: number;
 }
 
 export class PlaceMerchOrderRequest implements IPlaceMerchOrderRequest {

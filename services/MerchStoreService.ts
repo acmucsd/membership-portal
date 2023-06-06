@@ -16,6 +16,7 @@ import {
   MerchItem,
   MerchItemOption,
   MerchItemOptionAndQuantity,
+  MerchItemPhotoEdit,
   MerchItemEdit,
   PublicMerchItemOption,
   OrderStatus,
@@ -23,6 +24,8 @@ import {
   OrderPickupEventEdit,
   PublicMerchItemWithPurchaseLimits,
   OrderPickupEventStatus,
+  PublicMerchItemPhoto,
+  MerchItemPhoto,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
@@ -33,6 +36,8 @@ import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
+import { MerchandiseItemPhotoModel } from 'models/MerchandiseItemPhotoModel';
+import { MerchItemPhotoRepository } from 'repositories/MerchStoreRepository';
 
 @Service()
 export default class MerchStoreService {
@@ -186,10 +191,11 @@ export default class MerchStoreService {
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
+
       if (itemEdit.hidden === false && item.options.length === 0) {
         throw new UserError('Item cannot be set to visible if it has 0 options.');
       }
-      const { options, collection: updatedCollection, ...changes } = itemEdit;
+      const { options, photos, collection: updatedCollection, ...changes } = itemEdit;
       if (options) {
         const optionUpdatesByUuid = new Map(options.map((option) => [option.uuid, option]));
         item.options.map((currentOption) => {
@@ -205,6 +211,25 @@ export default class MerchStoreService {
             }
           }
           return MerchandiseItemOptionModel.merge(currentOption, optionUpdate);
+        });
+      }
+
+      if (photos) {
+        const photoUpdatesByUuid = new Map(photos.map((photo) => [photo.uuid, photo]));
+        item.pictures.map((currentPhoto) => {
+          if (!photoUpdatesByUuid.has(currentPhoto.uuid)) return;
+          const photoUpdate = photoUpdatesByUuid.get(currentPhoto.uuid);
+          // photo positions are 0-index
+          return MerchandiseItemPhotoModel.merge(currentPhoto, photoUpdate);
+        });
+
+        // make sure the pictures are always sorted
+        item.pictures.sort((a, b) => a.position - b.position);
+        // validate all indices
+        item.pictures.forEach((currentPhoto, index) => {
+          if (currentPhoto.position != index) {
+            throw new UserError(`A photo position is inputed incorrectly at list index: ${index}`)
+          }
         });
       }
 
@@ -280,26 +305,55 @@ export default class MerchStoreService {
   }
 
   /**
-   * TODO: change to item photo, add the delete photo method
-   * Creates an item option. An item option can be added to an item if:
-   *    - the item has variants enabled and the option has the same type as the existing item options
-   *    - the item has variants disabled and has exactly 0 options (only the case if the item is hidden)
-   * @param item merch item uuid
-   * @param option merch item option
-   * @returns created item option
+   * TODO: add global variable
+   * Verify that items have valid options. An item with variants disabled cannot have multiple
+   * options, and an item with variants enabled cannot have multiple option types.
    */
-  public async createItemPhoto(item: Uuid, picture: string, index: number): Promise<PublicMerchItem> {
+  private static verifyItemHasValidPhotos(item: MerchItem | MerchandiseItemModel) {
+    if (item.pictures.length > 5) {
+      throw new UserError('Merch items cannot have more than 5 pictures');
+    }
+  }
+
+  /**
+   * Creates an item photo and assign it the corresponding picture url and index
+   * @param item merch item uuid
+   * @param properties merch item photo picture url and position
+   * @returns created item photo
+   */
+  public async createItemPhoto(item: Uuid, properties: MerchItemPhoto): Promise<PublicMerchItemPhoto> {
     return this.transactions.readWrite(async (txn) => {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Merch item not found');
 
-      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-      const createdOption = MerchandiseItemOptionModel.create({ ...option, item: merchItem });
-      merchItem.options.push(createdOption);
-      MerchStoreService.verifyItemHasValidOptions(merchItem);
+      const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, merchItem });
+      const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
+      merchItem.pictures.push(createdPhoto);
+      MerchStoreService.verifyItemHasValidPhotos(merchItem);
 
-      const upsertedOption = await merchItemOptionRepository.upsertMerchItemOption(createdOption);
-      return upsertedOption.getPublicMerchItemOption();
+      const upsertedPhoto = await merchStoreItemPhotoRepository.upsertMerchItemPhoto(createdPhoto);
+      return upsertedPhoto.getPublicMerchItemPhoto();
+    });
+  }
+
+  /**
+   * Deletes the given item photo. Fail if the merch item is visible
+   * and it was the only photo of the item.
+   *
+   * @param uuid photo uuid
+   */
+  public async deleteItemPhoto(uuid: Uuid): Promise<void> {
+    await this.transactions.readWrite(async (txn) => {
+      const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
+      const photo = await merchStoreItemPhotoRepository.findByUuid(uuid);
+      if (!photo) throw new NotFoundError("Merch item photo not found");
+
+      const merchItem = await Repositories.merchStoreItem(txn).findByUuid(photo.merchItem.uuid);
+      if (merchItem.pictures.length === 1 && !merchItem.hidden) {
+        throw new UserError('Cannot delete the only photo for a visible merch item');
+      }
+
+      return merchStoreItemPhotoRepository.deleteMerchItemPhoto(photo);
     });
   }
 

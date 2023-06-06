@@ -68,6 +68,20 @@ export default class StorageService {
     };
   }
 
+  public static getRandomString(): string {
+    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-";
+    const stringLength = 25;
+    // according to nanoID: ~611 trillion years needed, in order to have a 1%
+    //                      probability of at least one collision.
+
+    let result = '';
+    for (let i = 0; i < stringLength; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return result;
+  }
+
   private static getMediaConfig(type: MediaType): MediaTypeConfig {
     switch (type) {
       case MediaType.EVENT_COVER: {
