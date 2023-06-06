@@ -168,8 +168,7 @@ export class MerchStoreController {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
     // generate a random string for the picture url
-    const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
-    const randomID = fileName + StorageService.getRandomString();
+    const randomID = StorageService.getRandomString();
     const picture = await this.storageService.uploadToFolder(file, MediaType.MERCH_PHOTO, randomID, params.uuid);
     const photo = await this.merchStoreService.createItemPhoto(params.uuid, {picture, position: createMerchItemPhotoRequest.position});
 
