@@ -42,6 +42,7 @@ import {
   MediaType,
   File,
   CreateMerchPhotoResponse,
+  DeleteMerchItemPhotoResponse,
   CompleteOrderPickupEventResponse,
   GetOrderPickupEventResponse,
   CancelOrderPickupEventResponse,
@@ -179,7 +180,9 @@ export class MerchStoreController {
   @Delete('/item/picture/:uuid')
   async deleteMerchItemPhoto(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
   Promise<DeleteMerchItemPhotoResponse> {
-
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    await this.merchStoreService.deleteItemPhoto(params.uuid);
+    return {error: null};
   }
 
   @Post('/option/:uuid')
