@@ -388,6 +388,10 @@ async function seed(): Promise<void> {
     MERCH_ITEM_1_OPTION_L,
     MERCH_ITEM_1_OPTION_XL,
   ];
+
+  // TODO: create MERCHITEMMODEL for all these examples
+  // const MERCH_ITEM_1_PHOTO = MerchFactory.
+
   const MERCH_ITEM_2 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Hack School Sticker Pack (4) - Cyan',
