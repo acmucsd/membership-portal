@@ -196,16 +196,16 @@ describe('event creation', () => {
       .write();
 
     const event = {
-      'cover': 'https://www.google.com',
-      'title': 'ACM Party @ RIMAC',
-      'description': 'Indoor Pool Party',
-      'location': 'RIMAC',
-      'committee': 'ACM',
-      'start': new Date('2020-08-20T14:00:00.000Z'),
-      'end': new Date('2020-08-20T12:00:00.000Z'),
-      'attendanceCode': 'p4rty',
-      'pointValue': 10
-    }
+      cover: 'https://www.google.com',
+      title: 'ACM Party @ RIMAC',
+      description: 'Indoor Pool Party',
+      location: 'RIMAC',
+      committee: 'ACM',
+      start: new Date('2020-08-20T14:00:00.000Z'),
+      end: new Date('2020-08-20T12:00:00.000Z'),
+      attendanceCode: 'p4rty',
+      pointValue: 10,
+    };
 
     const createEventRequest: CreateEventRequest = {
       event,
