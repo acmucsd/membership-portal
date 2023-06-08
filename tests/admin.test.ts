@@ -1,6 +1,13 @@
+import { UserError } from '../utils/Errors';
+import EventService from '../services/EventService';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
+import { mock } from 'ts-mockito';
+import exp = require('constants');
+import {
+  CreateEventRequest,
+} from '../api/validators/EventControllerRequests';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -180,5 +187,36 @@ describe('bonus points submission', () => {
 
     const getNoBonusUserResponse = await userController.getUser({ uuid: userNotGettingBonus.uuid }, admin);
     expect(getNoBonusUserResponse.user.points).toEqual(0);
+  });
+});
+
+describe('event creation', () => {
+  test('throws error when start date later than end date', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+
+    await new PortalState()
+      .createUsers(admin)
+      .write();
+
+    const event = {
+      "cover": "https://www.google.com",
+      "title": "ACM Party @ RIMAC",
+      "description": "Indoor Pool Party",
+      "location": "RIMAC",
+      "committee": "ACM",
+      "start": new Date("2020-08-20T14:00:00.000Z"),
+      "end": new Date("2020-08-20T12:00:00.000Z"),
+      "attendanceCode": "p4rty",
+      "pointValue": 10
+    }
+
+    const createEventRequest: CreateEventRequest = {
+      event,
+    };
+
+    const EventController = ControllerFactory.event(conn);
+    await expect(EventController.createEvent(createEventRequest, admin))
+      .rejects.toThrow('Start date after end date');
   });
 });
