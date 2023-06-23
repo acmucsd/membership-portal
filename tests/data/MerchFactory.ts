@@ -52,15 +52,20 @@ export class MerchFactory {
         .createOptions(numOptions)
         .map((option) => MerchandiseItemOptionModel.merge(option, { item: fake }));
     }
+    if (!substitute?.pictures) {
+      const numPhotos = FactoryUtils.getRandomNumber(1, 5);
+      fake.pictures = MerchFactory
+        .createPhotos(numPhotos)
+        .map((photo) => MerchandiseItemPhotoModel.merge(photo, { merchItem: fake }));
+    }
     return MerchandiseItemModel.merge(fake, substitute);
   }
 
-  // TODO: fake item photos
   public static fakePhoto(substitute?: Partial<MerchandiseItemPhotoModel>): MerchandiseItemPhotoModel {
     const fake = MerchandiseItemPhotoModel.create({
       uuid: uuid(),
       position: 0,
-      picture: 'https://www.fakephoto.com/',
+      picture: 'https://www.fakepicture.com/',
       uploadedAt: faker.date.recent(),
     });
     return MerchandiseItemPhotoModel.merge(fake, substitute);
@@ -142,6 +147,10 @@ export class MerchFactory {
     // create multiple options with consistent types
     const type = faker.datatype.hexaDecimal(10);
     return FactoryUtils.create(n, () => MerchFactory.fakeOptionWithType(type));
+  }
+
+  private static createPhotos(n: number): MerchandiseItemPhotoModel[] {
+    return FactoryUtils.create(n, () => MerchFactory.fakePhoto());
   }
 
   private static randomPrice(): number {

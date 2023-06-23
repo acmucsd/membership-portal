@@ -405,9 +405,6 @@ async function seed(): Promise<void> {
     MERCH_ITEM_1_PHOTO_2,
   ]
 
-  // TODO: create MERCHITEMMODEL for all these examples
-  // const MERCH_ITEM_1_PHOTO = MerchFactory.
-
   const MERCH_ITEM_2 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Hack School Sticker Pack (4) - Cyan',
