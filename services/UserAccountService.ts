@@ -192,4 +192,38 @@ export default class UserAccountService {
       return userProfile;
     });
   }
+
+  /**
+   *
+   * @param accessUpdates
+   * @param emails
+   * @param currentUser
+   * @returns
+   */
+  public async updateUserAccessLevels(accessUpdates, emails: string[], currentUser: UserModel): Promise<void> { //TODO: figure out return type
+    return this.transactions.readWrite(async (txn) => {
+      // Strip out the user emails & validate that users exist
+      const users = await Repositories.user(txn).findByEmails(emails);
+      const emailsFound = users.map((user) => user.email);
+      const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
+
+      if (emailsNotFound.length > 0) {
+        throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
+      }
+
+      console.log('accessUpdates', accessUpdates);
+
+      //FIXME: this is unfinished; can I reuse my previous Email query?
+      accessUpdates.forEach((accessUpdate) => {
+        const { email, accessLevel } = accessUpdate;
+        const { accessType } = accessLevel;
+
+        // find by email
+
+        // upsertUser
+
+      });
+      // Return updated users and their new access levels
+    });
+  }
 }

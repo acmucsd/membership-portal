@@ -7,6 +7,8 @@ import {
   ModifyUserAccessLevelRequest as IModifyUserAccessLevelRequest,
   Milestone as IMilestone,
   Bonus as IBonus,
+  UserAccessUpdates, //FIXME: Does this need to be an interface? Nvm, need to validate all types related to it
+
 } from '../../types';
 
 export class Milestone implements IMilestone {
@@ -61,5 +63,7 @@ export class SubmitAttendanceForUsersRequest implements ISubmitAttendanceForUser
 }
 
 export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelRequest {
-
+  @IsDefined()
+  @ArrayNotEmpty()
+  accessUpdates: UserAccessUpdates[];
 }

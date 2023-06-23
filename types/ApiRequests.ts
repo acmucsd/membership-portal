@@ -127,12 +127,17 @@ export interface SubmitAttendanceForUsersRequest {
   asStaff?: boolean;
 }
 
-export interface NewUserAccessLevels {
-  user: string;
-  newAccessLevel: string;
+export interface UserAccessPatches {
+  accessType?: string;
 }
+
+export interface UserAccessUpdates {
+  user: string;
+  newAccess: UserAccessPatches;
+}
+
 export interface ModifyUserAccessLevelRequest {
-  accessUpdates: NewUserAccessLevels[];
+  accessUpdates: UserAccessUpdates[];
 }
 
 // EVENT

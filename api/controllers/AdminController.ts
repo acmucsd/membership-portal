@@ -85,22 +85,15 @@ export class AdminController {
   @Patch('/access')
   async updateUserAccessLevel(@Body() modifyUserAccessLevelRequest: ModifyUserAccessLevelRequest,
   @AuthenticatedUser() currentUser: UserModel): Promise<ModifyUserAccessLevelResponse> {
-    // check if the user is an admin, if not throw forbidden error
+    // Check if the user is an admin, if not throw forbidden error
     if (!PermissionsService.canModifyUserAccessLevel(currentUser)) throw new ForbiddenError();
 
-    // from the request, we need two things -- the uuid of the user they are trying to update
-    // and the access level they are trying to update each user to
-
-    // we need to check if the user they are trying to update exists
-
-
     // Get users from request
-    const {  } = modifyUserAccessLevelRequest;
+    const { accessUpdates } = modifyUserAccessLevelRequest;
+    const emails = accessUpdates.map((e) => e.user.toLowerCase());
+    //console.log(emails);
+    const updates = await this.userAccountService.updateUserAccessLevels(accessUpdates, emails, currentUser);
 
-
-
-
-    return { error: null, user: null};
-
+    return { error: null, user: null}; //FIXME: fix this
   }
 }

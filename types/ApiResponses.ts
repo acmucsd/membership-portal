@@ -40,7 +40,7 @@ export interface SubmitAttendanceForUsersResponse extends ApiResponse {
 }
 
 export interface ModifyUserAccessLevelResponse extends ApiResponse {
-  // TODO: fix this -- what do we want to return?
+  // TODO: return old structure, not PublicProfile
   user: PublicProfile;
 }
 
