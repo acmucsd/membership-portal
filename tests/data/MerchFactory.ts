@@ -7,6 +7,7 @@ import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionMo
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import FactoryUtils from './FactoryUtils';
+import { MerchandiseItemPhotoModel } from 'models/MerchandiseItemPhotoModel';
 
 export class MerchFactory {
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
@@ -55,6 +56,15 @@ export class MerchFactory {
   }
 
   // TODO: fake item photos
+  public static fakePhoto(substitute?: Partial<MerchandiseItemPhotoModel>): MerchandiseItemPhotoModel {
+    const fake = MerchandiseItemPhotoModel.create({
+      uuid: uuid(),
+      position: 0,
+      picture: 'https://www.fakephoto.com/',
+      uploadedAt: faker.date.recent(),
+    });
+    return MerchandiseItemPhotoModel.merge(fake, substitute);
+  }
 
   public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {
     const fake = MerchandiseItemOptionModel.create({
