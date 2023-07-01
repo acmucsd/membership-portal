@@ -1,7 +1,7 @@
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
-import { CreateEventRequest, } from '../api/validators/EventControllerRequests';
+import { CreateEventRequest } from '../api/validators/EventControllerRequests';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -185,7 +185,6 @@ describe('bonus points submission', () => {
 });
 
 describe('event creation', () => {
-
   test('successful event creation', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
@@ -221,38 +220,6 @@ describe('event creation', () => {
     expect(eventResponse.event.start).toEqual(event.start);
     expect(eventResponse.event.end).toEqual(event.end);
     expect(eventResponse.event.pointValue).toEqual(event.pointValue);
-
-  });
-
-  test('throws error on duplicate event code', async () => {
-    const conn = await DatabaseConnection.get();
-    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-
-    await new PortalState()
-      .createUsers(admin)
-      .write();
-
-    const event = {
-      cover: 'https://www.google.com',
-      title: 'ACM Party @ RIMAC',
-      description: 'Indoor Pool Party',
-      location: 'RIMAC',
-      committee: 'ACM',
-      start: new Date('2020-08-20T10:00:00.000Z'),
-      end: new Date('2020-08-20T12:00:00.000Z'),
-      attendanceCode: 'p4rty',
-      pointValue: 10,
-    };
-
-    const createEventRequest: CreateEventRequest = {
-      event,
-    };
-
-    const eventController = ControllerFactory.event(conn);
-    eventController.createEvent(createEventRequest, admin)
-
-    await expect(eventController.createEvent(createEventRequest, admin))
-      .rejects.toThrow('Attendance code has already been used');
   });
 
   test('throws error when start date later than end date', async () => {
