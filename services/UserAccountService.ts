@@ -96,6 +96,7 @@ export default class UserAccountService {
 
   public async update(user: UserModel, userPatches: UserPatches): Promise<UserModel> {
     const changes: Partial<UserModel> = userPatches;
+    console.log("changes:", changes);
     if (userPatches.passwordChange) {
       const { password: currentPassword, newPassword } = userPatches.passwordChange;
       if (!(await user.verifyPass(currentPassword))) {
@@ -194,16 +195,17 @@ export default class UserAccountService {
   }
 
   /**
-   *
-   * @param accessUpdates
-   * @param emails
-   * @param currentUser
-   * @returns
+   * This method is used to update the access levels of multiple users at once.
+   * @param accessUpdates - an array of objects containing the user and their new access level
+   * @param emails - an array of emails to update
+   * @param currentUser - the user making the request
+   * @returns {Promise.<UserModel[]>} - an array of updated users
    */
-  public async updateUserAccessLevels(accessUpdates, emails: string[], currentUser: UserModel): Promise<void> { //TODO: figure out return type
+  public async updateUserAccessLevels(accessUpdates, emails: string[], currentUser: UserModel): Promise<UserModel[]> { //TODO: figure out return type
     return this.transactions.readWrite(async (txn) => {
       // Strip out the user emails & validate that users exist
-      const users = await Repositories.user(txn).findByEmails(emails);
+      const userRepository = Repositories.user(txn);
+      const users = await userRepository.findByEmails(emails);
       const emailsFound = users.map((user) => user.email);
       const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
 
@@ -211,19 +213,20 @@ export default class UserAccountService {
         throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
       }
 
+      //TODO: check if user emails are the same? (duplicate users)
       console.log('accessUpdates', accessUpdates);
 
-      //FIXME: this is unfinished; can I reuse my previous Email query?
-      accessUpdates.forEach((accessUpdate) => {
-        const { email, accessLevel } = accessUpdate;
-        const { accessType } = accessLevel;
-
-        // find by email
-
-        // upsertUser
-
-      });
+      const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
+        //console.log(index);
+        const { user, newAccess } = accessUpdate;
+        const { accessType } = newAccess;
+        const currUser = users[index];
+        const updatedUser = await userRepository.upsertUser(currUser, { accessType });
+        // console.log('updatedUser', updatedUser);
+        return updatedUser;
+      }));
       // Return updated users and their new access levels
+      return updatedUsers;
     });
   }
 }

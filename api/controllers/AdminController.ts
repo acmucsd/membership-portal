@@ -94,6 +94,6 @@ export class AdminController {
     //console.log(emails);
     const updates = await this.userAccountService.updateUserAccessLevels(accessUpdates, emails, currentUser);
 
-    return { error: null, user: null}; //FIXME: fix this
+    return { error: null, updates };
   }
 }
