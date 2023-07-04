@@ -40,7 +40,7 @@ export interface SubmitAttendanceForUsersResponse extends ApiResponse {
 }
 
 export interface ModifyUserAccessLevelResponse extends ApiResponse {
-  updates: any[];
+  updates: any[]; //FIXME: fix this
 }
 
 // ATTENDANCE
