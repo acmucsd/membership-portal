@@ -14,6 +14,7 @@ import {
   UserPatches,
   UserState,
   PrivateProfile,
+  UserAccessType
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
@@ -221,6 +222,15 @@ export default class UserAccountService {
         const { user, newAccess } = accessUpdate;
         const { accessType } = newAccess;
         const currUser = users[index];
+        // Prevent anyone from promoting user to admin
+        if (accessType === UserAccessType.ADMIN) {
+          throw new BadRequestError('You cannot promote users to admin.');
+        }
+        // Prevent anyone from demoting user with current admin status
+        if (currUser.accessType === UserAccessType.ADMIN && accessType !== UserAccessType.ADMIN) {
+          throw new BadRequestError('You cannot demote an admin.');
+        }
+
         const updatedUser = await userRepository.upsertUser(currUser, { accessType });
         // console.log('updatedUser', updatedUser);
         return updatedUser;
@@ -228,5 +238,13 @@ export default class UserAccountService {
       // Return updated users and their new access levels
       return updatedUsers;
     });
+  }
+
+  /**
+   * This method is used to get all users with their access levels.
+   * @returns {Promise.<UserModel[]>} - an array of all users with their access levels
+   */
+  public async getAllUsersWithAccessLevels(): Promise<any[]> {
+    return [];
   }
 }

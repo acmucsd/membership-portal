@@ -15,6 +15,7 @@ import {
   GetAllEmailsResponse,
   SubmitAttendanceForUsersResponse,
   ModifyUserAccessLevelResponse,
+  GetAllUserAccessLevelsResponse,
 } from '../../types';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import UserAccountService from '../../services/UserAccountService';
@@ -88,12 +89,16 @@ export class AdminController {
     // Check if the user is an admin, if not throw forbidden error
     if (!PermissionsService.canModifyUserAccessLevel(currentUser)) throw new ForbiddenError();
 
-    // Get users from request
     const { accessUpdates } = modifyUserAccessLevelRequest;
     const emails = accessUpdates.map((e) => e.user.toLowerCase());
-    //console.log(emails);
-    const updates = await this.userAccountService.updateUserAccessLevels(accessUpdates, emails, currentUser);
+    const updatedUsers = await this.userAccountService.updateUserAccessLevels(accessUpdates, emails, currentUser);
+    return { error: null, updatedUsers };
+  }
 
-    return { error: null, updates };
+  @Get('/access')
+  async getAllUsersWithAccessLevels(@AuthenticatedUser() user: UserModel): Promise<GetAllUserAccessLevelsResponse> {
+    if (!PermissionsService.canSeeAllUserAccessLevels(user)) throw new ForbiddenError();
+    const users = await this.userAccountService.getAllUsersWithAccessLevels();
+    return { error: null, users };
   }
 }

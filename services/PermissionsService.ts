@@ -85,4 +85,8 @@ export default class PermissionsService {
   public static canModifyUserAccessLevel(user: UserModel): boolean {
     return user.isAdmin();
   }
+
+  public static canSeeAllUserAccessLevels(user: UserModel): boolean {
+    return user.isAdmin();
+  }
 }
