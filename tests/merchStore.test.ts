@@ -753,6 +753,10 @@ describe('merch item options', () => {
   });
 });
 
+describe('merch item photos', () => {
+  test()
+});
+
 describe('checkout cart', () => {
   test('passing in valid item option uuids returns the full options and their items', async () => {
     const conn = await DatabaseConnection.get();

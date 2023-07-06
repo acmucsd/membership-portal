@@ -37,7 +37,7 @@ export class MerchandiseItemModel extends BaseEntity {
   hasVariantsEnabled: boolean;
 
   @OneToMany((type) => MerchandiseItemPhotoModel, (picture) => picture.merchItem, { cascade: true })
-  pictures: MerchandiseItemPhotoModel[];
+  photos: MerchandiseItemPhotoModel[];
 
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })
   options: MerchandiseItemOptionModel[];
@@ -46,7 +46,7 @@ export class MerchandiseItemModel extends BaseEntity {
     const baseMerchItem: PublicMerchItem = {
       uuid: this.uuid,
       itemName: this.itemName,
-      pictures: this.pictures.map((o) => o.getPublicMerchItemPhoto()),
+      pictures: this.photos.map((o) => o.getPublicMerchItemPhoto()),
       description: this.description,
       options: this.options.map((o) => o.getPublicMerchItemOption()),
       monthlyLimit: this.monthlyLimit,
@@ -69,7 +69,7 @@ export class MerchandiseItemModel extends BaseEntity {
 
   // get the first index of pictures if possible
   public getDefaultPictureUrl(): string {
-    const filteredArray = this.pictures.filter(picture => picture.position == 0);
+    const filteredArray = this.photos.filter(picture => picture.position == 0);
     return (filteredArray.length == 0) ? null : filteredArray[0].picture;
   }
 }

@@ -52,9 +52,9 @@ export class MerchFactory {
         .createOptions(numOptions)
         .map((option) => MerchandiseItemOptionModel.merge(option, { item: fake }));
     }
-    if (!substitute?.pictures) {
+    if (!substitute?.photos) {
       const numPhotos = FactoryUtils.getRandomNumber(1, 5);
-      fake.pictures = MerchFactory
+      fake.photos = MerchFactory
         .createPhotos(numPhotos)
         .map((photo) => MerchandiseItemPhotoModel.merge(photo, { merchItem: fake }));
     }

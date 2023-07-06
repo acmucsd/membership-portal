@@ -399,7 +399,7 @@ async function seed(): Promise<void> {
     MERCH_ITEM_1_OPTION_L,
     MERCH_ITEM_1_OPTION_XL,
   ];
-  MERCH_ITEM_1.pictures = [
+  MERCH_ITEM_1.photos = [
     MERCH_ITEM_1_PHOTO_0,
     MERCH_ITEM_1_PHOTO_1,
     MERCH_ITEM_1_PHOTO_2,
@@ -460,7 +460,7 @@ async function seed(): Promise<void> {
     MERCH_ITEM_2_OPTION_3X3,
     MERCH_ITEM_2_OPTION_4X4,
   ];
-  MERCH_ITEM_2.pictures = [
+  MERCH_ITEM_2.photos = [
     MERCH_ITEM_2_PHOTO_0,
     MERCH_ITEM_2_PHOTO_1,
   ]
@@ -507,7 +507,7 @@ async function seed(): Promise<void> {
     discountPercentage: 5,
   });
   MERCH_ITEM_3.options = [MERCH_ITEM_3_OPTION];
-  MERCH_ITEM_3.pictures = [
+  MERCH_ITEM_3.photos = [
     MERCH_ITEM_3_PHOTO_0,
     MERCH_ITEM_3_PHOTO_1,
     MERCH_ITEM_3_PHOTO_2,
@@ -534,7 +534,7 @@ async function seed(): Promise<void> {
     discountPercentage: 20,
   });
   MERCH_ITEM_4.options = [MERCH_ITEM_4_OPTION];
-  MERCH_ITEM_4.pictures = [MERCH_ITEM_4_PHOTO_0];
+  MERCH_ITEM_4.photos = [MERCH_ITEM_4_PHOTO_0];
   const MERCH_ITEM_5 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Unisex Raccoon Print Shell Jacket',
@@ -571,7 +571,7 @@ async function seed(): Promise<void> {
     },
   });
   MERCH_ITEM_5.options = [MERCH_ITEM_5_MEDIUM, MERCH_ITEM_5_LARGE];
-  MERCH_ITEM_5.pictures = [MERCH_ITEM_5_PHOTO_0];
+  MERCH_ITEM_5.photos = [MERCH_ITEM_5_PHOTO_0];
   MERCH_COLLECTION_2.items = [MERCH_ITEM_3, MERCH_ITEM_4, MERCH_ITEM_5];
 
   const PAST_ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
