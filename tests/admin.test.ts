@@ -2,6 +2,7 @@ import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAcces
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
+import { ForbiddenError } from 'routing-controllers';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -220,6 +221,35 @@ describe('event creation', () => {
     expect(eventResponse.event.start).toEqual(event.start);
     expect(eventResponse.event.end).toEqual(event.end);
     expect(eventResponse.event.pointValue).toEqual(event.pointValue);
+  });
+
+  test('check for permissions', async () => {
+    const conn = await DatabaseConnection.get();
+    const user = UserFactory.fake();
+
+    await new PortalState()
+      .createUsers(user)
+      .write();
+
+    const event = {
+      cover: 'https://www.google.com',
+      title: 'ACM Party @ RIMAC',
+      description: 'Indoor Pool Party',
+      location: 'RIMAC',
+      committee: 'ACM',
+      start: new Date('2020-08-20T14:00:00.000Z'),
+      end: new Date('2020-08-20T12:00:00.000Z'),
+      attendanceCode: 'p4rty',
+      pointValue: 10,
+    };
+
+    const createEventRequest: CreateEventRequest = {
+      event,
+    };
+
+    const eventController = ControllerFactory.event(conn);
+    await expect(eventController.createEvent(createEventRequest, user))
+      .rejects.toThrow(ForbiddenError);
   });
 
   test('throws error when start date later than end date', async () => {
