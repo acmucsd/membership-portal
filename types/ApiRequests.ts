@@ -193,7 +193,7 @@ export interface CreateMerchItemOptionRequest {
   option: MerchItemOption;
 }
 export interface CreateMerchItemPhotoRequest {
-  position: number;
+  // position: number;
 }
 
 export interface PlaceMerchOrderRequest {

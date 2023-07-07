@@ -786,10 +786,15 @@ describe('merch item photos', () => {
       instance(storageService),
     );
 
-    merchStoreController.createMerchItemPhoto(image2, )
+    const params = { uuid: item.uuid };
+    merchStoreController.createMerchItemPhoto(image2, {}, params, admin);
   });
 
   test('can remap the picture of an item to different orders', async () => {
+
+  });
+
+  test('throw error on invalid remaps of item photos', async () => {
 
   });
 

@@ -320,9 +320,9 @@ export class CreateMerchItemOptionRequest implements ICreateMerchItemOptionReque
 }
 
 export class CreateMerchItemPhotoRequest implements ICreateMerchItemPhotoRequest {
-  @IsDefined()
-  @Min(0)
-  position: number;
+  // @IsDefined()
+  // @Min(0)
+  // position: number;
 }
 
 export class PlaceMerchOrderRequest implements IPlaceMerchOrderRequest {
