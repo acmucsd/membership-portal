@@ -8,6 +8,9 @@ import { MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import EmailService from '../services/EmailService';
+import { FileFactory } from './data/FileFactory';
+import { Config } from 'config';
+import Mocks from './mocks/MockFactory';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -754,7 +757,45 @@ describe('merch item options', () => {
 });
 
 describe('merch item photos', () => {
-  test()
+  const folderLocation = 'https://s3.amazonaws.com/upload-photo/';
+
+  test('', async () => {
+
+  });
+
+  test('can create an item with up to 5 pictures', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const photo1 = MerchFactory.fakePhoto();
+    const item = MerchFactory.fakeItem({photos: [photo1]});
+
+    await new PortalState()
+      .createUsers(admin)
+      .createMerchItem(item)
+      .write();
+
+    const image2 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
+    const image3 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
+    const image4 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
+    const image5 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
+    const storageService = Mocks.storage(folderLocation);
+
+    const merchStoreController = ControllerFactory.merchStore(
+      conn,
+      undefined,
+      instance(storageService),
+    );
+
+    merchStoreController.createMerchItemPhoto(image2, )
+  });
+
+  test('can remap the picture of an item to different orders', async () => {
+
+  });
+
+  test('throw error on invalid remaps of item photos', async () => {
+
+  });
 });
 
 describe('checkout cart', () => {

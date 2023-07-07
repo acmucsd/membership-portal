@@ -316,7 +316,8 @@ export default class MerchStoreService {
   }
 
   /**
-   * Creates an item photo and assign it the corresponding picture url and index
+   * Creates an item photo and assign it the corresponding picture url
+   * and append the photo to the photos list from merchItem
    * @param item merch item uuid
    * @param properties merch item photo picture url and position
    * @returns created item photo
@@ -326,17 +327,22 @@ export default class MerchStoreService {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Merch item not found');
 
-      const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, merchItem });
+      // add to the end
+      const position = merchItem.photos.length;
+
+      const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, position, merchItem });
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
+
       // increment photo index for all photos after the inserted photo
-      const position = properties.position;
-      merchItem.photos.forEach((photo) => {
-        if (photo.position >= position) {
-          MerchandiseItemPhotoModel.merge(photo, {position: photo.position + 1});
-        }
-      });
-      // insert photo at index
-      merchItem.photos.splice(position, 0, createdPhoto);
+      // const position = properties.position;
+      // merchItem.photos.forEach((photo) => {
+      //   if (photo.position >= position) {
+      //     MerchandiseItemPhotoModel.merge(photo, {position: photo.position + 1});
+      //   }
+      // });
+
+      // verify the result photos array
+      merchItem.photos.push(createdPhoto);
       MerchStoreService.verifyItemHasValidPhotos(merchItem);
 
       const upsertedPhoto = await merchStoreItemPhotoRepository.upsertMerchItemPhoto(createdPhoto);

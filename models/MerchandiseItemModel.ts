@@ -46,7 +46,7 @@ export class MerchandiseItemModel extends BaseEntity {
     const baseMerchItem: PublicMerchItem = {
       uuid: this.uuid,
       itemName: this.itemName,
-      pictures: this.photos.map((o) => o.getPublicMerchItemPhoto()),
+      photos: this.photos.map((o) => o.getPublicMerchItemPhoto()),
       description: this.description,
       options: this.options.map((o) => o.getPublicMerchItemOption()),
       monthlyLimit: this.monthlyLimit,

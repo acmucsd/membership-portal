@@ -243,7 +243,7 @@ export interface MerchItemOptionMetadata {
 
 export interface MerchItemPhoto {
   picture: string;
-  position: number;
+  // position: number;
 }
 
 export interface MerchItemPhotoEdit {

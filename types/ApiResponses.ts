@@ -161,7 +161,7 @@ export interface PublicMerchItem {
   lifetimeLimit: number;
   hidden: boolean;
   hasVariantsEnabled: boolean;
-  pictures: PublicMerchItemPhoto[];
+  photos: PublicMerchItemPhoto[];
   options: PublicMerchItemOption[];
 }
 
