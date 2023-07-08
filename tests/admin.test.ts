@@ -3,6 +3,8 @@ import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
 import { ForbiddenError } from 'routing-controllers';
+import EventService from 'services/EventService';
+import { EventController } from 'api/controllers/EventController';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -221,6 +223,9 @@ describe('event creation', () => {
     expect(eventResponse.event.start).toEqual(event.start);
     expect(eventResponse.event.end).toEqual(event.end);
     expect(eventResponse.event.pointValue).toEqual(event.pointValue);
+
+    const lookupEvent = await eventController.getOneEvent({uuid: eventResponse.event.uuid}, admin);
+    expect(lookupEvent.error).toEqual(null);
   });
 
   test('check for permissions', async () => {

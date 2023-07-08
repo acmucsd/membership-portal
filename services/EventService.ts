@@ -15,6 +15,12 @@ export default class EventService {
     this.transactions = new TransactionsManager(entityManager);
   }
 
+  /**
+   * Creates a new event
+   *
+   * @param event object with all the properties of the event
+   * @returns The event that was created
+   */
   public async create(event: Event): Promise<PublicEvent> {
     const eventCreated = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
