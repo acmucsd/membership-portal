@@ -1,8 +1,8 @@
+import { ForbiddenError } from 'routing-controllers';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
-import { ForbiddenError } from 'routing-controllers';
 import EventService from 'services/EventService';
 import { EventController } from 'api/controllers/EventController';
 
