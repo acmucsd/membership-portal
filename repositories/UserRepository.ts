@@ -91,4 +91,10 @@ export class UserRepository extends BaseRepository<UserModel> {
       })
       .execute();
   }
+
+  public async getAllPrivateProfiles() {
+    return this.repository.find({
+      select: ['uuid', 'email', 'handle', 'accessType'],
+    });
+  }
 }

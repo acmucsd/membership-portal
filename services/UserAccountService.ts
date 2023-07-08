@@ -1,4 +1,4 @@
-import { BadRequestError, NotFoundError } from 'routing-controllers';
+import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
@@ -202,7 +202,7 @@ export default class UserAccountService {
    * @param currentUser - the user making the request
    * @returns {Promise.<UserModel[]>} - an array of updated users
    */
-  public async updateUserAccessLevels(accessUpdates, emails: string[], currentUser: UserModel): Promise<UserModel[]> { //TODO: figure out return type
+  public async updateUserAccessLevels(accessUpdates, emails: string[], currentUser: UserModel): Promise<PrivateProfile[]> { //TODO: figure out return type
     return this.transactions.readWrite(async (txn) => {
       // Strip out the user emails & validate that users exist
       const userRepository = Repositories.user(txn);
@@ -214,37 +214,34 @@ export default class UserAccountService {
         throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
       }
 
-      //TODO: check if user emails are the same? (duplicate users)
-      console.log('accessUpdates', accessUpdates);
-
       const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
-        //console.log(index);
         const { user, newAccess } = accessUpdate;
         const { accessType } = newAccess;
         const currUser = users[index];
         // Prevent anyone from promoting user to admin
         if (accessType === UserAccessType.ADMIN) {
-          throw new BadRequestError('You cannot promote users to admin.');
+          throw new ForbiddenError('You cannot promote users to admin.');
         }
         // Prevent anyone from demoting user with current admin status
         if (currUser.accessType === UserAccessType.ADMIN && accessType !== UserAccessType.ADMIN) {
-          throw new BadRequestError('You cannot demote an admin.');
+          throw new ForbiddenError('You cannot demote an admin.');
         }
 
         const updatedUser = await userRepository.upsertUser(currUser, { accessType });
-        // console.log('updatedUser', updatedUser);
         return updatedUser;
       }));
-      // Return updated users and their new access levels
+
       return updatedUsers;
     });
   }
 
   /**
    * This method is used to get all users with their access levels.
-   * @returns {Promise.<UserModel[]>} - an array of all users with their access levels
+   * @returns {Promise.<PrivateProfile[]>} - an array of all users with their access levels
    */
-  public async getAllUsersWithAccessLevels(): Promise<any[]> {
-    return [];
+  public async getAllUsersWithAccessLevels(): Promise<PrivateProfile[]> {
+    return this.transactions.readOnly(async (txn) => Repositories
+      .user(txn)
+      .getAllPrivateProfiles());
   }
 }

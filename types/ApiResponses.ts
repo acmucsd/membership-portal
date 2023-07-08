@@ -40,7 +40,7 @@ export interface SubmitAttendanceForUsersResponse extends ApiResponse {
 }
 
 export interface ModifyUserAccessLevelResponse extends ApiResponse {
-  updatedUsers: PublicProfile[]; //FIXME: fix this
+  updatedUsers: PrivateProfile[]; //FIXME: fix this
 }
 
 export interface GetAllUserAccessLevelsResponse extends ApiResponse {
