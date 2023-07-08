@@ -66,4 +66,6 @@ export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelReque
   @IsDefined()
   @ArrayNotEmpty()
   accessUpdates: UserAccessUpdates[];
+
+
 }

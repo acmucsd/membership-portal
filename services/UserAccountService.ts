@@ -214,10 +214,11 @@ export default class UserAccountService {
         throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
       }
 
+
       const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
         const { user, newAccess } = accessUpdate;
         const { accessType } = newAccess;
-        const currUser = users[index];
+        const currUser = await userRepository.findByEmail(user);
         // Prevent anyone from promoting user to admin
         if (accessType === UserAccessType.ADMIN) {
           throw new ForbiddenError('You cannot promote users to admin.');
