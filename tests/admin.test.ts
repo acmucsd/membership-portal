@@ -224,7 +224,7 @@ describe('event creation', () => {
 
     const lookupEvent = await eventController.getOneEvent({ uuid: eventResponse.event.uuid }, admin);
     expect(lookupEvent.error).toEqual(null);
-    expect(lookupEvent.event).toEqual(eventResponse.event)
+    expect(lookupEvent.event).toEqual(eventResponse.event);
   });
 
   test('check for permissions', async () => {
