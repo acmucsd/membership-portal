@@ -189,9 +189,10 @@ describe('event creation', () => {
   test('successful event creation', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const user = UserFactory.fake();
 
     await new PortalState()
-      .createUsers(admin)
+      .createUsers(admin, user)
       .write();
 
     const event = {
@@ -222,9 +223,9 @@ describe('event creation', () => {
     expect(eventResponse.event.end).toEqual(event.end);
     expect(eventResponse.event.pointValue).toEqual(event.pointValue);
 
-    const lookupEvent = await eventController.getOneEvent({ uuid: eventResponse.event.uuid }, admin);
+    const lookupEvent = await eventController.getOneEvent({ uuid: eventResponse.event.uuid }, user);
     expect(lookupEvent.error).toEqual(null);
-    expect(lookupEvent.event).toEqual(eventResponse.event);
+    expect(JSON.stringify(lookupEvent.event)).toEqual(JSON.stringify(eventResponse.event));
   });
 
   test('check for permissions', async () => {
