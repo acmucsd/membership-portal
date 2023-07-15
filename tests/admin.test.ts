@@ -1,3 +1,4 @@
+import { access } from 'fs';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
@@ -182,3 +183,238 @@ describe('bonus points submission', () => {
     expect(getNoBonusUserResponse.user.points).toEqual(0);
   });
 });
+
+describe('updating user access level', () => {
+  test('updates the access level of the user', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const users = UserFactory.create(5);
+
+
+    users[0].accessType = UserAccessType.STAFF;
+    users[1].accessType = UserAccessType.STANDARD;
+    users[2].accessType = UserAccessType.MARKETING;
+    users[3].accessType = UserAccessType.MERCH_STORE_DISTRIBUTOR;
+
+    await new PortalState()
+      .createUsers(users[0], users[1], users[2], users[3], admin)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    const accessLevelResponse = await adminController.updateUserAccessLevel({
+      "accessUpdates": [
+        { "user": users[0].email,  "newAccess": {
+            "accessType": "MERCH_STORE_MANAGER"
+        }},
+        { "user": users[1].email,  "newAccess": {
+            "accessType": "MARKETING"
+        }},
+        { "user": users[2].email,  "newAccess": {
+            "accessType": "MERCH_STORE_DISTRIBUTOR"
+        }},
+        { "user": users[3].email,  "newAccess": {
+            "accessType": "STAFF"
+        }}
+      ]
+    }, admin);
+
+    // expect statements
+    expect(accessLevelResponse.updatedUsers[0].email).toEqual(users[0].email);
+    expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
+
+    expect(accessLevelResponse.updatedUsers[1].email).toEqual(users[1].email);
+    expect(accessLevelResponse.updatedUsers[1].accessType).toEqual(UserAccessType.MARKETING);
+
+    expect(accessLevelResponse.updatedUsers[2].email).toEqual(users[2].email);
+    expect(accessLevelResponse.updatedUsers[2].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
+
+    expect(accessLevelResponse.updatedUsers[3].email).toEqual(users[3].email);
+    expect(accessLevelResponse.updatedUsers[3].accessType).toEqual(UserAccessType.STAFF);
+  });
+
+
+
+  // attempt to update when user is not an admin
+  test('attempt to update when user is not an admin', async () => {
+    const conn = await DatabaseConnection.get();
+    const standard = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+    const users = UserFactory.create(5);
+
+
+    users[0].accessType = UserAccessType.STAFF;
+    users[1].accessType = UserAccessType.STANDARD;
+    users[2].accessType = UserAccessType.MARKETING;
+    users[3].accessType = UserAccessType.MERCH_STORE_DISTRIBUTOR;
+
+    await new PortalState()
+      .createUsers(users[0], users[1], users[2], users[3], standard)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    const accessLevelResponse = await adminController.updateUserAccessLevel({
+      "accessUpdates": [
+        { "user": users[0].email,  "newAccess": {
+            "accessType": "MERCH_STORE_MANAGER"
+        }},
+        { "user": users[1].email,  "newAccess": {
+            "accessType": "MARKETING"
+        }},
+        { "user": users[2].email,  "newAccess": {
+            "accessType": "MERCH_STORE_DISTRIBUTOR"
+        }},
+        { "user": users[3].email,  "newAccess": {
+            "accessType": "STAFF"
+        }}
+      ]
+    }, standard);
+
+    // expect this to return a ForbiddenError
+    //FIXME: figure out how to throw an error
+    //expect(() => accessLevelResponse.toThrow(ForbiddenError));
+
+  });
+
+
+  // attempt to update duplicate users
+  test('attempt to update duplicate users', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const users = UserFactory.create(5);
+
+
+    users[0].accessType = UserAccessType.STAFF;
+    users[0].email = "smhariha@ucsd.edu";
+    users[1].accessType = UserAccessType.STAFF;
+    users[1].email = "smhariha@ucsd.edu";
+
+    await new PortalState()
+      .createUsers(users[0], users[1], admin)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    const accessLevelResponse = await adminController.updateUserAccessLevel({
+      "accessUpdates": [
+        { "user": users[0].email,  "newAccess": {
+            "accessType": "MERCH_STORE_MANAGER"
+        }},
+        { "user": users[1].email,  "newAccess": {
+            "accessType": "MERCH_STORE_MANAGER"
+        }}
+      ]
+    }, admin);
+
+    // expect statements
+    expect(accessLevelResponse.updatedUsers[0].email).toEqual(users[0].email);
+    expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
+  });
+
+
+  // attempt to promote a user to an admin
+  test('attempt to promote a user to an admin', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const users = UserFactory.create(5);
+
+    users[0].accessType = UserAccessType.STAFF;
+    users[1].accessType = UserAccessType.STANDARD;
+    users[2].accessType = UserAccessType.MARKETING;
+    users[3].accessType = UserAccessType.MERCH_STORE_DISTRIBUTOR;
+
+    await new PortalState()
+      .createUsers(users[0], users[1], users[2], users[3], admin)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    const accessLevelResponse = await adminController.updateUserAccessLevel({
+      "accessUpdates": [
+        { "user": users[0].email,  "newAccess": {
+            "accessType": "MERCH_STORE_MANAGER"
+        }},
+        { "user": users[1].email,  "newAccess": {
+            "accessType": "ADMIN"
+        }},
+        { "user": users[2].email,  "newAccess": {
+            "accessType": "MERCH_STORE_DISTRIBUTOR"
+        }},
+        { "user": users[3].email,  "newAccess": {
+            "accessType": "STAFF"
+        }}
+      ]
+    }, admin);
+
+    // expect statements
+    expect(accessLevelResponse.updatedUsers[0].email).toEqual(users[0].email);
+    expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
+
+    // TODO: should throw an error
+    expect(accessLevelResponse.updatedUsers[1].email).toEqual(users[1].email);
+    expect(accessLevelResponse.updatedUsers[1].accessType).toEqual(UserAccessType.MARKETING);
+
+    expect(accessLevelResponse.updatedUsers[2].email).toEqual(users[2].email);
+    expect(accessLevelResponse.updatedUsers[2].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
+
+    expect(accessLevelResponse.updatedUsers[3].email).toEqual(users[3].email);
+    expect(accessLevelResponse.updatedUsers[3].accessType).toEqual(UserAccessType.STAFF);
+  });
+
+
+
+
+  //attempt to demote an existing admin
+  test('attempt to demote an existing admin', async () => {
+
+    //FIXME: do this for an admin
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const users = UserFactory.create(5);
+
+
+    users[0].accessType = UserAccessType.STAFF;
+    users[1].accessType = UserAccessType.STANDARD;
+    users[2].accessType = UserAccessType.MARKETING;
+    users[3].accessType = UserAccessType.MERCH_STORE_DISTRIBUTOR;
+
+    await new PortalState()
+      .createUsers(users[0], users[1], users[2], users[3], admin)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    const accessLevelResponse = await adminController.updateUserAccessLevel({
+      "accessUpdates": [
+        { "user": users[0].email,  "newAccess": {
+            "accessType": "MERCH_STORE_MANAGER"
+        }},
+        { "user": users[1].email,  "newAccess": {
+            "accessType": "MARKETING"
+        }},
+        { "user": users[2].email,  "newAccess": {
+            "accessType": "MERCH_STORE_DISTRIBUTOR"
+        }},
+        { "user": users[3].email,  "newAccess": {
+            "accessType": "STAFF"
+        }}
+      ]
+    }, admin);
+
+    // expect statements
+    expect(accessLevelResponse.updatedUsers[0].email).toEqual(users[0].email);
+    expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
+
+    expect(accessLevelResponse.updatedUsers[1].email).toEqual(users[1].email);
+    expect(accessLevelResponse.updatedUsers[1].accessType).toEqual(UserAccessType.MARKETING);
+
+    expect(accessLevelResponse.updatedUsers[2].email).toEqual(users[2].email);
+    expect(accessLevelResponse.updatedUsers[2].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
+
+    expect(accessLevelResponse.updatedUsers[3].email).toEqual(users[3].email);
+    expect(accessLevelResponse.updatedUsers[3].accessType).toEqual(UserAccessType.STAFF);
+  });
+
+
+});
+
