@@ -788,6 +788,7 @@ describe('merch item photos', () => {
 
     const params = { uuid: item.uuid };
     merchStoreController.createMerchItemPhoto(image2, {}, params, admin);
+
   });
 
   test('can remap the picture of an item to different orders', async () => {
