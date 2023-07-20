@@ -128,20 +128,6 @@ export class MerchItemPhotoRepository extends BaseRepository<MerchandiseItemPhot
     return this.repository.save(photo);
   }
 
-  // public async updateMerchItemOptionsInCollection(collection: string, discountPercentage: number): Promise<void> {
-  //   const qb = this.repository.createQueryBuilder();
-  //   await qb
-  //     .update()
-  //     .set({ discountPercentage })
-  //     .where(`item IN ${qb.subQuery()
-  //       .select('merch.uuid')
-  //       .from(MerchandiseItemModel, 'merch')
-  //       .where('merch.collection = :collection')
-  //       .getQuery()}`)
-  //     .setParameter('collection', collection)
-  //     .execute();
-  // }
-
   public async deleteMerchItemPhoto(photo: MerchandiseItemPhotoModel): Promise<void> {
     await this.repository.remove(photo);
   }

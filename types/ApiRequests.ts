@@ -248,7 +248,6 @@ export interface MerchItemPhoto {
 
 export interface MerchItemPhotoEdit {
   uuid: string;
-  picture?: string;
   position?: number;
 }
 

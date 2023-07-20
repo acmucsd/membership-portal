@@ -778,6 +778,7 @@ describe('merch item photos', () => {
     const image3 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
     const image4 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
     const image5 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
+    const imageExtra = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
     const storageService = Mocks.storage(folderLocation);
 
     const merchStoreController = ControllerFactory.merchStore(
@@ -788,6 +789,12 @@ describe('merch item photos', () => {
 
     const params = { uuid: item.uuid };
     merchStoreController.createMerchItemPhoto(image2, {}, params, admin);
+    merchStoreController.createMerchItemPhoto(image3, {}, params, admin);
+    merchStoreController.createMerchItemPhoto(image4, {}, params, admin);
+    merchStoreController.createMerchItemPhoto(image5, {}, params, admin);
+
+    expect(merchStoreController.createMerchItemPhoto(imageExtra, {}, params, admin))
+      .toThrow('Merch items cannot have more than 5 pictures');
 
   });
 
