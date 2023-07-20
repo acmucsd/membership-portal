@@ -5,6 +5,7 @@ import { AttendEventRequest } from '../validators/AttendanceControllerRequests';
 import { UserModel } from '../../models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
+import UserAccountService from '../../services/UserAccountService';
 import { GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 
@@ -12,9 +13,11 @@ import { UuidParam } from '../validators/GenericRequests';
 @JsonController('/attendance')
 export class AttendanceController {
   private attendanceService: AttendanceService;
+  private userAccountService: UserAccountService;
 
-  constructor(attendanceService: AttendanceService) {
+  constructor(attendanceService: AttendanceService, userAccountService: UserAccountService) {
     this.attendanceService = attendanceService;
+    this.userAccountService = this.userAccountService
   }
 
   @Get('/:uuid')
@@ -28,6 +31,14 @@ export class AttendanceController {
   @Get()
   async getAttendancesForCurrentUser(@AuthenticatedUser() user: UserModel): Promise<GetAttendancesForUserResponse> {
     const attendances = await this.attendanceService.getAttendancesForUser(user);
+    return { error: null, attendances };
+  }
+
+  @Get('user/:uuid')
+  async getAttendancesForUser(@Params() params: UuidParam,
+    @AuthenticatedUser() user: UserModel): Promise<GetAttendancesForEventResponse> {
+    const searchUser = await this.userAccountService.findByUuid(params.uuid)
+    const attendances = await this.attendanceService.getAttendancesForUser(searchUser);
     return { error: null, attendances };
   }
 
