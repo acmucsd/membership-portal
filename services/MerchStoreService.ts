@@ -666,11 +666,9 @@ export default class MerchStoreService {
         throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
       }
 
-      console.log('dam 2.7');
 
       const customer = order.user;
       await this.refundAndConfirmOrderCancellation(order, user, txn);
-      console.log('dam 2.8');
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
         user,
@@ -686,11 +684,9 @@ export default class MerchStoreService {
   private async refundAndConfirmOrderCancellation(order: OrderModel, user: UserModel, txn: EntityManager) {
     // refund and restock items
     const refundedItems = await MerchStoreService.refundAndRestockItems(order, user, txn);
-    console.log('dam 2.75');
 
     // send email confirming cancel
     const orderUpdateInfo = await MerchStoreService.buildOrderCancellationInfo(order, refundedItems, txn);
-    console.log('dam 2.77');
     await this.emailService.sendOrderCancellation(user.email, user.firstName, orderUpdateInfo);
   }
 

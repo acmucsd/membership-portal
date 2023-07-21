@@ -263,9 +263,7 @@ export class MerchStoreController {
   @Post('/order/:uuid/cancel')
   async cancelMerchOrder(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel) {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    console.log('dam 2.6');
     const order = await this.merchStoreService.cancelMerchOrder(params.uuid, user);
-    console.log('dam 2.9');
     return { error: null, order };
   }
 
