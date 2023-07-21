@@ -282,6 +282,8 @@ describe('merch items with options', () => {
       ], pickupEvent)
       .write();
 
+    console.log('dam 1');
+
     const emailService = mock(EmailService);
     when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
       .thenResolve();
@@ -294,16 +296,21 @@ describe('merch items with options', () => {
     expect(updatedItem.monthlyRemaining).toEqual(4);
     expect(updatedItem.lifetimeRemaining).toEqual(9);
 
+    console.log('dam 2');
+
     // cancel order
     const order = await conn.manager.findOne(OrderModel, { user: member });
     const cancelOrderParams = { uuid: order.uuid };
+    console.log('dam 2.5');
     await merchStoreController.cancelMerchOrder(cancelOrderParams, member);
 
+    console.log('dam 3');
     // make sure the item's remaining counts got reset
     const getCancelledItemResponse = await merchStoreController.getOneMerchItem(orderedItemParams, member);
     const cancelledItem = getCancelledItemResponse.item;
     expect(cancelledItem.monthlyRemaining).toEqual(5);
     expect(cancelledItem.lifetimeRemaining).toEqual(10);
+    console.log('dam 4');
   });
 
   test('if monthly or lifetime limits are reached, then the item cannot be ordered', async () => {
@@ -827,11 +834,11 @@ describe('merch item photos', () => {
 
     const photos = [photo1, photo2, photo3, photo4, photo5];
     expect((await merchStoreController.getOneMerchItem(params, admin)).item.photos)
-      .toBe(photos)
+      .toEqual(photos)
 
 
     expect(await merchStoreController.createMerchItemPhoto(imageExtra, {}, params, admin))
-      .toThrow('Merch items cannot have more than 5 pictures');
+      .rejects.toThrow('Merch items cannot have more than 5 pictures');
 
   });
 
@@ -859,6 +866,10 @@ describe('checkout cart', () => {
 
     const itemForOptions1And2 = MerchFactory.fakeItem({ options: [option1, option2] });
     const itemForOption3 = MerchFactory.fakeItem({ options: [option3] });
+    console.log(itemForOptions1And2.photos);
+    console.log('damm 1');
+    console.log(itemForOptions1And2.getDefaultPictureUrl());
+    console.log('damm 2');
 
     // need to explicitly set option.item after calling fakeItem(),
     // so that the item.options elements don't have circular references to
@@ -868,16 +879,23 @@ describe('checkout cart', () => {
     option2.item = itemForOptions1And2;
     option3.item = itemForOption3;
 
+    console.log(option1.item);
+    console.log('damm 3');
+    console.log(option1.getPublicOrderMerchItemOption());
+    console.log('damm 4');
+
     await new PortalState()
       .createUsers(member)
       .createMerchItem(itemForOptions1And2)
       .createMerchItem(itemForOption3)
       .write();
 
+    console.log('damm 5');
     const params = { items: options.map((o) => o.uuid) };
     const merchStoreController = ControllerFactory.merchStore(conn);
     const getCartResponse = await merchStoreController.getCartItems(params, member);
 
+    console.log('damm 6');
     const { cart } = getCartResponse;
 
     expect(cart).toHaveLength(3);

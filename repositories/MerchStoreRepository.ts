@@ -76,11 +76,11 @@ export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
 @EntityRepository(MerchandiseItemOptionModel)
 export class MerchItemOptionRepository extends BaseRepository<MerchandiseItemOptionModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchandiseItemOptionModel> {
-    return this.repository.findOne(uuid, { relations: ['item'] });
+    return this.repository.findOne(uuid, { relations: ['item', 'item.photos'] });
   }
 
   public async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchandiseItemOptionModel>> {
-    const options = await this.repository.findByIds(uuids, { relations: ['item'] });
+    const options = await this.repository.findByIds(uuids, { relations: ['item',  'item.photos'] });
     return new Map(options.map((o) => [o.uuid, o]));
   }
 

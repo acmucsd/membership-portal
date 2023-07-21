@@ -56,7 +56,7 @@ export class MerchFactory {
       const numPhotos = FactoryUtils.getRandomNumber(1, 5);
       fake.photos = MerchFactory
         .createPhotos(numPhotos)
-        .map((photo) => MerchandiseItemPhotoModel.merge(photo, { merchItem: fake }));
+        .map((photo, i) => MerchandiseItemPhotoModel.merge(photo, { position: i, merchItem: fake }));
     }
     return MerchandiseItemModel.merge(fake, substitute);
   }

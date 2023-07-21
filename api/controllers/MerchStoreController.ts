@@ -263,7 +263,9 @@ export class MerchStoreController {
   @Post('/order/:uuid/cancel')
   async cancelMerchOrder(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel) {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
+    console.log('dam 2.6');
     const order = await this.merchStoreService.cancelMerchOrder(params.uuid, user);
+    console.log('dam 2.9');
     return { error: null, order };
   }
 
@@ -360,6 +362,7 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<GetCartResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const cartItems = await this.merchStoreService.getCartItems(getCartRequest.items);
+    console.log(cartItems);
     return { error: null, cart: cartItems.map((option) => option.getPublicOrderMerchItemOption()) };
   }
 }
