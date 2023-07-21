@@ -17,7 +17,7 @@ export class AttendanceController {
 
   constructor(attendanceService: AttendanceService, userAccountService: UserAccountService) {
     this.attendanceService = attendanceService;
-    this.userAccountService = this.userAccountService
+    this.userAccountService = userAccountService;
   }
 
   @Get('/:uuid')
@@ -37,7 +37,7 @@ export class AttendanceController {
   @Get('user/:uuid')
   async getAttendancesForUser(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetAttendancesForEventResponse> {
-    const searchUser = await this.userAccountService.findByUuid(params.uuid)
+    const searchUser = await this.userAccountService.findByUuid(params.uuid);
     const attendances = await this.attendanceService.getAttendancesForUser(searchUser);
     return { error: null, attendances };
   }
