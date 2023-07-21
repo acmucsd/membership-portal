@@ -1,15 +1,15 @@
 import * as faker from 'faker';
 import { ForbiddenError } from 'routing-controllers';
 import { zip } from 'underscore';
-import { anything, instance, mock, when } from 'ts-mockito';
+import { anything, instance, verify, mock, when } from 'ts-mockito';
 import { OrderModel } from '../models/OrderModel';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
-import { MerchItemEdit, UserAccessType } from '../types';
+import { MediaType, MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import EmailService from '../services/EmailService';
 import { FileFactory } from './data/FileFactory';
-import { Config } from 'config';
+import { Config } from '../config';
 import Mocks from './mocks/MockFactory';
 
 beforeAll(async () => {
@@ -788,12 +788,49 @@ describe('merch item photos', () => {
     );
 
     const params = { uuid: item.uuid };
-    merchStoreController.createMerchItemPhoto(image2, {}, params, admin);
-    merchStoreController.createMerchItemPhoto(image3, {}, params, admin);
-    merchStoreController.createMerchItemPhoto(image4, {}, params, admin);
-    merchStoreController.createMerchItemPhoto(image5, {}, params, admin);
 
-    expect(merchStoreController.createMerchItemPhoto(imageExtra, {}, params, admin))
+    const response2 = await merchStoreController.createMerchItemPhoto(image2, {}, params, admin);
+    const response3 = await merchStoreController.createMerchItemPhoto(image3, {}, params, admin);
+    const response4 = await merchStoreController.createMerchItemPhoto(image4, {}, params, admin);
+    const response5 = await merchStoreController.createMerchItemPhoto(image5, {}, params, admin);
+
+    // enough to check first and last response
+    expect(response2.error).toBe(null);
+    expect(response5.error).toBe(null);
+    verify(
+      storageService.uploadToFolder(
+        image2,
+        MediaType.MERCH_PHOTO,
+        anything(),
+        anything(),
+      ),
+    ).called();
+    verify(
+      storageService.uploadToFolder(
+        image5,
+        MediaType.MERCH_PHOTO,
+        anything(),
+        anything(),
+      ),
+    ).called();
+
+    const photo2 = response2.photo;
+    const photo3 = response3.photo;
+    const photo4 = response4.photo;
+    const photo5 = response5.photo;
+
+    // 0 index
+    expect(photo2.position).toBe(1);
+    expect(photo3.position).toBe(2);
+    expect(photo4.position).toBe(3);
+    expect(photo5.position).toBe(4);
+
+    const photos = [photo1, photo2, photo3, photo4, photo5];
+    expect((await merchStoreController.getOneMerchItem(params, admin)).item.photos)
+      .toBe(photos)
+
+
+    expect(await merchStoreController.createMerchItemPhoto(imageExtra, {}, params, admin))
       .toThrow('Merch items cannot have more than 5 pictures');
 
   });

@@ -16,7 +16,6 @@ import {
   MerchItem,
   MerchItemOption,
   MerchItemOptionAndQuantity,
-  MerchItemPhotoEdit,
   MerchItemEdit,
   PublicMerchItemOption,
   OrderStatus,
@@ -36,8 +35,7 @@ import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
-import { MerchandiseItemPhotoModel } from 'models/MerchandiseItemPhotoModel';
-import { MerchItemPhotoRepository } from 'repositories/MerchStoreRepository';
+import { MerchandiseItemPhotoModel } from '../models/MerchandiseItemPhotoModel';
 
 @Service()
 export default class MerchStoreService {
@@ -228,7 +226,7 @@ export default class MerchStoreService {
         // validate all indices
         item.photos.forEach((currentPhoto, index) => {
           if (currentPhoto.position != index) {
-            throw new UserError(`A photo position is inputed incorrectly at list index: ${index}`)
+            throw new UserError(`A photo position is inputted incorrectly at list index: ${index}`)
           }
         });
       }
@@ -332,14 +330,6 @@ export default class MerchStoreService {
 
       const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, position, merchItem });
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
-
-      // increment photo index for all photos after the inserted photo
-      // const position = properties.position;
-      // merchItem.photos.forEach((photo) => {
-      //   if (photo.position >= position) {
-      //     MerchandiseItemPhotoModel.merge(photo, {position: photo.position + 1});
-      //   }
-      // });
 
       // verify the result photos array
       merchItem.photos.push(createdPhoto);

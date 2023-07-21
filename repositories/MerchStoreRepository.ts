@@ -41,14 +41,14 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
     return this.repository.createQueryBuilder('collection')
       .leftJoinAndSelect('collection.items', 'items')
       .leftJoinAndSelect('items.options', 'options')
-      .leftJoinAndSelect('items.pictures', 'pictures');
+      .leftJoinAndSelect('items.photos', 'photos');
   }
 }
 
 @EntityRepository(MerchandiseItemModel)
 export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchandiseItemModel> {
-    return this.repository.findOne(uuid, { relations: ['collection', 'options', 'pictures'] });
+    return this.repository.findOne(uuid, { relations: ['collection', 'options', 'photos'] });
   }
 
   public async upsertMerchItem(item: MerchandiseItemModel, changes?: Partial<MerchandiseItemModel>):

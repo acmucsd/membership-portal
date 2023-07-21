@@ -1,13 +1,13 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
+import FactoryUtils from './FactoryUtils';
 import { MerchItemOptionMetadata, OrderPickupEventStatus } from '../../types';
 import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
-import FactoryUtils from './FactoryUtils';
-import { MerchandiseItemPhotoModel } from 'models/MerchandiseItemPhotoModel';
+import { MerchandiseItemPhotoModel } from '../../models/MerchandiseItemPhotoModel';
 
 export class MerchFactory {
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
