@@ -1,4 +1,4 @@
-import { JsonController, Get, Post, UseBefore, Params, ForbiddenError, Body } from 'routing-controllers';
+import { JsonController, Get, Post, UseBefore, Params, ForbiddenError, Body, CurrentUser } from 'routing-controllers';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { AttendEventRequest } from '../validators/AttendanceControllerRequests';
@@ -36,9 +36,12 @@ export class AttendanceController {
 
   @Get('user/:uuid')
   async getAttendancesForUser(@Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel): Promise<GetAttendancesForEventResponse> {
-    const searchUser = await this.userAccountService.findByUuid(params.uuid);
-    const attendances = await this.attendanceService.getAttendancesForUser(searchUser);
+    @AuthenticatedUser() currentUser: UserModel): Promise<GetAttendancesForEventResponse> {
+    if (params.uuid === currentUser.uuid) {
+      return this.getAttendancesForCurrentUser(currentUser);
+    }
+    const user = await this.userAccountService.findByUuid(params.uuid);
+    const attendances = await this.attendanceService.getAttendancesForUser(user);
     return { error: null, attendances };
   }
 
