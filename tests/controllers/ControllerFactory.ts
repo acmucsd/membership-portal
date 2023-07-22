@@ -45,7 +45,8 @@ export class ControllerFactory {
 
   public static attendance(conn: Connection): AttendanceController {
     const attendanceService = new AttendanceService(conn.manager);
-    return new AttendanceController(attendanceService);
+    const userAccountService = new UserAccountService(conn.manager);
+    return new AttendanceController(attendanceService, userAccountService);
   }
 
   public static auth(conn: Connection, emailService: EmailService): AuthController {
