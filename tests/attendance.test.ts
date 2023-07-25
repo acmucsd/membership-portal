@@ -272,4 +272,34 @@ describe('attendance', () => {
     expect(attendance.user.uuid).toEqual(staff.uuid);
     expect(attendance.event.uuid).toEqual(event.uuid);
   });
+
+  test('get user attendance by uuid', async () => {
+    const conn = await DatabaseConnection.get();
+    const member1 = UserFactory.fake();
+    const member2 = UserFactory.fake();
+    const event1 = EventFactory.fake({ requiresStaff: true });
+    const event2 = EventFactory.fake({ requiresStaff: true });
+
+    await new PortalState()
+      .createUsers(member1, member2)
+      .createEvents(event1, event2)
+      .attendEvents([member1], [event1, event2])
+      .write();
+
+    const attendanceController = ControllerFactory.attendance(conn);
+    const params = { uuid: member1.uuid };
+
+    // returns all attendances for uuid
+    const getAttendancesForUserUuid = await attendanceController.getAttendancesForUser(params, member2);
+    const attendancesForEvent = getAttendancesForUserUuid.attendances.map((a) => ({
+      user: a.user.uuid,
+      event: a.event.uuid,
+      asStaff: a.asStaff,
+    }));
+    const expectedAttendances = [
+      { event: event1.uuid, user: member1.uuid, asStaff: false },
+      { event: event2.uuid, user: member1.uuid, asStaff: false }
+    ];
+    expect(attendancesForEvent).toEqual(expect.arrayContaining(expectedAttendances));
+  });
 });
