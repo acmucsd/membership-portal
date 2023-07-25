@@ -1,4 +1,4 @@
-import { JsonController, Get, Post, UseBefore, Params, ForbiddenError, Body, CurrentUser } from 'routing-controllers';
+import { JsonController, Get, Post, UseBefore, Params, ForbiddenError, Body } from 'routing-controllers';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { AttendEventRequest } from '../validators/AttendanceControllerRequests';
@@ -13,6 +13,7 @@ import { UuidParam } from '../validators/GenericRequests';
 @JsonController('/attendance')
 export class AttendanceController {
   private attendanceService: AttendanceService;
+
   private userAccountService: UserAccountService;
 
   constructor(attendanceService: AttendanceService, userAccountService: UserAccountService) {
@@ -34,7 +35,7 @@ export class AttendanceController {
     return { error: null, attendances };
   }
 
-  @Get('user/:uuid')
+  @Get('/user/:uuid')
   async getAttendancesForUser(@Params() params: UuidParam,
     @AuthenticatedUser() currentUser: UserModel): Promise<GetAttendancesForEventResponse> {
     if (params.uuid === currentUser.uuid) {
