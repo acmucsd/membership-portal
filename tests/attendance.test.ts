@@ -298,7 +298,7 @@ describe('attendance', () => {
     }));
     const expectedAttendances = [
       { event: event1.uuid, user: member1.uuid, asStaff: false },
-      { event: event2.uuid, user: member1.uuid, asStaff: false }
+      { event: event2.uuid, user: member1.uuid, asStaff: false },
     ];
     expect(attendancesForEvent).toEqual(expect.arrayContaining(expectedAttendances));
   });
