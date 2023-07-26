@@ -675,9 +675,6 @@ export default class MerchStoreService {
         type: ActivityType.ORDER_CANCELLED,
         description: `Order ${order.uuid} cancelled and refunded to ${customer.uuid} by ${user.uuid}`,
       });
-
-      console.log('dam 2.85');
-
     });
   }
 
