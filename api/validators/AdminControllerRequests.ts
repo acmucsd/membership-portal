@@ -1,4 +1,4 @@
-import { Allow, ArrayNotEmpty, IsDefined, IsNotEmpty, IsPositive, IsUUID, ValidateNested } from 'class-validator';
+import { Allow, ArrayNotEmpty, IsDefined, IsIn, IsNotEmpty, IsPositive, IsUUID, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   CreateBonusRequest as ICreateBonusRequest,
@@ -7,8 +7,7 @@ import {
   ModifyUserAccessLevelRequest as IModifyUserAccessLevelRequest,
   Milestone as IMilestone,
   Bonus as IBonus,
-  UserAccessUpdates, //FIXME: Does this need to be an interface? Nvm, need to validate all types related to it
-
+  UserAccessUpdates,
 } from '../../types';
 
 export class Milestone implements IMilestone {
@@ -65,7 +64,15 @@ export class SubmitAttendanceForUsersRequest implements ISubmitAttendanceForUser
 export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelRequest {
   @IsDefined()
   @ArrayNotEmpty()
+  @ValidateNested()
   accessUpdates: UserAccessUpdates[];
-
-
 }
+
+//FIXME: fix this validator it is not working
+export class UserAccessPatches {
+  @IsDefined()
+  @IsIn(['RESTRICTED', 'STANDARD', 'STAFF',  'ADMIN', 'MARKETING', 'MERCH_STORE_MANAGER',
+  'MERCH_STORE_DISTRIBUTOR'])
+  accessType?: string;
+}
+
