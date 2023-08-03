@@ -24,6 +24,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('orderItem.option', 'option')
       .leftJoinAndSelect('option.item', 'merchItem')
+      .leftJoinAndSelect('merchItem.photos', 'photos')
       .where('order.uuid = :uuid', { uuid })
       .getOne();
   }
@@ -62,6 +63,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('orderItem.option', 'option')
       .leftJoinAndSelect('option.item', 'merchItem')
+      .leftJoinAndSelect('merchItem.photos', 'photos')
       .where('order.user = :uuid', { uuid: user.uuid })
       .getMany();
   }
@@ -114,6 +116,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
       .innerJoinAndSelect('oi.order', 'order')
       .innerJoinAndSelect('order.user', 'user')
       .innerJoinAndSelect('option.item', 'item')
+      .innerJoinAndSelect('item.photos', 'photos')
       .where('item.uuid = :itemUuid', { itemUuid: item.uuid })
       .andWhere('user.uuid = :userUuid', { userUuid: user.uuid })
       .getMany();
@@ -170,7 +173,8 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
       .leftJoinAndSelect('order.items', 'item')
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('item.option', 'option')
-      .leftJoinAndSelect('option.item', 'merchItem');
+      .leftJoinAndSelect('option.item', 'merchItem')
+      .leftJoinAndSelect('merchItem.photos', 'photos');
   }
 
   private getBaseFindManyQuery(): SelectQueryBuilder<OrderPickupEventModel> {

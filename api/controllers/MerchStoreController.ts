@@ -309,6 +309,7 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<GetOrderPickupEventResponse> {
     if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     const pickupEvent = await this.merchStoreService.getPickupEvent(params.uuid);
+    console.log(pickupEvent.orders[0]?.items[0]?.option?.item);
     return { error: null, pickupEvent: pickupEvent.getPublicOrderPickupEvent(true) };
   }
 
@@ -360,7 +361,6 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<GetCartResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const cartItems = await this.merchStoreService.getCartItems(getCartRequest.items);
-    console.log(cartItems);
     return { error: null, cart: cartItems.map((option) => option.getPublicOrderMerchItemOption()) };
   }
 }

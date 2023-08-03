@@ -829,8 +829,7 @@ describe('merch item photos', () => {
     expect((await merchStoreController.getOneMerchItem(params, admin)).item.photos)
       .toEqual(photos)
 
-
-    expect(await merchStoreController.createMerchItemPhoto(imageExtra, {}, params, admin))
+    expect(merchStoreController.createMerchItemPhoto(imageExtra, {}, params, admin))
       .rejects.toThrow('Merch items cannot have more than 5 pictures');
 
   });
