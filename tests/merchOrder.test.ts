@@ -1664,8 +1664,6 @@ describe('merch order pickup events', () => {
     const params = { uuid: pickupEvent.uuid };
     await merchController.editPickupEvent(params, editPickupEventRequest, merchDistributor);
 
-    console.log('dam 1');
-    // console.log(state.orders[0].items[0]);
     const persistedPickupEvent = await merchController.getOnePickupEvent(params, merchDistributor);
 
     expect(persistedPickupEvent.pickupEvent.orderLimit).toEqual(2);

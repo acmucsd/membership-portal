@@ -53,7 +53,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
 
   /**
    * Gets all orders for a given user. Returns the order joined with its pickup event, user,
-   * merch item options, and merch items.
+   * merch item options, merch items, and merch item photos.
    */
   public async getAllOrdersWithItemsForUser(user: UserModel): Promise<OrderModel[]> {
     return this.repository
@@ -156,6 +156,9 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
     return this.getBaseFindOneQuery().where({ uuid }).getOne();
   }
 
+  /**
+   * Make changes to a singke pickup event. Returns the pickup event edited.
+   */
   public async upsertPickupEvent(pickupEvent: OrderPickupEventModel, changes?: Partial<OrderPickupEventModel>):
   Promise<OrderPickupEventModel> {
     if (changes) pickupEvent = OrderPickupEventModel.merge(pickupEvent, changes);

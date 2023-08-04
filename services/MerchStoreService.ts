@@ -226,7 +226,7 @@ export default class MerchStoreService {
         // validate all indices
         item.photos.forEach((currentPhoto, index) => {
           if (currentPhoto.position != index) {
-            throw new UserError(`A photo position is inputted incorrectly at list index: ${index}`)
+            throw new UserError(`Position is inputted incorrectly for photo: ${currentPhoto.uuid}`);
           }
         });
       }
@@ -350,7 +350,7 @@ export default class MerchStoreService {
     await this.transactions.readWrite(async (txn) => {
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
       const photo = await merchStoreItemPhotoRepository.findByUuid(uuid);
-      if (!photo) throw new NotFoundError("Merch item photo not found");
+      if (!photo) throw new NotFoundError('Merch item photo not found');
 
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(photo.merchItem.uuid);
       if (merchItem.photos.length === 1 && !merchItem.hidden) {
