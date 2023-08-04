@@ -67,7 +67,7 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
       `UPDATE "${MERCH_TABLE_NAME}" i ` +
       `SET i.picture=p.picture FROM (` +
         `SELECT "merchItem", picture FROM "${TABLE_NAME}" m WHERE "uploadedAt" = (` +
-          `SELECT min("uploadedAt") FROM "${TABLE_NAME}" n WHERE p."merchItem" = m."merchItem" GROUP BY "merchItem"` +
+          `SELECT min("uploadedAt") FROM "${TABLE_NAME}" n WHERE m."merchItem" = n."merchItem"` +
         `)` +
       `) AS p ` +
       `WHERE i.uuid = p."merchItem"`

@@ -213,7 +213,16 @@ export default class MerchStoreService {
       }
 
       if (photos) {
+        // error on duplicate photo uuids
+        const dupSet = new Set();
+        photos.forEach((photo) => {
+          if (dupSet.has(photo.uuid))
+            throw new UserError(`Multiple edits is made to photo: ${photo.uuid}`);
+          dupSet.add(photo.uuid);
+        });
+
         const photoUpdatesByUuid = new Map(photos.map((photo) => [photo.uuid, photo]));
+
         item.photos.map((currentPhoto) => {
           if (!photoUpdatesByUuid.has(currentPhoto.uuid)) return;
           const photoUpdate = photoUpdatesByUuid.get(currentPhoto.uuid);
@@ -358,9 +367,9 @@ export default class MerchStoreService {
       }
       // decrement photo index for all photos after the inserted photo
       const position = photo.position;
-      merchItem.photos.forEach((photo) => {
-        if (photo.position >= position) {
-          MerchandiseItemPhotoModel.merge(photo, {position: Math.max(photo.position - 1, 0)});
+      merchItem.photos.forEach((p) => {
+        if (p.position > position) {
+          merchStoreItemPhotoRepository.upsertMerchItemPhoto(p, {position: p.position - 1});
         }
       });
 

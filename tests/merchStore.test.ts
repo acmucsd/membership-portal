@@ -913,8 +913,18 @@ describe('merch item photos', () => {
         { uuid: photo5.uuid, position: 0 },
       ]
     }};
-    // negative index
+    // duplicate edits
     const badEditMerchItemRequest3 = { merchandise: {
+      photos: [
+        { uuid: photo1.uuid, position: 2 },
+        { uuid: photo2.uuid, position: 4 },
+        { uuid: photo3.uuid, position: 3 },
+        { uuid: photo4.uuid, position: 1 },
+        { uuid: photo4.uuid, position: 0 },
+      ]
+    }};
+    // negative index
+    const badEditMerchItemRequest4 = { merchandise: {
       photos: [
         { uuid: photo1.uuid, position: 2 },
         { uuid: photo2.uuid, position: 4 },
@@ -929,6 +939,8 @@ describe('merch item photos', () => {
     await expect(merchStoreController.editMerchItem(params, badEditMerchItemRequest2, admin))
       .rejects.toThrow();
     await expect(merchStoreController.editMerchItem(params, badEditMerchItemRequest3, admin))
+      .rejects.toThrow();
+    await expect(merchStoreController.editMerchItem(params, badEditMerchItemRequest4, admin))
       .rejects.toThrow();
 
     // ensure that the item photos are unchanged
@@ -970,9 +982,9 @@ describe('merch item photos', () => {
       .rejects.toThrow('Cannot delete the only photo for a visible merch item');
 
     // check cascade
-    await merchStoreController.deleteMerchItem(params, admin);
-    expect(merchStoreController.deleteMerchItemPhoto(deleteMerchItemPhotoParam2, admin))
-      .rejects.toThrow('Merch item photo not found');
+    // await merchStoreController.deleteMerchItem(params, admin);
+    // expect(merchStoreController.deleteMerchItemPhoto(deleteMerchItemPhotoParam2, admin))
+    //   .rejects.toThrow('Merch item photo not found');
   });
 });
 

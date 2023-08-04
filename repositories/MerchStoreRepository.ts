@@ -113,12 +113,12 @@ export class MerchItemOptionRepository extends BaseRepository<MerchandiseItemOpt
 @EntityRepository(MerchandiseItemPhotoModel)
 export class MerchItemPhotoRepository extends BaseRepository<MerchandiseItemPhotoModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchandiseItemPhotoModel> {
-    return this.repository.findOne(uuid, { relations: ['item'] });
+    return this.repository.findOne(uuid, { relations: ['merchItem'] });
   }
 
   // for querying a group of pictures together
   public async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchandiseItemPhotoModel>> {
-    const photos = await this.repository.findByIds(uuids, { relations: ['item'] });
+    const photos = await this.repository.findByIds(uuids, { relations: ['merchItem'] });
     return new Map(photos.map((o) => [o.uuid, o]));
   }
 
