@@ -85,7 +85,7 @@ export class AdminController {
 
   @Patch('/access')
   async updateUserAccessLevel(@Body() modifyUserAccessLevelRequest: ModifyUserAccessLevelRequest,
-  @AuthenticatedUser() currentUser: UserModel): Promise<ModifyUserAccessLevelResponse> {
+    @AuthenticatedUser() currentUser: UserModel): Promise<ModifyUserAccessLevelResponse> {
     if (!PermissionsService.canModifyUserAccessLevel(currentUser)) throw new ForbiddenError();
     const { accessUpdates } = modifyUserAccessLevelRequest;
     const emails = accessUpdates.map((e) => e.user.toLowerCase());

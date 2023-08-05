@@ -94,9 +94,9 @@ export class UserRepository extends BaseRepository<UserModel> {
 
   public async getAllProfilesForRoleManagement() {
     const profiles = await this.repository
-    .createQueryBuilder()
-    .select(['uuid', 'handle', 'email', 'UserModel.firstName', 'UserModel.lastName', 'UserModel.accessType'])
-    .getRawMany();
+      .createQueryBuilder()
+      .select(['uuid', 'handle', 'email', 'UserModel.firstName', 'UserModel.lastName', 'UserModel.accessType'])
+      .getRawMany();
     return profiles;
   }
 }

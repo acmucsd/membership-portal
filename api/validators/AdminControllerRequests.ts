@@ -66,8 +66,8 @@ export class UserAccessUpdates implements IUserAccessUpdates {
   user: string;
 
   @IsDefined()
-  @IsIn(['RESTRICTED', 'STANDARD', 'STAFF',  'ADMIN', 'MARKETING', 'MERCH_STORE_MANAGER',
-  'MERCH_STORE_DISTRIBUTOR'])
+  @IsIn(['RESTRICTED', 'STANDARD', 'STAFF', 'ADMIN', 'MARKETING', 'MERCH_STORE_MANAGER',
+    'MERCH_STORE_DISTRIBUTOR'])
   newAccess: string;
 }
 export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelRequest {
@@ -76,7 +76,3 @@ export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelReque
   @ValidateNested()
   accessUpdates: UserAccessUpdates[];
 }
-
-
-
-

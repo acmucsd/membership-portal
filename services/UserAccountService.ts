@@ -14,7 +14,7 @@ import {
   UserPatches,
   UserState,
   PrivateProfile,
-  UserAccessType
+  UserAccessType,
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
@@ -97,7 +97,6 @@ export default class UserAccountService {
 
   public async update(user: UserModel, userPatches: UserPatches): Promise<UserModel> {
     const changes: Partial<UserModel> = userPatches;
-    console.log("changes:", changes);
     if (userPatches.passwordChange) {
       const { password: currentPassword, newPassword } = userPatches.passwordChange;
       if (!(await user.verifyPass(currentPassword))) {
@@ -202,9 +201,9 @@ export default class UserAccountService {
    * @param currentUser - the user making the request
    * @returns {Promise.<UserModel[]>} - an array of updated users
    */
-  public async updateUserAccessLevels(accessUpdates, emails: string[], currentUser: UserModel): Promise<PrivateProfile[]> { //TODO: figure out return type
+  public async updateUserAccessLevels(accessUpdates, emails: string[],
+    currentUser: UserModel): Promise<PrivateProfile[]> {
     return this.transactions.readWrite(async (txn) => {
-
       // Check for duplicate emails in the request
       const emailSet = emails.reduce((set, email) => {
         if (set.has(email)) {

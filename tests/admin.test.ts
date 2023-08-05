@@ -1,9 +1,7 @@
-import { access } from 'fs';
+import { BadRequestError, ForbiddenError } from 'routing-controllers';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
-import { ForbiddenError } from 'routing-controllers';
-
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -190,8 +188,7 @@ describe('updating user access level', () => {
   test('updates the access level of the user', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const users = UserFactory.create(5);
-
+    const users = UserFactory.create(4);
 
     users[0].accessType = UserAccessType.STAFF;
     users[1].accessType = UserAccessType.STANDARD;
@@ -205,12 +202,12 @@ describe('updating user access level', () => {
     const adminController = ControllerFactory.admin(conn);
 
     const accessLevelResponse = await adminController.updateUserAccessLevel({
-      "accessUpdates": [
-        { "user": users[0].email,  "newAccess": "MERCH_STORE_MANAGER"},
-        { "user": users[1].email,  "newAccess": "MARKETING"},
-        { "user": users[2].email,  "newAccess": "MERCH_STORE_DISTRIBUTOR"},
-        { "user": users[3].email,  "newAccess": "STAFF"}
-      ]
+      accessUpdates: [
+        { user: users[0].email, newAccess: 'MERCH_STORE_MANAGER' },
+        { user: users[1].email, newAccess: 'MARKETING' },
+        { user: users[2].email, newAccess: 'MERCH_STORE_DISTRIBUTOR' },
+        { user: users[3].email, newAccess: 'STAFF' },
+      ],
     }, admin);
 
     // expect statements
@@ -227,14 +224,11 @@ describe('updating user access level', () => {
     expect(accessLevelResponse.updatedUsers[3].accessType).toEqual(UserAccessType.STAFF);
   });
 
-
-
   // attempt to update when user is not an admin
   test('attempt to update when user is not an admin', async () => {
     const conn = await DatabaseConnection.get();
     const standard = UserFactory.fake({ accessType: UserAccessType.STANDARD });
     const users = UserFactory.create(5);
-
 
     users[0].accessType = UserAccessType.STAFF;
     users[1].accessType = UserAccessType.STANDARD;
@@ -249,12 +243,12 @@ describe('updating user access level', () => {
 
     await expect(async () => {
       await adminController.updateUserAccessLevel({
-        "accessUpdates": [
-          { "user": users[0].email, "newAccess": "MERCH_STORE_MANAGER"},
-          { "user": users[1].email, "newAccess": "MARKETING"},
-          { "user": users[2].email, "newAccess": "MERCH_STORE_DISTRIBUTOR"},
-          { "user": users[3].email, "newAccess": "STAFF"}
-        ]
+        accessUpdates: [
+          { user: users[0].email, newAccess: 'MERCH_STORE_MANAGER' },
+          { user: users[1].email, newAccess: 'MARKETING' },
+          { user: users[2].email, newAccess: 'MERCH_STORE_DISTRIBUTOR' },
+          { user: users[3].email, newAccess: 'STAFF' },
+        ],
       }, standard);
     }).rejects.toThrow(ForbiddenError);
   });
@@ -264,31 +258,24 @@ describe('updating user access level', () => {
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const users = UserFactory.create(5);
 
-
     users[0].accessType = UserAccessType.STAFF;
-    users[0].email = "smhariha@ucsd.edu";
-    users[1].accessType = UserAccessType.STAFF;
-    users[1].email = "smhariha@ucsd.edu";
+    users[0].email = 'smhariha@ucsd.edu';
 
     await new PortalState()
-      .createUsers(users[0], users[1], admin)
+      .createUsers(users[0], admin)
       .write();
 
     const adminController = ControllerFactory.admin(conn);
 
-    const accessLevelResponse = await adminController.updateUserAccessLevel({
-      "accessUpdates": [
-        { "user": users[0].email,  "newAccess": "MERCH_STORE_MANAGER"},
-        { "user": users[1].email,  "newAccess": "MERCH_STORE_MANAGER"}
-      ]
-    }, admin);
-
-    // expect statements
-    //expect(accessLevelResponse.updatedUsers).toHaveLength(1);
-    expect(accessLevelResponse.updatedUsers[0].email).toEqual(users[0].email);
-    expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
+    await expect(async () => {
+      await adminController.updateUserAccessLevel({
+        accessUpdates: [
+          { user: 'smhariha@ucsd.edu', newAccess: 'MERCH_STORE_MANAGER' },
+          { user: 'smhariha@ucsd.edu', newAccess: 'STAFF' },
+        ],
+      }, admin);
+    }).rejects.toThrow(BadRequestError);
   });
-
 
   // attempt to promote a user to an admin
   test('attempt to promote a user to an admin', async () => {
@@ -309,30 +296,25 @@ describe('updating user access level', () => {
 
     await expect(async () => {
       await adminController.updateUserAccessLevel({
-        "accessUpdates": [
-          { "user": users[0].email, "newAccess": "MERCH_STORE_MANAGER"},
-          { "user": users[1].email, "newAccess": "ADMIN"},
-          { "user": users[2].email, "newAccess": "MERCH_STORE_DISTRIBUTOR"},
-          { "user": users[3].email, "newAccess": "STAFF" }
-        ]
+        accessUpdates: [
+          { user: users[0].email, newAccess: 'MERCH_STORE_MANAGER' },
+          { user: users[1].email, newAccess: 'ADMIN' },
+          { user: users[2].email, newAccess: 'MERCH_STORE_DISTRIBUTOR' },
+          { user: users[3].email, newAccess: 'STAFF' },
+        ],
       }, admin);
     }).rejects.toThrow(ForbiddenError);
   });
 
-
-
-
   // attempt to demote an existing admin
   test('attempt to demote an existing admin', async () => {
-
-    //FIXME: do this for an admin
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     // create another admin user
     const secondAdmin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
-    secondAdmin.email = "smhariha@ucsd.edu";
-    console.log(secondAdmin.accessType);
+    secondAdmin.email = 'test23432@ucsd.edu';
+    // console.log(secondAdmin.accessType);
 
     await new PortalState()
       .createUsers(admin, secondAdmin)
@@ -342,11 +324,10 @@ describe('updating user access level', () => {
 
     await expect(async () => {
       await adminController.updateUserAccessLevel({
-        "accessUpdates": [
-          { "user": "smhariha@ucsd.edu", "newAccess": "MERCH_STORE_MANAGER"}
-        ]
+        accessUpdates: [
+          { user: 'test23432@ucsd.edu', newAccess: 'MERCH_STORE_MANAGER' },
+        ],
       }, admin);
     }).rejects.toThrow(ForbiddenError);
   });
 });
-

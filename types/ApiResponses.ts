@@ -1,10 +1,10 @@
+import { UserModel } from 'models/UserModel';
 import {
   ActivityScope, ActivityType, FeedbackStatus,
   FeedbackType, OrderPickupEventStatus,
   OrderStatus, UserAccessType, SocialMediaType,
 } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
-import { UserModel } from 'models/UserModel';
 
 // RESPONSE TYPES
 
