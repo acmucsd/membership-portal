@@ -7,7 +7,7 @@ import {
   ModifyUserAccessLevelRequest as IModifyUserAccessLevelRequest,
   Milestone as IMilestone,
   Bonus as IBonus,
-  UserAccessUpdates,
+  UserAccessUpdates as IUserAccessUpdates,
 } from '../../types';
 
 export class Milestone implements IMilestone {
@@ -61,18 +61,22 @@ export class SubmitAttendanceForUsersRequest implements ISubmitAttendanceForUser
   asStaff?: boolean;
 }
 
-export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelRequest {
+export class UserAccessUpdates implements IUserAccessUpdates {
   @IsDefined()
-  @ArrayNotEmpty()
+  user: string;
+
+  @IsDefined()
+  @IsIn(['RESTRICTED', 'STANDARD', 'STAFF',  'ADMIN', 'MARKETING', 'MERCH_STORE_MANAGER',
+  'MERCH_STORE_DISTRIBUTOR'])
+  newAccess: string;
+}
+export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelRequest {
+  @Type(() => UserAccessUpdates)
+  @IsDefined()
   @ValidateNested()
   accessUpdates: UserAccessUpdates[];
 }
 
-//FIXME: fix this validator it is not working
-export class UserAccessPatches {
-  @IsDefined()
-  @IsIn(['RESTRICTED', 'STANDARD', 'STAFF',  'ADMIN', 'MARKETING', 'MERCH_STORE_MANAGER',
-  'MERCH_STORE_DISTRIBUTOR'])
-  accessType?: string;
-}
+
+
 

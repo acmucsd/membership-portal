@@ -4,6 +4,7 @@ import {
   OrderStatus, UserAccessType, SocialMediaType,
 } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
+import { UserModel } from 'models/UserModel';
 
 // RESPONSE TYPES
 
@@ -40,11 +41,11 @@ export interface SubmitAttendanceForUsersResponse extends ApiResponse {
 }
 
 export interface ModifyUserAccessLevelResponse extends ApiResponse {
-  updatedUsers: PrivateProfile[]; //FIXME: fix this
+  updatedUsers: PrivateProfile[];
 }
 
 export interface GetAllUserAccessLevelsResponse extends ApiResponse {
-  users: any[];
+  users: Partial<UserModel>[];
 }
 
 // ATTENDANCE

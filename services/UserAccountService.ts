@@ -204,6 +204,20 @@ export default class UserAccountService {
    */
   public async updateUserAccessLevels(accessUpdates, emails: string[], currentUser: UserModel): Promise<PrivateProfile[]> { //TODO: figure out return type
     return this.transactions.readWrite(async (txn) => {
+
+      // Check for duplicate emails in the request
+      const emailSet = emails.reduce((set, email) => {
+        if (set.has(email)) {
+          return set;
+        }
+        set.add(email);
+        return set;
+      }, new Set<string>());
+
+      if (emailSet.size !== emails.length) {
+        throw new BadRequestError('Duplicate emails found in request');
+      }
+
       // Strip out the user emails & validate that users exist
       const userRepository = Repositories.user(txn);
       const users = await userRepository.findByEmails(emails);
@@ -214,21 +228,24 @@ export default class UserAccountService {
         throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
       }
 
-
       const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
         const { user, newAccess } = accessUpdate;
-        const { accessType } = newAccess;
+
+        const matchingAccess = Object.keys(UserAccessType).find((access) => access === newAccess);
+        const updatingAccess = UserAccessType[matchingAccess];
+
         const currUser = await userRepository.findByEmail(user);
+
         // Prevent anyone from promoting user to admin
-        if (accessType === UserAccessType.ADMIN) {
+        if (newAccess === UserAccessType.ADMIN) {
           throw new ForbiddenError('You cannot promote users to admin.');
         }
         // Prevent anyone from demoting user with current admin status
-        if (currUser.accessType === UserAccessType.ADMIN && accessType !== UserAccessType.ADMIN) {
+        if (currUser.accessType === UserAccessType.ADMIN && newAccess !== UserAccessType.ADMIN) {
           throw new ForbiddenError('You cannot demote an admin.');
         }
 
-        const updatedUser = await userRepository.upsertUser(currUser, { accessType });
+        const updatedUser = await userRepository.upsertUser(currUser, { accessType: updatingAccess });
         return updatedUser;
       }));
 
@@ -240,9 +257,9 @@ export default class UserAccountService {
    * This method is used to get all users with their access levels.
    * @returns {Promise.<PrivateProfile[]>} - an array of all users with their access levels
    */
-  public async getAllUsersWithAccessLevels(): Promise<PrivateProfile[]> {
+  public async getAllUsersWithAccessLevels(): Promise<Partial<UserModel>[]> {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
-      .getAllPrivateProfiles());
+      .getAllProfilesForRoleManagement());
   }
 }

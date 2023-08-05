@@ -206,18 +206,10 @@ describe('updating user access level', () => {
 
     const accessLevelResponse = await adminController.updateUserAccessLevel({
       "accessUpdates": [
-        { "user": users[0].email,  "newAccess": {
-            "accessType": "MERCH_STORE_MANAGER"
-        }},
-        { "user": users[1].email,  "newAccess": {
-            "accessType": "MARKETING"
-        }},
-        { "user": users[2].email,  "newAccess": {
-            "accessType": "MERCH_STORE_DISTRIBUTOR"
-        }},
-        { "user": users[3].email,  "newAccess": {
-            "accessType": "STAFF"
-        }}
+        { "user": users[0].email,  "newAccess": "MERCH_STORE_MANAGER"},
+        { "user": users[1].email,  "newAccess": "MARKETING"},
+        { "user": users[2].email,  "newAccess": "MERCH_STORE_DISTRIBUTOR"},
+        { "user": users[3].email,  "newAccess": "STAFF"}
       ]
     }, admin);
 
@@ -258,10 +250,10 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         "accessUpdates": [
-          { "user": users[0].email, "newAccess": { "accessType": "MERCH_STORE_MANAGER" } },
-          { "user": users[1].email, "newAccess": { "accessType": "MARKETING" } },
-          { "user": users[2].email, "newAccess": { "accessType": "MERCH_STORE_DISTRIBUTOR" } },
-          { "user": users[3].email, "newAccess": { "accessType": "STAFF" } }
+          { "user": users[0].email, "newAccess": "MERCH_STORE_MANAGER"},
+          { "user": users[1].email, "newAccess": "MARKETING"},
+          { "user": users[2].email, "newAccess": "MERCH_STORE_DISTRIBUTOR"},
+          { "user": users[3].email, "newAccess": "STAFF"}
         ]
       }, standard);
     }).rejects.toThrow(ForbiddenError);
@@ -286,12 +278,8 @@ describe('updating user access level', () => {
 
     const accessLevelResponse = await adminController.updateUserAccessLevel({
       "accessUpdates": [
-        { "user": users[0].email,  "newAccess": {
-            "accessType": "MERCH_STORE_MANAGER"
-        }},
-        { "user": users[1].email,  "newAccess": {
-            "accessType": "MERCH_STORE_MANAGER"
-        }}
+        { "user": users[0].email,  "newAccess": "MERCH_STORE_MANAGER"},
+        { "user": users[1].email,  "newAccess": "MERCH_STORE_MANAGER"}
       ]
     }, admin);
 
@@ -322,10 +310,10 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         "accessUpdates": [
-          { "user": users[0].email, "newAccess": { "accessType": "MERCH_STORE_MANAGER" } },
-          { "user": users[1].email, "newAccess": { "accessType": "ADMIN" } },
-          { "user": users[2].email, "newAccess": { "accessType": "MERCH_STORE_DISTRIBUTOR" } },
-          { "user": users[3].email, "newAccess": { "accessType": "STAFF" } }
+          { "user": users[0].email, "newAccess": "MERCH_STORE_MANAGER"},
+          { "user": users[1].email, "newAccess": "ADMIN"},
+          { "user": users[2].email, "newAccess": "MERCH_STORE_DISTRIBUTOR"},
+          { "user": users[3].email, "newAccess": "STAFF" }
         ]
       }, admin);
     }).rejects.toThrow(ForbiddenError);
@@ -355,7 +343,7 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         "accessUpdates": [
-          { "user": "smhariha@ucsd.edu", "newAccess": { "accessType": "MERCH_STORE_MANAGER" } }
+          { "user": "smhariha@ucsd.edu", "newAccess": "MERCH_STORE_MANAGER"}
         ]
       }, admin);
     }).rejects.toThrow(ForbiddenError);

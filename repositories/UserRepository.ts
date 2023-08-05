@@ -92,9 +92,11 @@ export class UserRepository extends BaseRepository<UserModel> {
       .execute();
   }
 
-  public async getAllPrivateProfiles() {
-    return this.repository.find({
-      select: ['uuid', 'email', 'handle', 'accessType'],
-    });
+  public async getAllProfilesForRoleManagement() {
+    const profiles = await this.repository
+    .createQueryBuilder()
+    .select(['uuid', 'handle', 'email', 'UserModel.firstName', 'UserModel.lastName', 'UserModel.accessType'])
+    .getRawMany();
+    return profiles;
   }
 }
