@@ -64,14 +64,17 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
 
     // fill old column with the first image from the photo table
     await queryRunner.query(
-      `UPDATE "${MERCH_TABLE_NAME}" i ` +
-      `SET i.picture=p.picture FROM (` +
-        `SELECT "merchItem", picture FROM "${TABLE_NAME}" m WHERE "uploadedAt" = (` +
-          `SELECT min("uploadedAt") FROM "${TABLE_NAME}" n WHERE m."merchItem" = n."merchItem"` +
-        `)` +
-      `) AS p ` +
-      `WHERE i.uuid = p."merchItem"`
+      `UPDATE "${MERCH_TABLE_NAME}" m ` +
+      `SET picture = (` +
+        `SELECT picture ` +
+        `FROM "${TABLE_NAME}" p ` +
+        `WHERE p."merchItem" = m.uuid ` +
+        `ORDER BY p."uploadedAt" ` +
+        `LIMIT 1` +
+      `)`
     );
+
+    await queryRunner.dropTable(TABLE_NAME);
   }
 
 }
