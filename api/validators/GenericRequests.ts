@@ -1,4 +1,5 @@
 import { Min, IsEmail, IsUUID, IsHexadecimal, Length } from 'class-validator';
+import { IsValidHandle } from '../decorators/Validators';
 import { Pagination as IPagination, Uuid } from '../../types';
 
 export class Pagination implements IPagination {
@@ -16,6 +17,12 @@ export class EmailParam {
 export class UuidParam {
   @IsUUID()
   uuid: Uuid;
+}
+
+export class UserHandleParam {
+  @IsValidHandle()
+  @Length(3, 32)
+  handle: string;
 }
 
 export class AccessCodeParam {

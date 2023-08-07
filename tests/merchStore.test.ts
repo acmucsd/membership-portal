@@ -59,7 +59,7 @@ describe('merch store permissions', () => {
     const UCSDMemberResponse = await merchStoreController.getAllMerchCollections(UCSDMember);
     expect(UCSDMemberResponse.error).toBe(null);
 
-    expect(merchStoreController.getAllMerchCollections(invalidMember)).rejects.toThrow(ForbiddenError);
+    await expect(merchStoreController.getAllMerchCollections(invalidMember)).rejects.toThrow(ForbiddenError);
   });
 
   test('archived collections are hidden from members, but not for store managers', async () => {
@@ -561,7 +561,7 @@ describe('merch item edits', () => {
       quantityToAdd: -10,
     }];
     const decrementQuantityRequest = { merchandise: { options: decrementOptionUpdates } };
-    expect(merchStoreController.editMerchItem(params, decrementQuantityRequest, admin))
+    await expect(merchStoreController.editMerchItem(params, decrementQuantityRequest, admin))
       .rejects.toThrow(`Cannot decrement option quantity below 0 for option: ${option.uuid}`);
   });
 
@@ -1041,7 +1041,7 @@ describe('checkout cart', () => {
     const invalidOptionUuid = faker.datatype.uuid();
     const params = { items: [...validOptionUuids, invalidOptionUuid] };
     const merchStoreController = ControllerFactory.merchStore(conn);
-    expect(merchStoreController.getCartItems(params, member))
+    await expect(merchStoreController.getCartItems(params, member))
       .rejects.toThrow(`The following items were not found: ${[invalidOptionUuid]}`);
   });
 });

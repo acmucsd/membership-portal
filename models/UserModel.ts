@@ -13,6 +13,10 @@ export class UserModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
+  @Column('varchar', { length: 255, nullable: false })
+  @Index({ unique: true })
+  handle: string;
+
   @Column()
   @Index({ unique: true })
   email: string;
@@ -114,6 +118,7 @@ export class UserModel extends BaseEntity {
   public getPublicProfile(): PublicProfile {
     const publicProfile: PublicProfile = {
       uuid: this.uuid,
+      handle: this.handle,
       firstName: this.firstName,
       lastName: this.lastName,
       profilePicture: this.profilePicture,
@@ -131,6 +136,7 @@ export class UserModel extends BaseEntity {
   public getFullUserProfile(): PrivateProfile {
     const fullUserProfile: PrivateProfile = {
       uuid: this.uuid,
+      handle: this.handle,
       email: this.email,
       firstName: this.firstName,
       lastName: this.lastName,

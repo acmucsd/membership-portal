@@ -31,6 +31,7 @@ export interface UserRegistration {
   password: string;
   graduationYear: number;
   major: string;
+  handle?: string;
 }
 
 export interface EmailModificationRequest {
@@ -59,6 +60,7 @@ export interface PasswordUpdate extends PasswordChange {
 }
 
 export interface UserPatches {
+  handle?: string;
   firstName?: string;
   lastName?: string;
   major?: string;

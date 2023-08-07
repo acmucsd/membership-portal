@@ -1,6 +1,17 @@
-import { ValidateNested, IsDefined, Allow } from 'class-validator';
+import {
+  ValidateNested,
+  IsDefined,
+  Allow,
+  Length,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsValidName, IsValidMajor, IsValidGraduationYear, HasMatchingPasswords } from '../decorators/Validators';
+import {
+  IsValidName,
+  IsValidMajor,
+  IsValidGraduationYear,
+  HasMatchingPasswords,
+  IsValidHandle,
+} from '../decorators/Validators';
 import {
   PasswordUpdate as IPasswordUpdate,
   PatchUserRequest as IPatchUserRequest,
@@ -16,6 +27,10 @@ export class PasswordUpdate extends PasswordChange implements IPasswordUpdate {
 export class UserPatches implements IUserPatches {
   @IsValidName()
   firstName?: string;
+
+  @IsValidHandle()
+  @Length(3, 32)
+  handle?: string;
 
   @IsValidName()
   lastName?: string;
