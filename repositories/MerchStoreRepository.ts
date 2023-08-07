@@ -80,7 +80,7 @@ export class MerchItemOptionRepository extends BaseRepository<MerchandiseItemOpt
   }
 
   public async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchandiseItemOptionModel>> {
-    const options = await this.repository.findByIds(uuids, { relations: ['item',  'item.photos'] });
+    const options = await this.repository.findByIds(uuids, { relations: ['item', 'item.photos'] });
     return new Map(options.map((o) => [o.uuid, o]));
   }
 

@@ -11,7 +11,6 @@ import EmailService from '../services/EmailService';
 import { FileFactory } from './data/FileFactory';
 import { Config } from '../config';
 import Mocks from './mocks/MockFactory';
-import { UserError } from '../utils/Errors';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -764,7 +763,7 @@ describe('merch item photos', () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const photo1 = MerchFactory.fakePhoto();
-    const item = MerchFactory.fakeItem({ photos: [ photo1 ] });
+    const item = MerchFactory.fakeItem({ photos: [photo1] });
 
     await new PortalState()
       .createUsers(admin)
@@ -829,7 +828,6 @@ describe('merch item photos', () => {
 
     expect(merchStoreController.createMerchItemPhoto(imageExtra, {}, params, admin))
       .rejects.toThrow('Merch items cannot have more than 5 pictures');
-
   });
 
   test('can remap the picture of an item to different orders', async () => {
@@ -840,7 +838,7 @@ describe('merch item photos', () => {
     const photo3 = MerchFactory.fakePhoto({ position: 2 });
     const photo4 = MerchFactory.fakePhoto({ position: 3 });
     const photo5 = MerchFactory.fakePhoto({ position: 4 });
-    const photos = [ photo1, photo2, photo3, photo4, photo5 ];
+    const photos = [photo1, photo2, photo3, photo4, photo5];
     const item = MerchFactory.fakeItem({ photos });
 
     await new PortalState()
@@ -862,8 +860,8 @@ describe('merch item photos', () => {
         { uuid: photo3.uuid, position: 2 },
         { uuid: photo2.uuid, position: 3 },
         { uuid: photo1.uuid, position: 4 },
-      ]
-    }};
+      ],
+    } };
 
     await merchStoreController.editMerchItem(params, editMerchItemRequest, admin);
 
@@ -881,7 +879,7 @@ describe('merch item photos', () => {
     const photo3 = MerchFactory.fakePhoto({ position: 2 });
     const photo4 = MerchFactory.fakePhoto({ position: 3 });
     const photo5 = MerchFactory.fakePhoto({ position: 4 });
-    const photos = [ photo1, photo2, photo3, photo4, photo5 ];
+    const photos = [photo1, photo2, photo3, photo4, photo5];
     const item = MerchFactory.fakeItem({ photos });
 
     await new PortalState()
@@ -901,8 +899,8 @@ describe('merch item photos', () => {
         { uuid: photo3.uuid, position: 3 },
         { uuid: photo4.uuid, position: 2 },
         { uuid: photo5.uuid, position: 1 },
-      ]
-    }};
+      ],
+    } };
     // duplicate indices
     const badEditMerchItemRequest2 = { merchandise: {
       photos: [
@@ -911,8 +909,8 @@ describe('merch item photos', () => {
         { uuid: photo3.uuid, position: 3 },
         { uuid: photo4.uuid, position: 0 },
         { uuid: photo5.uuid, position: 0 },
-      ]
-    }};
+      ],
+    } };
     // duplicate edits
     const badEditMerchItemRequest3 = { merchandise: {
       photos: [
@@ -921,8 +919,8 @@ describe('merch item photos', () => {
         { uuid: photo3.uuid, position: 3 },
         { uuid: photo4.uuid, position: 1 },
         { uuid: photo4.uuid, position: 0 },
-      ]
-    }};
+      ],
+    } };
     // negative index
     const badEditMerchItemRequest4 = { merchandise: {
       photos: [
@@ -931,8 +929,8 @@ describe('merch item photos', () => {
         { uuid: photo3.uuid, position: 1 },
         { uuid: photo4.uuid, position: 0 },
         { uuid: photo5.uuid, position: -1 },
-      ]
-    }};
+      ],
+    } };
 
     await expect(merchStoreController.editMerchItem(params, badEditMerchItemRequest1, admin))
       .rejects.toThrow();
@@ -952,7 +950,7 @@ describe('merch item photos', () => {
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const photo1 = MerchFactory.fakePhoto({ position: 0 });
     const photo2 = MerchFactory.fakePhoto({ position: 1 });
-    const photos = [ photo1, photo2 ];
+    const photos = [photo1, photo2];
     const item = MerchFactory.fakeItem({ photos });
 
     await new PortalState()

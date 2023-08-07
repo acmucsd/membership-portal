@@ -216,8 +216,7 @@ export default class MerchStoreService {
         // error on duplicate photo uuids
         const dupSet = new Set();
         photos.forEach((photo) => {
-          if (dupSet.has(photo.uuid))
-            throw new UserError(`Multiple edits is made to photo: ${photo.uuid}`);
+          if (dupSet.has(photo.uuid)) { throw new UserError(`Multiple edits is made to photo: ${photo.uuid}`); }
           dupSet.add(photo.uuid);
         });
 
@@ -234,7 +233,7 @@ export default class MerchStoreService {
         item.photos.sort((a, b) => a.position - b.position);
         // validate all indices
         item.photos.forEach((currentPhoto, index) => {
-          if (currentPhoto.position != index) {
+          if (currentPhoto.position !== index) {
             throw new UserError(`Position is inputted incorrectly for photo: ${currentPhoto.uuid}`);
           }
         });
@@ -366,10 +365,10 @@ export default class MerchStoreService {
         throw new UserError('Cannot delete the only photo for a visible merch item');
       }
       // decrement photo index for all photos after the inserted photo
-      const position = photo.position;
+      const { position } = photo;
       merchItem.photos.forEach((p) => {
         if (p.position > position) {
-          merchStoreItemPhotoRepository.upsertMerchItemPhoto(p, {position: p.position - 1});
+          merchStoreItemPhotoRepository.upsertMerchItemPhoto(p, { position: p.position - 1 });
         }
       });
 
@@ -674,7 +673,6 @@ export default class MerchStoreService {
         && MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
         throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
       }
-
 
       const customer = order.user;
       await this.refundAndConfirmOrderCancellation(order, user, txn);

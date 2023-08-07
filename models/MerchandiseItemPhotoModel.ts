@@ -27,6 +27,6 @@ export class MerchandiseItemPhotoModel extends BaseEntity {
       picture: this.picture,
       uploadedAt: this.uploadedAt,
       position: this.position,
-    }
+    };
   }
 }

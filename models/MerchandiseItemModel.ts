@@ -69,7 +69,7 @@ export class MerchandiseItemModel extends BaseEntity {
 
   // get the first index of pictures if possible
   public getDefaultPictureUrl(): string {
-    const filteredArray = this.photos.filter(picture => picture.position == 0);
-    return (filteredArray.length == 0) ? null : filteredArray[0].picture;
+    const filteredArray = this.photos.filter((picture) => picture.position === 0);
+    return (filteredArray.length === 0) ? null : filteredArray[0].picture;
   }
 }

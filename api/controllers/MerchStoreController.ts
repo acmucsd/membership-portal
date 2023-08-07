@@ -170,7 +170,7 @@ export class MerchStoreController {
     // generate a random string for the picture url
     const randomID = StorageService.getRandomString();
     const picture = await this.storageService.uploadToFolder(file, MediaType.MERCH_PHOTO, randomID, params.uuid);
-    const photo = await this.merchStoreService.createItemPhoto(params.uuid, {picture});
+    const photo = await this.merchStoreService.createItemPhoto(params.uuid, { picture });
 
     return { error: null, photo };
   }

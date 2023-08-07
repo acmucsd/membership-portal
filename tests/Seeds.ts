@@ -403,7 +403,7 @@ async function seed(): Promise<void> {
     MERCH_ITEM_1_PHOTO_0,
     MERCH_ITEM_1_PHOTO_1,
     MERCH_ITEM_1_PHOTO_2,
-  ]
+  ];
 
   const MERCH_ITEM_2 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
@@ -463,7 +463,7 @@ async function seed(): Promise<void> {
   MERCH_ITEM_2.photos = [
     MERCH_ITEM_2_PHOTO_0,
     MERCH_ITEM_2_PHOTO_1,
-  ]
+  ];
   MERCH_COLLECTION_1.items = [MERCH_ITEM_1, MERCH_ITEM_2];
 
   const MERCH_COLLECTION_2 = MerchFactory.fakeCollection({
@@ -513,7 +513,7 @@ async function seed(): Promise<void> {
     MERCH_ITEM_3_PHOTO_2,
     MERCH_ITEM_3_PHOTO_3,
     MERCH_ITEM_3_PHOTO_4,
-  ]
+  ];
   const MERCH_ITEM_4 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Salt & Pepper (Canyon) Shakers',

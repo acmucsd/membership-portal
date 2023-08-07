@@ -1,9 +1,9 @@
-import {MigrationInterface, QueryRunner, Table, TableColumn, TableIndex } from "typeorm";
+import { MigrationInterface, QueryRunner, Table, TableColumn, TableIndex } from 'typeorm';
 
 const TABLE_NAME = 'MerchandiseItemPhotos';
 const MERCH_TABLE_NAME = 'MerchandiseItems';
 
-export class addMerchItemImageTable1681777109787 implements MigrationInterface {
+export class AddMerchItemImageTable1681777109787 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // instantiates table with columns: uuid, merchItem, picture, uploadedAt, position
     await queryRunner.createTable(new Table({
@@ -46,8 +46,8 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
 
     // add images from each item of the merchandise table to the photo table
     await queryRunner.query(
-      `INSERT INTO "${TABLE_NAME}" ("merchItem", picture, position) ` +
-      `SELECT uuid, picture, 0 AS position FROM "${MERCH_TABLE_NAME}"`
+      `INSERT INTO "${TABLE_NAME}" ("merchItem", picture, position) `
+      + `SELECT uuid, picture, 0 AS position FROM "${MERCH_TABLE_NAME}"`,
     );
 
     // remove the column from the old table
@@ -64,17 +64,16 @@ export class addMerchItemImageTable1681777109787 implements MigrationInterface {
 
     // fill old column with the first image from the photo table
     await queryRunner.query(
-      `UPDATE "${MERCH_TABLE_NAME}" m ` +
-      `SET picture = (` +
-        `SELECT picture ` +
-        `FROM "${TABLE_NAME}" p ` +
-        `WHERE p."merchItem" = m.uuid ` +
-        `ORDER BY p."uploadedAt" ` +
-        `LIMIT 1` +
-      `)`
+      `UPDATE "${MERCH_TABLE_NAME}" m `
+      + 'SET picture = ('
+        + 'SELECT picture '
+        + `FROM "${TABLE_NAME}" p `
+        + 'WHERE p."merchItem" = m.uuid '
+        + 'ORDER BY p."uploadedAt" '
+        + 'LIMIT 1'
+      + ')',
     );
 
     await queryRunner.dropTable(TABLE_NAME);
   }
-
 }

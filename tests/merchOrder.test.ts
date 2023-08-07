@@ -1658,7 +1658,7 @@ describe('merch order pickup events', () => {
 
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
-    .thenResolve();
+      .thenResolve();
 
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const params = { uuid: pickupEvent.uuid };
