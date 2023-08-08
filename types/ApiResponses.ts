@@ -383,6 +383,8 @@ export interface UpdateSocialMediaResponse extends ApiResponse {
 
 export interface DeleteSocialMediaResponse extends ApiResponse {}
 
+export interface ChangeCanSeeAttendanceResponse extends ApiResponse {}
+
 export interface PublicOrderPickupEvent {
   uuid: Uuid;
   title: string;
