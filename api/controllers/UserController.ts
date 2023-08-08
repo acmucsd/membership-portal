@@ -18,6 +18,7 @@ import {
   InsertSocialMediaResponse,
   UpdateSocialMediaResponse,
   DeleteSocialMediaResponse,
+  ChangeCanSeeAttendanceResponse,
 } from '../../types';
 import { UserHandleParam, UuidParam } from '../validators/GenericRequests';
 import { PatchUserRequest } from '../validators/UserControllerRequests';
@@ -124,6 +125,12 @@ export class UserController {
   async deleteSocialMediaForUser(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<DeleteSocialMediaResponse> {
     await this.userSocialMediaService.deleteSocialMediaByUuid(user, params.uuid);
+    return { error: null };
+  }
+
+  @Patch('/canSeeAttendance')
+  async changeCanSeeAttendance(@AuthenticatedUser() user: UserModel): Promise<ChangeCanSeeAttendanceResponse> {
+    await this.userAccountService.changeCanSeeAttendance(user);
     return { error: null };
   }
 }
