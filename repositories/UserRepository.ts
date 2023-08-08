@@ -91,4 +91,9 @@ export class UserRepository extends BaseRepository<UserModel> {
       })
       .execute();
   }
+
+  public async changeSeeAttendance(user: UserModel) {
+    user.canSeeAttendance = !user.canSeeAttendance;
+    return this.repository.save(user);
+  }
 }

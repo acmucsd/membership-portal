@@ -192,4 +192,10 @@ export default class UserAccountService {
       return userProfile;
     });
   }
+
+  public async changeCanSeeAttendance(user: UserModel) : Promise<void> {
+    return this.transactions.readWrite(async (txn) => {
+      Repositories.user(txn).changeSeeAttendance(user);
+    })
+  }
 }
