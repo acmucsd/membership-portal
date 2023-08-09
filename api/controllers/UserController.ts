@@ -131,6 +131,6 @@ export class UserController {
   @Patch('/canSeeAttendance')
   async changeCanSeeAttendance(@AuthenticatedUser() user: UserModel): Promise<ChangeCanSeeAttendanceResponse> {
     await this.userAccountService.changeCanSeeAttendance(user);
-    return { error: null };
+    return { error: null, canSeeAttendance: user.canSeeAttendance };
   }
 }

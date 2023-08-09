@@ -383,7 +383,9 @@ export interface UpdateSocialMediaResponse extends ApiResponse {
 
 export interface DeleteSocialMediaResponse extends ApiResponse {}
 
-export interface ChangeCanSeeAttendanceResponse extends ApiResponse {}
+export interface ChangeCanSeeAttendanceResponse extends ApiResponse {
+  canSeeAttendance: boolean;
+}
 
 export interface PublicOrderPickupEvent {
   uuid: Uuid;
