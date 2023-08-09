@@ -4,7 +4,6 @@ import { ForbiddenError } from 'routing-controllers';
 import { ActivityType, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
-import { UserController } from 'api/controllers/UserController';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -321,10 +320,9 @@ describe('attendance', () => {
     const userController = ControllerFactory.user(conn);
     const params = { uuid: member1.uuid };
 
-    expect(await userController.changeCanSeeAttendance(member1)).toEqual({ error: null, canSeeAttendance: false})
+    expect(await userController.changeCanSeeAttendance(member1)).toEqual({ error: null, canSeeAttendance: false });
 
     await expect(attendanceController.getAttendancesForUser(params, member2))
       .rejects.toThrow(ForbiddenError);
-
   });
 });
