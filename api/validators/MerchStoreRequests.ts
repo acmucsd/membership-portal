@@ -18,7 +18,6 @@ import {
   CreateMerchItemRequest as ICreateMerchItemRequest,
   EditMerchItemRequest as IEditMerchItemRequest,
   CreateMerchItemOptionRequest as ICreateMerchItemOptionRequest,
-  CreateMerchItemPhotoRequest as ICreateMerchItemPhotoRequest,
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   VerifyMerchOrderRequest as IVerifyMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
@@ -317,12 +316,6 @@ export class CreateMerchItemOptionRequest implements ICreateMerchItemOptionReque
   @ValidateNested()
   @IsDefined()
   option: MerchItemOption;
-}
-
-export class CreateMerchItemPhotoRequest implements ICreateMerchItemPhotoRequest {
-  // @IsDefined()
-  // @Min(0)
-  // position: number;
 }
 
 export class PlaceMerchOrderRequest implements IPlaceMerchOrderRequest {

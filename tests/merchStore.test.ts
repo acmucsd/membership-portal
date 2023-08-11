@@ -785,10 +785,10 @@ describe('merch item photos', () => {
 
     const params = { uuid: item.uuid };
 
-    const response2 = await merchStoreController.createMerchItemPhoto(image2, {}, params, admin);
-    const response3 = await merchStoreController.createMerchItemPhoto(image3, {}, params, admin);
-    const response4 = await merchStoreController.createMerchItemPhoto(image4, {}, params, admin);
-    const response5 = await merchStoreController.createMerchItemPhoto(image5, {}, params, admin);
+    const response2 = await merchStoreController.createMerchItemPhoto(image2, params, admin);
+    const response3 = await merchStoreController.createMerchItemPhoto(image3, params, admin);
+    const response4 = await merchStoreController.createMerchItemPhoto(image4, params, admin);
+    const response5 = await merchStoreController.createMerchItemPhoto(image5, params, admin);
 
     // checking no error is thrown and storage is correctly modified
     // enough to check first and last response
@@ -826,7 +826,7 @@ describe('merch item photos', () => {
     expect((await merchStoreController.getOneMerchItem(params, admin)).item.photos)
       .toEqual(photos);
 
-    expect(merchStoreController.createMerchItemPhoto(imageExtra, {}, params, admin))
+    expect(merchStoreController.createMerchItemPhoto(imageExtra, params, admin))
       .rejects.toThrow('Merch items cannot have more than 5 pictures');
   });
 

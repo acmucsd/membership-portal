@@ -64,7 +64,6 @@ import {
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
   GetCartRequest,
-  CreateMerchItemPhotoRequest,
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
 import StorageService from '../../services/StorageService';
@@ -162,7 +161,6 @@ export class MerchStoreController {
   @Post('/item/picture/:uuid')
   async createMerchItemPhoto(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
-    @Body() createMerchItemPhotoRequest: CreateMerchItemPhotoRequest,
     @Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<CreateMerchPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
