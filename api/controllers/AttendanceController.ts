@@ -31,7 +31,7 @@ export class AttendanceController {
 
   @Get()
   async getAttendancesForCurrentUser(@AuthenticatedUser() user: UserModel): Promise<GetAttendancesForUserResponse> {
-    const attendances = await this.attendanceService.getAttendancesForUser(user);
+    const attendances = await this.attendanceService.getAttendancesForCurrentUser(user);
     return { error: null, attendances };
   }
 
@@ -41,9 +41,7 @@ export class AttendanceController {
     if (params.uuid === currentUser.uuid) {
       return this.getAttendancesForCurrentUser(currentUser);
     }
-    const user = await this.userAccountService.findByUuid(params.uuid);
-    if (!user.canSeeAttendance) throw new ForbiddenError();
-    const attendances = await this.attendanceService.getAttendancesForUser(user);
+    const attendances = await this.attendanceService.getAttendancesForUser(params.uuid);
     return { error: null, attendances };
   }
 

@@ -6,14 +6,14 @@ export class addUserAttendancePermissionToUserTable1691286073346 implements Migr
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(TABLE_NAME, new TableColumn({
-      name: 'canSeeAttendance',
+      name: 'isAttendancePublic',
       type: 'boolean',
       default: true
     }));
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropColumn(TABLE_NAME, 'canSeeAttendance');
+    await queryRunner.dropColumn(TABLE_NAME, 'isAttendancePublic');
   }
 
 }
