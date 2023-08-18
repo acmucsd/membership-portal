@@ -190,6 +190,8 @@ describe('updating user access level', () => {
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const users = UserFactory.create(4);
 
+    console.log('original access: ', users[0].accessType);
+
     users[0].accessType = UserAccessType.STAFF;
     users[1].accessType = UserAccessType.STANDARD;
     users[2].accessType = UserAccessType.MARKETING;
@@ -203,12 +205,15 @@ describe('updating user access level', () => {
 
     const accessLevelResponse = await adminController.updateUserAccessLevel({
       accessUpdates: [
-        { user: users[0].email, newAccess: 'MERCH_STORE_MANAGER' },
-        { user: users[1].email, newAccess: 'MARKETING' },
-        { user: users[2].email, newAccess: 'MERCH_STORE_DISTRIBUTOR' },
-        { user: users[3].email, newAccess: 'STAFF' },
+        { user: users[0].email, accessType: 'MERCH_STORE_MANAGER' },
+        { user: users[1].email, accessType: 'MARKETING' },
+        { user: users[2].email, accessType: 'MERCH_STORE_DISTRIBUTOR' },
+        { user: users[3].email, accessType: 'STAFF' },
       ],
     }, admin);
+
+
+    console.log("User after update: ", users[0]);
 
     // expect statements
     expect(accessLevelResponse.updatedUsers[0].email).toEqual(users[0].email);
@@ -244,10 +249,10 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         accessUpdates: [
-          { user: users[0].email, newAccess: 'MERCH_STORE_MANAGER' },
-          { user: users[1].email, newAccess: 'MARKETING' },
-          { user: users[2].email, newAccess: 'MERCH_STORE_DISTRIBUTOR' },
-          { user: users[3].email, newAccess: 'STAFF' },
+          { user: users[0].email, accessType: 'MERCH_STORE_MANAGER' },
+          { user: users[1].email, accessType: 'MARKETING' },
+          { user: users[2].email, accessType: 'MERCH_STORE_DISTRIBUTOR' },
+          { user: users[3].email, accessType: 'STAFF' },
         ],
       }, standard);
     }).rejects.toThrow(ForbiddenError);
@@ -270,8 +275,8 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         accessUpdates: [
-          { user: 'smhariha@ucsd.edu', newAccess: 'MERCH_STORE_MANAGER' },
-          { user: 'smhariha@ucsd.edu', newAccess: 'STAFF' },
+          { user: 'smhariha@ucsd.edu', accessType: 'MERCH_STORE_MANAGER' },
+          { user: 'smhariha@ucsd.edu', accessType: 'STAFF' },
         ],
       }, admin);
     }).rejects.toThrow(BadRequestError);
@@ -297,10 +302,10 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         accessUpdates: [
-          { user: users[0].email, newAccess: 'MERCH_STORE_MANAGER' },
-          { user: users[1].email, newAccess: 'ADMIN' },
-          { user: users[2].email, newAccess: 'MERCH_STORE_DISTRIBUTOR' },
-          { user: users[3].email, newAccess: 'STAFF' },
+          { user: users[0].email, accessType: 'MERCH_STORE_MANAGER' },
+          { user: users[1].email, accessType: 'ADMIN' },
+          { user: users[2].email, accessType: 'MERCH_STORE_DISTRIBUTOR' },
+          { user: users[3].email, accessType: 'STAFF' },
         ],
       }, admin);
     }).rejects.toThrow(ForbiddenError);
@@ -325,7 +330,7 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         accessUpdates: [
-          { user: 'test23432@ucsd.edu', newAccess: 'MERCH_STORE_MANAGER' },
+          { user: 'test23432@ucsd.edu', accessType: 'MERCH_STORE_MANAGER' },
         ],
       }, admin);
     }).rejects.toThrow(ForbiddenError);

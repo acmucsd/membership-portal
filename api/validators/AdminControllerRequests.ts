@@ -8,7 +8,10 @@ import {
   Milestone as IMilestone,
   Bonus as IBonus,
   UserAccessUpdates as IUserAccessUpdates,
+  UserAccessType,
 } from '../../types';
+
+const validUserAccessTypes = Object.values(UserAccessType);
 
 export class Milestone implements IMilestone {
   @IsDefined()
@@ -66,9 +69,8 @@ export class UserAccessUpdates implements IUserAccessUpdates {
   user: string;
 
   @IsDefined()
-  @IsIn(['RESTRICTED', 'STANDARD', 'STAFF', 'ADMIN', 'MARKETING', 'MERCH_STORE_MANAGER',
-    'MERCH_STORE_DISTRIBUTOR'])
-  newAccess: string;
+  @IsIn(validUserAccessTypes)
+  accessType: string;
 }
 export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelRequest {
   @Type(() => UserAccessUpdates)

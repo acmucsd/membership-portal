@@ -230,6 +230,10 @@ export class PortalState {
     }
     return this;
   }
+
+  public getUsers(): UserModel[] {
+    return this.users;
+  }
 }
 
 export interface MerchItemOptionAndQuantity {

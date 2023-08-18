@@ -132,7 +132,7 @@ export interface SubmitAttendanceForUsersRequest {
 // }
 export interface UserAccessUpdates {
   user: string;
-  newAccess: string;
+  accessType: string;
 }
 
 export interface ModifyUserAccessLevelRequest {

@@ -18,6 +18,7 @@ import {
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
+import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
 
 @Service()
 export default class UserAccountService {
@@ -194,6 +195,21 @@ export default class UserAccountService {
     });
   }
 
+
+  public async checkDuplicateEmails(emails: string[]) {
+    const emailSet = emails.reduce((set, email) => {
+      if (set.has(email)) {
+        return set;
+      }
+      set.add(email);
+      return set;
+    }, new Set<string>());
+
+    if (emailSet.size !== emails.length) {
+      throw new BadRequestError('Duplicate emails found in request');
+    }
+  }
+
   /**
    * This method is used to update the access levels of multiple users at once.
    * @param accessUpdates - an array of objects containing the user and their new access level
@@ -201,21 +217,11 @@ export default class UserAccountService {
    * @param currentUser - the user making the request
    * @returns {Promise.<UserModel[]>} - an array of updated users
    */
-  public async updateUserAccessLevels(accessUpdates, emails: string[],
+  public async updateUserAccessLevels(accessUpdates: UserAccessUpdates[], emails: string[],
     currentUser: UserModel): Promise<PrivateProfile[]> {
     return this.transactions.readWrite(async (txn) => {
       // Check for duplicate emails in the request
-      const emailSet = emails.reduce((set, email) => {
-        if (set.has(email)) {
-          return set;
-        }
-        set.add(email);
-        return set;
-      }, new Set<string>());
-
-      if (emailSet.size !== emails.length) {
-        throw new BadRequestError('Duplicate emails found in request');
-      }
+      await this.checkDuplicateEmails(emails);
 
       // Strip out the user emails & validate that users exist
       const userRepository = Repositories.user(txn);
@@ -228,23 +234,26 @@ export default class UserAccountService {
       }
 
       const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
-        const { user, newAccess } = accessUpdate;
+        const { user, accessType } = accessUpdate;
 
-        const matchingAccess = Object.keys(UserAccessType).find((access) => access === newAccess);
-        const updatingAccess = UserAccessType[matchingAccess];
+        const matchingAccess = Object.keys(UserAccessType).find((access) => access === accessType);
+        console.log("matching access: ", matchingAccess);
+        const updatingAccess: UserAccessType = UserAccessType[matchingAccess];
 
         const currUser = await userRepository.findByEmail(user);
 
         // Prevent anyone from promoting user to admin
-        if (newAccess === UserAccessType.ADMIN) {
+        if (accessType === UserAccessType.ADMIN) {
           throw new ForbiddenError('You cannot promote users to admin.');
         }
         // Prevent anyone from demoting user with current admin status
-        if (currUser.accessType === UserAccessType.ADMIN && newAccess !== UserAccessType.ADMIN) {
+        if (currUser.accessType === UserAccessType.ADMIN && accessType !== UserAccessType.ADMIN) {
           throw new ForbiddenError('You cannot demote an admin.');
         }
 
         const updatedUser = await userRepository.upsertUser(currUser, { accessType: updatingAccess });
+        // log the activity of changing a user's access type
+
         return updatedUser;
       }));
 
@@ -259,6 +268,6 @@ export default class UserAccountService {
   public async getAllUsersWithAccessLevels(): Promise<Partial<UserModel>[]> {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
-      .getAllProfilesForRoleManagement());
+      .getUserInfoAndAccessTypes());
   }
 }
