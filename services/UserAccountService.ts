@@ -4,6 +4,7 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import * as faker from 'faker';
+import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -18,7 +19,6 @@ import {
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
-import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
 
 @Service()
 export default class UserAccountService {
@@ -195,7 +195,6 @@ export default class UserAccountService {
     });
   }
 
-
   public async checkDuplicateEmails(emails: string[]) {
     const emailSet = emails.reduce((set, email) => {
       if (set.has(email)) {
@@ -238,7 +237,7 @@ export default class UserAccountService {
         return map;
       }, {});
 
-      console.log("emailToUserMap: ", emailToUserMap);
+      // console.log('emailToUserMap: ', emailToUserMap);
 
       const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
         const { user, accessType } = accessUpdate;
@@ -246,7 +245,7 @@ export default class UserAccountService {
         const matchingAccess = Object.keys(UserAccessType).find((access) => access === accessType);
         const updatingAccess: UserAccessType = UserAccessType[matchingAccess];
 
-        //const currUser = await userRepository.findByEmail(user);
+        // const currUser = await userRepository.findByEmail(user);
 
         const currUser = emailToUserMap[user];
         const oldAccess = currUser.accessType;
@@ -263,12 +262,15 @@ export default class UserAccountService {
         const updatedUser = await userRepository.upsertUser(currUser, { accessType: updatingAccess });
         // log the activity of changing a user's access type
         const activity = {
-          currentUser,
+          user: currentUser,
           type: ActivityType.ACCOUNT_UPDATE_INFO,
-          description: `${currentUser.email} changed ${updatedUser.email}'s access level from ${oldAccess} to ${accessType}`
+          description: `${currentUser.email} changed ${updatedUser.email}'s
+          access level from ${oldAccess} to ${accessType}`,
         };
 
-        console.log("activity: ", activity.description);
+        await Repositories
+          .activity(txn)
+          .logActivity(activity);
 
         return updatedUser;
       }));

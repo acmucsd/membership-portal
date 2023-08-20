@@ -1,7 +1,9 @@
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
+import { In } from 'typeorm';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
+import { UserModel } from '../models/UserModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -190,8 +192,6 @@ describe('updating user access level', () => {
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const users = UserFactory.create(4);
 
-    console.log('original access: ', users[0].accessType);
-
     users[0].accessType = UserAccessType.STAFF;
     users[1].accessType = UserAccessType.STANDARD;
     users[2].accessType = UserAccessType.MARKETING;
@@ -212,20 +212,26 @@ describe('updating user access level', () => {
       ],
     }, admin);
 
-
-    console.log("User after update: ", users[0]);
+    const repository = conn.getRepository(UserModel);
+    const updatedUsers = await repository.find({
+      email: In([users[0].email, users[1].email, users[2].email, users[3].email]),
+    });
 
     // expect statements
-    expect(accessLevelResponse.updatedUsers[0].email).toEqual(users[0].email);
+    expect(updatedUsers[0].email).toEqual(users[0].email);
+    expect(updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
     expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
 
-    expect(accessLevelResponse.updatedUsers[1].email).toEqual(users[1].email);
+    expect(updatedUsers[1].email).toEqual(users[1].email);
+    expect(updatedUsers[1].accessType).toEqual(UserAccessType.MARKETING);
     expect(accessLevelResponse.updatedUsers[1].accessType).toEqual(UserAccessType.MARKETING);
 
-    expect(accessLevelResponse.updatedUsers[2].email).toEqual(users[2].email);
+    expect(updatedUsers[2].email).toEqual(users[2].email);
+    expect(updatedUsers[2].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
     expect(accessLevelResponse.updatedUsers[2].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
 
-    expect(accessLevelResponse.updatedUsers[3].email).toEqual(users[3].email);
+    expect(updatedUsers[3].email).toEqual(users[3].email);
+    expect(updatedUsers[3].accessType).toEqual(UserAccessType.STAFF);
     expect(accessLevelResponse.updatedUsers[3].accessType).toEqual(UserAccessType.STAFF);
   });
 
@@ -334,5 +340,40 @@ describe('updating user access level', () => {
         ],
       }, admin);
     }).rejects.toThrow(ForbiddenError);
+  });
+
+  test("ensure that the updating user's access level is not changed", async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const users = UserFactory.create(4);
+
+    users[0].accessType = UserAccessType.STAFF;
+    users[1].accessType = UserAccessType.STANDARD;
+    users[2].accessType = UserAccessType.MARKETING;
+    users[3].accessType = UserAccessType.MERCH_STORE_DISTRIBUTOR;
+
+    await new PortalState()
+      .createUsers(users[0], users[1], users[2], users[3], admin)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    await adminController.updateUserAccessLevel({
+      accessUpdates: [
+        { user: users[0].email, accessType: 'MERCH_STORE_MANAGER' },
+        { user: users[1].email, accessType: 'MARKETING' },
+        { user: users[2].email, accessType: 'MERCH_STORE_DISTRIBUTOR' },
+        { user: users[3].email, accessType: 'STAFF' },
+      ],
+    }, admin);
+
+    const repository = conn.getRepository(UserModel);
+    const existingAdmin = await repository.find({
+      email: admin.email,
+    });
+
+    // expect statements
+    expect(existingAdmin[0].email).toEqual(admin.email);
+    expect(existingAdmin[0].accessType).toEqual(UserAccessType.ADMIN);
   });
 });
