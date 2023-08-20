@@ -233,14 +233,23 @@ export default class UserAccountService {
         throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
       }
 
+      const emailToUserMap = users.reduce((map, user) => {
+        map[user.email] = user;
+        return map;
+      }, {});
+
+      console.log("emailToUserMap: ", emailToUserMap);
+
       const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
         const { user, accessType } = accessUpdate;
 
         const matchingAccess = Object.keys(UserAccessType).find((access) => access === accessType);
-        console.log("matching access: ", matchingAccess);
         const updatingAccess: UserAccessType = UserAccessType[matchingAccess];
 
-        const currUser = await userRepository.findByEmail(user);
+        //const currUser = await userRepository.findByEmail(user);
+
+        const currUser = emailToUserMap[user];
+        const oldAccess = currUser.accessType;
 
         // Prevent anyone from promoting user to admin
         if (accessType === UserAccessType.ADMIN) {
@@ -253,6 +262,13 @@ export default class UserAccountService {
 
         const updatedUser = await userRepository.upsertUser(currUser, { accessType: updatingAccess });
         // log the activity of changing a user's access type
+        const activity = {
+          currentUser,
+          type: ActivityType.ACCOUNT_UPDATE_INFO,
+          description: `${currentUser.email} changed ${updatedUser.email}'s access level from ${oldAccess} to ${accessType}`
+        };
+
+        console.log("activity: ", activity.description);
 
         return updatedUser;
       }));
