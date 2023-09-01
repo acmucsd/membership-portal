@@ -302,4 +302,27 @@ describe('attendance', () => {
     ];
     expect(attendancesForEvent).toEqual(expect.arrayContaining(expectedAttendances));
   });
+
+  test('throws error when canSeeAttendanceFalse', async () => {
+    const conn = await DatabaseConnection.get();
+    const member1 = UserFactory.fake();
+    const member2 = UserFactory.fake();
+    const event1 = EventFactory.fake({ requiresStaff: true });
+    const event2 = EventFactory.fake({ requiresStaff: true });
+
+    await new PortalState()
+      .createUsers(member1, member2)
+      .createEvents(event1, event2)
+      .attendEvents([member1, member2], [event1, event2])
+      .write();
+
+    const attendanceController = ControllerFactory.attendance(conn);
+    const userController = ControllerFactory.user(conn);
+    const params = { uuid: member1.uuid };
+
+    expect(await userController.changeCanSeeAttendance(member1)).toEqual({ error: null, canSeeAttendance: false });
+
+    await expect(attendanceController.getAttendancesForUser(params, member2))
+      .rejects.toThrow(ForbiddenError);
+  });
 });

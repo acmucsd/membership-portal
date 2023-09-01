@@ -1,19 +1,17 @@
-import { MigrationInterface, QueryRunner, TableColumn,} from "typeorm";
+import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 const TABLE_NAME = 'Users';
 
-export class addUserAttendancePermissionToUserTable1691286073346 implements MigrationInterface {
-
+export class AddUserAttendancePermissionToUserTable1691286073346 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(TABLE_NAME, new TableColumn({
       name: 'isAttendancePublic',
       type: 'boolean',
-      default: true
+      default: true,
     }));
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropColumn(TABLE_NAME, 'isAttendancePublic');
   }
-
 }
