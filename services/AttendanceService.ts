@@ -40,7 +40,7 @@ export default class AttendanceService {
       if (!user.isAttendancePublic) throw new ForbiddenError();
       const attendances = await Repositories.attendance(txn).getAttendancesForUser(user);
       return attendances.map((attendance) => attendance.getPublicAttendance());
-    })
+    });
   }
 
   public async attendEvent(user: UserModel, attendanceCode: string, asStaff = false): Promise<PublicAttendance> {

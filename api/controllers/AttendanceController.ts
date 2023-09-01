@@ -5,7 +5,6 @@ import { AttendEventRequest } from '../validators/AttendanceControllerRequests';
 import { UserModel } from '../../models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
-import UserAccountService from '../../services/UserAccountService';
 import { GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 
