@@ -43,7 +43,7 @@ export class UserFactory {
       points: 0,
       credits: 0,
       handle: UserAccountService.generateDefaultHandle(firstName, lastName),
-      canSeeAttendance: true,
+      isAttendancePublic: true,
     });
     return UserModel.merge(fake, substitute);
   }

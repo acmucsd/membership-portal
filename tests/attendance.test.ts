@@ -320,7 +320,9 @@ describe('attendance', () => {
     const userController = ControllerFactory.user(conn);
     const params = { uuid: member1.uuid };
 
-    expect(await userController.changeCanSeeAttendance(member1)).toEqual({ error: null, canSeeAttendance: false });
+
+    const changePublicAttendancePatch = { user: { isAttendancePublic: false}}
+    await userController.patchCurrentUser(changePublicAttendancePatch, member1);
 
     await expect(attendanceController.getAttendancesForUser(params, member2))
       .rejects.toThrow(ForbiddenError);

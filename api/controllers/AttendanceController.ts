@@ -14,11 +14,8 @@ import { UuidParam } from '../validators/GenericRequests';
 export class AttendanceController {
   private attendanceService: AttendanceService;
 
-  private userAccountService: UserAccountService;
-
-  constructor(attendanceService: AttendanceService, userAccountService: UserAccountService) {
+  constructor(attendanceService: AttendanceService) {
     this.attendanceService = attendanceService;
-    this.userAccountService = userAccountService;
   }
 
   @Get('/:uuid')

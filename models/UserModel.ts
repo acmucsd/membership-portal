@@ -56,7 +56,7 @@ export class UserModel extends BaseEntity {
   bio: string;
 
   @Column('boolean', { default: true })
-  canSeeAttendance: boolean;
+  isAttendancePublic: boolean;
 
   @Column('integer', { default: 0 })
   @Index('leaderboard_index')
