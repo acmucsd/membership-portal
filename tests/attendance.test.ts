@@ -321,7 +321,7 @@ describe('attendance', () => {
     const params = { uuid: member1.uuid };
 
 
-    const changePublicAttendancePatch = { user: { isAttendancePublic: false}}
+    const changePublicAttendancePatch = { user: { isAttendancePublic: false } };
     await userController.patchCurrentUser(changePublicAttendancePatch, member1);
 
     await expect(attendanceController.getAttendancesForUser(params, member2))
