@@ -320,7 +320,6 @@ describe('attendance', () => {
     const userController = ControllerFactory.user(conn);
     const params = { uuid: member1.uuid };
 
-
     const changePublicAttendancePatch = { user: { isAttendancePublic: false } };
     await userController.patchCurrentUser(changePublicAttendancePatch, member1);
 
