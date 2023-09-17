@@ -237,15 +237,8 @@ export default class UserAccountService {
         return map;
       }, {});
 
-      // console.log('emailToUserMap: ', emailToUserMap);
-
       const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
         const { user, accessType } = accessUpdate;
-
-        const matchingAccess = Object.keys(UserAccessType).find((access) => access === accessType);
-        const updatingAccess: UserAccessType = UserAccessType[matchingAccess];
-
-        // const currUser = await userRepository.findByEmail(user);
 
         const currUser = emailToUserMap[user];
         const oldAccess = currUser.accessType;
@@ -254,16 +247,18 @@ export default class UserAccountService {
         if (accessType === UserAccessType.ADMIN) {
           throw new ForbiddenError('You cannot promote users to admin.');
         }
+
         // Prevent anyone from demoting user with current admin status
-        if (currUser.accessType === UserAccessType.ADMIN && accessType !== UserAccessType.ADMIN) {
+        if (currUser.accessType === UserAccessType.ADMIN) {
           throw new ForbiddenError('You cannot demote an admin.');
         }
 
-        const updatedUser = await userRepository.upsertUser(currUser, { accessType: updatingAccess });
+        const updatedUser = await userRepository.upsertUser(currUser, { accessType });
+
         // log the activity of changing a user's access type
         const activity = {
           user: currentUser,
-          type: ActivityType.ACCOUNT_UPDATE_INFO,
+          type: ActivityType.ACCOUNT_ACCESS_LEVEL_UPDATE,
           description: `${currentUser.email} changed ${updatedUser.email}'s
           access level from ${oldAccess} to ${accessType}`,
         };

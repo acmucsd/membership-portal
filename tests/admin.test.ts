@@ -205,10 +205,10 @@ describe('updating user access level', () => {
 
     const accessLevelResponse = await adminController.updateUserAccessLevel({
       accessUpdates: [
-        { user: users[0].email, accessType: 'MERCH_STORE_MANAGER' },
-        { user: users[1].email, accessType: 'MARKETING' },
-        { user: users[2].email, accessType: 'MERCH_STORE_DISTRIBUTOR' },
-        { user: users[3].email, accessType: 'STAFF' },
+        { user: users[0].email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+        { user: users[1].email, accessType: UserAccessType.MARKETING },
+        { user: users[2].email, accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR },
+        { user: users[3].email, accessType: UserAccessType.STAFF },
       ],
     }, admin);
 
@@ -255,10 +255,10 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         accessUpdates: [
-          { user: users[0].email, accessType: 'MERCH_STORE_MANAGER' },
-          { user: users[1].email, accessType: 'MARKETING' },
-          { user: users[2].email, accessType: 'MERCH_STORE_DISTRIBUTOR' },
-          { user: users[3].email, accessType: 'STAFF' },
+          { user: users[0].email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+          { user: users[1].email, accessType: UserAccessType.MARKETING },
+          { user: users[2].email, accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR },
+          { user: users[3].email, accessType: UserAccessType.STAFF },
         ],
       }, standard);
     }).rejects.toThrow(ForbiddenError);
@@ -281,8 +281,8 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         accessUpdates: [
-          { user: 'smhariha@ucsd.edu', accessType: 'MERCH_STORE_MANAGER' },
-          { user: 'smhariha@ucsd.edu', accessType: 'STAFF' },
+          { user: 'smhariha@ucsd.edu', accessType: UserAccessType.MERCH_STORE_MANAGER },
+          { user: 'smhariha@ucsd.edu', accessType: UserAccessType.STAFF },
         ],
       }, admin);
     }).rejects.toThrow(BadRequestError);
@@ -308,10 +308,10 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         accessUpdates: [
-          { user: users[0].email, accessType: 'MERCH_STORE_MANAGER' },
-          { user: users[1].email, accessType: 'ADMIN' },
-          { user: users[2].email, accessType: 'MERCH_STORE_DISTRIBUTOR' },
-          { user: users[3].email, accessType: 'STAFF' },
+          { user: users[0].email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+          { user: users[1].email, accessType: UserAccessType.ADMIN },
+          { user: users[2].email, accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR },
+          { user: users[3].email, accessType: UserAccessType.STAFF },
         ],
       }, admin);
     }).rejects.toThrow(ForbiddenError);
@@ -336,7 +336,7 @@ describe('updating user access level', () => {
     await expect(async () => {
       await adminController.updateUserAccessLevel({
         accessUpdates: [
-          { user: 'test23432@ucsd.edu', accessType: 'MERCH_STORE_MANAGER' },
+          { user: 'test23432@ucsd.edu', accessType: UserAccessType.MERCH_STORE_MANAGER },
         ],
       }, admin);
     }).rejects.toThrow(ForbiddenError);
@@ -360,10 +360,10 @@ describe('updating user access level', () => {
 
     await adminController.updateUserAccessLevel({
       accessUpdates: [
-        { user: users[0].email, accessType: 'MERCH_STORE_MANAGER' },
-        { user: users[1].email, accessType: 'MARKETING' },
-        { user: users[2].email, accessType: 'MERCH_STORE_DISTRIBUTOR' },
-        { user: users[3].email, accessType: 'STAFF' },
+        { user: users[0].email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+        { user: users[1].email, accessType: UserAccessType.MARKETING },
+        { user: users[2].email, accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR },
+        { user: users[3].email, accessType: UserAccessType.STAFF },
       ],
     }, admin);
 

@@ -70,7 +70,7 @@ export class UserAccessUpdates implements IUserAccessUpdates {
 
   @IsDefined()
   @IsIn(validUserAccessTypes)
-  accessType: string;
+  accessType: UserAccessType;
 }
 export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelRequest {
   @Type(() => UserAccessUpdates)
