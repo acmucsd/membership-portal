@@ -29,6 +29,8 @@ import {
   OrderItemFulfillmentUpdate as IOrderItemFulfillmentUpdate,
   MerchCollection as IMerchCollection,
   MerchCollectionEdit as IMerchCollectionEdit,
+  MerchCollectionPhoto as IMerchCollectionPhoto,
+  MerchCollectionPhotoEdit as IMerchCollectionPhotoEdit,
   MerchItem as IMerchItem,
   MerchItemEdit as IMerchItemEdit,
   MerchItemOption as IMerchItemOption,
@@ -54,6 +56,9 @@ export class MerchCollection implements IMerchCollection {
 
   @Allow()
   archived?: boolean;
+
+  @Allow()
+  photos: MerchCollectionPhoto[];
 }
 
 export class MerchCollectionEdit implements IMerchCollectionEdit {
@@ -72,6 +77,29 @@ export class MerchCollectionEdit implements IMerchCollectionEdit {
   @Min(0)
   @Max(100)
   discountPercentage?: number;
+
+  @Allow()
+  photos?: MerchCollectionPhotoEdit[]
+}
+
+export class MerchCollectionPhoto implements IMerchCollectionPhoto {
+  @Allow()
+  picture: string;
+
+  @Allow()
+  position: number;
+}
+
+export class MerchCollectionPhotoEdit implements IMerchCollectionPhotoEdit {
+  @IsDefined()
+  @IsUUID()
+  uuid: string;
+
+  @Allow()
+  picture: string;
+
+  @Allow()
+  position: number;
 }
 
 export class MerchItemOptionMetadata implements IMerchItemOptionMetadata {
