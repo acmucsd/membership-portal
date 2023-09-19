@@ -1,7 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn, TableIndex } from 'typeorm';
 
-const TABLE_NAME = 'CollectionPhotos';
-const MERCH_TABLE_NAME = 'CollectionItems';
+const TABLE_NAME = 'MerchCollectionPhotos';
 
 export class addCollectionImageTable implements MigrationInterface {
 
@@ -17,7 +16,7 @@ export class addCollectionImageTable implements MigrationInterface {
             generationStrategy: 'uuid',
           },
           {
-            name: 'collection',
+            name: 'merchCollection',
             type: 'uuid',
           },
           {
@@ -39,7 +38,7 @@ export class addCollectionImageTable implements MigrationInterface {
       await queryRunner.createIndices(TABLE_NAME, [
         new TableIndex({
           name: 'images_by_collection_index',
-          columnNames: ['collection'],
+          columnNames: ['merchCollection'],
         }),
       ]);
     }

@@ -1,6 +1,7 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn } from 'typeorm';
 import { Uuid, PublicMerchCollection } from '../types';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
+import { MerchCollectionPhotoModel } from './CollectionPhotoModel'
 
 @Entity('MerchandiseCollections')
 export class MerchandiseCollectionModel extends BaseEntity {
@@ -25,10 +26,14 @@ export class MerchandiseCollectionModel extends BaseEntity {
   @OneToMany((type) => MerchandiseItemModel, (item) => item.collection, { cascade: true })
   items: MerchandiseItemModel[];
 
+  @OneToMany((type) => MerchCollectionPhotoModel, (picture) => picture.collection, { cascade: true })
+  photos: MerchCollectionPhotoModel[];
+
   public getPublicMerchCollection(canSeeHiddenItems = false): PublicMerchCollection {
     const baseMerchCollection: any = {
       uuid: this.uuid,
       title: this.title,
+      photos: this.photos.map((o) => o.getPublicMerchItemPhoto()).sort((a, b) => a.position - b.position),
       themeColorHex: this.themeColorHex,
       description: this.description,
       createdAt: this.createdAt,
@@ -40,5 +45,10 @@ export class MerchandiseCollectionModel extends BaseEntity {
       }
     }
     return baseMerchCollection;
+  }
+
+  public getDefaultPictureUrl(): string {
+    const filteredArray = this.photos.filter((picture) => picture.position === 0);
+    return (filteredArray.length === 0) ? null : filteredArray[0].picture;
   }
 }
