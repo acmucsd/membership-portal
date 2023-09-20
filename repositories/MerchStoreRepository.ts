@@ -1,6 +1,7 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
+import { MerchCollectionPhotoModel } from '../models/MerchCollectionPhotoModel';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
@@ -40,6 +41,29 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
     return this.repository.createQueryBuilder('collection')
       .leftJoinAndSelect('collection.items', 'items')
       .leftJoinAndSelect('items.options', 'options');
+  }
+}
+
+@EntityRepository(MerchCollectionPhotoModel)
+export class MerchItemPhotoRepository extends BaseRepository<MerchCollectionPhotoModel> {
+  public async findByUuid(uuid: Uuid): Promise<MerchCollectionPhotoModel> {
+    return this.repository.findOne(uuid, { relations: ['merchCollection'] });
+  }
+
+  // for querying a group of pictures together
+  public async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchCollectionPhotoModel>> {
+    const photos = await this.repository.findByIds(uuids, { relations: ['merchCollection'] });
+    return new Map(photos.map((o) => [o.uuid, o]));
+  }
+
+  public async upsertMerchItemPhoto(photo: MerchCollectionPhotoModel,
+    changes?: Partial<MerchCollectionPhotoModel>): Promise<MerchCollectionPhotoModel> {
+    if (changes) photo = MerchCollectionPhotoModel.merge(photo, changes);
+    return this.repository.save(photo);
+  }
+
+  public async deleteMerchItemPhoto(photo: MerchCollectionPhotoModel): Promise<void> {
+    await this.repository.remove(photo);
   }
 }
 
