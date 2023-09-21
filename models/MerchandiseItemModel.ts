@@ -36,8 +36,8 @@ export class MerchandiseItemModel extends BaseEntity {
   @Column('boolean', { default: false })
   hasVariantsEnabled: boolean;
 
-  @OneToMany((type) => MerchandiseItemPhotoModel, (picture) => picture.merchItem, { cascade: true })
-  photos: MerchandiseItemPhotoModel[];
+  @OneToMany((type) => MerchandiseItemPhotoModel, (merchPhoto) => merchPhoto.merchItem, { cascade: true })
+  merchPhotos: MerchandiseItemPhotoModel[];
 
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })
   options: MerchandiseItemOptionModel[];
@@ -46,7 +46,7 @@ export class MerchandiseItemModel extends BaseEntity {
     const baseMerchItem: PublicMerchItem = {
       uuid: this.uuid,
       itemName: this.itemName,
-      photos: this.photos.map((o) => o.getPublicMerchItemPhoto()).sort((a, b) => a.position - b.position),
+      merchPhotos: this.merchPhotos.map((o) => o.getPublicMerchItemPhoto()).sort((a, b) => a.position - b.position),
       description: this.description,
       options: this.options.map((o) => o.getPublicMerchItemOption()),
       monthlyLimit: this.monthlyLimit,
@@ -62,14 +62,14 @@ export class MerchandiseItemModel extends BaseEntity {
     return {
       uuid: this.uuid,
       itemName: this.itemName,
-      picture: this.getDefaultPictureUrl(),
+      uploadedPhoto: this.getDefaultPhotoUrl(),
       description: this.description,
     };
   }
 
-  // get the first index of pictures if possible
-  public getDefaultPictureUrl(): string {
-    const filteredArray = this.photos.filter((picture) => picture.position === 0);
-    return (filteredArray.length === 0) ? null : filteredArray[0].picture;
+  // get the first index of photo if possible
+  public getDefaultPhotoUrl(): string {
+    const filteredArray = this.merchPhotos.filter((merchPhoto) => merchPhoto.position === 0);
+    return (filteredArray.length === 0) ? null : filteredArray[0].uploadedPhoto;
   }
 }

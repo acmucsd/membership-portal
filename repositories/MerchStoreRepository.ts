@@ -41,14 +41,14 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
     return this.repository.createQueryBuilder('collection')
       .leftJoinAndSelect('collection.items', 'items')
       .leftJoinAndSelect('items.options', 'options')
-      .leftJoinAndSelect('items.photos', 'photos');
+      .leftJoinAndSelect('items.merchPhotos', 'merchPhotos');
   }
 }
 
 @EntityRepository(MerchandiseItemModel)
 export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchandiseItemModel> {
-    return this.repository.findOne(uuid, { relations: ['collection', 'options', 'photos'] });
+    return this.repository.findOne(uuid, { relations: ['collection', 'options', 'merchPhotos'] });
   }
 
   public async upsertMerchItem(item: MerchandiseItemModel, changes?: Partial<MerchandiseItemModel>):
@@ -76,11 +76,11 @@ export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
 @EntityRepository(MerchandiseItemOptionModel)
 export class MerchItemOptionRepository extends BaseRepository<MerchandiseItemOptionModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchandiseItemOptionModel> {
-    return this.repository.findOne(uuid, { relations: ['item', 'item.photos'] });
+    return this.repository.findOne(uuid, { relations: ['item', 'item.merchPhotos'] });
   }
 
   public async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchandiseItemOptionModel>> {
-    const options = await this.repository.findByIds(uuids, { relations: ['item', 'item.photos'] });
+    const options = await this.repository.findByIds(uuids, { relations: ['item', 'item.merchPhotos'] });
     return new Map(options.map((o) => [o.uuid, o]));
   }
 
@@ -116,19 +116,19 @@ export class MerchItemPhotoRepository extends BaseRepository<MerchandiseItemPhot
     return this.repository.findOne(uuid, { relations: ['merchItem'] });
   }
 
-  // for querying a group of pictures together
+  // for querying a group of photos together
   public async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchandiseItemPhotoModel>> {
-    const photos = await this.repository.findByIds(uuids, { relations: ['merchItem'] });
-    return new Map(photos.map((o) => [o.uuid, o]));
+    const merchPhotos = await this.repository.findByIds(uuids, { relations: ['merchItem'] });
+    return new Map(merchPhotos.map((o) => [o.uuid, o]));
   }
 
-  public async upsertMerchItemPhoto(photo: MerchandiseItemPhotoModel,
+  public async upsertMerchItemPhoto(merchPhoto: MerchandiseItemPhotoModel,
     changes?: Partial<MerchandiseItemPhotoModel>): Promise<MerchandiseItemPhotoModel> {
-    if (changes) photo = MerchandiseItemPhotoModel.merge(photo, changes);
-    return this.repository.save(photo);
+    if (changes) merchPhoto = MerchandiseItemPhotoModel.merge(merchPhoto, changes);
+    return this.repository.save(merchPhoto);
   }
 
-  public async deleteMerchItemPhoto(photo: MerchandiseItemPhotoModel): Promise<void> {
-    await this.repository.remove(photo);
+  public async deleteMerchItemPhoto(merchPhoto: MerchandiseItemPhotoModel): Promise<void> {
+    await this.repository.remove(merchPhoto);
   }
 }

@@ -12,6 +12,7 @@ import {
   BadRequestError,
   UploadedFile,
 } from 'routing-controllers';
+import { v4 as uuid } from 'uuid';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
@@ -165,12 +166,12 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<CreateMerchPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
-    // generate a random string for the picture url
-    const randomID = StorageService.getRandomString();
-    const picture = await this.storageService.uploadToFolder(file, MediaType.MERCH_PHOTO, randomID, params.uuid);
-    const photo = await this.merchStoreService.createItemPhoto(params.uuid, { picture });
+    // generate a random string for the uploaded photo url
+    const uniqueFileName = uuid();
+    const uploadedPhoto = await this.storageService.uploadToFolder(file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid);
+    const merchPhoto = await this.merchStoreService.createItemPhoto(params.uuid, { uploadedPhoto });
 
-    return { error: null, photo };
+    return { error: null, merchPhoto };
   }
 
   @UseBefore(UserAuthentication)
@@ -203,9 +204,11 @@ export class MerchStoreController {
   async getOneMerchOrder(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchOrderResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const order = await this.merchStoreService.findOrderByUuid(params.uuid);
-    if (!PermissionsService.canSeeMerchOrder(user, order.getPublicOrderWithItems())) throw new NotFoundError();
-    return { error: null, order: order.getPublicOrderWithItems() };
+    // get "public" order bc canSeeMerchOrder need singular merchPhoto field
+    // default order has merchPhotos field, which cause incorrect casting
+    const publicOrder = (await this.merchStoreService.findOrderByUuid(params.uuid)).getPublicOrderWithItems();
+    if (!PermissionsService.canSeeMerchOrder(user, publicOrder)) throw new NotFoundError();
+    return { error: null, order: publicOrder };
   }
 
   @Get('/orders/all')

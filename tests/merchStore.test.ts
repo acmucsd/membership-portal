@@ -763,7 +763,7 @@ describe('merch item photos', () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const photo1 = MerchFactory.fakePhoto();
-    const item = MerchFactory.fakeItem({ photos: [photo1] });
+    const item = MerchFactory.fakeItem({ merchPhotos: [photo1] });
 
     await new PortalState()
       .createUsers(admin)
@@ -811,10 +811,10 @@ describe('merch item photos', () => {
       ),
     ).called();
 
-    const photo2 = response2.photo;
-    const photo3 = response3.photo;
-    const photo4 = response4.photo;
-    const photo5 = response5.photo;
+    const photo2 = response2.merchPhoto;
+    const photo3 = response3.merchPhoto;
+    const photo4 = response4.merchPhoto;
+    const photo5 = response5.merchPhoto;
 
     // 0 index
     expect(photo2.position).toBe(1);
@@ -823,7 +823,7 @@ describe('merch item photos', () => {
     expect(photo5.position).toBe(4);
 
     const photos = [photo1, photo2, photo3, photo4, photo5];
-    expect((await merchStoreController.getOneMerchItem(params, admin)).item.photos)
+    expect((await merchStoreController.getOneMerchItem(params, admin)).item.merchPhotos)
       .toEqual(photos);
 
     expect(merchStoreController.createMerchItemPhoto(imageExtra, params, admin))
@@ -838,8 +838,8 @@ describe('merch item photos', () => {
     const photo3 = MerchFactory.fakePhoto({ position: 2 });
     const photo4 = MerchFactory.fakePhoto({ position: 3 });
     const photo5 = MerchFactory.fakePhoto({ position: 4 });
-    const photos = [photo1, photo2, photo3, photo4, photo5];
-    const item = MerchFactory.fakeItem({ photos });
+    const merchPhotos = [photo1, photo2, photo3, photo4, photo5];
+    const item = MerchFactory.fakeItem({ merchPhotos });
 
     await new PortalState()
       .createUsers(admin)
@@ -850,11 +850,11 @@ describe('merch item photos', () => {
     const params = { uuid: item.uuid };
 
     // check before remap whether photos are correctly positioned
-    expect((await merchStoreController.getOneMerchItem(params, admin)).item.photos).toEqual(photos);
+    expect((await merchStoreController.getOneMerchItem(params, admin)).item.merchPhotos).toEqual(merchPhotos);
 
     // reversing the order of the photos
     const editMerchItemRequest = { merchandise: {
-      photos: [
+      merchPhotos: [
         { uuid: photo5.uuid, position: 0 },
         { uuid: photo4.uuid, position: 1 },
         { uuid: photo3.uuid, position: 2 },
@@ -865,7 +865,7 @@ describe('merch item photos', () => {
 
     await merchStoreController.editMerchItem(params, editMerchItemRequest, admin);
 
-    const newPhotos = (await merchStoreController.getOneMerchItem(params, admin)).item.photos;
+    const newPhotos = (await merchStoreController.getOneMerchItem(params, admin)).item.merchPhotos;
     const newPhotosUuids = newPhotos.map((photo) => photo.uuid);
     const expectedPhotosUuids = [photo5.uuid, photo4.uuid, photo3.uuid, photo2.uuid, photo1.uuid];
     expect(newPhotosUuids).toStrictEqual(expectedPhotosUuids);
@@ -879,8 +879,8 @@ describe('merch item photos', () => {
     const photo3 = MerchFactory.fakePhoto({ position: 2 });
     const photo4 = MerchFactory.fakePhoto({ position: 3 });
     const photo5 = MerchFactory.fakePhoto({ position: 4 });
-    const photos = [photo1, photo2, photo3, photo4, photo5];
-    const item = MerchFactory.fakeItem({ photos });
+    const merchPhotos = [photo1, photo2, photo3, photo4, photo5];
+    const item = MerchFactory.fakeItem({ merchPhotos });
 
     await new PortalState()
       .createUsers(admin)
@@ -893,7 +893,7 @@ describe('merch item photos', () => {
     // invalid repositions of items
     // index does not start from 0
     const badEditMerchItemRequest1 = { merchandise: {
-      photos: [
+      merchPhotos: [
         { uuid: photo1.uuid, position: 5 },
         { uuid: photo2.uuid, position: 4 },
         { uuid: photo3.uuid, position: 3 },
@@ -903,7 +903,7 @@ describe('merch item photos', () => {
     } };
     // duplicate indices
     const badEditMerchItemRequest2 = { merchandise: {
-      photos: [
+      merchPhotos: [
         { uuid: photo1.uuid, position: 2 },
         { uuid: photo2.uuid, position: 4 },
         { uuid: photo3.uuid, position: 3 },
@@ -913,7 +913,7 @@ describe('merch item photos', () => {
     } };
     // duplicate edits
     const badEditMerchItemRequest3 = { merchandise: {
-      photos: [
+      merchPhotos: [
         { uuid: photo1.uuid, position: 2 },
         { uuid: photo2.uuid, position: 4 },
         { uuid: photo3.uuid, position: 3 },
@@ -923,7 +923,7 @@ describe('merch item photos', () => {
     } };
     // negative index
     const badEditMerchItemRequest4 = { merchandise: {
-      photos: [
+      merchPhotos: [
         { uuid: photo1.uuid, position: 2 },
         { uuid: photo2.uuid, position: 4 },
         { uuid: photo3.uuid, position: 1 },
@@ -942,7 +942,7 @@ describe('merch item photos', () => {
       .rejects.toThrow();
 
     // ensure that the item photos are unchanged
-    expect((await merchStoreController.getOneMerchItem(params, admin)).item.photos).toEqual(photos);
+    expect((await merchStoreController.getOneMerchItem(params, admin)).item.merchPhotos).toEqual(merchPhotos);
   });
 
   test('can delete photo until 1 photo left except merch item is deleted', async () => {
@@ -950,8 +950,8 @@ describe('merch item photos', () => {
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const photo1 = MerchFactory.fakePhoto({ position: 0 });
     const photo2 = MerchFactory.fakePhoto({ position: 1 });
-    const photos = [photo1, photo2];
-    const item = MerchFactory.fakeItem({ photos });
+    const merchPhotos = [photo1, photo2];
+    const item = MerchFactory.fakeItem({ merchPhotos });
 
     await new PortalState()
       .createUsers(admin)
@@ -962,14 +962,14 @@ describe('merch item photos', () => {
     const params = { uuid: item.uuid };
 
     // verify before deleting, the photos all exist
-    expect((await merchStoreController.getOneMerchItem(params, admin)).item.photos).toEqual(photos);
+    expect((await merchStoreController.getOneMerchItem(params, admin)).item.merchPhotos).toEqual(merchPhotos);
 
     const deleteMerchItemPhotoParam1 = { uuid: photo1.uuid };
     const deleteMerchItemPhotoParam2 = { uuid: photo2.uuid };
 
     // verify deletion delete correctly
     await merchStoreController.deleteMerchItemPhoto(deleteMerchItemPhotoParam1, admin);
-    const newPhotos = (await merchStoreController.getOneMerchItem(params, admin)).item.photos;
+    const newPhotos = (await merchStoreController.getOneMerchItem(params, admin)).item.merchPhotos;
 
     expect(newPhotos).toHaveLength(1);
     expect(newPhotos[0].uuid).toEqual(photo2.uuid);

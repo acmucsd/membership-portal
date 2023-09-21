@@ -7,13 +7,13 @@ export class MerchandiseItemPhotoModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
-  @ManyToOne((type) => MerchandiseItemModel, (merchItem) => merchItem.photos, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne((type) => MerchandiseItemModel, (merchItem) => merchItem.merchPhotos, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'merchItem' })
   @Index('images_by_item_index')
   merchItem: MerchandiseItemModel;
 
   @Column('varchar', { length: 255, nullable: false })
-  picture: string;
+  uploadedPhoto: string;
 
   @Column('timestamptz', { default: () => 'CURRENT_TIMESTAMP(6)', nullable: false })
   uploadedAt: Date;
@@ -24,7 +24,7 @@ export class MerchandiseItemPhotoModel extends BaseEntity {
   public getPublicMerchItemPhoto(): PublicMerchItemPhoto {
     return {
       uuid: this.uuid,
-      picture: this.picture,
+      uploadedPhoto: this.uploadedPhoto,
       uploadedAt: this.uploadedAt,
       position: this.position,
     };

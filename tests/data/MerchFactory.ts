@@ -51,11 +51,11 @@ export class MerchFactory {
         .createOptions(numOptions)
         .map((option) => MerchandiseItemOptionModel.merge(option, { item: fake }));
     }
-    if (!substitute?.photos) {
+    if (!substitute?.merchPhotos) {
       const numPhotos = FactoryUtils.getRandomNumber(1, 5);
-      fake.photos = MerchFactory
+      fake.merchPhotos = MerchFactory
         .createPhotos(numPhotos)
-        .map((photo, i) => MerchandiseItemPhotoModel.merge(photo, { position: i, merchItem: fake }));
+        .map((merchPhoto, i) => MerchandiseItemPhotoModel.merge(merchPhoto, { position: i, merchItem: fake }));
     }
     return MerchandiseItemModel.merge(fake, substitute);
   }
@@ -64,7 +64,7 @@ export class MerchFactory {
     const fake = MerchandiseItemPhotoModel.create({
       uuid: uuid(),
       position: 0,
-      picture: 'https://www.fakepicture.com/',
+      uploadedPhoto: 'https://www.fakepicture.com/',
       uploadedAt: faker.date.recent(),
     });
     return MerchandiseItemPhotoModel.merge(fake, substitute);

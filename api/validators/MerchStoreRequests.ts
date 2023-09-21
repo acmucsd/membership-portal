@@ -134,7 +134,7 @@ export class MerchItemOptionEdit implements IMerchItemOptionEdit {
 // TODO: use global variable for limit
 export class MerchItemPhoto implements IMerchItemPhoto {
   @Allow()
-  picture: string;
+  uploadedPhoto: string;
 
   @Min(0)
   @Max(4)
@@ -147,7 +147,7 @@ export class MerchItemPhotoEdit implements IMerchItemPhotoEdit {
   uuid: string;
 
   @Allow()
-  picture?: string;
+  uploadedPhoto?: string;
 
   @Min(0)
   @Max(4)
@@ -167,7 +167,7 @@ export class MerchItem implements IMerchItem {
   description: string;
 
   @Allow()
-  photos: MerchItemPhoto[];
+  merchPhotos: MerchItemPhoto[];
 
   @Min(0)
   quantity?: number;
@@ -202,7 +202,7 @@ export class MerchItemEdit implements IMerchItemEdit {
   description?: string;
 
   @Allow()
-  photos?: MerchItemPhotoEdit[];
+  merchPhotos?: MerchItemPhotoEdit[];
 
   @Allow()
   hidden?: boolean;

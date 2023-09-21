@@ -161,7 +161,7 @@ export interface PublicMerchItem {
   lifetimeLimit: number;
   hidden: boolean;
   hasVariantsEnabled: boolean;
-  photos: PublicMerchItemPhoto[];
+  merchPhotos: PublicMerchItemPhoto[];
   options: PublicMerchItemOption[];
 }
 
@@ -173,7 +173,7 @@ export interface PublicMerchItemWithPurchaseLimits extends PublicMerchItem {
 export interface PublicCartMerchItem {
   uuid: Uuid;
   itemName: string;
-  picture: string;
+  uploadedPhoto: string;
   description: string;
 }
 
@@ -187,7 +187,7 @@ export interface PublicMerchItemOption {
 
 export interface PublicMerchItemPhoto {
   uuid: Uuid;
-  picture: string;
+  uploadedPhoto: string;
   position: number;
   uploadedAt: Date;
 }
@@ -256,7 +256,7 @@ export interface EditMerchItemResponse extends ApiResponse {
 export interface DeleteMerchItemResponse extends ApiResponse {}
 
 export interface CreateMerchPhotoResponse extends ApiResponse {
-  photo: PublicMerchItemPhoto;
+  merchPhoto: PublicMerchItemPhoto;
 }
 
 export interface DeleteMerchItemPhotoResponse extends ApiResponse {}

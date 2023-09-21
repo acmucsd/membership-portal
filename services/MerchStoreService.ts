@@ -193,7 +193,7 @@ export default class MerchStoreService {
       if (itemEdit.hidden === false && item.options.length === 0) {
         throw new UserError('Item cannot be set to visible if it has 0 options.');
       }
-      const { options, photos, collection: updatedCollection, ...changes } = itemEdit;
+      const { options, merchPhotos, collection: updatedCollection, ...changes } = itemEdit;
       if (options) {
         const optionUpdatesByUuid = new Map(options.map((option) => [option.uuid, option]));
         item.options.map((currentOption) => {
@@ -212,27 +212,28 @@ export default class MerchStoreService {
         });
       }
 
-      if (photos) {
+      // this part only handles updating the positions of the pictures
+      if (merchPhotos) {
         // error on duplicate photo uuids
         const dupSet = new Set();
-        photos.forEach((photo) => {
-          if (dupSet.has(photo.uuid)) { throw new UserError(`Multiple edits is made to photo: ${photo.uuid}`); }
-          dupSet.add(photo.uuid);
+        merchPhotos.forEach((merchPhoto) => {
+          if (dupSet.has(merchPhoto.uuid)) { throw new UserError(`Multiple edits is made to photo: ${merchPhoto.uuid}`); }
+          dupSet.add(merchPhoto.uuid);
         });
 
-        const photoUpdatesByUuid = new Map(photos.map((photo) => [photo.uuid, photo]));
+        const photoUpdatesByUuid = new Map(merchPhotos.map((merchPhoto) => [merchPhoto.uuid, merchPhoto]));
 
-        item.photos.map((currentPhoto) => {
+        item.merchPhotos.map((currentPhoto) => {
           if (!photoUpdatesByUuid.has(currentPhoto.uuid)) return;
           const photoUpdate = photoUpdatesByUuid.get(currentPhoto.uuid);
           // photo positions are 0-index
           return MerchandiseItemPhotoModel.merge(currentPhoto, photoUpdate);
         });
 
-        // make sure the pictures are always sorted
-        item.photos.sort((a, b) => a.position - b.position);
+        // make sure the photos are always sorted
+        item.merchPhotos.sort((a, b) => a.position - b.position);
         // validate all indices
-        item.photos.forEach((currentPhoto, index) => {
+        item.merchPhotos.forEach((currentPhoto, index) => {
           if (currentPhoto.position !== index) {
             throw new UserError(`Position is inputted incorrectly for photo: ${currentPhoto.uuid}`);
           }
@@ -316,7 +317,7 @@ export default class MerchStoreService {
    * options, and an item with variants enabled cannot have multiple option types.
    */
   private static verifyItemHasValidPhotos(item: MerchItem | MerchandiseItemModel) {
-    if (item.photos.length > 5) {
+    if (item.merchPhotos.length > 5) {
       throw new UserError('Merch items cannot have more than 5 pictures');
     }
   }
@@ -334,13 +335,13 @@ export default class MerchStoreService {
       if (!merchItem) throw new NotFoundError('Merch item not found');
 
       // add to the end
-      const position = merchItem.photos.length;
+      const position = merchItem.merchPhotos.length;
 
       const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, position, merchItem });
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
 
       // verify the result photos array
-      merchItem.photos.push(createdPhoto);
+      merchItem.merchPhotos.push(createdPhoto);
       MerchStoreService.verifyItemHasValidPhotos(merchItem);
 
       const upsertedPhoto = await merchStoreItemPhotoRepository.upsertMerchItemPhoto(createdPhoto);
@@ -357,22 +358,22 @@ export default class MerchStoreService {
   public async deleteItemPhoto(uuid: Uuid): Promise<void> {
     await this.transactions.readWrite(async (txn) => {
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
-      const photo = await merchStoreItemPhotoRepository.findByUuid(uuid);
-      if (!photo) throw new NotFoundError('Merch item photo not found');
+      const merchPhoto = await merchStoreItemPhotoRepository.findByUuid(uuid);
+      if (!merchPhoto) throw new NotFoundError('Merch item photo not found');
 
-      const merchItem = await Repositories.merchStoreItem(txn).findByUuid(photo.merchItem.uuid);
-      if (merchItem.photos.length === 1 && !merchItem.hidden) {
+      const merchItem = await Repositories.merchStoreItem(txn).findByUuid(merchPhoto.merchItem.uuid);
+      if (merchItem.merchPhotos.length === 1 && !merchItem.hidden) {
         throw new UserError('Cannot delete the only photo for a visible merch item');
       }
       // decrement photo index for all photos after the inserted photo
-      const { position } = photo;
-      merchItem.photos.forEach((p) => {
+      const { position } = merchPhoto;
+      merchItem.merchPhotos.forEach((p) => {
         if (p.position > position) {
           merchStoreItemPhotoRepository.upsertMerchItemPhoto(p, { position: p.position - 1 });
         }
       });
 
-      return merchStoreItemPhotoRepository.deleteMerchItemPhoto(photo);
+      return merchStoreItemPhotoRepository.deleteMerchItemPhoto(merchPhoto);
     });
   }
 
@@ -481,7 +482,7 @@ export default class MerchStoreService {
         const { item } = option;
         return {
           ...item,
-          picture: item.getDefaultPictureUrl(),
+          picture: item.getDefaultPhotoUrl(),
           quantityRequested: oi.quantity,
           salePrice: option.getPrice(),
           total: oi.quantity * option.getPrice(),
@@ -780,7 +781,7 @@ export default class MerchStoreService {
         const { quantity, price } = optionPricesAndQuantities.get(option);
         return {
           ...item,
-          picture: item.getDefaultPictureUrl(),
+          picture: item.getDefaultPhotoUrl(),
           quantityRequested: quantity,
           salePrice: price,
           total: quantity * price,

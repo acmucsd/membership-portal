@@ -5,7 +5,7 @@ const MERCH_TABLE_NAME = 'MerchandiseItems';
 
 export class AddMerchItemImageTable1681777109787 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // instantiates table with columns: uuid, merchItem, picture, uploadedAt, position
+    // instantiates table with columns: uuid, merchItem, uploadedPhoto, uploadedAt, position
     await queryRunner.createTable(new Table({
       name: TABLE_NAME,
       columns: [
@@ -21,7 +21,7 @@ export class AddMerchItemImageTable1681777109787 implements MigrationInterface {
           type: 'uuid',
         },
         {
-          name: 'picture',
+          name: 'uploadedPhoto',
           type: 'varchar(255)',
         },
         {
@@ -46,7 +46,7 @@ export class AddMerchItemImageTable1681777109787 implements MigrationInterface {
 
     // add images from each item of the merchandise table to the photo table
     await queryRunner.query(
-      `INSERT INTO "${TABLE_NAME}" ("merchItem", picture, position) `
+      `INSERT INTO "${TABLE_NAME}" ("merchItem", "uploadedPhoto", position) `
       + `SELECT uuid, picture, 0 AS position FROM "${MERCH_TABLE_NAME}"`,
     );
 
@@ -66,7 +66,7 @@ export class AddMerchItemImageTable1681777109787 implements MigrationInterface {
     await queryRunner.query(
       `UPDATE "${MERCH_TABLE_NAME}" m `
       + 'SET picture = ('
-        + 'SELECT picture '
+        + 'SELECT "uploadedPhoto" '
         + `FROM "${TABLE_NAME}" p `
         + 'WHERE p."merchItem" = m.uuid '
         + 'ORDER BY p."uploadedAt" '
