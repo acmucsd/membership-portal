@@ -36,7 +36,6 @@ export class MerchFactory {
     const fake = MerchandiseItemModel.create({
       uuid: uuid(),
       itemName: faker.datatype.hexaDecimal(10),
-      // picture: faker.image.cats(),
       description: faker.lorem.sentences(2),
       hasVariantsEnabled,
       monthlyLimit: FactoryUtils.getRandomNumber(1, 5),
@@ -55,7 +54,7 @@ export class MerchFactory {
       const numPhotos = FactoryUtils.getRandomNumber(1, 5);
       fake.merchPhotos = MerchFactory
         .createPhotos(numPhotos)
-        .map((merchPhoto, i) => MerchandiseItemPhotoModel.merge(merchPhoto, { position: i, merchItem: fake }));
+        .map((merchPhoto) => MerchandiseItemPhotoModel.merge(merchPhoto, { merchItem: fake }));
     }
     return MerchandiseItemModel.merge(fake, substitute);
   }
@@ -149,7 +148,9 @@ export class MerchFactory {
   }
 
   private static createPhotos(n: number): MerchandiseItemPhotoModel[] {
-    return FactoryUtils.create(n, () => MerchFactory.fakePhoto());
+    return FactoryUtils
+      .create(n, () => MerchFactory.fakePhoto())
+      .map((merchPhoto, i) => MerchandiseItemPhotoModel.merge(merchPhoto, { position: i }));;
   }
 
   private static randomPrice(): number {
