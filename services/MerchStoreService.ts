@@ -5,6 +5,7 @@ import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
 import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
+import { Config } from '../config';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,
@@ -312,12 +313,11 @@ export default class MerchStoreService {
   }
 
   /**
-   * TODO: add global variable
    * Verify that items have valid options. An item with variants disabled cannot have multiple
    * options, and an item with variants enabled cannot have multiple option types.
    */
   private static verifyItemHasValidPhotos(item: MerchItem | MerchandiseItemModel) {
-    if (item.merchPhotos.length > 5) {
+    if (item.merchPhotos.length > Config.file.MAX_MERCH_PHOTO_COUNT) {
       throw new UserError('Merch items cannot have more than 5 pictures');
     }
   }

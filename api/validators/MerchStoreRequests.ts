@@ -131,13 +131,11 @@ export class MerchItemOptionEdit implements IMerchItemOptionEdit {
   metadata?: MerchItemOptionMetadata;
 }
 
-// TODO: use global variable for limit
 export class MerchItemPhoto implements IMerchItemPhoto {
   @Allow()
   uploadedPhoto: string;
 
-  @Min(0)
-  @Max(4)
+  @IsNumber()
   position: number;
 }
 
@@ -149,8 +147,7 @@ export class MerchItemPhotoEdit implements IMerchItemPhotoEdit {
   @Allow()
   uploadedPhoto?: string;
 
-  @Min(0)
-  @Max(4)
+  @IsNumber()
   position?: number;
 }
 
