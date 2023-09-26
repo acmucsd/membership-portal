@@ -33,7 +33,7 @@ export class MerchandiseCollectionModel extends BaseEntity {
     const baseMerchCollection: any = {
       uuid: this.uuid,
       title: this.title,
-      photos: this.photos.map((o) => o.getPublicMerchItemPhoto()).sort((a, b) => a.position - b.position),
+      photos: this.photos.map((o) => o.getPublicMerchCollectionPhoto()).sort((a, b) => a.position - b.position),
       themeColorHex: this.themeColorHex,
       description: this.description,
       createdAt: this.createdAt,

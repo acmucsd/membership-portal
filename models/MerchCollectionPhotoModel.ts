@@ -21,7 +21,7 @@ export class MerchCollectionPhotoModel extends BaseEntity {
   @Column('integer')
   position: number;
 
-  public getPublicMerchItemPhoto(): PublicMerchCollectionPhoto {
+  public getPublicMerchCollectionPhoto(): PublicMerchCollectionPhoto {
     return {
       uuid: this.uuid,
       picture: this.picture,
