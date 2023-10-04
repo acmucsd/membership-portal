@@ -81,13 +81,6 @@ export class EventController {
     return { error: null };
   }
 
-  /**
-   * Gets the event using a uuid
-   *
-   * @param params the uuid of the event to look up
-   * @param user the user who called the route
-   * @returns a response containing the event
-   */
   @UseBefore(OptionalUserAuthentication)
   @Get('/:uuid')
   async getOneEvent(@Params() params: UuidParam,
