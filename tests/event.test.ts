@@ -19,7 +19,7 @@ afterAll(async () => {
 
 describe('event creation', () => {
   test('successful event creation', async () => {
-    //setting up inputs
+    // setting up inputs
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const user = UserFactory.fake();
@@ -44,11 +44,11 @@ describe('event creation', () => {
       event,
     };
 
-    //creating the event
+    // creating the event
     const eventController = ControllerFactory.event(conn);
     const eventResponse = await eventController.createEvent(createEventRequest, admin);
 
-    //verifying response from event creation
+    // verifying response from event creation
     expect(eventResponse.event.cover).toEqual(event.cover);
     expect(eventResponse.event.title).toEqual(event.title);
     expect(eventResponse.event.location).toEqual(event.location);
@@ -57,14 +57,14 @@ describe('event creation', () => {
     expect(eventResponse.event.end).toEqual(event.end);
     expect(eventResponse.event.pointValue).toEqual(event.pointValue);
 
-    //verifying response from event lookup
+    // verifying response from event lookup
     const lookupEventResponse = await eventController.getOneEvent({ uuid: eventResponse.event.uuid }, user);
     expect(lookupEventResponse.error).toEqual(null);
     expect(lookupEventResponse.event).toStrictEqual(eventResponse.event);
   });
 
   test('check for permissions', async () => {
-    //setting up inputs
+    // setting up inputs
     const conn = await DatabaseConnection.get();
     const user = UserFactory.fake();
 
@@ -88,14 +88,14 @@ describe('event creation', () => {
       event,
     };
 
-    //verifying correct error
+    // verifying correct error
     const eventController = ControllerFactory.event(conn);
     await expect(eventController.createEvent(createEventRequest, user))
       .rejects.toThrow(ForbiddenError);
   });
 
   test('throws error when start date later than end date', async () => {
-    //setting up inputs
+    // setting up inputs
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
@@ -119,7 +119,7 @@ describe('event creation', () => {
       event,
     };
 
-    //verifying correct error thrown
+    // verifying correct error thrown
     const eventController = ControllerFactory.event(conn);
     await expect(eventController.createEvent(createEventRequest, admin))
       .rejects.toThrow('Start date after end date');
