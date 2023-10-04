@@ -1,7 +1,7 @@
 import { ForbiddenError } from 'routing-controllers';
 import { UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
+import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
 
 beforeAll(async () => {
@@ -19,7 +19,6 @@ afterAll(async () => {
 
 describe('event creation', () => {
   test('successful event creation', async () => {
-
     //setting up inputs
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
