@@ -149,7 +149,7 @@ export interface PublicMerchCollection {
   themeColorHex?: string;
   description: string;
   items: PublicMerchItem[];
-  photos: PublicMerchCollectionPhoto[]
+  collectionPhotos: PublicMerchCollectionPhoto[]
   createdAt: Date;
 }
 

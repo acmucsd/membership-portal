@@ -217,21 +217,22 @@ export interface MerchCollection {
   themeColorHex?: string;
   description: string;
   archived?: boolean;
-  photos: MerchCollectionPhoto[]
+  uploadedPhotos?: MerchCollectionPhoto[]
 }
 
 export interface MerchCollectionPhoto {
-  picture: string;
+  uploadedPhoto: string;
   // position: number;
 }
 
-export interface MerchCollectionPhotoEdit {
+export interface MerchCollectionPhotoEdit extends MerchCollectionPhoto {
   uuid: string;
   position?: number;
 }
 
 export interface MerchCollectionEdit extends Partial<MerchCollection> {
   discountPercentage?: number;
+  uploadedPhotos?: MerchCollectionPhotoEdit[]
 }
 
 export interface CommonMerchItemProperties {

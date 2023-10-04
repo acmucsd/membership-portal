@@ -27,13 +27,13 @@ export class MerchandiseCollectionModel extends BaseEntity {
   items: MerchandiseItemModel[];
 
   @OneToMany((type) => MerchCollectionPhotoModel, (picture) => picture.collection, { cascade: true })
-  photos: MerchCollectionPhotoModel[];
+  collectionPhotos: MerchCollectionPhotoModel[];
 
   public getPublicMerchCollection(canSeeHiddenItems = false): PublicMerchCollection {
     const baseMerchCollection: any = {
       uuid: this.uuid,
       title: this.title,
-      photos: this.photos.map((o) => o.getPublicMerchCollectionPhoto()).sort((a, b) => a.position - b.position),
+      collectionPhotos: this.collectionPhotos.map((o) => o.getPublicMerchCollectionPhoto()).sort((a, b) => a.position - b.position),
       themeColorHex: this.themeColorHex,
       description: this.description,
       createdAt: this.createdAt,
@@ -48,7 +48,7 @@ export class MerchandiseCollectionModel extends BaseEntity {
   }
 
   public getDefaultPictureUrl(): string {
-    const filteredArray = this.photos.filter((picture) => picture.position === 0);
+    const filteredArray = this.collectionPhotos.filter((picture) => picture.position === 0);
     return (filteredArray.length === 0) ? null : filteredArray[0].picture;
   }
 }
