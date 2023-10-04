@@ -49,6 +49,6 @@ export class MerchandiseCollectionModel extends BaseEntity {
 
   public getDefaultPictureUrl(): string {
     const filteredArray = this.collectionPhotos.filter((picture) => picture.position === 0);
-    return (filteredArray.length === 0) ? null : filteredArray[0].picture;
+    return (filteredArray.length === 0) ? null : filteredArray[0].uploadedPhoto;
   }
 }

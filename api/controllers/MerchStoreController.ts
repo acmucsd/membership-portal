@@ -121,6 +121,8 @@ export class MerchStoreController {
     return { error: null };
   }
 
+
+
   @Get('/item/:uuid')
   async getOneMerchItem(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchItemResponse> {

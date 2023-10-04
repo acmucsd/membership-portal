@@ -79,12 +79,12 @@ export class MerchCollectionEdit implements IMerchCollectionEdit {
   discountPercentage?: number;
 
   @Allow()
-  photos?: MerchCollectionPhotoEdit[]
+  collectionPhotos?: MerchCollectionPhotoEdit[]
 }
 
 export class MerchCollectionPhoto implements IMerchCollectionPhoto {
   @Allow()
-  picture: string;
+  uploadedPhoto: string;
 
   @Allow()
   position: number;
@@ -96,7 +96,7 @@ export class MerchCollectionPhotoEdit implements IMerchCollectionPhotoEdit {
   uuid: string;
 
   @Allow()
-  picture: string;
+  uploadedPhoto: string;
 
   @Allow()
   position: number;

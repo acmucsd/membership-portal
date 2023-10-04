@@ -20,7 +20,7 @@ export class addCollectionImageTable implements MigrationInterface {
             type: 'uuid',
           },
           {
-            name: 'picture',
+            name: 'uploadedPhoto',
             type: 'varchar(255)',
           },
           {

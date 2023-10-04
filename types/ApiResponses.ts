@@ -188,7 +188,7 @@ export interface PublicMerchItemOption {
 
 export interface PublicMerchCollectionPhoto {
   uuid: Uuid;
-  picture: string;
+  uploadedPhoto: string;
   position: number;
   uploadedAt: Date
 }
