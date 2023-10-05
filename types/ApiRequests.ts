@@ -136,6 +136,7 @@ export interface OptionalEventProperties {
   eventLink?: string;
   requiresStaff?: boolean;
   staffPointBonus?: number;
+  slidesLink?: string;
 }
 
 export interface Event extends OptionalEventProperties {

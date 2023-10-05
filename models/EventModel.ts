@@ -56,6 +56,9 @@ export class EventModel extends BaseEntity {
   @Column('integer', { default: 0 })
   staffPointBonus: number;
 
+  @Column('varchar', { length: 255, nullable: true })
+  slidesLink: string;
+
   @OneToMany((type) => AttendanceModel, (attendance) => attendance.event, { cascade: true })
   attendances: AttendanceModel[];
 
