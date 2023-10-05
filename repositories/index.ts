@@ -4,7 +4,7 @@ import { FeedbackRepository } from './FeedbackRepository';
 import { AttendanceRepository } from './AttendanceRepository';
 import { EventRepository } from './EventRepository';
 import { MerchOrderRepository, OrderItemRepository, OrderPickupEventRepository } from './MerchOrderRepository';
-import { MerchCollectionRepository, MerchItemRepository, MerchItemOptionRepository } from './MerchStoreRepository';
+import { MerchCollectionRepository, MerchItemRepository, MerchItemOptionRepository, MerchCollectionPhotoRepository } from './MerchStoreRepository';
 import { ActivityRepository } from './ActivityRepository';
 import { LeaderboardRepository } from './LeaderboardRepository';
 import { ResumeRepository } from './ResumeRepository';
@@ -41,6 +41,10 @@ export default class Repositories {
 
   public static merchStoreCollection(transactionalEntityManager: EntityManager): MerchCollectionRepository {
     return transactionalEntityManager.getCustomRepository(MerchCollectionRepository);
+  }
+
+  public static merchStoreCollectionPhoto(transactionalEntityManager: EntityManager): MerchCollectionPhotoRepository {
+    return transactionalEntityManager.getCustomRepository(MerchCollectionPhotoRepository);
   }
 
   public static merchStoreItem(transactionalEntityManager: EntityManager): MerchItemRepository {

@@ -5,6 +5,7 @@ import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
 import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
+import { Config } from '../config';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,
@@ -23,12 +24,15 @@ import {
   OrderPickupEventEdit,
   PublicMerchItemWithPurchaseLimits,
   OrderPickupEventStatus,
+  PublicMerchCollectionPhoto,
+  MerchCollectionPhoto,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
+import { MerchCollectionPhotoModel} from '../models/MerchCollectionPhotoModel'
 import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
@@ -106,6 +110,36 @@ export default class MerchStoreService {
         .hasCollectionBeenOrderedFrom(uuid);
       if (hasBeenOrderedFrom) throw new UserError('This collection has been ordered from and cannot be deleted');
       return merchCollectionRepository.deleteMerchCollection(collection);
+    });
+  }
+
+  /**
+ * Verify that items have valid options. An item with variants disabled cannot have multiple
+ * options, and an item with variants enabled cannot have multiple option types.
+ */
+  private static verifyCollectionHasValidPhotos(collection: MerchCollection | MerchandiseCollectionModel) {
+    if (collection.collectionPhotos.length > Config.file.MAX_COLLECTION_PHOTO_COUNT) {
+      throw new UserError('Merch items cannot have more than 5 pictures');
+    }
+  }
+
+  public async createCollectionPhoto(item: Uuid, properties: MerchCollectionPhoto): Promise<PublicMerchCollectionPhoto> {
+    return this.transactions.readWrite(async (txn) => {
+      const merchCollection = await Repositories.merchStoreCollection(txn).findByUuid(item);
+      if (!merchCollection) throw new NotFoundError('Merch item not found');
+
+      // add to the end
+      const position = merchCollection.collectionPhotos.length;
+
+      const createdPhoto = MerchCollectionPhotoModel.create({ ...properties, position, merchCollection });
+      const merchStoreItemPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
+
+      // verify the result photos array
+      merchCollection.collectionPhotos.push(createdPhoto);
+      MerchStoreService.verifyCollectionHasValidPhotos(merchCollection);
+
+      const upsertedPhoto = await merchStoreItemPhotoRepository.upsertMerchItemPhoto(createdPhoto);
+      return upsertedPhoto.getPublicMerchCollectionPhoto();
     });
   }
 

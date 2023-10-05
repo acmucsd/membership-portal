@@ -217,7 +217,7 @@ export interface MerchCollection {
   themeColorHex?: string;
   description: string;
   archived?: boolean;
-  uploadedPhotos?: MerchCollectionPhoto[]
+  collectionPhotos?: MerchCollectionPhoto[]
 }
 
 export interface MerchCollectionPhoto {
@@ -232,7 +232,7 @@ export interface MerchCollectionPhotoEdit extends MerchCollectionPhoto {
 
 export interface MerchCollectionEdit extends Partial<MerchCollection> {
   discountPercentage?: number;
-  uploadedPhotos?: MerchCollectionPhotoEdit[]
+  collectionPhotos?: MerchCollectionPhotoEdit[]
 }
 
 export interface CommonMerchItemProperties {

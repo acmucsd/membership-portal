@@ -10,7 +10,7 @@ export class MerchCollectionPhotoModel extends BaseEntity {
   @ManyToOne((type) => MerchandiseCollectionModel, (merchCollection) => merchCollection.collectionPhotos, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'merchCollection' })
   @Index('images_by_collection_index')
-  collection: MerchandiseCollectionModel;
+  merchCollection: MerchandiseCollectionModel;
 
   @Column('varchar', { length: 255, nullable: false })
   uploadedPhoto: string;

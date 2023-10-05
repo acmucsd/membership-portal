@@ -26,7 +26,7 @@ export class MerchandiseCollectionModel extends BaseEntity {
   @OneToMany((type) => MerchandiseItemModel, (item) => item.collection, { cascade: true })
   items: MerchandiseItemModel[];
 
-  @OneToMany((type) => MerchCollectionPhotoModel, (picture) => picture.collection, { cascade: true })
+  @OneToMany((type) => MerchCollectionPhotoModel, (picture) => picture.merchCollection, { cascade: true })
   collectionPhotos: MerchCollectionPhotoModel[];
 
   public getPublicMerchCollection(canSeeHiddenItems = false): PublicMerchCollection {

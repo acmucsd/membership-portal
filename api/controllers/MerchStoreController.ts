@@ -12,6 +12,7 @@ import {
   BadRequestError,
   UploadedFile,
 } from 'routing-controllers';
+import { v4 as uuid } from 'uuid';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
@@ -19,6 +20,8 @@ import {
   GetAllMerchCollectionsResponse,
   CreateMerchCollectionResponse,
   EditMerchCollectionResponse,
+  CreateCollectionPhotoResponse,
+  DeleteCollectionPhotoResponse,
   GetOneMerchItemResponse,
   DeleteMerchCollectionResponse,
   CreateMerchItemResponse,
@@ -121,7 +124,21 @@ export class MerchStoreController {
     return { error: null };
   }
 
+  @UseBefore(UserAuthentication)
+  @Post('/collection/picture/:uuid')
+  async createMerchCollectionPhoto(@UploadedFile('image',
+  { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
+  @Params() params: UuidParam,
+  @AuthenticatedUser() user: UserModel): Promise<CreateCollectionPhotoResponse> {
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
+    // generate a random string for the uploaded photo url
+    const uniqueFileName = uuid();
+    const uploadedPhoto = await this.storageService.uploadToFolder(file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid);
+    const collectionPhoto = await this.merchStoreService.createCollectionPhoto(params.uuid, { uploadedPhoto });
+
+    return { error: null, collectionPhoto };
+  }
 
   @Get('/item/:uuid')
   async getOneMerchItem(@Params() params: UuidParam,

@@ -46,7 +46,7 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
 }
 
 @EntityRepository(MerchCollectionPhotoModel)
-export class MerchItemPhotoRepository extends BaseRepository<MerchCollectionPhotoModel> {
+export class MerchCollectionPhotoRepository extends BaseRepository<MerchCollectionPhotoModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchCollectionPhotoModel> {
     return this.repository.findOne(uuid, { relations: ['merchCollection'] });
   }
