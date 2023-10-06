@@ -103,6 +103,7 @@ export interface PublicEvent {
   pointValue: number;
   requiresStaff: boolean;
   staffPointBonus: number;
+  slidesLink: string;
 }
 
 export interface GetPastEventsResponse extends ApiResponse {

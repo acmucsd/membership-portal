@@ -78,6 +78,7 @@ export class EventModel extends BaseEntity {
       pointValue: this.pointValue,
       requiresStaff: this.requiresStaff,
       staffPointBonus: this.staffPointBonus,
+      slidesLink: this.slidesLink,
     };
     if (canSeeAttendanceCode) publicEvent.attendanceCode = this.attendanceCode;
     return publicEvent;
