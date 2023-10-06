@@ -6,7 +6,7 @@ export class addSlidesLinkToEventsTable1696465672671 implements MigrationInterfa
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.addColumn(TABLE_NAME, new TableColumn({
-          name: 'slides_link',
+          name: 'slidesLink',
           type: 'text',
           isNullable: true,
         }));
