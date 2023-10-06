@@ -12,6 +12,6 @@ export class AddSlidesLinkToEventsTable1696465672671 implements MigrationInterfa
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropColumn(TABLE_NAME, 'slides_link');
+    await queryRunner.dropColumn(TABLE_NAME, 'slidesLink');
   }
 }
