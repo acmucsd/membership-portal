@@ -28,6 +28,9 @@ export class OptionalEventProperties implements IOptionalEventProperties {
 
   @Allow()
   staffPointBonus?: number;
+
+  @Allow()
+  slidesLink?: string;
 }
 
 export class Event extends OptionalEventProperties implements IEvent {
