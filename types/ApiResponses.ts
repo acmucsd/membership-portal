@@ -243,7 +243,7 @@ export interface EditMerchCollectionResponse extends ApiResponse {
 export interface DeleteMerchCollectionResponse extends ApiResponse {}
 
 export interface CreateCollectionPhotoResponse extends ApiResponse {
-  photo: PublicMerchCollectionPhoto;
+  collectionPhoto: PublicMerchCollectionPhoto;
 }
 
 export interface DeleteCollectionPhotoResponse extends ApiResponse {}
