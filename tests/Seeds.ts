@@ -1,6 +1,7 @@
 import * as moment from 'moment';
-import { UserAccessType } from '../types';
-import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
+import { UserAccessType, SocialMediaType } from '../types';
+import { DatabaseConnection, EventFactory,
+  MerchFactory, PortalState, UserFactory, UserSocialMediaFactory } from './data';
 
 function getGraduationYear(n: number) {
   return moment().year() + n;
@@ -115,6 +116,57 @@ async function seed(): Promise<void> {
     email: 'acm_store_distributor@ucsd.edu',
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
+
+  const SINGLE_USER = UserFactory.fake();
+  const SINGLE_USER_SOCIAL_MEDIA = UserSocialMediaFactory.fake(
+    { user: SINGLE_USER, type: SocialMediaType.FACEBOOK },
+  );
+
+  const DOUBLE_USER = UserFactory.fake();
+  const DOUBLE_USER_SOCIAL_MEDIA_1 = UserSocialMediaFactory.fake(
+    { user: DOUBLE_USER, type: SocialMediaType.FACEBOOK },
+  );
+  const DOUBLE_USER_SOCIAL_MEDIA_2 = UserSocialMediaFactory.fake(
+    { user: DOUBLE_USER, type: SocialMediaType.GITHUB },
+  );
+
+  const TRIPLE_USER = UserFactory.fake();
+  const TRIPLE_USER_SOCIAL_MEDIA_1 = UserSocialMediaFactory.fake(
+    { user: TRIPLE_USER, type: SocialMediaType.FACEBOOK },
+  );
+  const TRIPLE_USER_SOCIAL_MEDIA_2 = UserSocialMediaFactory.fake(
+    { user: TRIPLE_USER, type: SocialMediaType.INSTAGRAM },
+  );
+  const TRIPLE_USER_SOCIAL_MEDIA_3 = UserSocialMediaFactory.fake(
+    { user: TRIPLE_USER, type: SocialMediaType.LINKEDIN },
+  );
+
+  // one with all types
+  const USER_ALL_SOCIAL_MEDIA = UserFactory.fake();
+  const USER_ALL_SOCIAL_MEDIA_FACEBOOK = UserSocialMediaFactory.fake(
+    { user: USER_ALL_SOCIAL_MEDIA, type: SocialMediaType.FACEBOOK },
+  );
+  const USER_ALL_SOCIAL_MEDIA_GITHUB = UserSocialMediaFactory.fake(
+    { user: USER_ALL_SOCIAL_MEDIA, type: SocialMediaType.GITHUB },
+  );
+  const USER_ALL_SOCIAL_MEDIA_INSTAGRAM = UserSocialMediaFactory.fake(
+    { user: USER_ALL_SOCIAL_MEDIA, type: SocialMediaType.INSTAGRAM },
+  );
+  const USER_ALL_SOCIAL_MEDIA_LINKEDIN = UserSocialMediaFactory.fake(
+    { user: USER_ALL_SOCIAL_MEDIA, type: SocialMediaType.LINKEDIN },
+  );
+  const USER_ALL_SOCIAL_MEDIA_DEVPOST = UserSocialMediaFactory.fake(
+    { user: USER_ALL_SOCIAL_MEDIA, type: SocialMediaType.DEVPOST },
+  );
+  const USER_ALL_SOCIAL_MEDIA_TWITTER = UserSocialMediaFactory.fake(
+    { user: USER_ALL_SOCIAL_MEDIA, type: SocialMediaType.TWITTER },
+  );
+  const USER_ALL_SOCIAL_MEDIA_PORTFOLIO = UserSocialMediaFactory.fake(
+    { user: USER_ALL_SOCIAL_MEDIA, type: SocialMediaType.PORTFOLIO },
+  );
+  const USER_ALL_SOCIAL_MEDIA_EMAIL = UserSocialMediaFactory.fake(
+    { user: USER_ALL_SOCIAL_MEDIA, type: SocialMediaType.EMAIL },
+  );
 
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
@@ -549,6 +601,9 @@ async function seed(): Promise<void> {
       USER_MARKETING,
       USER_MERCH_STORE_MANAGER,
       USER_MERCH_STORE_DISTRIBUTOR,
+      SINGLE_USER,
+      DOUBLE_USER,
+      TRIPLE_USER,
       ...otherMembers,
     )
     .createEvents(
@@ -642,6 +697,14 @@ async function seed(): Promise<void> {
     .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_2_OPTION_2X2, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_JUNIOR, [{ option: MERCH_ITEM_2_OPTION_4X4, quantity: 2 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_SENIOR, [{ option: MERCH_ITEM_2_OPTION_3X3, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
+    .createUserSocialMedia(SINGLE_USER, SINGLE_USER_SOCIAL_MEDIA)
+    .createUserSocialMedia(DOUBLE_USER, DOUBLE_USER_SOCIAL_MEDIA_1, DOUBLE_USER_SOCIAL_MEDIA_2)
+    .createUserSocialMedia(TRIPLE_USER, TRIPLE_USER_SOCIAL_MEDIA_1, TRIPLE_USER_SOCIAL_MEDIA_2,
+      TRIPLE_USER_SOCIAL_MEDIA_3)
+    .createUserSocialMedia(USER_ALL_SOCIAL_MEDIA, USER_ALL_SOCIAL_MEDIA_FACEBOOK, USER_ALL_SOCIAL_MEDIA_GITHUB,
+      USER_ALL_SOCIAL_MEDIA_INSTAGRAM,
+      USER_ALL_SOCIAL_MEDIA_LINKEDIN, USER_ALL_SOCIAL_MEDIA_DEVPOST, USER_ALL_SOCIAL_MEDIA_TWITTER,
+      USER_ALL_SOCIAL_MEDIA_PORTFOLIO, USER_ALL_SOCIAL_MEDIA_EMAIL)
     .write();
 }
 
