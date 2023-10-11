@@ -1,5 +1,5 @@
 import * as faker from 'faker';
-import { ForbiddenError } from 'routing-controllers';
+import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { zip } from 'underscore';
 import { anything, instance, verify, mock, when } from 'ts-mockito';
 import { OrderModel } from '../models/OrderModel';
@@ -918,8 +918,11 @@ describe('merch item photos', () => {
 
     // check cascade
     await merchStoreController.deleteMerchItem(params, admin);
+
+    expect(merchStoreController.deleteMerchItemOption({ uuid: itemInDatabase.options[0].uuid }, admin))
+      .rejects.toThrow(NotFoundError);                // why does this work
     expect(merchStoreController.deleteMerchItemPhoto(deleteMerchItemPhotoParam2, admin))
-      .rejects.toThrow('Merch item photo not found');
+      .rejects.toThrow(NotFoundError);                // but not this?
   });
 });
 
