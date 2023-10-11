@@ -1,3 +1,4 @@
+import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
 import { UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
@@ -34,8 +35,8 @@ describe('event creation', () => {
       description: 'Indoor Pool Party',
       location: 'RIMAC',
       committee: 'ACM',
-      start: new Date('2020-08-20T10:00:00.000Z'),
-      end: new Date('2020-08-20T12:00:00.000Z'),
+      start: moment().subtract(2, 'hour').toDate(),
+      end: moment().subtract(1, 'hour').toDate(),
       attendanceCode: 'p4rty',
       pointValue: 10,
     };
@@ -78,8 +79,8 @@ describe('event creation', () => {
       description: 'Indoor Pool Party',
       location: 'RIMAC',
       committee: 'ACM',
-      start: new Date('2020-08-20T14:00:00.000Z'),
-      end: new Date('2020-08-20T12:00:00.000Z'),
+      start: moment().subtract(2, 'hour').toDate(),
+      end: moment().subtract(1, 'hour').toDate(),
       attendanceCode: 'p4rty',
       pointValue: 10,
     };
@@ -109,8 +110,8 @@ describe('event creation', () => {
       description: 'Indoor Pool Party',
       location: 'RIMAC',
       committee: 'ACM',
-      start: new Date('2020-08-20T14:00:00.000Z'),
-      end: new Date('2020-08-20T12:00:00.000Z'),
+      start: moment().subtract(1, 'hour').toDate(),
+      end: moment().subtract(2, 'hour').toDate(),
       attendanceCode: 'p4rty',
       pointValue: 10,
     };
