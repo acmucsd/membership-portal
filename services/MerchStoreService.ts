@@ -148,8 +148,7 @@ export default class MerchStoreService {
   }
 
   /**
- * Verify that items have valid options. An item with variants disabled cannot have multiple
- * options, and an item with variants enabled cannot have multiple option types.
+ * Verify that collections have valid photots.
  */
   private static verifyCollectionHasValidPhotos(collection: MerchCollection | MerchandiseCollectionModel) {
     if (collection.collectionPhotos.length > Config.file.MAX_COLLECTION_PHOTO_COUNT) {
@@ -157,22 +156,29 @@ export default class MerchStoreService {
     }
   }
 
-  public async createCollectionPhoto(item: Uuid, properties: MerchCollectionPhoto): Promise<PublicMerchCollectionPhoto> {
+  /**
+   * Creates a collection photo and assign it the corresponding picture url
+   * and append the photo to the photos list from merchItem
+   * @param collection merch collection uuid
+   * @param properties merch collection photo picture url and position
+   * @returns created collection photo
+  */
+  public async createCollectionPhoto(collection: Uuid, properties: MerchCollectionPhoto): Promise<PublicMerchCollectionPhoto> {
     return this.transactions.readWrite(async (txn) => {
-      const merchCollection = await Repositories.merchStoreCollection(txn).findByUuid(item);
+      const merchCollection = await Repositories.merchStoreCollection(txn).findByUuid(collection);
       if (!merchCollection) throw new NotFoundError('Merch item not found');
 
       // add to the end
       const position = merchCollection.collectionPhotos.length;
 
       const createdPhoto = MerchCollectionPhotoModel.create({ ...properties, position, merchCollection });
-      const merchStoreItemPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
+      const merchStoreCollectionPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
 
       // verify the result photos array
       merchCollection.collectionPhotos.push(createdPhoto);
       MerchStoreService.verifyCollectionHasValidPhotos(merchCollection);
 
-      const upsertedPhoto = await merchStoreItemPhotoRepository.upsertMerchItemPhoto(createdPhoto);
+      const upsertedPhoto = await merchStoreCollectionPhotoRepository.upsertMerchItemPhoto(createdPhoto);
       return upsertedPhoto.getPublicMerchCollectionPhoto();
     });
   }
