@@ -150,7 +150,7 @@ export class MerchFactory {
   private static createPhotos(n: number): MerchandiseItemPhotoModel[] {
     return FactoryUtils
       .create(n, () => MerchFactory.fakePhoto())
-      .map((merchPhoto, i) => MerchandiseItemPhotoModel.merge(merchPhoto, { position: i }));;
+      .map((merchPhoto, i) => MerchandiseItemPhotoModel.merge(merchPhoto, { position: i }));
   }
 
   private static randomPrice(): number {

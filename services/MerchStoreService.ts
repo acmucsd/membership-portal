@@ -5,7 +5,6 @@ import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
 import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
-import { Config } from '../config';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,
@@ -220,7 +219,9 @@ export default class MerchStoreService {
         // error on duplicate photo uuids
         const dupSet = new Set();
         merchPhotos.forEach((merchPhoto) => {
-          if (dupSet.has(merchPhoto.uuid)) { throw new UserError(`Multiple edits is made to photo: ${merchPhoto.uuid}`); }
+          if (dupSet.has(merchPhoto.uuid)) {
+            throw new UserError(`Multiple edits is made to photo: ${merchPhoto.uuid}`);
+          }
           dupSet.add(merchPhoto.uuid);
         });
 
@@ -346,7 +347,7 @@ export default class MerchStoreService {
    * @returns the photo object removed from database
    */
   public async deleteItemPhoto(uuid: Uuid): Promise<MerchItemPhoto> {
-    return await this.transactions.readWrite(async (txn) => {
+    return this.transactions.readWrite(async (txn) => {
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
       const merchPhoto = await merchStoreItemPhotoRepository.findByUuid(uuid);
       if (!merchPhoto) throw new NotFoundError('Merch item photo not found');

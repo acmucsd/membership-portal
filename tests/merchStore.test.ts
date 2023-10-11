@@ -888,14 +888,13 @@ describe('merch item photos', () => {
     const merchStoreController = ControllerFactory.merchStore(
       conn,
       undefined,
-      instance(storageService)
+      instance(storageService),
     );
     const params = { uuid: item.uuid };
 
     // verify before deleting, the photos all exist
-    const itemInDatabase = (await merchStoreController.getOneMerchItem(params, admin)).item
+    const itemInDatabase = (await merchStoreController.getOneMerchItem(params, admin)).item;
     expect(itemInDatabase.merchPhotos).toEqual(merchPhotos);
-    console.log(itemInDatabase);
 
     const deleteMerchItemPhotoParam1 = { uuid: photo1.uuid };
     const deleteMerchItemPhotoParam2 = { uuid: photo2.uuid };
@@ -910,7 +909,6 @@ describe('merch item photos', () => {
     expect(newPhotos).toHaveLength(1);
     expect(newPhotos[0].uuid).toEqual(photo2.uuid);
     expect(newPhotos[0].position).toEqual(1);
-
 
     // verify visible item photo limitation
     expect(merchStoreController.deleteMerchItemPhoto(deleteMerchItemPhotoParam2, admin))

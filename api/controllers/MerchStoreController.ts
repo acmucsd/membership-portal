@@ -170,8 +170,12 @@ export class MerchStoreController {
 
     // generate a random string for the uploaded photo url
     const uniqueFileName = uuid();
-    const uploadedPhoto = await this.storageService.uploadToFolder(file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid);
-    const merchPhoto = await this.merchStoreService.createItemPhoto(params.uuid, { uploadedPhoto, position: createItemPhotoRequest.position });
+    const uploadedPhoto = await this.storageService.uploadToFolder(
+      file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid,
+    );
+    const merchPhoto = await this.merchStoreService.createItemPhoto(
+      params.uuid, { uploadedPhoto, position: createItemPhotoRequest.position },
+    );
 
     return { error: null, merchPhoto };
   }

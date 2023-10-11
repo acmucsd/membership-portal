@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, TableColumn, TableIndex } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableColumn } from 'typeorm';
 
 const TABLE_NAME = 'MerchandiseItemPhotos';
 const MERCH_TABLE_NAME = 'MerchandiseItems';
@@ -39,7 +39,7 @@ export class AddMerchItemImageTable1681777109787 implements MigrationInterface {
         {
           name: 'images_by_item_index',
           columnNames: ['merchItem'],
-        }
+        },
       ],
       // cascade delete
       foreignKeys: [
@@ -49,7 +49,7 @@ export class AddMerchItemImageTable1681777109787 implements MigrationInterface {
           referencedColumnNames: ['uuid'],
           onDelete: 'CASCADE',
         },
-      ]
+      ],
     }));
 
     // add images from each item of the merchandise table to the photo table
