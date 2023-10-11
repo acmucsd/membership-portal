@@ -11,8 +11,8 @@ export class MerchandiseItemOptionModel extends BaseEntity {
   uuid: Uuid;
 
   @ManyToOne((type) => MerchandiseItemModel, (merchItem) => merchItem.options, { nullable: false, onDelete: 'CASCADE' })
-  @Index('merch_item_options_index')
   @JoinColumn({ name: 'item' })
+  @Index('merch_item_options_index')
   item: MerchandiseItemModel;
 
   @Column('integer', { default: 0 })

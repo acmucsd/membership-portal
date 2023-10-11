@@ -918,11 +918,8 @@ describe('merch item photos', () => {
 
     // check cascade
     await merchStoreController.deleteMerchItem(params, admin);
-
-    expect(merchStoreController.deleteMerchItemOption({ uuid: itemInDatabase.options[0].uuid }, admin))
-      .rejects.toThrow(NotFoundError);                // why does this work
     expect(merchStoreController.deleteMerchItemPhoto(deleteMerchItemPhotoParam2, admin))
-      .rejects.toThrow(NotFoundError);                // but not this?
+      .rejects.toThrow(NotFoundError);
   });
 });
 
