@@ -62,6 +62,7 @@ import {
   FulfillMerchOrderRequest,
   RescheduleOrderPickupRequest,
   CreateMerchItemOptionRequest,
+  CreateMerchItemPhotoRequest,
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
   GetCartRequest,
@@ -163,13 +164,14 @@ export class MerchStoreController {
   async createMerchItemPhoto(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
     @Params() params: UuidParam,
+    @Body() createItemPhotoRequest: CreateMerchItemPhotoRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateMerchPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
     // generate a random string for the uploaded photo url
     const uniqueFileName = uuid();
     const uploadedPhoto = await this.storageService.uploadToFolder(file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid);
-    const merchPhoto = await this.merchStoreService.createItemPhoto(params.uuid, { uploadedPhoto });
+    const merchPhoto = await this.merchStoreService.createItemPhoto(params.uuid, { uploadedPhoto, position: createItemPhotoRequest.position });
 
     return { error: null, merchPhoto };
   }
@@ -179,7 +181,8 @@ export class MerchStoreController {
   async deleteMerchItemPhoto(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
   Promise<DeleteMerchItemPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    await this.merchStoreService.deleteItemPhoto(params.uuid);
+    const deletedPhoto = await this.merchStoreService.deleteItemPhoto(params.uuid);
+    await this.storageService.deleteAtUrl(deletedPhoto.uploadedPhoto);
     return { error: null };
   }
 

@@ -785,10 +785,10 @@ describe('merch item photos', () => {
 
     const params = { uuid: item.uuid };
 
-    const response2 = await merchStoreController.createMerchItemPhoto(image2, params, admin);
-    const response3 = await merchStoreController.createMerchItemPhoto(image3, params, admin);
-    const response4 = await merchStoreController.createMerchItemPhoto(image4, params, admin);
-    const response5 = await merchStoreController.createMerchItemPhoto(image5, params, admin);
+    const response2 = await merchStoreController.createMerchItemPhoto(image2, params, { position: 1 }, admin);
+    const response3 = await merchStoreController.createMerchItemPhoto(image3, params, { position: 2 }, admin);
+    const response4 = await merchStoreController.createMerchItemPhoto(image4, params, { position: 3 }, admin);
+    const response5 = await merchStoreController.createMerchItemPhoto(image5, params, { position: 4 }, admin);
 
     // checking no error is thrown and storage is correctly modified
     // enough to check first and last response
@@ -826,7 +826,7 @@ describe('merch item photos', () => {
     expect((await merchStoreController.getOneMerchItem(params, admin)).item.merchPhotos)
       .toEqual(photos);
 
-    expect(merchStoreController.createMerchItemPhoto(imageExtra, params, admin))
+    expect(merchStoreController.createMerchItemPhoto(imageExtra, params, { position: 5 }, admin))
       .rejects.toThrow('Merch items cannot have more than 5 pictures');
   });
 
@@ -871,80 +871,6 @@ describe('merch item photos', () => {
     expect(newPhotosUuids).toStrictEqual(expectedPhotosUuids);
   });
 
-  test('throw error on invalid remaps of item photos', async () => {
-    const conn = await DatabaseConnection.get();
-    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const photo1 = MerchFactory.fakePhoto({ position: 0 });
-    const photo2 = MerchFactory.fakePhoto({ position: 1 });
-    const photo3 = MerchFactory.fakePhoto({ position: 2 });
-    const photo4 = MerchFactory.fakePhoto({ position: 3 });
-    const photo5 = MerchFactory.fakePhoto({ position: 4 });
-    const merchPhotos = [photo1, photo2, photo3, photo4, photo5];
-    const item = MerchFactory.fakeItem({ merchPhotos });
-
-    await new PortalState()
-      .createUsers(admin)
-      .createMerchItem(item)
-      .write();
-
-    const merchStoreController = ControllerFactory.merchStore(conn);
-    const params = { uuid: item.uuid };
-
-    // invalid repositions of items
-    // index does not start from 0
-    const badEditMerchItemRequest1 = { merchandise: {
-      merchPhotos: [
-        { uuid: photo1.uuid, position: 5 },
-        { uuid: photo2.uuid, position: 4 },
-        { uuid: photo3.uuid, position: 3 },
-        { uuid: photo4.uuid, position: 2 },
-        { uuid: photo5.uuid, position: 1 },
-      ],
-    } };
-    // duplicate indices
-    const badEditMerchItemRequest2 = { merchandise: {
-      merchPhotos: [
-        { uuid: photo1.uuid, position: 2 },
-        { uuid: photo2.uuid, position: 4 },
-        { uuid: photo3.uuid, position: 3 },
-        { uuid: photo4.uuid, position: 0 },
-        { uuid: photo5.uuid, position: 0 },
-      ],
-    } };
-    // duplicate edits
-    const badEditMerchItemRequest3 = { merchandise: {
-      merchPhotos: [
-        { uuid: photo1.uuid, position: 2 },
-        { uuid: photo2.uuid, position: 4 },
-        { uuid: photo3.uuid, position: 3 },
-        { uuid: photo4.uuid, position: 1 },
-        { uuid: photo4.uuid, position: 0 },
-      ],
-    } };
-    // negative index
-    const badEditMerchItemRequest4 = { merchandise: {
-      merchPhotos: [
-        { uuid: photo1.uuid, position: 2 },
-        { uuid: photo2.uuid, position: 4 },
-        { uuid: photo3.uuid, position: 1 },
-        { uuid: photo4.uuid, position: 0 },
-        { uuid: photo5.uuid, position: -1 },
-      ],
-    } };
-
-    await expect(merchStoreController.editMerchItem(params, badEditMerchItemRequest1, admin))
-      .rejects.toThrow();
-    await expect(merchStoreController.editMerchItem(params, badEditMerchItemRequest2, admin))
-      .rejects.toThrow();
-    await expect(merchStoreController.editMerchItem(params, badEditMerchItemRequest3, admin))
-      .rejects.toThrow();
-    await expect(merchStoreController.editMerchItem(params, badEditMerchItemRequest4, admin))
-      .rejects.toThrow();
-
-    // ensure that the item photos are unchanged
-    expect((await merchStoreController.getOneMerchItem(params, admin)).item.merchPhotos).toEqual(merchPhotos);
-  });
-
   test('can delete photo until 1 photo left except merch item is deleted', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
@@ -958,31 +884,42 @@ describe('merch item photos', () => {
       .createMerchItem(item)
       .write();
 
-    const merchStoreController = ControllerFactory.merchStore(conn);
+    const storageService = Mocks.storage();
+    const merchStoreController = ControllerFactory.merchStore(
+      conn,
+      undefined,
+      instance(storageService)
+    );
     const params = { uuid: item.uuid };
 
     // verify before deleting, the photos all exist
-    expect((await merchStoreController.getOneMerchItem(params, admin)).item.merchPhotos).toEqual(merchPhotos);
+    const itemInDatabase = (await merchStoreController.getOneMerchItem(params, admin)).item
+    expect(itemInDatabase.merchPhotos).toEqual(merchPhotos);
+    console.log(itemInDatabase);
 
     const deleteMerchItemPhotoParam1 = { uuid: photo1.uuid };
     const deleteMerchItemPhotoParam2 = { uuid: photo2.uuid };
 
     // verify deletion delete correctly
     await merchStoreController.deleteMerchItemPhoto(deleteMerchItemPhotoParam1, admin);
+    const expectedUrl = itemInDatabase.merchPhotos[0].uploadedPhoto;
+    verify(storageService.deleteAtUrl(expectedUrl)).called();
+
     const newPhotos = (await merchStoreController.getOneMerchItem(params, admin)).item.merchPhotos;
 
     expect(newPhotos).toHaveLength(1);
     expect(newPhotos[0].uuid).toEqual(photo2.uuid);
-    expect(newPhotos[0].position).toEqual(0);
+    expect(newPhotos[0].position).toEqual(1);
+
 
     // verify visible item photo limitation
     expect(merchStoreController.deleteMerchItemPhoto(deleteMerchItemPhotoParam2, admin))
       .rejects.toThrow('Cannot delete the only photo for a visible merch item');
 
     // check cascade
-    // await merchStoreController.deleteMerchItem(params, admin);
-    // expect(merchStoreController.deleteMerchItemPhoto(deleteMerchItemPhotoParam2, admin))
-    //   .rejects.toThrow('Merch item photo not found');
+    await merchStoreController.deleteMerchItem(params, admin);
+    expect(merchStoreController.deleteMerchItemPhoto(deleteMerchItemPhotoParam2, admin))
+      .rejects.toThrow('Merch item photo not found');
   });
 });
 

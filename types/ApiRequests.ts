@@ -195,6 +195,10 @@ export interface CreateMerchItemOptionRequest {
   option: MerchItemOption;
 }
 
+export interface CreateMerchItemPhotoRequest {
+  position: number;
+}
+
 export interface PlaceMerchOrderRequest {
   order: MerchItemOptionAndQuantity[];
   pickupEvent: Uuid;
@@ -227,7 +231,6 @@ export interface CommonMerchItemProperties {
   itemName: string;
   collection: string;
   description: string;
-  uploadedPhotos?: MerchItemPhoto[];
   hidden?: boolean;
   monthlyLimit?: number;
   lifetimeLimit?: number;
@@ -242,7 +245,7 @@ export interface MerchItemOptionMetadata {
 
 export interface MerchItemPhoto {
   uploadedPhoto: string;
-  // position: number;
+  position: number;
 }
 
 export interface MerchItemPhotoEdit {

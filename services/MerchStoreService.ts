@@ -40,6 +40,8 @@ import { MerchandiseItemPhotoModel } from '../models/MerchandiseItemPhotoModel';
 
 @Service()
 export default class MerchStoreService {
+  private static readonly MAX_MERCH_PHOTO_COUNT = 5;
+
   private emailService: EmailService;
 
   private transactions: TransactionsManager;
@@ -227,17 +229,7 @@ export default class MerchStoreService {
         item.merchPhotos.map((currentPhoto) => {
           if (!photoUpdatesByUuid.has(currentPhoto.uuid)) return;
           const photoUpdate = photoUpdatesByUuid.get(currentPhoto.uuid);
-          // photo positions are 0-index
           return MerchandiseItemPhotoModel.merge(currentPhoto, photoUpdate);
-        });
-
-        // make sure the photos are always sorted
-        item.merchPhotos.sort((a, b) => a.position - b.position);
-        // validate all indices
-        item.merchPhotos.forEach((currentPhoto, index) => {
-          if (currentPhoto.position !== index) {
-            throw new UserError(`Position is inputted incorrectly for photo: ${currentPhoto.uuid}`);
-          }
         });
       }
 
@@ -317,7 +309,7 @@ export default class MerchStoreService {
    * options, and an item with variants enabled cannot have multiple option types.
    */
   private static verifyItemHasValidPhotos(item: MerchItem | MerchandiseItemModel) {
-    if (item.merchPhotos.length > Config.file.MAX_MERCH_PHOTO_COUNT) {
+    if (item.merchPhotos.length > MerchStoreService.MAX_MERCH_PHOTO_COUNT) {
       throw new UserError('Merch items cannot have more than 5 pictures');
     }
   }
@@ -334,10 +326,7 @@ export default class MerchStoreService {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Merch item not found');
 
-      // add to the end
-      const position = merchItem.merchPhotos.length;
-
-      const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, position, merchItem });
+      const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, merchItem });
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
 
       // verify the result photos array
@@ -354,9 +343,10 @@ export default class MerchStoreService {
    * and it was the only photo of the item.
    *
    * @param uuid photo uuid
+   * @returns the photo object removed from database
    */
-  public async deleteItemPhoto(uuid: Uuid): Promise<void> {
-    await this.transactions.readWrite(async (txn) => {
+  public async deleteItemPhoto(uuid: Uuid): Promise<MerchItemPhoto> {
+    return await this.transactions.readWrite(async (txn) => {
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
       const merchPhoto = await merchStoreItemPhotoRepository.findByUuid(uuid);
       if (!merchPhoto) throw new NotFoundError('Merch item photo not found');
@@ -365,15 +355,9 @@ export default class MerchStoreService {
       if (merchItem.merchPhotos.length === 1 && !merchItem.hidden) {
         throw new UserError('Cannot delete the only photo for a visible merch item');
       }
-      // decrement photo index for all photos after the inserted photo
-      const { position } = merchPhoto;
-      merchItem.merchPhotos.forEach((p) => {
-        if (p.position > position) {
-          merchStoreItemPhotoRepository.upsertMerchItemPhoto(p, { position: p.position - 1 });
-        }
-      });
 
-      return merchStoreItemPhotoRepository.deleteMerchItemPhoto(merchPhoto);
+      await merchStoreItemPhotoRepository.deleteMerchItemPhoto(merchPhoto);
+      return merchPhoto;
     });
   }
 
