@@ -325,18 +325,6 @@ async function seed(): Promise<void> {
     hidden: false,
     hasVariantsEnabled: true,
   });
-  const MERCH_ITEM_1_PHOTO_0 = MerchFactory.fakePhoto({
-    merchItem: MERCH_ITEM_1,
-  });
-  const MERCH_ITEM_1_PHOTO_1 = MerchFactory.fakePhoto({
-    merchItem: MERCH_ITEM_1,
-    position: 1,
-  });
-  const MERCH_ITEM_1_PHOTO_2 = MerchFactory.fakePhoto({
-    merchItem: MERCH_ITEM_1,
-    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
-    position: 2,
-  });
   const MERCH_ITEM_1_OPTION_XS = MerchFactory.fakeOption({
     item: MERCH_ITEM_1,
     quantity: 5,
@@ -399,6 +387,21 @@ async function seed(): Promise<void> {
     MERCH_ITEM_1_OPTION_L,
     MERCH_ITEM_1_OPTION_XL,
   ];
+  // uploadedPhoto is 'https://www.fakepicture.com/' by default, test if this applies
+  const MERCH_ITEM_1_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_1,
+    position: 0,
+  });
+  const MERCH_ITEM_1_PHOTO_1 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_1,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  const MERCH_ITEM_1_PHOTO_2 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_1,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 2,
+  });
   MERCH_ITEM_1.merchPhotos = [
     MERCH_ITEM_1_PHOTO_0,
     MERCH_ITEM_1_PHOTO_1,
@@ -413,14 +416,6 @@ async function seed(): Promise<void> {
     lifetimeLimit: 25,
     hidden: false,
     hasVariantsEnabled: true,
-  });
-  const MERCH_ITEM_2_PHOTO_0 = MerchFactory.fakePhoto({
-    merchItem: MERCH_ITEM_2,
-  });
-  const MERCH_ITEM_2_PHOTO_1 = MerchFactory.fakePhoto({
-    merchItem: MERCH_ITEM_2,
-    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
-    position: 1,
   });
   const MERCH_ITEM_2_OPTION_2X2 = MerchFactory.fakeOption({
     item: MERCH_ITEM_2,
@@ -460,6 +455,16 @@ async function seed(): Promise<void> {
     MERCH_ITEM_2_OPTION_3X3,
     MERCH_ITEM_2_OPTION_4X4,
   ];
+  const MERCH_ITEM_2_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_2,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 0,
+  });
+  const MERCH_ITEM_2_PHOTO_1 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_2,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 1,
+  });
   MERCH_ITEM_2.merchPhotos = [
     MERCH_ITEM_2_PHOTO_0,
     MERCH_ITEM_2_PHOTO_1,
@@ -479,12 +484,21 @@ async function seed(): Promise<void> {
     hidden: false,
     hasVariantsEnabled: false,
   });
+  const MERCH_ITEM_3_OPTION = MerchFactory.fakeOption({
+    item: MERCH_ITEM_3,
+    quantity: 1,
+    price: 8000,
+    discountPercentage: 5,
+  });
+  MERCH_ITEM_3.options = [MERCH_ITEM_3_OPTION];
   const MERCH_ITEM_3_PHOTO_0 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
     uploadedPhoto: 'https://i.imgur.com/QNdhfuO.png',
+    position: 0,
   });
   const MERCH_ITEM_3_PHOTO_1 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
+    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 1,
   });
   const MERCH_ITEM_3_PHOTO_2 = MerchFactory.fakePhoto({
@@ -494,19 +508,14 @@ async function seed(): Promise<void> {
   });
   const MERCH_ITEM_3_PHOTO_3 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
+    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 3,
   });
   const MERCH_ITEM_3_PHOTO_4 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
+    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 4,
   });
-  const MERCH_ITEM_3_OPTION = MerchFactory.fakeOption({
-    item: MERCH_ITEM_3,
-    quantity: 1,
-    price: 8000,
-    discountPercentage: 5,
-  });
-  MERCH_ITEM_3.options = [MERCH_ITEM_3_OPTION];
   MERCH_ITEM_3.merchPhotos = [
     MERCH_ITEM_3_PHOTO_0,
     MERCH_ITEM_3_PHOTO_1,
@@ -514,6 +523,7 @@ async function seed(): Promise<void> {
     MERCH_ITEM_3_PHOTO_3,
     MERCH_ITEM_3_PHOTO_4,
   ];
+
   const MERCH_ITEM_4 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Salt & Pepper (Canyon) Shakers',
@@ -523,10 +533,6 @@ async function seed(): Promise<void> {
     hidden: false,
     hasVariantsEnabled: false,
   });
-  const MERCH_ITEM_4_PHOTO_0 = MerchFactory.fakePhoto({
-    merchItem: MERCH_ITEM_4,
-    uploadedPhoto: 'https://i.pinimg.com/originals/df/c5/72/dfc5729a0dea666c31c5f4daea851619.jpg',
-  });
   const MERCH_ITEM_4_OPTION = MerchFactory.fakeOption({
     item: MERCH_ITEM_4,
     quantity: 10,
@@ -534,6 +540,11 @@ async function seed(): Promise<void> {
     discountPercentage: 20,
   });
   MERCH_ITEM_4.options = [MERCH_ITEM_4_OPTION];
+  const MERCH_ITEM_4_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_4,
+    position: 0,
+    uploadedPhoto: 'https://i.pinimg.com/originals/df/c5/72/dfc5729a0dea666c31c5f4daea851619.jpg',
+  });
   MERCH_ITEM_4.merchPhotos = [MERCH_ITEM_4_PHOTO_0];
   const MERCH_ITEM_5 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
@@ -543,10 +554,6 @@ async function seed(): Promise<void> {
     lifetimeLimit: 2,
     hidden: false,
     hasVariantsEnabled: true,
-  });
-  const MERCH_ITEM_5_PHOTO_0 = MerchFactory.fakePhoto({
-    merchItem: MERCH_ITEM_5,
-    uploadedPhoto: 'https://i.etsystatic.com/8812670/r/il/655afa/3440382093/il_340x270.3440382093_cbui.jpg',
   });
   const MERCH_ITEM_5_MEDIUM = MerchFactory.fakeOption({
     item: MERCH_ITEM_5,
@@ -571,6 +578,11 @@ async function seed(): Promise<void> {
     },
   });
   MERCH_ITEM_5.options = [MERCH_ITEM_5_MEDIUM, MERCH_ITEM_5_LARGE];
+  const MERCH_ITEM_5_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_5,
+    position: 0,
+    uploadedPhoto: 'https://i.etsystatic.com/8812670/r/il/655afa/3440382093/il_340x270.3440382093_cbui.jpg',
+  });
   MERCH_ITEM_5.merchPhotos = [MERCH_ITEM_5_PHOTO_0];
   MERCH_COLLECTION_2.items = [MERCH_ITEM_3, MERCH_ITEM_4, MERCH_ITEM_5];
 
