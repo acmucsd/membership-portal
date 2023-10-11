@@ -34,15 +34,23 @@ export class AddMerchItemImageTable1681777109787 implements MigrationInterface {
           type: 'integer',
         },
       ],
+      // optimize searching
+      indices: [
+        {
+          name: 'images_by_item_index',
+          columnNames: ['merchItem'],
+        }
+      ],
+      // cascade delete
+      foreignKeys: [
+        {
+          columnNames: ['merchItem'],
+          referencedTableName: MERCH_TABLE_NAME,
+          referencedColumnNames: ['uuid'],
+          onDelete: 'CASCADE',
+        },
+      ]
     }));
-
-    // optimize searching
-    await queryRunner.createIndices(TABLE_NAME, [
-      new TableIndex({
-        name: 'images_by_item_index',
-        columnNames: ['merchItem'],
-      }),
-    ]);
 
     // add images from each item of the merchandise table to the photo table
     await queryRunner.query(
