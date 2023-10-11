@@ -196,7 +196,7 @@ export interface CreateMerchItemOptionRequest {
 }
 
 export interface CreateMerchItemPhotoRequest {
-  position: number;
+  position: string;
 }
 
 export interface PlaceMerchOrderRequest {

@@ -10,6 +10,7 @@ import {
   IsDateString,
   ArrayNotEmpty,
   IsNumber,
+  IsNumberString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -318,8 +319,8 @@ export class CreateMerchItemOptionRequest implements ICreateMerchItemOptionReque
 
 export class CreateMerchItemPhotoRequest implements ICreateMerchItemPhotoRequest {
   @IsDefined()
-  @IsNumber()
-  position: number;
+  @IsNumberString()
+  position: string;
 }
 
 export class PlaceMerchOrderRequest implements IPlaceMerchOrderRequest {
