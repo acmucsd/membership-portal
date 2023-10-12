@@ -117,6 +117,7 @@ async function seed(): Promise<void> {
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
 
+  // user social media testing
   const USER_SOCIAL_MEDIA_1 = UserFactory.fake();
   const USER_SOCIAL_MEDIA_1_FACEBOOK = UserSocialMediaFactory.fake(
     { user: USER_SOCIAL_MEDIA_1, type: SocialMediaType.FACEBOOK },
@@ -141,7 +142,6 @@ async function seed(): Promise<void> {
     { user: USER_SOCIAL_MEDIA_3, type: SocialMediaType.LINKEDIN },
   );
 
-  // one with all types
   const USER_SOCIAL_MEDIA_ALL = UserFactory.fake();
   const USER_SOCIAL_MEDIA_ALL_FACEBOOK = UserSocialMediaFactory.fake(
     { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.FACEBOOK },
@@ -707,11 +707,6 @@ async function seed(): Promise<void> {
       USER_SOCIAL_MEDIA_ALL_LINKEDIN, USER_SOCIAL_MEDIA_ALL_DEVPOST, USER_SOCIAL_MEDIA_ALL_TWITTER,
       USER_SOCIAL_MEDIA_ALL_PORTFOLIO, USER_SOCIAL_MEDIA_ALL_EMAIL)
     .write();
-
-    console.log(USER_SOCIAL_MEDIA_1.uuid);
-    console.log(USER_SOCIAL_MEDIA_2.uuid);
-    console.log(USER_SOCIAL_MEDIA_3.uuid);
-    console.log(USER_SOCIAL_MEDIA_ALL.uuid);
 }
 
 
