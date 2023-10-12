@@ -709,5 +709,4 @@ async function seed(): Promise<void> {
     .write();
 }
 
-
 seed();
