@@ -1,6 +1,8 @@
 import * as moment from 'moment';
 import { UserAccessType } from '../types';
-import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
+import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory, FileFactory, ResumeFactory } from './data';
+import { Config } from '../config';
+
 
 function getGraduationYear(n: number) {
   return moment().year() + n;
@@ -115,6 +117,14 @@ async function seed(): Promise<void> {
     email: 'acm_store_distributor@ucsd.edu',
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
+
+  const VISIBLE_RESUME_USER = UserFactory.fake();
+  const RESUME_1 = ResumeFactory.fake({ user: VISIBLE_RESUME_USER, isResumeVisible: true });
+
+  const HIDDEN_RESUME_USER = UserFactory.fake();
+  const RESUME_2 = ResumeFactory.fake({ user: HIDDEN_RESUME_USER, isResumeVisible: false });
+
+
 
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
@@ -549,6 +559,8 @@ async function seed(): Promise<void> {
       USER_MARKETING,
       USER_MERCH_STORE_MANAGER,
       USER_MERCH_STORE_DISTRIBUTOR,
+      VISIBLE_RESUME_USER,
+      HIDDEN_RESUME_USER,
       ...otherMembers,
     )
     .createEvents(
@@ -642,6 +654,8 @@ async function seed(): Promise<void> {
     .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_2_OPTION_2X2, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_JUNIOR, [{ option: MERCH_ITEM_2_OPTION_4X4, quantity: 2 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_SENIOR, [{ option: MERCH_ITEM_2_OPTION_3X3, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
+    .createResumes(VISIBLE_RESUME_USER, RESUME_1)
+    .createResumes(HIDDEN_RESUME_USER, RESUME_2)
     .write();
 }
 
