@@ -555,8 +555,8 @@ async function seed(): Promise<void> {
       USER_MARKETING,
       USER_MERCH_STORE_MANAGER,
       USER_MERCH_STORE_DISTRIBUTOR,
-      VISIBLE_RESUME_USER,
-      HIDDEN_RESUME_USER,
+      USER_VISIBLE_RESUME,
+      USER_HIDDEN_RESUME,
       ...otherMembers,
     )
     .createEvents(
