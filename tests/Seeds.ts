@@ -116,11 +116,11 @@ async function seed(): Promise<void> {
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
 
-  const VISIBLE_RESUME_USER = UserFactory.fake();
-  const RESUME_1 = ResumeFactory.fake({ user: VISIBLE_RESUME_USER, isResumeVisible: true });
+  const USER_VISIBLE_RESUME = UserFactory.fake();
+  const RESUME_1 = ResumeFactory.fake({ user: USER_VISIBLE_RESUME, isResumeVisible: true });
 
-  const HIDDEN_RESUME_USER = UserFactory.fake();
-  const RESUME_2 = ResumeFactory.fake({ user: HIDDEN_RESUME_USER, isResumeVisible: false });
+  const USER_HIDDEN_RESUME = UserFactory.fake();
+  const RESUME_2 = ResumeFactory.fake({ user: USER_HIDDEN_RESUME, isResumeVisible: false });
 
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
@@ -650,8 +650,8 @@ async function seed(): Promise<void> {
     .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_2_OPTION_2X2, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_JUNIOR, [{ option: MERCH_ITEM_2_OPTION_4X4, quantity: 2 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_SENIOR, [{ option: MERCH_ITEM_2_OPTION_3X3, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
-    .createResumes(VISIBLE_RESUME_USER, RESUME_1)
-    .createResumes(HIDDEN_RESUME_USER, RESUME_2)
+    .createResumes(USER_VISIBLE_RESUME, RESUME_1)
+    .createResumes(USER_HIDDEN_RESUME, RESUME_2)
     .write();
 }
 
