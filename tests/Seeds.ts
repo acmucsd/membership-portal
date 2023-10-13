@@ -1,8 +1,6 @@
 import * as moment from 'moment';
 import { UserAccessType } from '../types';
-import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory, FileFactory, ResumeFactory } from './data';
-import { Config } from '../config';
-
+import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory, ResumeFactory } from './data';
 
 function getGraduationYear(n: number) {
   return moment().year() + n;
@@ -123,8 +121,6 @@ async function seed(): Promise<void> {
 
   const HIDDEN_RESUME_USER = UserFactory.fake();
   const RESUME_2 = ResumeFactory.fake({ user: HIDDEN_RESUME_USER, isResumeVisible: false });
-
-
 
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
