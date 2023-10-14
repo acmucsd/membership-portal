@@ -140,6 +140,15 @@ export class MerchStoreController {
     return { error: null, collectionPhoto };
   }
 
+  @UseBefore(UserAuthentication)
+  @Delete('/item/picture/:uuid')
+  async deleteMerchCollectionPhoto(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
+  Promise<DeleteCollectionPhotoResponse> {
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    await this.merchStoreService.deleteCollectionPhoto(params.uuid);
+    return { error: null };
+  }
+
   @Get('/item/:uuid')
   async getOneMerchItem(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchItemResponse> {
