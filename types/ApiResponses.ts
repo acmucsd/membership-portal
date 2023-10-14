@@ -44,8 +44,12 @@ export interface ModifyUserAccessLevelResponse extends ApiResponse {
   updatedUsers: PrivateProfile[];
 }
 
+export interface UserAccessLevelResponse extends ApiResponse {
+  user: PrivateProfile;
+}
+
 export interface GetAllUserAccessLevelsResponse extends ApiResponse {
-  users: Partial<UserModel>[];
+  users: UserAccessLevelResponse[];
 }
 
 // ATTENDANCE

@@ -209,13 +209,7 @@ export default class UserAccountService {
     }
   }
 
-  /**
-   * This method is used to update the access levels of multiple users at once.
-   * @param accessUpdates - an array of objects containing the user and their new access level
-   * @param emails - an array of emails to update
-   * @param currentUser - the user making the request
-   * @returns {Promise.<UserModel[]>} - an array of updated users
-   */
+
   public async updateUserAccessLevels(accessUpdates: UserAccessUpdates[], emails: string[],
     currentUser: UserModel): Promise<PrivateProfile[]> {
     return this.transactions.readWrite(async (txn) => {
@@ -274,10 +268,6 @@ export default class UserAccountService {
     });
   }
 
-  /**
-   * This method is used to get all users with their access levels.
-   * @returns {Promise.<PrivateProfile[]>} - an array of all users with their access levels
-   */
   public async getAllUsersWithAccessLevels(): Promise<Partial<UserModel>[]> {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
