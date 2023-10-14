@@ -4,6 +4,5 @@ export * from './UserFactory';
 export * from './EventFactory';
 export * from './MerchFactory';
 export * from './ResumeFactory';
-export * from './FileFactory';
 
 export * from './PortalState';
