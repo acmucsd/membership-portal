@@ -56,6 +56,7 @@ import MerchStoreService from '../../services/MerchStoreService';
 import {
   CreateMerchCollectionRequest,
   EditMerchCollectionRequest,
+  CreateCollectionPhotoRequest,
   CreateMerchItemRequest,
   EditMerchItemRequest,
   PlaceMerchOrderRequest,
@@ -129,13 +130,19 @@ export class MerchStoreController {
   async createMerchCollectionPhoto(@UploadedFile('image',
   { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
   @Params() params: UuidParam,
+  @Body() createCollectionRequest: CreateCollectionPhotoRequest,
   @AuthenticatedUser() user: UserModel): Promise<CreateCollectionPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
     // generate a random string for the uploaded photo url
+    const position = parseInt(createCollectionRequest.position, 10);
     const uniqueFileName = uuid();
-    const uploadedPhoto = await this.storageService.uploadToFolder(file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid);
-    const collectionPhoto = await this.merchStoreService.createCollectionPhoto(params.uuid, { uploadedPhoto });
+    const uploadedPhoto = await this.storageService.uploadToFolder(
+      file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid,
+    );
+    const collectionPhoto = await this.merchStoreService.createCollectionPhoto(
+      params.uuid, { uploadedPhoto, position },
+    );
 
     return { error: null, collectionPhoto };
   }

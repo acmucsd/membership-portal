@@ -183,6 +183,10 @@ export interface EditMerchCollectionRequest {
   collection: MerchCollectionEdit;
 }
 
+export interface CreateCollectionPhotoRequest {
+  position: string;
+}
+
 export interface CreateMerchItemRequest {
   merchandise: MerchItem;
 }
@@ -212,25 +216,28 @@ export interface RescheduleOrderPickupRequest {
   pickupEvent: Uuid;
 }
 
-export interface MerchCollection {
+export interface CommonCollectionProperties {
   title: string;
   themeColorHex?: string;
   description: string;
   archived?: boolean;
-  collectionPhotos?: MerchCollectionPhoto[]
 }
 
 export interface MerchCollectionPhoto {
   uploadedPhoto: string;
-  // position: number;
+  position: number;
 }
 
-export interface MerchCollectionPhotoEdit extends MerchCollectionPhoto {
+export interface MerchCollectionPhotoEdit {
   uuid: string;
   position?: number;
 }
 
-export interface MerchCollectionEdit extends Partial<MerchCollection> {
+export interface MerchCollection extends Partial<CommonCollectionProperties> {
+  collectionPhotos: MerchCollectionPhoto[]
+}
+
+export interface MerchCollectionEdit extends Partial<CommonCollectionProperties> {
   discountPercentage?: number;
   collectionPhotos?: MerchCollectionPhotoEdit[]
 }
