@@ -315,6 +315,28 @@ async function seed(): Promise<void> {
     description: 'Do you like to code? Tell the world with this Hack School inspired collection.',
     themeColorHex: '#EB8C34',
   });
+
+  const MERCH_COLLECTION_1_PHOTO_1 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    position: 0,
+  });
+  const MERCH_COLLECTION_1_PHOTO_2 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  const MERCH_COLLECTION_1_PHOTO_3 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 2,
+  });
+
+  MERCH_COLLECTION_1.collectionPhotos = [
+    MERCH_COLLECTION_1_PHOTO_1,
+    MERCH_COLLECTION_1_PHOTO_2,
+    MERCH_COLLECTION_1_PHOTO_3,
+  ];
+
   const MERCH_ITEM_1 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Unisex Hack School Anorak',
