@@ -342,13 +342,13 @@ export default class MerchStoreService {
   }
 
   /**
-   * Deletes the given item photo. Fail if the merch item is visible
+   * Check if the photo is ready to be deleted. Fail if the merch item is visible
    * and it was the only photo of the item.
    *
-   * @param uuid photo uuid
-   * @returns the photo object removed from database
+   * @param uuid the uuid of photo to be deleted
+   * @returns the photo object to be removed from database
    */
-  public async deleteItemPhoto(uuid: Uuid): Promise<MerchItemPhoto> {
+  public async getItemPhotoForDeletion(uuid: Uuid): Promise<MerchandiseItemPhotoModel> {
     return this.transactions.readWrite(async (txn) => {
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
       const merchPhoto = await merchStoreItemPhotoRepository.findByUuid(uuid);
@@ -359,6 +359,19 @@ export default class MerchStoreService {
         throw new UserError('Cannot delete the only photo for a visible merch item');
       }
 
+      return merchPhoto;
+    });
+  }
+
+  /**
+   * Deletes the given item photo.
+   *
+   * @param merchPhoto the photo object to be removed
+   * @returns the photo object removed from database
+   */
+  public async deleteItemPhoto(merchPhoto: MerchandiseItemPhotoModel): Promise<MerchItemPhoto> {
+    return this.transactions.readWrite(async (txn) => {
+      const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
       await merchStoreItemPhotoRepository.deleteMerchItemPhoto(merchPhoto);
       return merchPhoto;
     });
