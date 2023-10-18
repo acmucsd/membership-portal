@@ -169,7 +169,8 @@ export class MerchStoreController {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
     // generate a random string for the uploaded photo url
-    const position = parseInt(createItemPhotoRequest.position, 10);
+    const position = Number(createItemPhotoRequest.position);
+    if (isNaN(position)) throw new BadRequestError("Position is not a number");
     const uniqueFileName = uuid();
     const uploadedPhoto = await this.storageService.uploadToFolder(
       file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid,
