@@ -242,11 +242,6 @@ export default class UserAccountService {
           throw new ForbiddenError('You cannot promote users to admin.');
         }
 
-        // Prevent anyone from demoting user with current admin status
-        if (currUser.accessType === UserAccessType.ADMIN) {
-          throw new ForbiddenError('You cannot demote an admin.');
-        }
-
         const updatedUser = await userRepository.upsertUser(currUser, { accessType });
 
         // log the activity of changing a user's access type
@@ -268,9 +263,10 @@ export default class UserAccountService {
     });
   }
 
-  public async getAllUsersWithAccessLevels(): Promise<Partial<UserModel>[]> {
-    return this.transactions.readOnly(async (txn) => Repositories
+  public async getAllUsersWithAccessLevels(): Promise<PrivateProfile[]> {
+    const users = await this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
-      .getUserInfoAndAccessTypes());
+      .findAll());
+      return users.map((user) => user.getFullUserProfile());
   }
 }

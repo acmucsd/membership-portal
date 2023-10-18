@@ -1,4 +1,3 @@
-import { UserModel } from 'models/UserModel';
 import {
   ActivityScope, ActivityType, FeedbackStatus,
   FeedbackType, OrderPickupEventStatus,
@@ -44,12 +43,8 @@ export interface ModifyUserAccessLevelResponse extends ApiResponse {
   updatedUsers: PrivateProfile[];
 }
 
-export interface UserAccessLevelResponse extends ApiResponse {
-  user: PrivateProfile;
-}
-
 export interface GetAllUserAccessLevelsResponse extends ApiResponse {
-  users: UserAccessLevelResponse[];
+  users: PrivateProfile[];
 }
 
 // ATTENDANCE
