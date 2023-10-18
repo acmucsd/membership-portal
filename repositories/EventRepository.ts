@@ -64,4 +64,3 @@ export class EventRepository extends BaseRepository<EventModel> {
     return query;
   }
 }
-

@@ -1,4 +1,5 @@
-import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
+import { ActivityScope, ActivityType, CreateEventRequest, SubmitAttendanceForUsersRequest,
+  UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 
@@ -180,5 +181,68 @@ describe('bonus points submission', () => {
 
     const getNoBonusUserResponse = await userController.getUser({ uuid: userNotGettingBonus.uuid }, admin);
     expect(getNoBonusUserResponse.user.points).toEqual(0);
+  });
+});
+
+describe('event creation', () => {
+  test('attendance code from past event should pass isUnusedAttendanceCode', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const user = UserFactory.fake();
+
+    await new PortalState()
+      .createUsers(admin, user)
+      .write();
+
+    let event = {
+      cover: 'https://www.google.com',
+      title: 'ACM Party @ RIMAC',
+      description: 'Indoor Pool Party',
+      location: 'RIMAC',
+      committee: 'ACM',
+      start: new Date('2020-08-20T10:00:00.000Z'),
+      end: new Date('2020-08-20T12:00:00.000Z'),
+      attendanceCode: 'PastEvent',
+      pointValue: 10,
+    };
+
+    const createEventRequest: CreateEventRequest = {
+      event,
+    };
+
+    const eventController = ControllerFactory.event(conn);
+    await eventController.createEvent(createEventRequest, admin);
+
+    event = {
+      cover: 'https://www.google.com',
+      title: 'ACM Party @ RIMAC',
+      description: 'Indoor Pool Party',
+      location: 'RIMAC',
+      committee: 'ACM',
+      start: new Date('2025-08-20T10:00:00.000Z'),
+      end: new Date('2025-08-20T12:00:00.000Z'),
+      attendanceCode: 'PastEvent',
+      pointValue: 10,
+    };
+
+    const createEventRequest2: CreateEventRequest = {
+      event,
+    };
+
+    await eventController.createEvent(createEventRequest2, admin);
+    const eventResponse = await eventController.createEvent(createEventRequest, admin);
+
+    expect(eventResponse.event.cover).toEqual(event.cover);
+    expect(eventResponse.event.title).toEqual(event.title);
+    expect(eventResponse.event.location).toEqual(event.location);
+    expect(eventResponse.event.committee).toEqual(event.committee);
+    expect(eventResponse.event.title).toEqual(event.title);
+    expect(eventResponse.event.start).toEqual(event.start);
+    expect(eventResponse.event.end).toEqual(event.end);
+    expect(eventResponse.event.pointValue).toEqual(event.pointValue);
+
+    const lookupEvent = await eventController.getOneEvent({ uuid: eventResponse.event.uuid }, user);
+    expect(lookupEvent.error).toEqual(null);
+    expect(JSON.stringify(lookupEvent.event)).toEqual(JSON.stringify(eventResponse.event));
   });
 });
