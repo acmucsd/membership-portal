@@ -189,10 +189,10 @@ export default class MerchStoreService {
    *
    * @param uuid photo uuid
    */
-  public async deleteCollectionPhoto(uuid: Uuid): Promise<void> {
-    await this.transactions.readWrite(async (txn) => {
-      const merchStoreItemPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
-      const collectionPhoto = await merchStoreItemPhotoRepository.findByUuid(uuid);
+  public async deleteCollectionPhoto(uuid: Uuid): Promise<MerchCollectionPhoto> {
+    return await this.transactions.readWrite(async (txn) => {
+      const merchCollectionPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
+      const collectionPhoto = await merchCollectionPhotoRepository.findByUuid(uuid);
       if (!collectionPhoto) throw new NotFoundError('Merch item photo not found');
 
       const merchCollection = await Repositories.merchStoreCollection(txn).findByUuid(collectionPhoto.merchCollection.uuid);
@@ -203,11 +203,12 @@ export default class MerchStoreService {
       const { position } = collectionPhoto;
       merchCollection.collectionPhotos.forEach((p) => {
         if (p.position > position) {
-          merchStoreItemPhotoRepository.upsertMerchItemPhoto(p, { position: p.position - 1 });
+          merchCollectionPhotoRepository.upsertMerchItemPhoto(p, { position: p.position - 1 });
         }
       });
 
-      return merchStoreItemPhotoRepository.deleteMerchItemPhoto(collectionPhoto);
+      await merchCollectionPhotoRepository.deleteMerchItemPhoto(collectionPhoto);
+      return collectionPhoto;
     });
   }
 
