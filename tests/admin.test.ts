@@ -196,7 +196,6 @@ describe('updating user access level', () => {
     const marketingUser = UserFactory.fake({ accessType: UserAccessType.MARKETING });
     const merchStoreDistributorUser = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
 
-
     await new PortalState()
       .createUsers(admin, staffUser, standardUser, marketingUser, merchStoreDistributorUser)
       .write();
@@ -266,7 +265,7 @@ describe('updating user access level', () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
-    const userOne = UserFactory.fake({ accessType: UserAccessType.STAFF , email: 'smhariha@ucsd.edu'});
+    const userOne = UserFactory.fake({ accessType: UserAccessType.STAFF, email: 'smhariha@ucsd.edu' });
     // const userTwo = UserFactory.fake({ accessType: UserAccessType.STANDARD, email: 'smhariha@ucsd.edu' });
 
     await new PortalState()
@@ -285,12 +284,10 @@ describe('updating user access level', () => {
     }).rejects.toThrow(BadRequestError);
   });
 
-
   // attempt to promote a user to an admin
   test('attempt to promote a user to an admin', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-
 
     const staffUser = UserFactory.fake({ accessType: UserAccessType.STAFF });
     const standardUser = UserFactory.fake({ accessType: UserAccessType.STANDARD });
@@ -319,7 +316,6 @@ describe('updating user access level', () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
-
     // create another admin user
     const secondAdmin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
@@ -329,24 +325,21 @@ describe('updating user access level', () => {
 
     const adminController = ControllerFactory.admin(conn);
 
-
-
     const accessLevelResponse = await adminController.updateUserAccessLevel({
       accessUpdates: [
-        { user: secondAdmin.email, accessType: UserAccessType.MERCH_STORE_MANAGER }
+        { user: secondAdmin.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
       ],
     }, admin);
 
     const repository = conn.getRepository(UserModel);
     const updatedUser = await repository.find({
-      email: In([secondAdmin.email])
+      email: In([secondAdmin.email]),
     });
 
     expect(updatedUser[0].email).toEqual(secondAdmin.email);
     expect(updatedUser[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
     expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
   });
-
 
   test("ensure that the updating user's access level is not changed", async () => {
     const conn = await DatabaseConnection.get();

@@ -209,7 +209,6 @@ export default class UserAccountService {
     }
   }
 
-
   public async updateUserAccessLevels(accessUpdates: UserAccessUpdates[], emails: string[],
     currentUser: UserModel): Promise<PrivateProfile[]> {
     return this.transactions.readWrite(async (txn) => {
@@ -267,6 +266,6 @@ export default class UserAccountService {
     const users = await this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .findAll());
-      return users.map((user) => user.getFullUserProfile());
+    return users.map((user) => user.getFullUserProfile());
   }
 }
