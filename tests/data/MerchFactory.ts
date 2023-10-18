@@ -3,6 +3,7 @@ import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { MerchItemOptionMetadata, OrderPickupEventStatus } from '../../types';
 import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
+import { MerchCollectionPhotoModel } from '../../models/MerchCollectionPhotoModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
@@ -27,6 +28,14 @@ export class MerchFactory {
         hidden: substitute?.archived,
       }));
     }
+
+    if (!substitute?.collectionPhotos) {
+      const numPhotos = FactoryUtils.getRandomNumber(1, 5);
+      fake.collectionPhotos = MerchFactory
+        .createCollectionPhotos(numPhotos)
+        .map((merchPhoto) => MerchCollectionPhotoModel.merge(merchPhoto, { merchCollection: fake }));
+    }
+
     return MerchandiseCollectionModel.merge(fake, substitute);
   }
 
@@ -52,6 +61,22 @@ export class MerchFactory {
         .map((option) => MerchandiseItemOptionModel.merge(option, { item: fake }));
     }
     return MerchandiseItemModel.merge(fake, substitute);
+  }
+
+  public static fakeCollectionPhoto(substitute?: Partial<MerchCollectionPhotoModel>): MerchCollectionPhotoModel {
+    const fake = MerchCollectionPhotoModel.create({
+      uuid: uuid(),
+      position: 0,
+      uploadedPhoto: 'https://www.fakepicture.com/',
+      uploadedAt: faker.date.recent(),
+    });
+    return MerchCollectionPhotoModel.merge(fake, substitute);
+  }
+
+  private static createCollectionPhotos(n: number): MerchCollectionPhotoModel[] {
+    return FactoryUtils
+      .create(n, () => MerchFactory.fakeCollectionPhoto())
+      .map((merchPhoto, i) => MerchCollectionPhotoModel.merge(merchPhoto, { position: i }));
   }
 
   public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {

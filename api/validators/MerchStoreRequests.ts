@@ -10,11 +10,13 @@ import {
   IsDateString,
   ArrayNotEmpty,
   IsNumber,
+  IsNumberString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   CreateMerchCollectionRequest as ICreateMerchCollectionRequest,
   EditMerchCollectionRequest as IEditMerchCollectionRequest,
+  CreateCollectionPhotoRequest as ICreateCollectionPhotoRequest,
   CreateMerchItemRequest as ICreateMerchItemRequest,
   EditMerchItemRequest as IEditMerchItemRequest,
   CreateMerchItemOptionRequest as ICreateMerchItemOptionRequest,
@@ -58,7 +60,7 @@ export class MerchCollection implements IMerchCollection {
   archived?: boolean;
 
   @Allow()
-  photos: MerchCollectionPhoto[];
+  collectionPhotos: MerchCollectionPhoto[];
 }
 
 export class MerchCollectionEdit implements IMerchCollectionEdit {
@@ -298,6 +300,12 @@ export class EditMerchCollectionRequest implements IEditMerchCollectionRequest {
   @ValidateNested()
   @IsDefined()
   collection: MerchCollectionEdit;
+}
+
+export class CreateCollectionPhotoRequest implements ICreateCollectionPhotoRequest{
+  @IsDefined()
+  @IsNumberString()
+  position: string;
 }
 
 export class CreateMerchItemRequest implements ICreateMerchItemRequest {
