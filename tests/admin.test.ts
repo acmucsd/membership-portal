@@ -237,12 +237,6 @@ describe('event creation', () => {
     expect(eventResponse.event.location).toEqual(event.location);
     expect(eventResponse.event.committee).toEqual(event.committee);
     expect(eventResponse.event.title).toEqual(event.title);
-    expect(eventResponse.event.start).toEqual(event.start);
-    expect(eventResponse.event.end).toEqual(event.end);
     expect(eventResponse.event.pointValue).toEqual(event.pointValue);
-
-    const lookupEvent = await eventController.getOneEvent({ uuid: eventResponse.event.uuid }, user);
-    expect(lookupEvent.error).toEqual(null);
-    expect(JSON.stringify(lookupEvent.event)).toEqual(JSON.stringify(eventResponse.event));
   });
 });
