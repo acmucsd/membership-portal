@@ -98,9 +98,6 @@ export class MerchCollectionPhotoEdit implements IMerchCollectionPhotoEdit {
   uuid: string;
 
   @Allow()
-  uploadedPhoto: string;
-
-  @Allow()
   position: number;
 }
 
