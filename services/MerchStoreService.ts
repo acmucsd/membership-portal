@@ -113,6 +113,8 @@ export default class MerchStoreService {
     return this.transactions.readOnly(async (txn) => {
       const item = await Repositories.merchStoreItem(txn).findByUuid(uuid);
 
+      if (!item) throw new NotFoundError('Merch item not found');
+
       // calculate monthly and lifetime remaining purchases for this item
       const merchOrderItemRepository = Repositories.merchOrderItem(txn);
       const lifetimePurchaseHistory = await merchOrderItemRepository.getPastItemOrdersByUser(user, item);
