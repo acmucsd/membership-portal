@@ -208,7 +208,7 @@ export default class UserAccountService {
   public async updateUserAccessLevels(accessUpdates: UserAccessUpdates[], emails: string[],
     currentUser: UserModel): Promise<PrivateProfile[]> {
     return this.transactions.readWrite(async (txn) => {
-      // Check for duplicate emails in the request
+
       await this.checkDuplicateEmails(emails);
 
       // Strip out the user emails & validate that users exist
@@ -234,7 +234,6 @@ export default class UserAccountService {
 
         const updatedUser = await userRepository.upsertUser(currUser, { accessType });
 
-        // log the activity of changing a user's access type
         const activity = {
           user: currentUser,
           type: ActivityType.ACCOUNT_ACCESS_LEVEL_UPDATE,
