@@ -1,4 +1,4 @@
-import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
+import { BadRequestError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
@@ -15,7 +15,6 @@ import {
   UserPatches,
   UserState,
   PrivateProfile,
-  UserAccessType,
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
@@ -235,11 +234,6 @@ export default class UserAccountService {
 
         const currUser = emailToUserMap[user];
         const oldAccess = currUser.accessType;
-
-        // Prevent anyone from promoting user to admin
-        if (accessType === UserAccessType.ADMIN) {
-          throw new ForbiddenError('You cannot promote users to admin.');
-        }
 
         const updatedUser = await userRepository.upsertUser(currUser, { accessType });
 
