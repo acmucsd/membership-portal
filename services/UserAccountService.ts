@@ -196,9 +196,6 @@ export default class UserAccountService {
 
   public async checkDuplicateEmails(emails: string[]) {
     const emailSet = emails.reduce((set, email) => {
-      if (set.has(email)) {
-        return set;
-      }
       set.add(email);
       return set;
     }, new Set<string>());
