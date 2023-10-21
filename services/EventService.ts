@@ -15,11 +15,18 @@ export default class EventService {
     this.transactions = new TransactionsManager(entityManager);
   }
 
-  public async create(event: Event) {
+  /**
+   * Creates a new event
+   *
+   * @param event object with all the properties of the event
+   * @returns The event that was created
+   */
+  public async create(event: Event): Promise<PublicEvent> {
     const eventCreated = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const isUnusedAttendanceCode = eventRepository.isUnusedAttendanceCode(event.attendanceCode);
       if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
+      if (event.start > event.end) throw new UserError('Start date after end date');
       return eventRepository.upsertEvent(EventModel.create(event));
     });
     return eventCreated.getPublicEvent();
