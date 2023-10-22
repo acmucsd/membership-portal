@@ -116,11 +116,13 @@ async function seed(): Promise<void> {
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
 
+  const RESUME_URL = 'https://acmucsd-local.s3.us-west-1.amazonaws.com/resumeSeedingData/alexface.pdf';
+
   const USER_VISIBLE_RESUME = UserFactory.fake();
-  const RESUME_1 = ResumeFactory.fake({ user: USER_VISIBLE_RESUME, isResumeVisible: true });
+  const RESUME_1 = ResumeFactory.fake({ user: USER_VISIBLE_RESUME, isResumeVisible: true, url: RESUME_URL });
 
   const USER_HIDDEN_RESUME = UserFactory.fake();
-  const RESUME_2 = ResumeFactory.fake({ user: USER_HIDDEN_RESUME, isResumeVisible: false });
+  const RESUME_2 = ResumeFactory.fake({ user: USER_HIDDEN_RESUME, isResumeVisible: false, url: RESUME_URL });
 
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
