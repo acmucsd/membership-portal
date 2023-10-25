@@ -189,10 +189,10 @@ describe('editing merch collections', () => {
 });
 
 
-describe('merch item photos', () => {
+describe('merch collection photos', () => {
   const folderLocation = 'https://s3.amazonaws.com/upload-photo/';
 
-  test('can create an item with up to 5 pictures', async () => {
+  test('can create a collection with up to 5 pictures', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const photo1 = MerchFactory.fakeCollectionPhoto();
@@ -263,7 +263,7 @@ describe('merch item photos', () => {
       .rejects.toThrow('Merch items cannot have more than 5 pictures');
   });
 
-  test('can remap the picture of an item to different orders', async () => {
+  test('can remap the picture of a collection to different orders', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const photo1 = MerchFactory.fakeCollectionPhoto({ position: 0 });
@@ -304,7 +304,7 @@ describe('merch item photos', () => {
     expect(newPhotosUuids).toStrictEqual(expectedPhotosUuids);
   });
 
-  test('can delete photo until 1 photo left except merch item is deleted', async () => {
+  test('can delete photo until 1 photo left except merch collection is deleted', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const photo1 = MerchFactory.fakeCollectionPhoto({ position: 0 });
@@ -366,6 +366,7 @@ describe('archived merch collections', () => {
       .createMerchCollections(collection)
       .write();
 
+    console.log(collection.collectionPhotos)
     const merchStoreController = ControllerFactory.merchStore(conn);
     const params = { uuid: collection.uuid };
 
@@ -513,15 +514,18 @@ describe('merch items with no options', () => {
   test('can delete all item options and add back options if the item is hidden', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const item = MerchFactory.fakeItem({ hidden: true });
+    const collection = MerchFactory.fakeCollection();
+    const item = MerchFactory.fakeItem({ hidden: true, collection });
+    collection.items = [item]
 
     await new PortalState()
       .createUsers(admin)
+      .createMerchCollections(collection)
       .createMerchItem(item)
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
-
+    console.log(item.collection.collectionPhotos)
     // delete all options from the merch item
     for (let i = 0; i < item.options.length; i += 1) {
       const optionParams = { uuid: item.options[i].uuid };
