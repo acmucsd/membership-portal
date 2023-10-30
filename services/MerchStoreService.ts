@@ -178,39 +178,46 @@ export default class MerchStoreService {
       merchCollection.collectionPhotos.push(createdPhoto);
       MerchStoreService.verifyCollectionHasValidPhotos(merchCollection);
 
-      const upsertedPhoto = await merchStoreCollectionPhotoRepository.upsertMerchItemPhoto(createdPhoto);
+      const upsertedPhoto = await merchStoreCollectionPhotoRepository.upsertCollectionPhoto(createdPhoto);
       return upsertedPhoto.getPublicMerchCollectionPhoto();
     });
   }
 
   /**
-   * Deletes the given collection photo. Fail if the merch item is visible
+   * Check if the photo is ready to be deleted. Fail if the merch item is visible
    * and it was the only photo of the item.
    *
-   * @param uuid photo uuid
-   */
-  public async deleteCollectionPhoto(uuid: Uuid): Promise<MerchCollectionPhoto> {
-    return await this.transactions.readWrite(async (txn) => {
-      const merchCollectionPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
-      const collectionPhoto = await merchCollectionPhotoRepository.findByUuid(uuid);
-      if (!collectionPhoto) throw new NotFoundError('Merch item photo not found');
+   * @param uuid the uuid of photo to be deleted
+   * @returns the photo object to be removed from database
+  */
+    public async getCollectionPhotoForDeletion(uuid: Uuid): Promise<MerchCollectionPhotoModel> {
+      return this.transactions.readWrite(async (txn) => {
+        const merchCollectionPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
+        const collectionPhoto = await merchCollectionPhotoRepository.findByUuid(uuid);
+        if (!collectionPhoto) throw new NotFoundError('Merch collection photo not found');
 
-      const merchCollection = await Repositories.merchStoreCollection(txn).findByUuid(collectionPhoto.merchCollection.uuid);
-      if (merchCollection.collectionPhotos.length === 1) {
-        throw new UserError('Cannot delete the only photo for a visible merch item');
-      }
-      // decrement photo index for all photos after the inserted photo
-      const { position } = collectionPhoto;
-      merchCollection.collectionPhotos.forEach((p) => {
-        if (p.position > position) {
-          merchCollectionPhotoRepository.upsertMerchItemPhoto(p, { position: p.position - 1 });
+        const collection = await Repositories.merchStoreCollection(txn).findByUuid(collectionPhoto.merchCollection.uuid);
+        if (collection.collectionPhotos.length === 1) {
+          throw new UserError('Cannot delete the only photo for a collection');
         }
-      });
 
-      await merchCollectionPhotoRepository.deleteMerchItemPhoto(collectionPhoto);
-      return collectionPhoto;
-    });
-  }
+        return collectionPhoto;
+      });
+    }
+
+    /**
+   * Deletes the given item photo.
+   *
+   * @param merchPhoto the photo object to be removed
+   * @returns the photo object removed from database
+   */
+    public async deleteCollectionPhoto(collectionPhoto: MerchCollectionPhotoModel): Promise<MerchCollectionPhoto> {
+      return this.transactions.readWrite(async (txn) => {
+        const merchStoreItemPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
+        await merchStoreItemPhotoRepository.deleteCollectionPhoto(collectionPhoto);
+        return collectionPhoto;
+      });
+}
 
   public async findItemByUuid(uuid: Uuid, user: UserModel): Promise<PublicMerchItemWithPurchaseLimits> {
     return this.transactions.readOnly(async (txn) => {

@@ -152,8 +152,9 @@ export class MerchStoreController {
   async deleteMerchCollectionPhoto(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
   Promise<DeleteCollectionPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    const deletedPhoto = await this.merchStoreService.deleteCollectionPhoto(params.uuid);
-    await this.storageService.deleteAtUrl(deletedPhoto.uploadedPhoto)
+    const photoToDelete = await this.merchStoreService.getCollectionPhotoForDeletion(params.uuid);
+    await this.storageService.deleteAtUrl(photoToDelete.uploadedPhoto);
+    const deletedPhoto = await this.merchStoreService.deleteCollectionPhoto(photoToDelete);
     return { error: null };
   }
 

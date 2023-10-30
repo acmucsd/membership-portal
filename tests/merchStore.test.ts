@@ -284,6 +284,7 @@ describe('merch collection photos', () => {
 
     // check before remap whether photos are correctly positioned
     expect((await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos).toEqual(collectionPhotos);
+    //console.log(collectionPhotos);
 
     // reversing the order of the photos
     const editMerchCollectionRequest = { collection: {
@@ -329,27 +330,28 @@ describe('merch collection photos', () => {
     const collectionInDatabase = (await merchStoreController.getOneMerchCollection(params, admin)).collection;
     expect(collectionInDatabase.collectionPhotos).toEqual(collectionPhotos);
 
-    const deleteMerchItemPhotoParam1 = { uuid: photo1.uuid };
-    const deleteMerchItemPhotoParam2 = { uuid: photo2.uuid };
+    const deleteMerchCollectionPhotoParam1 = { uuid: photo1.uuid };
+    const deleteMerchCollectionPhotoParam2 = { uuid: photo2.uuid };
 
     // verify deletion delete correctly
-    await merchStoreController.deleteMerchCollectionPhoto(deleteMerchItemPhotoParam1, admin);
+    await merchStoreController.deleteMerchCollectionPhoto(deleteMerchCollectionPhotoParam1, admin);
     const expectedUrl = collectionInDatabase.collectionPhotos[0].uploadedPhoto;
     verify(storageService.deleteAtUrl(expectedUrl)).called();
 
     const newPhotos = (await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos;
 
     expect(newPhotos).toHaveLength(1);
+    console.log(newPhotos[0])
     expect(newPhotos[0].uuid).toEqual(photo2.uuid);
     expect(newPhotos[0].position).toEqual(1);
 
     // verify visible item photo limitation
-    expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchItemPhotoParam2, admin))
-      .rejects.toThrow('Cannot delete the only photo for a visible merch item');
+    expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchCollectionPhotoParam2, admin))
+      .rejects.toThrow('Cannot delete the only photo for a collection');
 
     // check cascade
     await merchStoreController.deleteMerchCollection(params, admin);
-    expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchItemPhotoParam2, admin))
+    expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchCollectionPhotoParam2, admin))
       .rejects.toThrow(NotFoundError);
   });
 });
@@ -366,7 +368,6 @@ describe('archived merch collections', () => {
       .createMerchCollections(collection)
       .write();
 
-    console.log(collection.collectionPhotos)
     const merchStoreController = ControllerFactory.merchStore(conn);
     const params = { uuid: collection.uuid };
 
@@ -525,7 +526,7 @@ describe('merch items with no options', () => {
       .write();
 
     const merchStoreController = ControllerFactory.merchStore(conn);
-    console.log(item.collection.collectionPhotos)
+
     // delete all options from the merch item
     for (let i = 0; i < item.options.length; i += 1) {
       const optionParams = { uuid: item.options[i].uuid };
