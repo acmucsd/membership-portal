@@ -188,7 +188,6 @@ describe('editing merch collections', () => {
   });
 });
 
-
 describe('merch collection photos', () => {
   const folderLocation = 'https://s3.amazonaws.com/upload-photo/';
 
@@ -283,7 +282,8 @@ describe('merch collection photos', () => {
     const params = { uuid: collection.uuid };
 
     // check before remap whether photos are correctly positioned
-    expect((await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos).toEqual(collectionPhotos);
+    expect((await merchStoreController.getOneMerchCollection(params, admin))
+      .collection.collectionPhotos).toEqual(collectionPhotos);
 
     // reversing the order of the photos
     const editMerchCollectionRequest = { collection: {
@@ -515,7 +515,7 @@ describe('merch items with no options', () => {
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const collection = MerchFactory.fakeCollection();
     const item = MerchFactory.fakeItem({ hidden: true, collection });
-    collection.items = [item]
+    collection.items = [item];
 
     await new PortalState()
       .createUsers(admin)

@@ -81,7 +81,7 @@ export class MerchCollectionEdit implements IMerchCollectionEdit {
   discountPercentage?: number;
 
   @Allow()
-  collectionPhotos?: MerchCollectionPhotoEdit[]
+  collectionPhotos?: MerchCollectionPhotoEdit[];
 }
 
 export class MerchCollectionPhoto implements IMerchCollectionPhoto {
@@ -299,7 +299,7 @@ export class EditMerchCollectionRequest implements IEditMerchCollectionRequest {
   collection: MerchCollectionEdit;
 }
 
-export class CreateCollectionPhotoRequest implements ICreateCollectionPhotoRequest{
+export class CreateCollectionPhotoRequest implements ICreateCollectionPhotoRequest {
   @IsDefined()
   @IsNumberString()
   position: string;

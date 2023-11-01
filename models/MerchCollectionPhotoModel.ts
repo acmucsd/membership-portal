@@ -7,7 +7,8 @@ export class MerchCollectionPhotoModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 
-  @ManyToOne((type) => MerchandiseCollectionModel, (merchCollection) => merchCollection.collectionPhotos, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne((type) => MerchandiseCollectionModel,
+    (merchCollection) => merchCollection.collectionPhotos, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'merchCollection' })
   @Index('images_by_collection_index')
   merchCollection: MerchandiseCollectionModel;

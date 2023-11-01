@@ -1,11 +1,10 @@
 import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
 
 const TABLE_NAME = 'MerchCollectionPhotos';
-const COLLECTION_TABLE_NAME = 'MerchandiseCollections'
+const COLLECTION_TABLE_NAME = 'MerchandiseCollections';
 
-export class addCollectionImageTable1696990832868 implements MigrationInterface {
-
-public async up(queryRunner: QueryRunner): Promise<void> {
+export class AddCollectionImageTable1696990832868 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(new Table({
       name: TABLE_NAME,
       columns: [
@@ -56,5 +55,4 @@ public async up(queryRunner: QueryRunner): Promise<void> {
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropTable(TABLE_NAME);
   }
-
 }

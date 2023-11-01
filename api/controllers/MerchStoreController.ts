@@ -128,10 +128,10 @@ export class MerchStoreController {
   @UseBefore(UserAuthentication)
   @Post('/collection/picture/:uuid')
   async createMerchCollectionPhoto(@UploadedFile('image',
-  { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
-  @Params() params: UuidParam,
-  @Body() createCollectionRequest: CreateCollectionPhotoRequest,
-  @AuthenticatedUser() user: UserModel): Promise<CreateCollectionPhotoResponse> {
+    { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
+    @Params() params: UuidParam,
+    @Body() createCollectionRequest: CreateCollectionPhotoRequest,
+    @AuthenticatedUser() user: UserModel): Promise<CreateCollectionPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
     // generate a random string for the uploaded photo url
@@ -154,7 +154,7 @@ export class MerchStoreController {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     const photoToDelete = await this.merchStoreService.getCollectionPhotoForDeletion(params.uuid);
     await this.storageService.deleteAtUrl(photoToDelete.uploadedPhoto);
-    const deletedPhoto = await this.merchStoreService.deleteCollectionPhoto(photoToDelete);
+    await this.merchStoreService.deleteCollectionPhoto(photoToDelete);
     return { error: null };
   }
 
