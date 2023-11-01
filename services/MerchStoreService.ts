@@ -55,6 +55,7 @@ export default class MerchStoreService {
       .findByUuid(uuid));
     if (!collection) throw new NotFoundError('Merch collection not found');
     if (collection.archived && !canSeeInactiveCollections) throw new ForbiddenError();
+    collection.collectionPhotos = collection.collectionPhotos.sort((a, b) => a.position-b.position)
     return canSeeInactiveCollections ? collection : collection.getPublicMerchCollection();
   }
 

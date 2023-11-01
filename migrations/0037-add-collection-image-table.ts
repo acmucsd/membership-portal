@@ -34,13 +34,6 @@ public async up(queryRunner: QueryRunner): Promise<void> {
           type: 'integer',
         },
       ],
-      // optimize searching
-      indices: [
-        {
-          name: 'images_by_collection_index',
-          columnNames: ['merchCollection'],
-        },
-      ],
       // cascade delete
       foreignKeys: [
         {

@@ -284,7 +284,6 @@ describe('merch collection photos', () => {
 
     // check before remap whether photos are correctly positioned
     expect((await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos).toEqual(collectionPhotos);
-    //console.log(collectionPhotos);
 
     // reversing the order of the photos
     const editMerchCollectionRequest = { collection: {
@@ -341,7 +340,6 @@ describe('merch collection photos', () => {
     const newPhotos = (await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos;
 
     expect(newPhotos).toHaveLength(1);
-    console.log(newPhotos[0])
     expect(newPhotos[0].uuid).toEqual(photo2.uuid);
     expect(newPhotos[0].position).toEqual(1);
 
