@@ -170,7 +170,7 @@ export class MerchStoreController {
 
     // generate a random string for the uploaded photo url
     const position = Number(createItemPhotoRequest.position);
-    if (isNaN(position)) throw new BadRequestError("Position is not a number");
+    if (Number.isNaN(position)) throw new BadRequestError('Position is not a number');
     const uniqueFileName = uuid();
     const uploadedPhoto = await this.storageService.uploadToFolder(
       file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid,
@@ -189,7 +189,7 @@ export class MerchStoreController {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     const photoToDelete = await this.merchStoreService.getItemPhotoForDeletion(params.uuid);
     await this.storageService.deleteAtUrl(photoToDelete.uploadedPhoto);
-    const deletedPhoto = await this.merchStoreService.deleteItemPhoto(photoToDelete);
+    await this.merchStoreService.deleteItemPhoto(photoToDelete);
     return { error: null };
   }
 
