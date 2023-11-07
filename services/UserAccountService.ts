@@ -194,7 +194,7 @@ export default class UserAccountService {
     });
   }
 
-  public async checkDuplicateEmails(emails: string[]) {
+  public checkDuplicateEmails(emails: string[]) {
     const emailSet = emails.reduce((set, email) => {
       set.add(email);
       return set;
@@ -208,7 +208,7 @@ export default class UserAccountService {
   public async updateUserAccessLevels(accessUpdates: UserAccessUpdates[], emails: string[],
     currentUser: UserModel): Promise<PrivateProfile[]> {
     return this.transactions.readWrite(async (txn) => {
-      await this.checkDuplicateEmails(emails);
+      this.checkDuplicateEmails(emails);
 
       // Strip out the user emails & validate that users exist
       const userRepository = Repositories.user(txn);
