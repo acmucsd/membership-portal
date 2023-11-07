@@ -208,7 +208,6 @@ export default class UserAccountService {
   public async updateUserAccessLevels(accessUpdates: UserAccessUpdates[], emails: string[],
     currentUser: UserModel): Promise<PrivateProfile[]> {
     return this.transactions.readWrite(async (txn) => {
-
       await this.checkDuplicateEmails(emails);
 
       // Strip out the user emails & validate that users exist
