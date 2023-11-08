@@ -1,6 +1,6 @@
 import * as moment from 'moment';
 import { UserAccessType } from '../types';
-import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
+import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory, ResumeFactory } from './data';
 
 function getGraduationYear(n: number) {
   return moment().year() + n;
@@ -115,6 +115,14 @@ async function seed(): Promise<void> {
     email: 'acm_store_distributor@ucsd.edu',
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
+
+  const RESUME_URL = 'https://acmucsd-local.s3.us-west-1.amazonaws.com/resumeSeedingData/alexface.pdf';
+
+  const USER_VISIBLE_RESUME = UserFactory.fake();
+  const RESUME_1 = ResumeFactory.fake({ user: USER_VISIBLE_RESUME, isResumeVisible: true, url: RESUME_URL });
+
+  const USER_HIDDEN_RESUME = UserFactory.fake();
+  const RESUME_2 = ResumeFactory.fake({ user: USER_HIDDEN_RESUME, isResumeVisible: false, url: RESUME_URL });
 
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
@@ -549,6 +557,8 @@ async function seed(): Promise<void> {
       USER_MARKETING,
       USER_MERCH_STORE_MANAGER,
       USER_MERCH_STORE_DISTRIBUTOR,
+      USER_VISIBLE_RESUME,
+      USER_HIDDEN_RESUME,
       ...otherMembers,
     )
     .createEvents(
@@ -642,6 +652,8 @@ async function seed(): Promise<void> {
     .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_2_OPTION_2X2, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_JUNIOR, [{ option: MERCH_ITEM_2_OPTION_4X4, quantity: 2 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_SENIOR, [{ option: MERCH_ITEM_2_OPTION_3X3, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
+    .createResumes(USER_VISIBLE_RESUME, RESUME_1)
+    .createResumes(USER_HIDDEN_RESUME, RESUME_2)
     .write();
 }
 
