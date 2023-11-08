@@ -1,7 +1,7 @@
 import * as moment from 'moment';
 import { UserAccessType, SocialMediaType } from '../types';
 import { DatabaseConnection, EventFactory, MerchFactory,
-  PortalState, UserFactory, UserSocialMediaFactory } from './data';
+  PortalState, UserFactory, ResumeFactory, UserSocialMediaFactory } from './data';
 
 function getGraduationYear(n: number) {
   return moment().year() + n;
@@ -117,7 +117,7 @@ async function seed(): Promise<void> {
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
 
-  // user social media testing
+  // Used for testing various User Social Media
   const USER_SOCIAL_MEDIA_1 = UserFactory.fake();
   const USER_SOCIAL_MEDIA_1_FACEBOOK = UserSocialMediaFactory.fake(
     { user: USER_SOCIAL_MEDIA_1, type: SocialMediaType.FACEBOOK },
@@ -167,6 +167,13 @@ async function seed(): Promise<void> {
   const USER_SOCIAL_MEDIA_ALL_EMAIL = UserSocialMediaFactory.fake(
     { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.EMAIL },
   );
+  const RESUME_URL = 'https://acmucsd-local.s3.us-west-1.amazonaws.com/resumeSeedingData/alexface.pdf';
+
+  const USER_VISIBLE_RESUME = UserFactory.fake();
+  const RESUME_1 = ResumeFactory.fake({ user: USER_VISIBLE_RESUME, isResumeVisible: true, url: RESUME_URL });
+
+  const USER_HIDDEN_RESUME = UserFactory.fake();
+  const RESUME_2 = ResumeFactory.fake({ user: USER_HIDDEN_RESUME, isResumeVisible: false, url: RESUME_URL });
 
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
@@ -605,6 +612,8 @@ async function seed(): Promise<void> {
       USER_SOCIAL_MEDIA_2,
       USER_SOCIAL_MEDIA_3,
       USER_SOCIAL_MEDIA_ALL,
+      USER_VISIBLE_RESUME,
+      USER_HIDDEN_RESUME,
       ...otherMembers,
     )
     .createEvents(
@@ -706,6 +715,8 @@ async function seed(): Promise<void> {
       USER_SOCIAL_MEDIA_ALL_INSTAGRAM,
       USER_SOCIAL_MEDIA_ALL_LINKEDIN, USER_SOCIAL_MEDIA_ALL_DEVPOST, USER_SOCIAL_MEDIA_ALL_TWITTER,
       USER_SOCIAL_MEDIA_ALL_PORTFOLIO, USER_SOCIAL_MEDIA_ALL_EMAIL)
+    .createResumes(USER_VISIBLE_RESUME, RESUME_1)
+    .createResumes(USER_HIDDEN_RESUME, RESUME_2)
     .write();
 }
 
