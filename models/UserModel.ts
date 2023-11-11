@@ -115,6 +115,10 @@ export class UserModel extends BaseEntity {
     return this.accessType === UserAccessType.MERCH_STORE_DISTRIBUTOR;
   }
 
+  public isSponsorshipMember(): boolean {
+    return this.accessType === UserAccessType.SPONSORSHIP_MEMBER;
+  }
+
   public getPublicProfile(): PublicProfile {
     const publicProfile: PublicProfile = {
       uuid: this.uuid,

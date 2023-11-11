@@ -79,6 +79,6 @@ export default class PermissionsService {
   }
 
   public static canSeeAllVisibleResumes(user: UserModel) {
-    return user.isAdmin();
+    return user.isAdmin() || user.isSponsorshipMember();
   }
 }
