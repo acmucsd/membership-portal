@@ -57,7 +57,7 @@ describe('resume fetching', () => {
 
   test('sponsorship members can get all visible resumes', async () => {
     const conn = await DatabaseConnection.get();
-    const admin = UserFactory.fake({ accessType: UserAccessType.SPONSORSHIP_MEMBER });
+    const admin = UserFactory.fake({ accessType: UserAccessType.SPONSORSHIP_MANAGER });
     const member = UserFactory.fake();
     const resume = ResumeFactory.fake({ user: member, isResumeVisible: true });
 
@@ -105,7 +105,7 @@ describe('resume fetching', () => {
 
   test('sponsorship members cannot get hidden resumes', async () => {
     const conn = await DatabaseConnection.get();
-    const admin = UserFactory.fake({ accessType: UserAccessType.SPONSORSHIP_MEMBER });
+    const admin = UserFactory.fake({ accessType: UserAccessType.SPONSORSHIP_MANAGER });
     const member = UserFactory.fake();
     const resume = ResumeFactory.fake({ user: member, isResumeVisible: false });
 
