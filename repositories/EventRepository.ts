@@ -1,4 +1,4 @@
-import { EntityRepository, MoreThanOrEqual, SelectQueryBuilder } from 'typeorm';
+import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { EventSearchOptions, Uuid } from '../types';
 import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
@@ -41,14 +41,8 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async isUnusedAttendanceCode(attendanceCode: string): Promise<boolean> {
-    const attendanceCodeDuplicates = await this.repository.find({
-      where: {
-        attendanceCode,
-        end: MoreThanOrEqual(new Date()),
-      },
-    });
-
-    return attendanceCodeDuplicates.length === 0;
+    const count = await this.repository.count({ attendanceCode });
+    return count === 0;
   }
 
   private getBaseEventSearchQuery(options: EventSearchOptions): SelectQueryBuilder<EventModel> {
@@ -64,4 +58,3 @@ export class EventRepository extends BaseRepository<EventModel> {
     return query;
   }
 }
-
