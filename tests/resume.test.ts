@@ -55,14 +55,14 @@ describe('resume fetching', () => {
     });
   });
 
-  test('sponsorship members can get all visible resumes', async () => {
+  test('sponsorship managers can get all visible resumes', async () => {
     const conn = await DatabaseConnection.get();
-    const admin = UserFactory.fake({ accessType: UserAccessType.SPONSORSHIP_MANAGER });
+    const sponsorshipManager = UserFactory.fake({ accessType: UserAccessType.SPONSORSHIP_MANAGER });
     const member = UserFactory.fake();
     const resume = ResumeFactory.fake({ user: member, isResumeVisible: true });
 
     await new PortalState()
-      .createUsers(admin, member)
+      .createUsers(sponsorshipManager, member)
       .createResumes(member, resume)
       .write();
 
@@ -74,7 +74,7 @@ describe('resume fetching', () => {
     );
 
     // get response resumes
-    const response = await resumeController.getAllVisibleResumes(admin);
+    const response = await resumeController.getAllVisibleResumes(sponsorshipManager);
     expect(response.error).toBeNull();
     expect(response.resumes).toHaveLength(1);
     expect(response.resumes[0]).toStrictEqual({
@@ -103,19 +103,19 @@ describe('resume fetching', () => {
     expect(response.resumes).toHaveLength(0);
   });
 
-  test('sponsorship members cannot get hidden resumes', async () => {
+  test('sponsorship managers cannot get hidden resumes', async () => {
     const conn = await DatabaseConnection.get();
-    const admin = UserFactory.fake({ accessType: UserAccessType.SPONSORSHIP_MANAGER });
+    const sponsorshipManager = UserFactory.fake({ accessType: UserAccessType.SPONSORSHIP_MANAGER });
     const member = UserFactory.fake();
     const resume = ResumeFactory.fake({ user: member, isResumeVisible: false });
 
     await new PortalState()
-      .createUsers(admin, member)
+      .createUsers(sponsorshipManager, member)
       .createResumes(member, resume)
       .write();
 
     const resumeController = ControllerFactory.resume(conn);
-    const response = await resumeController.getAllVisibleResumes(admin);
+    const response = await resumeController.getAllVisibleResumes(sponsorshipManager);
     expect(response.error).toBeNull();
     expect(response.resumes).toHaveLength(0);
   });
