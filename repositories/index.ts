@@ -4,7 +4,12 @@ import { FeedbackRepository } from './FeedbackRepository';
 import { AttendanceRepository } from './AttendanceRepository';
 import { EventRepository } from './EventRepository';
 import { MerchOrderRepository, OrderItemRepository, OrderPickupEventRepository } from './MerchOrderRepository';
-import { MerchCollectionRepository, MerchItemRepository, MerchItemOptionRepository, MerchCollectionPhotoRepository } from './MerchStoreRepository';
+import {
+  MerchCollectionRepository,
+  MerchItemRepository,
+  MerchItemOptionRepository,
+  MerchCollectionPhotoRepository,
+} from './MerchStoreRepository';
 import { ActivityRepository } from './ActivityRepository';
 import { LeaderboardRepository } from './LeaderboardRepository';
 import { ResumeRepository } from './ResumeRepository';

@@ -188,15 +188,14 @@ describe('editing merch collections', () => {
   });
 });
 
+describe('merch collection photos', () => {
+  const folderLocation = 'https://s3.amazonaws.com/upload-photo/';
 
-// describe('merch collection photos', () => {
-//   const folderLocation = 'https://s3.amazonaws.com/upload-photo/';
-
-//   test('can create an item with up to 5 pictures', async () => {
-//     const conn = await DatabaseConnection.get();
-//     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-//     const photo1 = MerchFactory.fakeCollectionPhoto();
-//     const collection = MerchFactory.fakeCollection({ collectionPhotos: [photo1] });
+  test('can create a collection with up to 5 pictures', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const photo1 = MerchFactory.fakeCollectionPhoto();
+    const collection = MerchFactory.fakeCollection({ collectionPhotos: [photo1] });
 
 //     await new PortalState()
 //       .createUsers(admin)
@@ -263,16 +262,16 @@ describe('editing merch collections', () => {
 //       .rejects.toThrow('Merch items cannot have more than 5 pictures');
 //   });
 
-//   test('can remap the picture of an item to different orders', async () => {
-//     const conn = await DatabaseConnection.get();
-//     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-//     const photo1 = MerchFactory.fakeCollectionPhoto({ position: 0 });
-//     const photo2 = MerchFactory.fakeCollectionPhoto({ position: 1 });
-//     const photo3 = MerchFactory.fakeCollectionPhoto({ position: 2 });
-//     const photo4 = MerchFactory.fakeCollectionPhoto({ position: 3 });
-//     const photo5 = MerchFactory.fakeCollectionPhoto({ position: 4 });
-//     const collectionPhotos = [photo1, photo2, photo3, photo4, photo5];
-//     const collection = MerchFactory.fakeCollection({ collectionPhotos });
+  test('can remap the picture of a collection to different orders', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const photo1 = MerchFactory.fakeCollectionPhoto({ position: 0 });
+    const photo2 = MerchFactory.fakeCollectionPhoto({ position: 1 });
+    const photo3 = MerchFactory.fakeCollectionPhoto({ position: 2 });
+    const photo4 = MerchFactory.fakeCollectionPhoto({ position: 3 });
+    const photo5 = MerchFactory.fakeCollectionPhoto({ position: 4 });
+    const collectionPhotos = [photo1, photo2, photo3, photo4, photo5];
+    const collection = MerchFactory.fakeCollection({ collectionPhotos });
 
 //     await new PortalState()
 //       .createUsers(admin)
@@ -282,8 +281,9 @@ describe('editing merch collections', () => {
 //     const merchStoreController = ControllerFactory.merchStore(conn);
 //     const params = { uuid: collection.uuid };
 
-//     // check before remap whether photos are correctly positioned
-//     expect((await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos).toEqual(collectionPhotos);
+    // check before remap whether photos are correctly positioned
+    expect((await merchStoreController.getOneMerchCollection(params, admin))
+      .collection.collectionPhotos).toEqual(collectionPhotos);
 
 //     // reversing the order of the photos
 //     const editMerchCollectionRequest = { collection: {
@@ -304,13 +304,13 @@ describe('editing merch collections', () => {
 //     expect(newPhotosUuids).toStrictEqual(expectedPhotosUuids);
 //   });
 
-//   test('can delete photo until 1 photo left except merch item is deleted', async () => {
-//     const conn = await DatabaseConnection.get();
-//     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-//     const photo1 = MerchFactory.fakeCollectionPhoto({ position: 0 });
-//     const photo2 = MerchFactory.fakeCollectionPhoto({ position: 1 });
-//     const collectionPhotos = [photo1, photo2];
-//     const collection = MerchFactory.fakeCollection({ collectionPhotos });
+  test('can delete photo until 1 photo left except merch collection is deleted', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const photo1 = MerchFactory.fakeCollectionPhoto({ position: 0 });
+    const photo2 = MerchFactory.fakeCollectionPhoto({ position: 1 });
+    const collectionPhotos = [photo1, photo2];
+    const collection = MerchFactory.fakeCollection({ collectionPhotos });
 
 //     await new PortalState()
 //       .createUsers(admin)
@@ -329,13 +329,13 @@ describe('editing merch collections', () => {
 //     const collectionInDatabase = (await merchStoreController.getOneMerchCollection(params, admin)).collection;
 //     expect(collectionInDatabase.collectionPhotos).toEqual(collectionPhotos);
 
-//     const deleteMerchItemPhotoParam1 = { uuid: photo1.uuid };
-//     const deleteMerchItemPhotoParam2 = { uuid: photo2.uuid };
+    const deleteMerchCollectionPhotoParam1 = { uuid: photo1.uuid };
+    const deleteMerchCollectionPhotoParam2 = { uuid: photo2.uuid };
 
-//     // verify deletion delete correctly
-//     await merchStoreController.deleteMerchCollectionPhoto(deleteMerchItemPhotoParam1, admin);
-//     const expectedUrl = collectionInDatabase.collectionPhotos[0].uploadedPhoto;
-//     verify(storageService.deleteAtUrl(expectedUrl)).called();
+    // verify deletion delete correctly
+    await merchStoreController.deleteMerchCollectionPhoto(deleteMerchCollectionPhotoParam1, admin);
+    const expectedUrl = collectionInDatabase.collectionPhotos[0].uploadedPhoto;
+    verify(storageService.deleteAtUrl(expectedUrl)).called();
 
 //     const newPhotos = (await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos;
 
@@ -343,16 +343,16 @@ describe('editing merch collections', () => {
 //     expect(newPhotos[0].uuid).toEqual(photo2.uuid);
 //     expect(newPhotos[0].position).toEqual(1);
 
-//     // verify visible item photo limitation
-//     expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchItemPhotoParam2, admin))
-//       .rejects.toThrow('Cannot delete the only photo for a visible merch item');
+    // verify visible item photo limitation
+    expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchCollectionPhotoParam2, admin))
+      .rejects.toThrow('Cannot delete the only photo for a collection');
 
-//     // check cascade
-//     await merchStoreController.deleteMerchCollection(params, admin);
-//     expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchItemPhotoParam2, admin))
-//       .rejects.toThrow(NotFoundError);
-//   });
-// });
+    // check cascade
+    await merchStoreController.deleteMerchCollection(params, admin);
+    expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchCollectionPhotoParam2, admin))
+      .rejects.toThrow(NotFoundError);
+  });
+});
 
 describe('archived merch collections', () => {
   test('only admins can view archived collections', async () => {
@@ -513,10 +513,13 @@ describe('merch items with no options', () => {
   test('can delete all item options and add back options if the item is hidden', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const item = MerchFactory.fakeItem({ hidden: true });
+    const collection = MerchFactory.fakeCollection();
+    const item = MerchFactory.fakeItem({ hidden: true, collection });
+    collection.items = [item];
 
     await new PortalState()
       .createUsers(admin)
+      .createMerchCollections(collection)
       .createMerchItem(item)
       .write();
 

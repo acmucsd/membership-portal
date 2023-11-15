@@ -1,13 +1,13 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
+import FactoryUtils from './FactoryUtils';
 import { MerchItemOptionMetadata, OrderPickupEventStatus } from '../../types';
 import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
-import { MerchCollectionPhotoModel } from '../../models/MerchCollectionPhotoModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
+import { MerchCollectionPhotoModel } from '../../models/MerchCollectionPhotoModel';
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
-import FactoryUtils from './FactoryUtils';
 
 export class MerchFactory {
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
@@ -33,7 +33,7 @@ export class MerchFactory {
       const numPhotos = FactoryUtils.getRandomNumber(1, 5);
       fake.collectionPhotos = MerchFactory
         .createCollectionPhotos(numPhotos)
-        .map((merchPhoto) => MerchCollectionPhotoModel.merge(merchPhoto, { merchCollection: fake }));
+        .map((collectionPhoto) => MerchCollectionPhotoModel.merge(collectionPhoto, { merchCollection: fake }));
     }
 
     return MerchandiseCollectionModel.merge(fake, substitute);
@@ -76,7 +76,7 @@ export class MerchFactory {
   private static createCollectionPhotos(n: number): MerchCollectionPhotoModel[] {
     return FactoryUtils
       .create(n, () => MerchFactory.fakeCollectionPhoto())
-      .map((merchPhoto, i) => MerchCollectionPhotoModel.merge(merchPhoto, { position: i }));
+      .map((collectionPhoto, i) => MerchCollectionPhotoModel.merge(collectionPhoto, { position: i }));
   }
 
   public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {

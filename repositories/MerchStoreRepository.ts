@@ -40,7 +40,7 @@ export class MerchCollectionRepository extends BaseRepository<MerchandiseCollect
   public getBaseFindManyQuery(): SelectQueryBuilder<MerchandiseCollectionModel> {
     return this.repository.createQueryBuilder('collection')
       .leftJoinAndSelect('collection.items', 'items')
-      .leftJoinAndSelect('collection.collectionPhotos', 'photos')
+      .leftJoinAndSelect('collection.collectionPhotos', 'collectionPhotos')
       .leftJoinAndSelect('items.options', 'options');
   }
 }
@@ -57,13 +57,13 @@ export class MerchCollectionPhotoRepository extends BaseRepository<MerchCollecti
     return new Map(photos.map((o) => [o.uuid, o]));
   }
 
-  public async upsertMerchItemPhoto(photo: MerchCollectionPhotoModel,
+  public async upsertCollectionPhoto(photo: MerchCollectionPhotoModel,
     changes?: Partial<MerchCollectionPhotoModel>): Promise<MerchCollectionPhotoModel> {
     if (changes) photo = MerchCollectionPhotoModel.merge(photo, changes);
     return this.repository.save(photo);
   }
 
-  public async deleteMerchItemPhoto(photo: MerchCollectionPhotoModel): Promise<void> {
+  public async deleteCollectionPhoto(photo: MerchCollectionPhotoModel): Promise<void> {
     await this.repository.remove(photo);
   }
 }
@@ -71,7 +71,7 @@ export class MerchCollectionPhotoRepository extends BaseRepository<MerchCollecti
 @EntityRepository(MerchandiseItemModel)
 export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchandiseItemModel> {
-    return this.repository.findOne(uuid, { relations: ['collection', 'options'] });
+    return this.repository.findOne(uuid, { relations: ['collection', 'collection.collectionPhotos', 'options'] });
   }
 
   public async upsertMerchItem(item: MerchandiseItemModel, changes?: Partial<MerchandiseItemModel>):
