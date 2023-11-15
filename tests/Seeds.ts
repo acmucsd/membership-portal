@@ -464,6 +464,14 @@ async function seed(): Promise<void> {
     title: 'Fall 2001',
     description: 'Celebrate the opening of Sixth College in style, featuring raccoon print jackets.',
   });
+
+  const MERCH_COLLECTION_2_PHOTO_1 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_2,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  MERCH_COLLECTION_2.collectionPhotos = [ MERCH_COLLECTION_2_PHOTO_1 ];
+
   const MERCH_ITEM_3 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Camp Snoopy Snapback',
