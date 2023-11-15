@@ -37,6 +37,7 @@ export default class AttendanceService {
   public async getAttendancesForUser(uuid: Uuid): Promise<PublicAttendance[]> {
     return this.transactions.readOnly(async (txn) => {
       const user = await Repositories.user(txn).findByUuid(uuid);
+      if (!user) throw new NotFoundError("User does not exist");
       if (!user.isAttendancePublic) throw new ForbiddenError();
       const attendances = await Repositories.attendance(txn).getAttendancesForUser(user);
       return attendances.map((attendance) => attendance.getPublicAttendance());
