@@ -163,10 +163,7 @@ export default class MerchStoreService {
       const merchCollection = await Repositories.merchStoreCollection(txn).findByUuid(collection);
       if (!merchCollection) throw new NotFoundError('Collection not found');
 
-      // add to the end
-      const position = merchCollection.collectionPhotos.length;
-
-      const createdPhoto = MerchCollectionPhotoModel.create({ ...properties, position, merchCollection });
+      const createdPhoto = MerchCollectionPhotoModel.create({ ...properties, merchCollection });
       const merchStoreCollectionPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
 
       // verify the result photos array
