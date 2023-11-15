@@ -259,7 +259,7 @@ describe('merch collection photos', () => {
       .toEqual(photos);
 
     expect(merchStoreController.createMerchCollectionPhoto(imageExtra, params, { position: '5' }, admin))
-      .rejects.toThrow('Merch items cannot have more than 5 pictures');
+      .rejects.toThrow('Collections cannot have more than 5 pictures');
   });
 
   test('can remap the picture of a collection to different orders', async () => {
