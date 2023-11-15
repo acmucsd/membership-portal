@@ -40,6 +40,8 @@ import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 
 @Service()
 export default class MerchStoreService {
+  private static readonly MAX_COLLECTION_PHOTO_COUNT = 5;
+
   private emailService: EmailService;
 
   private transactions: TransactionsManager;
@@ -109,17 +111,7 @@ export default class MerchStoreService {
         currentCollection.collectionPhotos.map((currentPhoto) => {
           if (!photoUpdatesByUuid.has(currentPhoto.uuid)) return;
           const photoUpdate = photoUpdatesByUuid.get(currentPhoto.uuid);
-          // photo positions are 0-index
           return MerchCollectionPhotoModel.merge(currentPhoto, photoUpdate);
-        });
-
-        // make sure the photos are always sorted
-        currentCollection.collectionPhotos.sort((a, b) => a.position - b.position);
-        // validate all indices
-        currentCollection.collectionPhotos.forEach((currentPhoto, index) => {
-          if (currentPhoto.position !== index) {
-            throw new UserError(`Position is inputted incorrectly for photo: ${currentPhoto.uuid}`);
-          }
         });
       }
 
@@ -151,8 +143,8 @@ export default class MerchStoreService {
  * Verify that collections have valid photots.
  */
   private static verifyCollectionHasValidPhotos(collection: MerchCollection | MerchandiseCollectionModel) {
-    if (collection.collectionPhotos.length > Config.file.MAX_COLLECTION_PHOTO_COUNT) {
-      throw new UserError('Merch items cannot have more than 5 pictures');
+    if (collection.collectionPhotos.length > this.MAX_COLLECTION_PHOTO_COUNT) {
+      throw new UserError('Collections cannot have more than 5 pictures');
     }
   }
 
@@ -166,7 +158,7 @@ export default class MerchStoreService {
   public async createCollectionPhoto(collection: Uuid, properties: MerchCollectionPhoto): Promise<PublicMerchCollectionPhoto> {
     return this.transactions.readWrite(async (txn) => {
       const merchCollection = await Repositories.merchStoreCollection(txn).findByUuid(collection);
-      if (!merchCollection) throw new NotFoundError('Merch item not found');
+      if (!merchCollection) throw new NotFoundError('Collection not found');
 
       // add to the end
       const position = merchCollection.collectionPhotos.length;
