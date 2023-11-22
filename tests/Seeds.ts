@@ -470,7 +470,7 @@ async function seed(): Promise<void> {
     uploadedPhoto: 'https://www.fakepicture.com/',
     position: 1,
   });
-  MERCH_COLLECTION_2.collectionPhotos = [ MERCH_COLLECTION_2_PHOTO_1 ];
+  MERCH_COLLECTION_2.collectionPhotos = [MERCH_COLLECTION_2_PHOTO_1];
 
   const MERCH_ITEM_3 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,

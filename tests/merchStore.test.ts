@@ -337,11 +337,11 @@ describe('merch collection photos', () => {
     const expectedUrl = collectionInDatabase.collectionPhotos[0].uploadedPhoto;
     verify(storageService.deleteAtUrl(expectedUrl)).called();
 
-//     const newPhotos = (await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos;
+    const newPhotos = (await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos;
 
-//     expect(newPhotos).toHaveLength(1);
-//     expect(newPhotos[0].uuid).toEqual(photo2.uuid);
-//     expect(newPhotos[0].position).toEqual(1);
+    expect(newPhotos).toHaveLength(1);
+    expect(newPhotos[0].uuid).toEqual(photo2.uuid);
+    expect(newPhotos[0].position).toEqual(1);
 
     // verify visible item photo limitation
     expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchCollectionPhotoParam2, admin))

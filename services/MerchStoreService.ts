@@ -5,7 +5,6 @@ import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
 import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
-import { Config } from '../config';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,

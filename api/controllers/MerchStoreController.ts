@@ -136,7 +136,7 @@ export class MerchStoreController {
 
     // generate a random string for the uploaded photo url
     const position = parseInt(createCollectionRequest.position, 10);
-    if (isNaN(position)) throw new BadRequestError("Position must be a number");
+    if (Number.isNaN(position)) throw new BadRequestError('Position must be a number');
     const uniqueFileName = uuid();
     const uploadedPhoto = await this.storageService.uploadToFolder(
       file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid,
