@@ -144,7 +144,9 @@ workflows:
             - test
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - staging
       - deploy:
           requires:
             - build
@@ -154,19 +156,6 @@ workflows:
           filters:
             branches:
               only: master
-  test_and_deploy_staging:
-    jobs:
-      - build
-      - lint
-      - test
-      - image:
-          requires:
-            - build
-            - lint
-            - test
-          filters:
-            branches:
-              only: staging
       - deploy_staging:
           requires:
             - build
@@ -174,5 +163,27 @@ workflows:
             - test
             - image
           filters:
-            branches:
-              only: staging
+             branches:
+                only: staging
+  # test_and_deploy_staging:
+  #   jobs:
+  #     - build
+  #     - lint
+  #     - test
+  #     - image:
+  #         requires:
+  #           - build
+  #           - lint
+  #           - test
+  #         filters:
+  #           branches:
+  #             only: staging
+  #     - deploy_staging:
+  #         requires:
+  #           - build
+  #           - lint
+  #           - test
+  #           - image
+  #         filters:
+  #           branches:
+  #             only: staging
