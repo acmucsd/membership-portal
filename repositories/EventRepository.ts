@@ -1,4 +1,4 @@
-import { EntityRepository, MoreThanOrEqual, SelectQueryBuilder } from 'typeorm';
+import { EntityRepository, LessThanOrEqual, MoreThanOrEqual, SelectQueryBuilder } from 'typeorm';
 import { EventSearchOptions, Uuid } from '../types';
 import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
@@ -40,15 +40,22 @@ export class EventRepository extends BaseRepository<EventModel> {
     return this.repository.remove(event);
   }
 
-  public async isUnusedAttendanceCode(attendanceCode: string): Promise<boolean> {
-    const attendanceCodeDuplicates = await this.repository.find({
+  public async isAvailableAttendanceCode(attendanceCode: string, start: Date, end: Date): Promise<boolean> {
+    const startsDuringCurrentEvent = await this.repository.find({
       where: {
         attendanceCode,
-        end: MoreThanOrEqual(new Date()),
+        start: LessThanOrEqual(end) && MoreThanOrEqual(start),
       },
     });
 
-    return attendanceCodeDuplicates.length === 0;
+    const endsDuringCurrentEvent = await this.repository.find({
+      where: {
+        attendanceCode,
+        end: LessThanOrEqual(end) && MoreThanOrEqual(start),
+      },
+    });
+
+    return (startsDuringCurrentEvent.length === 0) && (endsDuringCurrentEvent.length === 0);
   }
 
   private getBaseEventSearchQuery(options: EventSearchOptions): SelectQueryBuilder<EventModel> {

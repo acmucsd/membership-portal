@@ -41,7 +41,7 @@ export class EventModel extends BaseEntity {
   end: Date;
 
   @Column('varchar', { length: 255 })
-  @Index({ unique: true })
+  @Index({ unique: false })
   attendanceCode: string;
 
   @Column('integer')
