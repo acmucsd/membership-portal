@@ -226,7 +226,6 @@ export default class UserAccountService {
       }, {});
 
       const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
-
         const { user: userEmail, accessType } = accessUpdate;
 
         const currUser = emailToUserMap[userEmail];
