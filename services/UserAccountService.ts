@@ -226,9 +226,10 @@ export default class UserAccountService {
       }, {});
 
       const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
-        const { user, accessType } = accessUpdate;
 
-        const currUser = emailToUserMap[user];
+        const { user: userEmail, accessType } = accessUpdate;
+
+        const currUser = emailToUserMap[userEmail];
         const oldAccess = currUser.accessType;
 
         const updatedUser = await userRepository.upsertUser(currUser, { accessType });
@@ -251,7 +252,7 @@ export default class UserAccountService {
     });
   }
 
-  public async getAllUsersWithAccessLevels(): Promise<PrivateProfile[]> {
+  public async getAllFullUserProfiles(): Promise<PrivateProfile[]> {
     const users = await this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .findAll());
