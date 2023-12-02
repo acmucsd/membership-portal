@@ -4,6 +4,7 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import * as faker from 'faker';
+import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -191,5 +192,69 @@ export default class UserAccountService {
       userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
       return userProfile;
     });
+  }
+
+  public checkDuplicateEmails(emails: string[]) {
+    const emailSet = emails.reduce((set, email) => {
+      set.add(email);
+      return set;
+    }, new Set<string>());
+
+    if (emailSet.size !== emails.length) {
+      throw new BadRequestError('Duplicate emails found in request');
+    }
+  }
+
+  public async updateUserAccessLevels(accessUpdates: UserAccessUpdates[], emails: string[],
+    currentUser: UserModel): Promise<PrivateProfile[]> {
+    return this.transactions.readWrite(async (txn) => {
+      this.checkDuplicateEmails(emails);
+
+      // Strip out the user emails & validate that users exist
+      const userRepository = Repositories.user(txn);
+      const users = await userRepository.findByEmails(emails);
+      const emailsFound = users.map((user) => user.email);
+      const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
+
+      if (emailsNotFound.length > 0) {
+        throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
+      }
+
+      const emailToUserMap = users.reduce((map, user) => {
+        map[user.email] = user;
+        return map;
+      }, {});
+
+      const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
+        const { user: userEmail, accessType } = accessUpdate;
+
+        const currUser = emailToUserMap[userEmail];
+        const oldAccess = currUser.accessType;
+
+        const updatedUser = await userRepository.upsertUser(currUser, { accessType });
+
+        const activity = {
+          user: currentUser,
+          type: ActivityType.ACCOUNT_ACCESS_LEVEL_UPDATE,
+          description: `${currentUser.email} changed ${updatedUser.email}'s
+          access level from ${oldAccess} to ${accessType}`,
+        };
+
+        await Repositories
+          .activity(txn)
+          .logActivity(activity);
+
+        return updatedUser;
+      }));
+
+      return updatedUsers;
+    });
+  }
+
+  public async getAllFullUserProfiles(): Promise<PrivateProfile[]> {
+    const users = await this.transactions.readOnly(async (txn) => Repositories
+      .user(txn)
+      .findAll());
+    return users.map((user) => user.getFullUserProfile());
   }
 }
