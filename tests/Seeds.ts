@@ -1,6 +1,7 @@
 import * as moment from 'moment';
-import { UserAccessType } from '../types';
-import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory, ResumeFactory } from './data';
+import { UserAccessType, SocialMediaType } from '../types';
+import { DatabaseConnection, EventFactory, MerchFactory,
+  PortalState, UserFactory, ResumeFactory, UserSocialMediaFactory } from './data';
 
 function getGraduationYear(n: number) {
   return moment().year() + n;
@@ -116,6 +117,56 @@ async function seed(): Promise<void> {
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
 
+  // Used for testing various User Social Media
+  const USER_SOCIAL_MEDIA_1 = UserFactory.fake();
+  const USER_SOCIAL_MEDIA_1_FACEBOOK = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_1, type: SocialMediaType.FACEBOOK },
+  );
+
+  const USER_SOCIAL_MEDIA_2 = UserFactory.fake();
+  const USER_SOCIAL_MEDIA_2_FACEBOOK = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_2, type: SocialMediaType.FACEBOOK },
+  );
+  const USER_SOCIAL_MEDIA_2_GITHUB = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_2, type: SocialMediaType.GITHUB },
+  );
+
+  const USER_SOCIAL_MEDIA_3 = UserFactory.fake();
+  const USER_SOCIAL_MEDIA_3_FACEBOOK = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_3, type: SocialMediaType.FACEBOOK },
+  );
+  const USER_SOCIAL_MEDIA_3_INSTAGRAM = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_3, type: SocialMediaType.INSTAGRAM },
+  );
+  const USER_SOCIAL_MEDIA_3_LINKEDIN = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_3, type: SocialMediaType.LINKEDIN },
+  );
+
+  const USER_SOCIAL_MEDIA_ALL = UserFactory.fake();
+  const USER_SOCIAL_MEDIA_ALL_FACEBOOK = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.FACEBOOK },
+  );
+  const USER_SOCIAL_MEDIA_ALL_GITHUB = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.GITHUB },
+  );
+  const USER_SOCIAL_MEDIA_ALL_INSTAGRAM = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.INSTAGRAM },
+  );
+  const USER_SOCIAL_MEDIA_ALL_LINKEDIN = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.LINKEDIN },
+  );
+  const USER_SOCIAL_MEDIA_ALL_DEVPOST = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.DEVPOST },
+  );
+  const USER_SOCIAL_MEDIA_ALL_TWITTER = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.TWITTER },
+  );
+  const USER_SOCIAL_MEDIA_ALL_PORTFOLIO = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.PORTFOLIO },
+  );
+  const USER_SOCIAL_MEDIA_ALL_EMAIL = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.EMAIL },
+  );
   const RESUME_URL = 'https://acmucsd-local.s3.us-west-1.amazonaws.com/resumeSeedingData/alexface.pdf';
 
   const USER_VISIBLE_RESUME = UserFactory.fake();
@@ -557,6 +608,10 @@ async function seed(): Promise<void> {
       USER_MARKETING,
       USER_MERCH_STORE_MANAGER,
       USER_MERCH_STORE_DISTRIBUTOR,
+      USER_SOCIAL_MEDIA_1,
+      USER_SOCIAL_MEDIA_2,
+      USER_SOCIAL_MEDIA_3,
+      USER_SOCIAL_MEDIA_ALL,
       USER_VISIBLE_RESUME,
       USER_HIDDEN_RESUME,
       ...otherMembers,
@@ -652,6 +707,14 @@ async function seed(): Promise<void> {
     .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_2_OPTION_2X2, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_JUNIOR, [{ option: MERCH_ITEM_2_OPTION_4X4, quantity: 2 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_SENIOR, [{ option: MERCH_ITEM_2_OPTION_3X3, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
+    .createUserSocialMedia(USER_SOCIAL_MEDIA_1, USER_SOCIAL_MEDIA_1_FACEBOOK)
+    .createUserSocialMedia(USER_SOCIAL_MEDIA_2, USER_SOCIAL_MEDIA_2_FACEBOOK, USER_SOCIAL_MEDIA_2_GITHUB)
+    .createUserSocialMedia(USER_SOCIAL_MEDIA_3, USER_SOCIAL_MEDIA_3_FACEBOOK, USER_SOCIAL_MEDIA_3_INSTAGRAM,
+      USER_SOCIAL_MEDIA_3_LINKEDIN)
+    .createUserSocialMedia(USER_SOCIAL_MEDIA_ALL, USER_SOCIAL_MEDIA_ALL_FACEBOOK, USER_SOCIAL_MEDIA_ALL_GITHUB,
+      USER_SOCIAL_MEDIA_ALL_INSTAGRAM,
+      USER_SOCIAL_MEDIA_ALL_LINKEDIN, USER_SOCIAL_MEDIA_ALL_DEVPOST, USER_SOCIAL_MEDIA_ALL_TWITTER,
+      USER_SOCIAL_MEDIA_ALL_PORTFOLIO, USER_SOCIAL_MEDIA_ALL_EMAIL)
     .createResumes(USER_VISIBLE_RESUME, RESUME_1)
     .createResumes(USER_HIDDEN_RESUME, RESUME_2)
     .write();
