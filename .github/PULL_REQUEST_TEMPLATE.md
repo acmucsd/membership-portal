@@ -16,16 +16,16 @@ motivation or context.
 
 # Type of Change
 
-- [ ] Bug Fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as
+- [ ] Patch (non-breaking change/bugfix)
+- [ ] Minor (non-breaking change which adds functionality)
+- [ ] Major (fix or feature that would cause existing functionality to not work as
       expected)
-- [ ] Logistics Change (A change to a README, description, or dev workflow setup like
-      linting/formatting)
-- [ ] Continuous Integration/DevOps Change (Related to deployment steps or continuous integration
-      workflows)
+- [ ] Documentation (A change to a README/description)
+- [ ] Continuous Integration/DevOps Change (Related to deployment steps, continuous integration
+      workflows, linting, etc.)
 - [ ] Other: (Fill In) <!-- Edit this type of change if you select this -->
 
+If you've selected Patch, Minor, or Major as your change type, **make sure to bump the version before merging in `package.json`!**
 # Testing
 
 I have tested that my changes fully resolve the linked issue ...
