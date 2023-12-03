@@ -32,7 +32,7 @@ I have tested that my changes fully resolve the linked issue ...
 
 - [ ] locally.
 - [ ] on the testing API/testing database.
-- [ ] I have run and verified Postman routes. Screenshots are included below.
+- [ ] with appropriate Postman routes. Screenshots are included below.
 
 # Checklist
 
