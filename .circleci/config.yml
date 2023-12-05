@@ -119,6 +119,17 @@ jobs:
             GIT_HASH=$(echo $CIRCLE_SHA1 | cut -c -7)
             docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:$GIT_HASH
             docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api --imageName acmucsd/membership-portal-api:$GIT_HASH
+  deploy_staging:
+    environment:
+      GIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -7)
+    machine:
+      enabled: true
+    steps:
+      - checkout
+      - run:
+          command: |
+            GIT_HASH=$(echo $CIRCLE_SHA1 | cut -c -7)
+            docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.caprover.acmucsd.com --caproverPassword $CAPROVER_PASS --caproverApp membership-portal-api-testing --imageName acmucsd/membership-portal-api:$GIT_HASH
 
 workflows:
   test_and_deploy:
@@ -133,7 +144,9 @@ workflows:
             - test
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - staging
       - deploy:
           requires:
             - build
@@ -143,3 +156,12 @@ workflows:
           filters:
             branches:
               only: master
+      - deploy_staging:
+          requires:
+            - build
+            - lint
+            - test
+            - image
+          filters:
+             branches:
+                only: staging
