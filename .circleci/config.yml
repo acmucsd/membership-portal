@@ -165,3 +165,25 @@ workflows:
           filters:
              branches:
                 only: staging
+  # test_and_deploy_staging:
+  #   jobs:
+  #     - build
+  #     - lint
+  #     - test
+  #     - image:
+  #         requires:
+  #           - build
+  #           - lint
+  #           - test
+  #         filters:
+  #           branches:
+  #             only: staging
+  #     - deploy_staging:
+  #         requires:
+  #           - build
+  #           - lint
+  #           - test
+  #           - image
+  #         filters:
+  #           branches:
+  #             only: staging
