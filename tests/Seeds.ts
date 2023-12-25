@@ -115,6 +115,10 @@ async function seed(): Promise<void> {
     email: 'acm_store_distributor@ucsd.edu',
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
+  const USER_SPONSORSHIP_MANAGER = UserFactory.fake({
+    email: 'acm_sponsorship_manager@ucsd.edu',
+    accessType: UserAccessType.SPONSORSHIP_MANAGER,
+  });
 
   const RESUME_URL = 'https://acmucsd-local.s3.us-west-1.amazonaws.com/resumeSeedingData/alexface.pdf';
 
@@ -557,6 +561,7 @@ async function seed(): Promise<void> {
       USER_MARKETING,
       USER_MERCH_STORE_MANAGER,
       USER_MERCH_STORE_DISTRIBUTOR,
+      USER_SPONSORSHIP_MANAGER,
       USER_VISIBLE_RESUME,
       USER_HIDDEN_RESUME,
       ...otherMembers,
