@@ -152,7 +152,7 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
       credits: this.credits,
-      isAttendancePublic: this.isAttendancePublic
+      isAttendancePublic: this.isAttendancePublic,
     };
     if (this.userSocialMedia) {
       fullUserProfile.userSocialMedia = this.userSocialMedia.map((sm) => sm.getPublicSocialMedia());
