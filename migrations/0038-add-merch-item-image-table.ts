@@ -56,7 +56,7 @@ export class AddMerchItemImageTable1691286073347 implements MigrationInterface {
     await queryRunner.query(
       `INSERT INTO "${TABLE_NAME}" ("merchItem", "uploadedPhoto", position) `
       + `SELECT uuid, picture, 0 AS position FROM "${MERCH_TABLE_NAME}" `
-      + "WHERE picture IS NOT NULL",
+      + 'WHERE picture IS NOT NULL',
     );
 
     // remove the column from the old table
