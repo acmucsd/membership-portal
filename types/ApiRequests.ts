@@ -66,6 +66,7 @@ export interface UserPatches {
   major?: string;
   graduationYear?: number;
   bio?: string;
+  isAttendancePublic?: boolean;
   passwordChange?: PasswordUpdate;
 }
 
