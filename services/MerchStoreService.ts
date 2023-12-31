@@ -23,6 +23,8 @@ import {
   OrderPickupEventEdit,
   PublicMerchItemWithPurchaseLimits,
   OrderPickupEventStatus,
+  PublicMerchItemPhoto,
+  MerchItemPhoto,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
@@ -33,9 +35,12 @@ import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
+import { MerchandiseItemPhotoModel } from '../models/MerchandiseItemPhotoModel';
 
 @Service()
 export default class MerchStoreService {
+  private static readonly MAX_MERCH_PHOTO_COUNT = 5;
+
   private emailService: EmailService;
 
   private transactions: TransactionsManager;
@@ -188,10 +193,11 @@ export default class MerchStoreService {
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
+
       if (itemEdit.hidden === false && item.options.length === 0) {
         throw new UserError('Item cannot be set to visible if it has 0 options.');
       }
-      const { options, collection: updatedCollection, ...changes } = itemEdit;
+      const { options, merchPhotos, collection: updatedCollection, ...changes } = itemEdit;
       if (options) {
         const optionUpdatesByUuid = new Map(options.map((option) => [option.uuid, option]));
         item.options.map((currentOption) => {
@@ -207,6 +213,26 @@ export default class MerchStoreService {
             }
           }
           return MerchandiseItemOptionModel.merge(currentOption, optionUpdate);
+        });
+      }
+
+      // this part only handles updating the positions of the pictures
+      if (merchPhotos) {
+        // error on duplicate photo uuids
+        const dupSet = new Set();
+        merchPhotos.forEach((merchPhoto) => {
+          if (dupSet.has(merchPhoto.uuid)) {
+            throw new UserError(`Multiple edits is made to photo: ${merchPhoto.uuid}`);
+          }
+          dupSet.add(merchPhoto.uuid);
+        });
+
+        const photoUpdatesByUuid = new Map(merchPhotos.map((merchPhoto) => [merchPhoto.uuid, merchPhoto]));
+
+        item.merchPhotos.map((currentPhoto) => {
+          if (!photoUpdatesByUuid.has(currentPhoto.uuid)) return;
+          const photoUpdate = photoUpdatesByUuid.get(currentPhoto.uuid);
+          return MerchandiseItemPhotoModel.merge(currentPhoto, photoUpdate);
         });
       }
 
@@ -278,6 +304,76 @@ export default class MerchStoreService {
       }
 
       return merchItemOptionRepository.deleteMerchItemOption(option);
+    });
+  }
+
+  /**
+   * Verify that items have valid options. An item with variants disabled cannot have multiple
+   * options, and an item with variants enabled cannot have multiple option types.
+   */
+  private static verifyItemHasValidPhotos(item: MerchItem | MerchandiseItemModel) {
+    if (item.merchPhotos.length > MerchStoreService.MAX_MERCH_PHOTO_COUNT) {
+      throw new UserError('Merch items cannot have more than 5 pictures');
+    }
+  }
+
+  /**
+   * Creates an item photo and assign it the corresponding picture url
+   * and append the photo to the photos list from merchItem
+   * @param item merch item uuid
+   * @param properties merch item photo picture url and position
+   * @returns created item photo
+   */
+  public async createItemPhoto(item: Uuid, properties: MerchItemPhoto): Promise<PublicMerchItemPhoto> {
+    return this.transactions.readWrite(async (txn) => {
+      const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
+      if (!merchItem) throw new NotFoundError('Merch item not found');
+
+      const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, merchItem });
+      const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
+
+      // verify the result photos array
+      merchItem.merchPhotos.push(createdPhoto);
+      MerchStoreService.verifyItemHasValidPhotos(merchItem);
+
+      const upsertedPhoto = await merchStoreItemPhotoRepository.upsertMerchItemPhoto(createdPhoto);
+      return upsertedPhoto.getPublicMerchItemPhoto();
+    });
+  }
+
+  /**
+   * Check if the photo is ready to be deleted. Fail if the merch item is visible
+   * and it was the only photo of the item.
+   *
+   * @param uuid the uuid of photo to be deleted
+   * @returns the photo object to be removed from database
+   */
+  public async getItemPhotoForDeletion(uuid: Uuid): Promise<MerchandiseItemPhotoModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
+      const merchPhoto = await merchStoreItemPhotoRepository.findByUuid(uuid);
+      if (!merchPhoto) throw new NotFoundError('Merch item photo not found');
+
+      const merchItem = await Repositories.merchStoreItem(txn).findByUuid(merchPhoto.merchItem.uuid);
+      if (merchItem.merchPhotos.length === 1 && !merchItem.hidden) {
+        throw new UserError('Cannot delete the only photo for a visible merch item');
+      }
+
+      return merchPhoto;
+    });
+  }
+
+  /**
+   * Deletes the given item photo.
+   *
+   * @param merchPhoto the photo object to be removed
+   * @returns the photo object removed from database
+   */
+  public async deleteItemPhoto(merchPhoto: MerchandiseItemPhotoModel): Promise<MerchItemPhoto> {
+    return this.transactions.readWrite(async (txn) => {
+      const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
+      await merchStoreItemPhotoRepository.deleteMerchItemPhoto(merchPhoto);
+      return merchPhoto;
     });
   }
 
@@ -386,6 +482,7 @@ export default class MerchStoreService {
         const { item } = option;
         return {
           ...item,
+          picture: item.getDefaultPhotoUrl(),
           quantityRequested: oi.quantity,
           salePrice: option.getPrice(),
           total: oi.quantity * option.getPrice(),
@@ -577,6 +674,7 @@ export default class MerchStoreService {
         && MerchStoreService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
         throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
       }
+
       const customer = order.user;
       await this.refundAndConfirmOrderCancellation(order, user, txn);
       const activityRepository = Repositories.activity(txn);
@@ -683,6 +781,7 @@ export default class MerchStoreService {
         const { quantity, price } = optionPricesAndQuantities.get(option);
         return {
           ...item,
+          picture: item.getDefaultPhotoUrl(),
           quantityRequested: quantity,
           salePrice: price,
           total: quantity * price,

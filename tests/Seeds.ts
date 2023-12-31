@@ -377,7 +377,6 @@ async function seed(): Promise<void> {
   const MERCH_ITEM_1 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Unisex Hack School Anorak',
-    picture: 'https://i.imgur.com/jkTcUJO.jpg',
     description: 'San Diego has an average annual precipitation less than 12 inches,'
     + 'but that doesn\'t mean you don\'t need one of these.',
     monthlyLimit: 1,
@@ -447,10 +446,30 @@ async function seed(): Promise<void> {
     MERCH_ITEM_1_OPTION_L,
     MERCH_ITEM_1_OPTION_XL,
   ];
+  // uploadedPhoto is 'https://www.fakepicture.com/' by default, test if this applies
+  const MERCH_ITEM_1_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_1,
+    position: 0,
+  });
+  const MERCH_ITEM_1_PHOTO_1 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_1,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  const MERCH_ITEM_1_PHOTO_2 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_1,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 2,
+  });
+  MERCH_ITEM_1.merchPhotos = [
+    MERCH_ITEM_1_PHOTO_0,
+    MERCH_ITEM_1_PHOTO_1,
+    MERCH_ITEM_1_PHOTO_2,
+  ];
+
   const MERCH_ITEM_2 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Hack School Sticker Pack (4) - Cyan',
-    picture: 'https://i.imgur.com/pSZ921P.png',
     description: 'Make space on your laptop cover for these Cyan stickers. Pack of 4, size in inches.',
     monthlyLimit: 5,
     lifetimeLimit: 25,
@@ -495,6 +514,20 @@ async function seed(): Promise<void> {
     MERCH_ITEM_2_OPTION_3X3,
     MERCH_ITEM_2_OPTION_4X4,
   ];
+  const MERCH_ITEM_2_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_2,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 0,
+  });
+  const MERCH_ITEM_2_PHOTO_1 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_2,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 1,
+  });
+  MERCH_ITEM_2.merchPhotos = [
+    MERCH_ITEM_2_PHOTO_0,
+    MERCH_ITEM_2_PHOTO_1,
+  ];
   MERCH_COLLECTION_1.items = [MERCH_ITEM_1, MERCH_ITEM_2];
 
   const MERCH_COLLECTION_2 = MerchFactory.fakeCollection({
@@ -504,7 +537,6 @@ async function seed(): Promise<void> {
   const MERCH_ITEM_3 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Camp Snoopy Snapback',
-    picture: 'https://i.imgur.com/QNdhfuO.png',
     description: 'Guaranteed 2x return on Grailed.',
     monthlyLimit: 2,
     lifetimeLimit: 5,
@@ -518,10 +550,42 @@ async function seed(): Promise<void> {
     discountPercentage: 5,
   });
   MERCH_ITEM_3.options = [MERCH_ITEM_3_OPTION];
+  const MERCH_ITEM_3_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_3,
+    uploadedPhoto: 'https://i.imgur.com/QNdhfuO.png',
+    position: 0,
+  });
+  const MERCH_ITEM_3_PHOTO_1 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_3,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  const MERCH_ITEM_3_PHOTO_2 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_3,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 2,
+  });
+  const MERCH_ITEM_3_PHOTO_3 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_3,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 3,
+  });
+  const MERCH_ITEM_3_PHOTO_4 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_3,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 4,
+  });
+  MERCH_ITEM_3.merchPhotos = [
+    MERCH_ITEM_3_PHOTO_0,
+    MERCH_ITEM_3_PHOTO_1,
+    MERCH_ITEM_3_PHOTO_2,
+    MERCH_ITEM_3_PHOTO_3,
+    MERCH_ITEM_3_PHOTO_4,
+  ];
+
   const MERCH_ITEM_4 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Salt & Pepper (Canyon) Shakers',
-    picture: 'https://i.pinimg.com/originals/df/c5/72/dfc5729a0dea666c31c5f4daea851619.jpg',
     description: 'Salt and pepper not included.',
     monthlyLimit: 3,
     lifetimeLimit: 10,
@@ -535,10 +599,15 @@ async function seed(): Promise<void> {
     discountPercentage: 20,
   });
   MERCH_ITEM_4.options = [MERCH_ITEM_4_OPTION];
+  const MERCH_ITEM_4_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_4,
+    position: 0,
+    uploadedPhoto: 'https://i.pinimg.com/originals/df/c5/72/dfc5729a0dea666c31c5f4daea851619.jpg',
+  });
+  MERCH_ITEM_4.merchPhotos = [MERCH_ITEM_4_PHOTO_0];
   const MERCH_ITEM_5 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Unisex Raccoon Print Shell Jacket',
-    picture: 'https://i.etsystatic.com/8812670/r/il/655afa/3440382093/il_340x270.3440382093_cbui.jpg',
     description: 'Self-explanatory.',
     monthlyLimit: 1,
     lifetimeLimit: 2,
@@ -568,6 +637,12 @@ async function seed(): Promise<void> {
     },
   });
   MERCH_ITEM_5.options = [MERCH_ITEM_5_MEDIUM, MERCH_ITEM_5_LARGE];
+  const MERCH_ITEM_5_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_5,
+    position: 0,
+    uploadedPhoto: 'https://i.etsystatic.com/8812670/r/il/655afa/3440382093/il_340x270.3440382093_cbui.jpg',
+  });
+  MERCH_ITEM_5.merchPhotos = [MERCH_ITEM_5_PHOTO_0];
   MERCH_COLLECTION_2.items = [MERCH_ITEM_3, MERCH_ITEM_4, MERCH_ITEM_5];
 
   const PAST_ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
