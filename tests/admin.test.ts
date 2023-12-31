@@ -1,6 +1,9 @@
+import { BadRequestError, ForbiddenError } from 'routing-controllers';
+import { In } from 'typeorm';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
+import { UserModel } from '../models/UserModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -180,5 +183,181 @@ describe('bonus points submission', () => {
 
     const getNoBonusUserResponse = await userController.getUser({ uuid: userNotGettingBonus.uuid }, admin);
     expect(getNoBonusUserResponse.user.points).toEqual(0);
+  });
+});
+
+describe('updating user access level', () => {
+  test('updates the access level of the user', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+
+    const staffUser = UserFactory.fake({ accessType: UserAccessType.STAFF });
+    const standardUser = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+    const marketingUser = UserFactory.fake({ accessType: UserAccessType.MARKETING });
+    const merchStoreDistributorUser = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+
+    await new PortalState()
+      .createUsers(admin, staffUser, standardUser, marketingUser, merchStoreDistributorUser)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    const accessLevelResponse = await adminController.updateUserAccessLevel({
+      accessUpdates: [
+        { user: staffUser.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+        { user: standardUser.email, accessType: UserAccessType.MARKETING },
+        { user: marketingUser.email, accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR },
+        { user: merchStoreDistributorUser.email, accessType: UserAccessType.STAFF },
+      ],
+    }, admin);
+
+    const repository = conn.getRepository(UserModel);
+    const updatedUsers = await repository.find({
+      email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]),
+    });
+
+    expect(updatedUsers[0].email).toEqual(staffUser.email);
+    expect(updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
+    expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
+
+    expect(updatedUsers[1].email).toEqual(standardUser.email);
+    expect(updatedUsers[1].accessType).toEqual(UserAccessType.MARKETING);
+    expect(accessLevelResponse.updatedUsers[1].accessType).toEqual(UserAccessType.MARKETING);
+
+    expect(updatedUsers[2].email).toEqual(marketingUser.email);
+    expect(updatedUsers[2].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
+    expect(accessLevelResponse.updatedUsers[2].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
+
+    expect(updatedUsers[3].email).toEqual(merchStoreDistributorUser.email);
+    expect(updatedUsers[3].accessType).toEqual(UserAccessType.STAFF);
+    expect(accessLevelResponse.updatedUsers[3].accessType).toEqual(UserAccessType.STAFF);
+  });
+
+  test('attempt to update when user is not an admin', async () => {
+    const conn = await DatabaseConnection.get();
+    const standard = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+
+    const staffUser = UserFactory.fake({ accessType: UserAccessType.STAFF });
+    const standardUser = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+    const marketingUser = UserFactory.fake({ accessType: UserAccessType.MARKETING });
+    const merchStoreDistributorUser = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+
+    await new PortalState()
+      .createUsers(staffUser, standardUser, marketingUser, merchStoreDistributorUser, standard)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    await expect(async () => {
+      await adminController.updateUserAccessLevel({
+        accessUpdates: [
+          { user: staffUser.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+          { user: standardUser.email, accessType: UserAccessType.MARKETING },
+          { user: marketingUser.email, accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR },
+          { user: merchStoreDistributorUser.email, accessType: UserAccessType.STAFF },
+        ],
+      }, standard);
+    }).rejects.toThrow(ForbiddenError);
+
+    const repository = conn.getRepository(UserModel);
+    const updatedUsers = await repository.find({
+      email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]),
+    });
+
+    expect(updatedUsers[0].email).toEqual(staffUser.email);
+    expect(updatedUsers[0].accessType).toEqual(UserAccessType.STAFF);
+    expect(updatedUsers[1].email).toEqual(standardUser.email);
+    expect(updatedUsers[1].accessType).toEqual(UserAccessType.STANDARD);
+    expect(updatedUsers[2].email).toEqual(marketingUser.email);
+    expect(updatedUsers[2].accessType).toEqual(UserAccessType.MARKETING);
+    expect(updatedUsers[3].email).toEqual(merchStoreDistributorUser.email);
+    expect(updatedUsers[3].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
+  });
+
+  test('attempt to update duplicate users', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+
+    const userOne = UserFactory.fake({ accessType: UserAccessType.STAFF, email: 'smhariha@ucsd.edu' });
+
+    await new PortalState()
+      .createUsers(userOne, admin)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    await expect(async () => {
+      await adminController.updateUserAccessLevel({
+        accessUpdates: [
+          { user: userOne.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+          { user: userOne.email, accessType: UserAccessType.STAFF },
+        ],
+      }, admin);
+    }).rejects.toThrow(BadRequestError);
+
+    const repository = conn.getRepository(UserModel);
+    const updatedUsers = await repository.findOne({ email: userOne.email });
+
+    expect(updatedUsers.email).toEqual(userOne.email);
+    expect(updatedUsers.accessType).toEqual(UserAccessType.STAFF);
+  });
+
+  test('admin ability to demote another admin', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+
+    const secondAdmin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+
+    await new PortalState()
+      .createUsers(admin, secondAdmin)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    const accessLevelResponse = await adminController.updateUserAccessLevel({
+      accessUpdates: [
+        { user: secondAdmin.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+      ],
+    }, admin);
+
+    const repository = conn.getRepository(UserModel);
+    const updatedUser = await repository.findOne({ email: secondAdmin.email });
+
+    expect(updatedUser.email).toEqual(secondAdmin.email);
+    expect(updatedUser.accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
+    expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
+  });
+
+  test("ensure that the updating user's access level is not changed", async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+
+    const staffUser = UserFactory.fake({ accessType: UserAccessType.STAFF });
+    const standardUser = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+    const marketingUser = UserFactory.fake({ accessType: UserAccessType.MARKETING });
+    const merchStoreDistributorUser = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+
+    await new PortalState()
+      .createUsers(staffUser, standardUser, marketingUser, merchStoreDistributorUser, admin)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    await adminController.updateUserAccessLevel({
+      accessUpdates: [
+        { user: staffUser.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+        { user: standardUser.email, accessType: UserAccessType.MARKETING },
+        { user: marketingUser.email, accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR },
+        { user: merchStoreDistributorUser.email, accessType: UserAccessType.STAFF },
+      ],
+    }, admin);
+
+    const repository = conn.getRepository(UserModel);
+    const existingAdmin = await repository.find({
+      email: admin.email,
+    });
+
+    expect(existingAdmin[0].email).toEqual(admin.email);
+    expect(existingAdmin[0].accessType).toEqual(UserAccessType.ADMIN);
   });
 });

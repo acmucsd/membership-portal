@@ -39,6 +39,14 @@ export interface SubmitAttendanceForUsersResponse extends ApiResponse {
   attendances: PublicAttendance[];
 }
 
+export interface ModifyUserAccessLevelResponse extends ApiResponse {
+  updatedUsers: PrivateProfile[];
+}
+
+export interface GetAllUserAccessLevelsResponse extends ApiResponse {
+  users: PrivateProfile[];
+}
+
 // ATTENDANCE
 
 export interface PublicAttendance {

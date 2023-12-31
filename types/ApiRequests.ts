@@ -1,4 +1,4 @@
-import { FeedbackStatus, FeedbackType, SocialMediaType } from './Enums';
+import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 import { Uuid } from '.';
 
 // REQUEST TYPES
@@ -126,6 +126,15 @@ export interface SubmitAttendanceForUsersRequest {
   users: string[];
   event: Uuid;
   asStaff?: boolean;
+}
+
+export interface UserAccessUpdates {
+  user: string;
+  accessType: UserAccessType;
+}
+
+export interface ModifyUserAccessLevelRequest {
+  accessUpdates: UserAccessUpdates[];
 }
 
 // EVENT
