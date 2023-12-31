@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner, Table, TableColumn } from 'typeorm';
 const TABLE_NAME = 'MerchandiseItemPhotos';
 const MERCH_TABLE_NAME = 'MerchandiseItems';
 
-export class AddMerchItemImageTable1681777109787 implements MigrationInterface {
+export class AddMerchItemImageTable1691286073347 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // instantiates table with columns: uuid, merchItem, uploadedPhoto, uploadedAt, position
     await queryRunner.createTable(new Table({
