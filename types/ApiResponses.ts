@@ -310,6 +310,7 @@ export interface PublicProfile {
   bio: string,
   points: number,
   userSocialMedia?: PublicUserSocialMedia[];
+  isAttendancePublic: boolean,
 }
 
 export interface PrivateProfile extends PublicProfile {
