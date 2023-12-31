@@ -10,6 +10,5 @@
   "editor.tabSize": 2,
   "prettier.singleQuote": true,
   "prettier.trailingComma": "all",
-  "files.trimTrailingWhitespace": true,
-  "editor.indentSize": "tabSize"
+  "files.trimTrailingWhitespace": true
 }
