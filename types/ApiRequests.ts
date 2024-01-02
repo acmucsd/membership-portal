@@ -83,7 +83,7 @@ export interface UpdateFeedbackStatusRequest {
 }
 
 export interface InsertUserSocialMediaRequest {
-  socialMedia: SocialMedia;
+  socialMedia: SocialMedia[];
 }
 
 export interface SocialMediaPatches {

@@ -108,7 +108,7 @@ export class UserController {
     @AuthenticatedUser() user: UserModel): Promise<InsertSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
       .insertSocialMediaForUser(user, insertSocialMediaRequest.socialMedia);
-    return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
+    return { error: null, userSocialMedia };
   }
 
   @Patch('/socialMedia/:uuid')

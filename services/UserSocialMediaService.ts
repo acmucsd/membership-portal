@@ -6,7 +6,7 @@ import { UserError } from '../utils/Errors';
 import { UserSocialMediaModel } from '../models/UserSocialMediaModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
-import { Uuid, SocialMedia } from '../types';
+import { Uuid, SocialMedia, TestPublicUserSocialMedia } from '../types';
 
 @Service()
 export default class UserSocialMediaService {
@@ -22,16 +22,28 @@ export default class UserSocialMediaService {
     return userSocialMedia;
   }
 
-  public async insertSocialMediaForUser(user: UserModel, socialMedia: SocialMedia) {
-    const addedSocialMedia = await this.transactions.readWrite(async (txn) => {
+  public async insertSocialMediaForUser(user: UserModel, socialMedia: SocialMedia[]): Promise<any> {
+    return this.transactions.readWrite(async (txn) => {
+
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
-      const isNewSocialMediaType = await userSocialMediaRepository.isNewSocialMediaTypeForUser(user, socialMedia.type);
-      if (!isNewSocialMediaType) {
-        throw new UserError('Social media URL of this type has already been created for this user');
-      }
-      return userSocialMediaRepository.upsertSocialMedia(UserSocialMediaModel.create({ ...socialMedia, user }));
+      const addedSocialMedia = await Promise.all(socialMedia.map(async (userSocialMedia, index) => {
+
+        const { type, url } = userSocialMedia;
+
+
+        const isNewSocialMediaType = await userSocialMediaRepository.isNewSocialMediaTypeForUser(user, type);
+        if (!isNewSocialMediaType) {
+          throw new UserError('Social media URL of this type has already been created for this user');
+        }
+
+        const newSocialMedia = userSocialMediaRepository.upsertSocialMedia(UserSocialMediaModel.create({ ...userSocialMedia, user }));
+
+        return newSocialMedia;
+      }));
+
+      console.log("ADDED SOCIAL MEDIA", addedSocialMedia);
+      return addedSocialMedia;
     });
-    return addedSocialMedia;
   }
 
   public async updateSocialMediaByUuid(user: UserModel,

@@ -28,7 +28,7 @@ export class InsertSocialMediaRequest implements IInsertUserSocialMediaRequest {
   @Type(() => SocialMedia)
   @ValidateNested()
   @IsDefined()
-  socialMedia: SocialMedia;
+  socialMedia: SocialMedia[];
 }
 
 export class UpdateSocialMediaRequest implements IUpdateUserSocialMediaRequest {

@@ -347,6 +347,10 @@ export interface PublicUserSocialMedia {
   url: string
 }
 
+export interface TestPublicUserSocialMedia {
+  socialMedia: PublicUserSocialMedia[];
+}
+
 export interface GetUserActivityStreamResponse extends ApiResponse {
   activity: PublicActivity[];
 }
