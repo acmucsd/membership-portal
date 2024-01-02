@@ -22,7 +22,7 @@ export default class UserSocialMediaService {
     return userSocialMedia;
   }
 
-  public async insertSocialMediaForUser(user: UserModel, socialMedia: SocialMedia[]): Promise<any> {
+  public async insertSocialMediaForUser(user: UserModel, socialMedia: SocialMedia[]): Promise<UserSocialMediaModel[]> {
     return this.transactions.readWrite(async (txn) => {
 
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
@@ -36,7 +36,7 @@ export default class UserSocialMediaService {
           throw new UserError('Social media URL of this type has already been created for this user');
         }
 
-        const newSocialMedia = userSocialMediaRepository.upsertSocialMedia(UserSocialMediaModel.create({ ...userSocialMedia, user }));
+        const newSocialMedia = await userSocialMediaRepository.upsertSocialMedia(UserSocialMediaModel.create({ ...userSocialMedia, user }));
 
         return newSocialMedia;
       }));
