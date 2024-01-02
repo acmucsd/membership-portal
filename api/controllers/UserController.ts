@@ -87,7 +87,11 @@ export class UserController {
     }
 
     const user = await this.userAccountService.findByHandle(params.handle);
-    return { error: null, user: user.getPublicProfile() };
+    const userProfile = await this.userAccountService.getPublicProfile(user);
+    return { error: null, user: userProfile };
+
+    // const user = await this.userAccountService.findByHandle(params.handle);
+    // return { error: null, user: user.getPublicProfile() };
   }
 
   @Get()
