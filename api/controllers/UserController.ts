@@ -85,9 +85,9 @@ export class UserController {
     if (params.handle === currentUser.handle) {
       return this.getCurrentUser(currentUser);
     }
-
     const user = await this.userAccountService.findByHandle(params.handle);
-    return { error: null, user: user.getPublicProfile() };
+    const userProfile = await this.userAccountService.getPublicProfile(user);
+    return { error: null, user: userProfile };
   }
 
   @Get()
