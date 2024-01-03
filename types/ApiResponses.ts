@@ -39,6 +39,14 @@ export interface SubmitAttendanceForUsersResponse extends ApiResponse {
   attendances: PublicAttendance[];
 }
 
+export interface ModifyUserAccessLevelResponse extends ApiResponse {
+  updatedUsers: PrivateProfile[];
+}
+
+export interface GetAllUserAccessLevelsResponse extends ApiResponse {
+  users: PrivateProfile[];
+}
+
 // ATTENDANCE
 
 export interface PublicAttendance {
@@ -156,12 +164,12 @@ export interface PublicMerchItem {
   uuid: Uuid;
   itemName: string;
   collection?: PublicMerchCollection;
-  picture: string;
   description: string;
   monthlyLimit: number;
   lifetimeLimit: number;
   hidden: boolean;
   hasVariantsEnabled: boolean;
+  merchPhotos: PublicMerchItemPhoto[];
   options: PublicMerchItemOption[];
 }
 
@@ -173,7 +181,7 @@ export interface PublicMerchItemWithPurchaseLimits extends PublicMerchItem {
 export interface PublicCartMerchItem {
   uuid: Uuid;
   itemName: string;
-  picture: string;
+  uploadedPhoto: string;
   description: string;
 }
 
@@ -183,6 +191,13 @@ export interface PublicMerchItemOption {
   quantity: number;
   discountPercentage: number;
   metadata: MerchItemOptionMetadata;
+}
+
+export interface PublicMerchItemPhoto {
+  uuid: Uuid;
+  uploadedPhoto: string;
+  position: number;
+  uploadedAt: Date;
 }
 
 export interface PublicOrderMerchItemOption {
@@ -248,9 +263,11 @@ export interface EditMerchItemResponse extends ApiResponse {
 
 export interface DeleteMerchItemResponse extends ApiResponse {}
 
-export interface UpdateMerchPhotoResponse extends ApiResponse {
-  item: PublicMerchItem;
+export interface CreateMerchPhotoResponse extends ApiResponse {
+  merchPhoto: PublicMerchItemPhoto;
 }
+
+export interface DeleteMerchItemPhotoResponse extends ApiResponse {}
 
 export interface CreateMerchItemOptionResponse extends ApiResponse {
   option: PublicMerchItemOption;
@@ -302,6 +319,7 @@ export interface PublicProfile {
   bio: string,
   points: number,
   userSocialMedia?: PublicUserSocialMedia[];
+  isAttendancePublic: boolean,
 }
 
 export interface PrivateProfile extends PublicProfile {

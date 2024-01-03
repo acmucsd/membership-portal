@@ -1,12 +1,17 @@
-import { Allow, ArrayNotEmpty, IsDefined, IsNotEmpty, IsPositive, IsUUID, ValidateNested } from 'class-validator';
+import { Allow, ArrayNotEmpty, IsDefined, IsIn, IsNotEmpty, IsPositive, IsUUID, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   CreateBonusRequest as ICreateBonusRequest,
   CreateMilestoneRequest as ICreateMilestoneRequest,
   SubmitAttendanceForUsersRequest as ISubmitAttendanceForUsersRequest,
+  ModifyUserAccessLevelRequest as IModifyUserAccessLevelRequest,
   Milestone as IMilestone,
   Bonus as IBonus,
+  UserAccessUpdates as IUserAccessUpdates,
+  UserAccessType,
 } from '../../types';
+
+const validUserAccessTypes = Object.values(UserAccessType);
 
 export class Milestone implements IMilestone {
   @IsDefined()
@@ -57,4 +62,19 @@ export class SubmitAttendanceForUsersRequest implements ISubmitAttendanceForUser
 
   @Allow()
   asStaff?: boolean;
+}
+
+export class UserAccessUpdates implements IUserAccessUpdates {
+  @IsDefined()
+  user: string;
+
+  @IsDefined()
+  @IsIn(validUserAccessTypes)
+  accessType: UserAccessType;
+}
+export class ModifyUserAccessLevelRequest implements IModifyUserAccessLevelRequest {
+  @Type(() => UserAccessUpdates)
+  @IsDefined()
+  @ValidateNested()
+  accessUpdates: UserAccessUpdates[];
 }

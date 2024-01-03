@@ -27,7 +27,17 @@ export class AttendanceController {
 
   @Get()
   async getAttendancesForCurrentUser(@AuthenticatedUser() user: UserModel): Promise<GetAttendancesForUserResponse> {
-    const attendances = await this.attendanceService.getAttendancesForUser(user);
+    const attendances = await this.attendanceService.getAttendancesForCurrentUser(user);
+    return { error: null, attendances };
+  }
+
+  @Get('/user/:uuid')
+  async getAttendancesForUser(@Params() params: UuidParam,
+    @AuthenticatedUser() currentUser: UserModel): Promise<GetAttendancesForEventResponse> {
+    if (params.uuid === currentUser.uuid) {
+      return this.getAttendancesForCurrentUser(currentUser);
+    }
+    const attendances = await this.attendanceService.getAttendancesForUser(params.uuid);
     return { error: null, attendances };
   }
 
