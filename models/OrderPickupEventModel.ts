@@ -30,7 +30,7 @@ export class OrderPickupEventModel extends BaseEntity {
   @JoinColumn({ name: 'order' })
   orders: OrderModel[];
 
-  @OneToOne((type) => EventModel, (event) => event.cover, { nullable: true })
+  @OneToOne(() => EventModel, { nullable: true })
   @JoinColumn({ name: 'linkedEvent' })
   linkedEvent: EventModel;
 
