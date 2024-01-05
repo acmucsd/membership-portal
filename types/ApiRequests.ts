@@ -1,5 +1,6 @@
 import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 import { Uuid } from '.';
+import { EventModel } from 'models/EventModel';
 
 // REQUEST TYPES
 
@@ -308,6 +309,7 @@ export interface OrderPickupEvent {
   end: Date;
   description: string;
   orderLimit: number;
+  linkedEvent?: EventModel;
 }
 
 export interface OrderPickupEventEdit extends Partial<OrderPickupEvent> {}

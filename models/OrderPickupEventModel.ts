@@ -43,6 +43,7 @@ export class OrderPickupEventModel extends BaseEntity {
       description: this.description,
       orderLimit: this.orderLimit,
       status: this.status,
+      linkedEvent: this.linkedEvent ? this.linkedEvent.getPublicEvent() : null,
     };
 
     if (canSeeOrders) pickupEvent.orders = this.orders.map((order) => order.getPublicOrderWithItems());
