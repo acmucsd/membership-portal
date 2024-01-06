@@ -24,6 +24,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('orderItem.option', 'option')
       .leftJoinAndSelect('option.item', 'merchItem')
+      .leftJoinAndSelect('merchItem.merchPhotos', 'merchPhotos')
       .where('order.uuid = :uuid', { uuid })
       .getOne();
   }
@@ -52,7 +53,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
 
   /**
    * Gets all orders for a given user. Returns the order joined with its pickup event, user,
-   * merch item options, and merch items.
+   * merch item options, merch items, and merch item photos.
    */
   public async getAllOrdersWithItemsForUser(user: UserModel): Promise<OrderModel[]> {
     return this.repository
@@ -62,6 +63,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('orderItem.option', 'option')
       .leftJoinAndSelect('option.item', 'merchItem')
+      .leftJoinAndSelect('merchItem.merchPhotos', 'merchPhotos')
       .where('order.user = :uuid', { uuid: user.uuid })
       .getMany();
   }
@@ -114,6 +116,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemModel> {
       .innerJoinAndSelect('oi.order', 'order')
       .innerJoinAndSelect('order.user', 'user')
       .innerJoinAndSelect('option.item', 'item')
+      .innerJoinAndSelect('item.merchPhotos', 'merchPhotos')
       .where('item.uuid = :itemUuid', { itemUuid: item.uuid })
       .andWhere('user.uuid = :userUuid', { userUuid: user.uuid })
       .getMany();
@@ -153,6 +156,9 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
     return this.getBaseFindOneQuery().where({ uuid }).getOne();
   }
 
+  /**
+   * Make changes to a singke pickup event. Returns the pickup event edited.
+   */
   public async upsertPickupEvent(pickupEvent: OrderPickupEventModel, changes?: Partial<OrderPickupEventModel>):
   Promise<OrderPickupEventModel> {
     if (changes) pickupEvent = OrderPickupEventModel.merge(pickupEvent, changes);
@@ -170,7 +176,8 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
       .leftJoinAndSelect('order.items', 'item')
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('item.option', 'option')
-      .leftJoinAndSelect('option.item', 'merchItem');
+      .leftJoinAndSelect('option.item', 'merchItem')
+      .leftJoinAndSelect('merchItem.merchPhotos', 'merchPhotos');
   }
 
   private getBaseFindManyQuery(): SelectQueryBuilder<OrderPickupEventModel> {

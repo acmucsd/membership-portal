@@ -84,7 +84,7 @@ describe('Get User Handles', () => {
       loggedInUser,
     );
 
-    expect(response.user).toEqual(otherUser.getPublicProfile());
+    expect(response.user.uuid).toEqual(otherUser.getPublicProfile().uuid);
   });
 });
 

@@ -5,6 +5,7 @@ import { AttendanceModel } from './AttendanceModel';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
 import { MerchCollectionPhotoModel } from './MerchCollectionPhotoModel';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
+import { MerchandiseItemPhotoModel } from './MerchandiseItemPhotoModel';
 import { OrderModel } from './OrderModel';
 import { OrderItemModel } from './OrderItemModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
@@ -22,6 +23,7 @@ export const models = [
   MerchandiseCollectionModel,
   MerchCollectionPhotoModel,
   MerchandiseItemModel,
+  MerchandiseItemPhotoModel,
   MerchandiseItemOptionModel,
   OrderModel,
   OrderItemModel,
