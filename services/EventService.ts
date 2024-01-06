@@ -24,7 +24,7 @@ export default class EventService {
   public async create(event: Event): Promise<PublicEvent> {
     const eventCreated = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
-      const isUnusedAttendanceCode = eventRepository.isUnusedAttendanceCode(event.attendanceCode);
+      const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(event.attendanceCode);
       if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
       if (event.start > event.end) throw new UserError('Start date after end date');
       return eventRepository.upsertEvent(EventModel.create(event));
@@ -68,7 +68,7 @@ export default class EventService {
       const currentEvent = await eventRepository.findByUuid(uuid);
       if (!currentEvent) throw new NotFoundError('Event not found');
       if (changes.attendanceCode !== currentEvent.attendanceCode) {
-        const isUnusedAttendanceCode = eventRepository.isUnusedAttendanceCode(changes.attendanceCode);
+        const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(changes.attendanceCode);
         if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
       }
       return eventRepository.upsertEvent(currentEvent, changes);

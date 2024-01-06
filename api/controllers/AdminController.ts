@@ -1,9 +1,10 @@
-import { JsonController, Post, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
+import { JsonController, Post, Patch, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   CreateBonusRequest,
   CreateMilestoneRequest,
   SubmitAttendanceForUsersRequest,
+  ModifyUserAccessLevelRequest,
 } from '../validators/AdminControllerRequests';
 import {
   File,
@@ -13,6 +14,8 @@ import {
   UploadBannerResponse,
   GetAllEmailsResponse,
   SubmitAttendanceForUsersResponse,
+  ModifyUserAccessLevelResponse,
+  GetAllUserAccessLevelsResponse,
 } from '../../types';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import UserAccountService from '../../services/UserAccountService';
@@ -78,5 +81,22 @@ export class AdminController {
     const emails = users.map((e) => e.toLowerCase());
     const attendances = await this.attendanceService.submitAttendanceForUsers(emails, event, asStaff, currentUser);
     return { error: null, attendances };
+  }
+
+  @Patch('/access')
+  async updateUserAccessLevel(@Body() modifyUserAccessLevelRequest: ModifyUserAccessLevelRequest,
+    @AuthenticatedUser() currentUser: UserModel): Promise<ModifyUserAccessLevelResponse> {
+    if (!PermissionsService.canModifyUserAccessLevel(currentUser)) throw new ForbiddenError();
+    const { accessUpdates } = modifyUserAccessLevelRequest;
+    const emails = accessUpdates.map((e) => e.user.toLowerCase());
+    const updatedUsers = await this.userAccountService.updateUserAccessLevels(accessUpdates, emails, currentUser);
+    return { error: null, updatedUsers };
+  }
+
+  @Get('/access')
+  async getAllUsersWithAccessLevels(@AuthenticatedUser() user: UserModel): Promise<GetAllUserAccessLevelsResponse> {
+    if (!PermissionsService.canSeeAllUserAccessLevels(user)) throw new ForbiddenError();
+    const users = await this.userAccountService.getAllFullUserProfiles();
+    return { error: null, users };
   }
 }
