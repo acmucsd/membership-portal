@@ -73,7 +73,12 @@ export class MerchCollectionPhotoRepository extends BaseRepository<MerchCollecti
 @EntityRepository(MerchandiseItemModel)
 export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
   public async findByUuid(uuid: Uuid): Promise<MerchandiseItemModel> {
-    return this.repository.findOne(uuid, { relations: ['collection', 'options', 'merchPhotos', 'collection.collectionPhotos'] });
+    return this.repository.findOne(uuid, { relations: [
+      'collection',
+      'options',
+      'merchPhotos',
+      'collection.collectionPhotos',
+    ]});
   }
 
   public async upsertMerchItem(item: MerchandiseItemModel, changes?: Partial<MerchandiseItemModel>):
