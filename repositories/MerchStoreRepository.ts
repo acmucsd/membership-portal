@@ -78,7 +78,7 @@ export class MerchItemRepository extends BaseRepository<MerchandiseItemModel> {
       'options',
       'merchPhotos',
       'collection.collectionPhotos',
-    ]});
+    ] });
   }
 
   public async upsertMerchItem(item: MerchandiseItemModel, changes?: Partial<MerchandiseItemModel>):
