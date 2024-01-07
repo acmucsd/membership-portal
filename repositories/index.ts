@@ -9,7 +9,7 @@ import {
   MerchItemRepository,
   MerchItemOptionRepository,
   MerchCollectionPhotoRepository,
-  MerchCollectionPhotoRepository,
+  MerchItemPhotoRepository,
 } from './MerchStoreRepository';
 import { ActivityRepository } from './ActivityRepository';
 import { LeaderboardRepository } from './LeaderboardRepository';

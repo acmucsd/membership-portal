@@ -8,6 +8,7 @@ import { MerchCollectionPhotoModel } from '../../models/MerchCollectionPhotoMode
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { MerchandiseItemPhotoModel } from '../../models/MerchandiseItemPhotoModel';
+import FactoryUtils from './FactoryUtils';
 
 export class MerchFactory {
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
