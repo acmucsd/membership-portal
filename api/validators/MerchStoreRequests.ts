@@ -44,6 +44,7 @@ import {
   OrderPickupEventEdit as IOrderPickupEventEdit,
   Event as IEvent,
   Uuid,
+  PublicEvent,
 } from '../../types';
 import { EventModel } from 'models/EventModel';
 
@@ -265,7 +266,7 @@ export class OrderPickupEvent implements IOrderPickupEvent {
 
   @IsOptional()
   @IsUUID()
-  linkedEvent?: EventModel;
+  linkedEventUuid?: Uuid;
 }
 
 export class OrderPickupEventEdit implements IOrderPickupEventEdit {
@@ -283,6 +284,9 @@ export class OrderPickupEventEdit implements IOrderPickupEventEdit {
 
   @Min(1)
   orderLimit?: number;
+
+  @IsUUID()
+  linkedEventUuid?: Uuid;
 }
 
 export class MerchOrderEdit implements IMerchOrderEdit {

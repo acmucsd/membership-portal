@@ -1,7 +1,7 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Uuid, PublicOrderPickupEvent, OrderPickupEventStatus } from '../types';
 import { OrderModel } from './OrderModel';
-import {EventModel } from './EventModel';
+import { EventModel } from './EventModel';
 
 @Entity('OrderPickupEvents')
 export class OrderPickupEventModel extends BaseEntity {
@@ -30,7 +30,7 @@ export class OrderPickupEventModel extends BaseEntity {
   @JoinColumn({ name: 'order' })
   orders: OrderModel[];
 
-  @OneToOne(() => EventModel, { nullable: true })
+  @OneToOne((type) => EventModel, { nullable: true })
   @JoinColumn({ name: 'linkedEvent' })
   linkedEvent: EventModel;
 
