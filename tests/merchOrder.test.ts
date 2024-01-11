@@ -962,7 +962,7 @@ describe('merch order pickup events', () => {
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.createPickupEvent({ pickupEvent }, merchDistributor);
 
-    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders', 'event'] });
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders', 'linkedEvent'] });
     console.log("PERSISTED", persistedPickupEvent);
     console.log("PICKUP", pickupEvent);
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
