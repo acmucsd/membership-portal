@@ -1,7 +1,6 @@
 import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 import { Uuid } from '.';
 
-
 // REQUEST TYPES
 
 export interface Pagination {

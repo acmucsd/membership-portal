@@ -42,11 +42,8 @@ import {
   MerchOrderEdit as IMerchOrderEdit,
   OrderPickupEvent as IOrderPickupEvent,
   OrderPickupEventEdit as IOrderPickupEventEdit,
-  Event as IEvent,
   Uuid,
-  PublicEvent,
 } from '../../types';
-import { EventModel } from 'models/EventModel';
 
 export class MerchCollection implements IMerchCollection {
   @IsDefined()
