@@ -91,7 +91,7 @@ export interface SocialMediaPatches {
 }
 
 export interface UpdateUserSocialMediaRequest {
-  socialMedia: SocialMediaPatches;
+  socialMedia: SocialMediaPatches[];
 }
 
 // LEADERBOARD

@@ -26,10 +26,9 @@ export default class UserSocialMediaService {
     return this.transactions.readWrite(async (txn) => {
 
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
-      const addedSocialMedia = await Promise.all(socialMedia.map(async (userSocialMedia, index) => {
+      const addedSocialMedia = await Promise.all(socialMedia.map(async (userSocialMedia) => {
 
-        const { type, url } = userSocialMedia;
-
+        const { type } = userSocialMedia;
 
         const isNewSocialMediaType = await userSocialMediaRepository.isNewSocialMediaTypeForUser(user, type);
         if (!isNewSocialMediaType) {
@@ -41,14 +40,40 @@ export default class UserSocialMediaService {
         return newSocialMedia;
       }));
 
-      console.log("ADDED SOCIAL MEDIA", addedSocialMedia);
       return addedSocialMedia;
     });
   }
 
-  public async updateSocialMediaByUuid(user: UserModel,
-    uuid: Uuid,
-    changes: Partial<UserSocialMediaModel>): Promise<UserSocialMediaModel> {
+  public async updateSocialMediaByUuid(user: UserModel, uuid: Uuid,
+    changes: Partial<UserSocialMediaModel>[]): Promise<UserSocialMediaModel[]> {
+
+      return this.transactions.readWrite(async (txn) => {
+
+        const userSocialMediaRepository = Repositories.userSocialMedia(txn);
+        const socialMedia = await userSocialMediaRepository.findByUuid(uuid);
+
+        const updatedSocialMedia = await Promise.all(changes.map(async (userSocialMedia) => {
+
+          const { url } = userSocialMedia;
+
+          if (!socialMedia) throw new NotFoundError('Social media URL not found');
+          if (user.uuid !== socialMedia.user.uuid) {
+            throw new ForbiddenError('User cannot update a social media URL of another user');
+          }
+
+          const newSocialMedia = await userSocialMediaRepository.upsertSocialMedia(UserSocialMediaModel.create({ ...userSocialMedia, user }));
+
+          return newSocialMedia;
+        }));
+
+        return updatedSocialMedia;
+      });
+
+
+
+
+
+
     const updatedSocialMedia = await this.transactions.readWrite(async (txn) => {
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
       const socialMedia = await userSocialMediaRepository.findByUuid(uuid);
@@ -58,7 +83,9 @@ export default class UserSocialMediaService {
       }
       return userSocialMediaRepository.upsertSocialMedia(socialMedia, changes);
     });
+
     return updatedSocialMedia;
+
   }
 
   public async deleteSocialMediaByUuid(user: UserModel, uuid: Uuid): Promise<UserSocialMediaModel> {

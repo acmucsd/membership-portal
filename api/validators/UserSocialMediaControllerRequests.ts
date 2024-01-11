@@ -35,5 +35,5 @@ export class UpdateSocialMediaRequest implements IUpdateUserSocialMediaRequest {
   @Type(() => SocialMediaPatches)
   @ValidateNested()
   @IsDefined()
-  socialMedia: SocialMediaPatches;
+  socialMedia: SocialMediaPatches[];
 }
