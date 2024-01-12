@@ -111,12 +111,11 @@ export class UserController {
     return { error: null, userSocialMedia };
   }
 
-  @Patch('/socialMedia/:uuid')
-  async updateSocialMediaForUser(@Params() params: UuidParam,
-    @Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
+  @Patch('/socialMedia')
+  async updateSocialMediaForUser(@Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
     @AuthenticatedUser() user: UserModel): Promise<UpdateSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
-      .updateSocialMediaByUuid(user, params.uuid, updateSocialMediaRequest.socialMedia);
+      .updateSocialMediaByUuid(user, updateSocialMediaRequest.socialMedia);
     return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
   }
 

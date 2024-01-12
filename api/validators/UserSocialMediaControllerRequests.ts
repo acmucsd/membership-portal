@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsDefined, IsNotEmpty, IsUUID, ValidateNested } from 'class-validator';
 import { IsValidSocialMediaType } from '../decorators/Validators';
 import {
   InsertUserSocialMediaRequest as IInsertUserSocialMediaRequest,
@@ -21,7 +21,11 @@ export class SocialMedia implements ISocialMedia {
 
 export class SocialMediaPatches implements ISocialMediaPatches {
   @IsNotEmpty()
-  url?: string;
+  url: string;
+
+  @IsNotEmpty()
+  @IsUUID()
+  uuid: string;
 }
 
 export class InsertSocialMediaRequest implements IInsertUserSocialMediaRequest {

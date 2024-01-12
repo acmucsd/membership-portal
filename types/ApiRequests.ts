@@ -87,7 +87,8 @@ export interface InsertUserSocialMediaRequest {
 }
 
 export interface SocialMediaPatches {
-  url?: string;
+  uuid: string;
+  url: string;
 }
 
 export interface UpdateUserSocialMediaRequest {
