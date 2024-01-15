@@ -58,7 +58,7 @@ export default class UserSocialMediaService {
             throw new ForbiddenError('User cannot update a social media URL of another user');
           }
 
-          const newSocialMedia = await userSocialMediaRepository.upsertSocialMedia(UserSocialMediaModel.create({ ...userSocialMedia, user }));
+          const newSocialMedia = await userSocialMediaRepository.upsertSocialMedia(socialMedia, userSocialMedia);
 
           return newSocialMedia;
         }));

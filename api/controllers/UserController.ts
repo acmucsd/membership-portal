@@ -116,7 +116,8 @@ export class UserController {
     @AuthenticatedUser() user: UserModel): Promise<UpdateSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
       .updateSocialMediaByUuid(user, updateSocialMediaRequest.socialMedia);
-    return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
+    userSocialMedia.map((usm) => usm.getPublicSocialMedia())
+    return { error: null, userSocialMedia: userSocialMedia };
   }
 
   @Delete('/socialMedia/:uuid')
