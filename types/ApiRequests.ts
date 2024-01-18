@@ -1,4 +1,4 @@
-import { FeedbackStatus, FeedbackType, SocialMediaType } from './Enums';
+import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 import { Uuid } from '.';
 
 // REQUEST TYPES
@@ -66,6 +66,7 @@ export interface UserPatches {
   major?: string;
   graduationYear?: number;
   bio?: string;
+  isAttendancePublic?: boolean;
   passwordChange?: PasswordUpdate;
 }
 
@@ -125,6 +126,15 @@ export interface SubmitAttendanceForUsersRequest {
   users: string[];
   event: Uuid;
   asStaff?: boolean;
+}
+
+export interface UserAccessUpdates {
+  user: string;
+  accessType: UserAccessType;
+}
+
+export interface ModifyUserAccessLevelRequest {
+  accessUpdates: UserAccessUpdates[];
 }
 
 // EVENT
@@ -195,6 +205,10 @@ export interface CreateMerchItemOptionRequest {
   option: MerchItemOption;
 }
 
+export interface CreateMerchItemPhotoRequest {
+  position: string;
+}
+
 export interface PlaceMerchOrderRequest {
   order: MerchItemOptionAndQuantity[];
   pickupEvent: Uuid;
@@ -227,7 +241,6 @@ export interface CommonMerchItemProperties {
   itemName: string;
   collection: string;
   description: string;
-  picture?: string;
   hidden?: boolean;
   monthlyLimit?: number;
   lifetimeLimit?: number;
@@ -240,6 +253,16 @@ export interface MerchItemOptionMetadata {
   position: number;
 }
 
+export interface MerchItemPhoto {
+  uploadedPhoto: string;
+  position: number;
+}
+
+export interface MerchItemPhotoEdit {
+  uuid: string;
+  position?: number;
+}
+
 export interface MerchItemOption {
   quantity: number;
   price: number;
@@ -249,6 +272,7 @@ export interface MerchItemOption {
 
 export interface MerchItem extends CommonMerchItemProperties {
   options: MerchItemOption[];
+  merchPhotos: MerchItemPhoto[];
 }
 
 export interface MerchItemOptionEdit {
@@ -261,6 +285,7 @@ export interface MerchItemOptionEdit {
 
 export interface MerchItemEdit extends Partial<CommonMerchItemProperties> {
   options?: MerchItemOptionEdit[];
+  merchPhotos?: MerchItemPhotoEdit[];
 }
 
 export interface MerchOrderEdit {
