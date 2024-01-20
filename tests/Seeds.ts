@@ -116,6 +116,10 @@ async function seed(): Promise<void> {
     email: 'acm_store_distributor@ucsd.edu',
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
+  const USER_SPONSORSHIP_MANAGER = UserFactory.fake({
+    email: 'acm_sponsorship_manager@ucsd.edu',
+    accessType: UserAccessType.SPONSORSHIP_MANAGER,
+  });
 
   // Used for testing various User Social Media
   const USER_SOCIAL_MEDIA_1 = UserFactory.fake();
@@ -683,6 +687,7 @@ async function seed(): Promise<void> {
       USER_MARKETING,
       USER_MERCH_STORE_MANAGER,
       USER_MERCH_STORE_DISTRIBUTOR,
+      USER_SPONSORSHIP_MANAGER,
       USER_SOCIAL_MEDIA_1,
       USER_SOCIAL_MEDIA_2,
       USER_SOCIAL_MEDIA_3,
