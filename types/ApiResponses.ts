@@ -410,6 +410,7 @@ export interface PublicOrderPickupEvent {
   orders?: PublicOrderWithItems[];
   orderLimit?: number;
   status: OrderPickupEventStatus;
+  linkedEvent?: PublicEvent;
 }
 
 export interface GetOrderPickupEventsResponse extends ApiResponse {
