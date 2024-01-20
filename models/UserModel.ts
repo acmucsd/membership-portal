@@ -118,6 +118,10 @@ export class UserModel extends BaseEntity {
     return this.accessType === UserAccessType.MERCH_STORE_DISTRIBUTOR;
   }
 
+  public isSponsorshipManager(): boolean {
+    return this.accessType === UserAccessType.SPONSORSHIP_MANAGER;
+  }
+
   public getPublicProfile(): PublicProfile {
     const publicProfile: PublicProfile = {
       uuid: this.uuid,
@@ -129,6 +133,7 @@ export class UserModel extends BaseEntity {
       major: this.major,
       bio: this.bio,
       points: this.points,
+      isAttendancePublic: this.isAttendancePublic,
     };
     if (this.userSocialMedia) {
       publicProfile.userSocialMedia = this.userSocialMedia.map((sm) => sm.getPublicSocialMedia());
@@ -151,6 +156,7 @@ export class UserModel extends BaseEntity {
       bio: this.bio,
       points: this.points,
       credits: this.credits,
+      isAttendancePublic: this.isAttendancePublic,
     };
     if (this.userSocialMedia) {
       fullUserProfile.userSocialMedia = this.userSocialMedia.map((sm) => sm.getPublicSocialMedia());

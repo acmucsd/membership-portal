@@ -273,7 +273,7 @@ describe('attendance', () => {
     expect(attendance.event.uuid).toEqual(event.uuid);
   });
 
-  test('get user attendance by uuid', async () => {
+  test('get another user attendance by uuid', async () => {
     const conn = await DatabaseConnection.get();
     const member1 = UserFactory.fake();
     const member2 = UserFactory.fake();
@@ -303,7 +303,7 @@ describe('attendance', () => {
     expect(attendancesForEvent).toEqual(expect.arrayContaining(expectedAttendances));
   });
 
-  test('throws error when canSeeAttendanceFalse', async () => {
+  test('throws error when isAttendancePublic is false', async () => {
     const conn = await DatabaseConnection.get();
     const member1 = UserFactory.fake();
     const member2 = UserFactory.fake();
