@@ -5,7 +5,6 @@ import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import EmailService from '../services/EmailService';
 import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
-import { EventModel } from '../models/EventModel';
 import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
@@ -971,10 +970,11 @@ describe('merch order pickup events', () => {
   test('pickup events can be linked to normal events & edited', async () => {
     const conn = await DatabaseConnection.get();
     const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
-    //const linkedEvent = EventFactory.fake();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const linkedEvent = EventFactory.fake();
     const eventController = ControllerFactory.event(conn);
-    const linkedEvent = await conn.manager.findOne(EventModel);
-    console.log("LINKED EVENT", linkedEvent);
+    await eventController.createEvent({ event: linkedEvent }, admin);
+
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ linkedEvent });
 
     await new PortalState()
@@ -985,7 +985,7 @@ describe('merch order pickup events', () => {
     when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
       .thenResolve();
 
-    const createPickupEventRequest = { pickupEvent: {...pickupEvent, linkedEventUuid: linkedEvent.uuid }}
+    const createPickupEventRequest = { pickupEvent: { ...pickupEvent, linkedEventUuid: linkedEvent.uuid } };
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.createPickupEvent(createPickupEventRequest, merchDistributor);
 
@@ -995,11 +995,10 @@ describe('merch order pickup events', () => {
 
     // edit a linked event
 
-    //const newLinkedEvent = EventFactory.fake();
-    const newLinkedEvent = await conn.manager.findOne(EventModel);
-    console.log("NEW LINKED EVENT", newLinkedEvent);
+    const newLinkedEvent = EventFactory.fake();
+    await eventController.createEvent({ event: newLinkedEvent }, admin);
 
-    const editPickupEventRequest = { pickupEvent: { linkedEventUuid: newLinkedEvent.uuid }};
+    const editPickupEventRequest = { pickupEvent: { linkedEventUuid: newLinkedEvent.uuid } };
     const params = { uuid: pickupEvent.uuid };
     await merchController.editPickupEvent(params, editPickupEventRequest, merchDistributor);
 
