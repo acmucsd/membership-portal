@@ -11,6 +11,7 @@ import {
   ArrayNotEmpty,
   IsNumber,
   IsNumberString,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -41,6 +42,7 @@ import {
   MerchOrderEdit as IMerchOrderEdit,
   OrderPickupEvent as IOrderPickupEvent,
   OrderPickupEventEdit as IOrderPickupEventEdit,
+  Uuid,
 } from '../../types';
 
 export class MerchCollection implements IMerchCollection {
@@ -258,6 +260,10 @@ export class OrderPickupEvent implements IOrderPickupEvent {
   @IsDefined()
   @Min(1)
   orderLimit: number;
+
+  @IsOptional()
+  @IsUUID()
+  linkedEventUuid?: Uuid;
 }
 
 export class OrderPickupEventEdit implements IOrderPickupEventEdit {
@@ -275,6 +281,9 @@ export class OrderPickupEventEdit implements IOrderPickupEventEdit {
 
   @Min(1)
   orderLimit?: number;
+
+  @IsUUID()
+  linkedEventUuid?: Uuid;
 }
 
 export class MerchOrderEdit implements IMerchOrderEdit {
