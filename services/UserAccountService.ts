@@ -18,13 +18,16 @@ import {
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
+import Filter = require('bad-words');
 
 @Service()
 export default class UserAccountService {
   private transactions: TransactionsManager;
+  private filter: Filter;
 
   constructor(@InjectManager() entityManager: EntityManager) {
     this.transactions = new TransactionsManager(entityManager);
+    this.filter = new Filter({ regex: /[\p{L}\p{M}]/u });
   }
 
   public async findByUuid(uuid: Uuid): Promise<UserModel> {
@@ -103,6 +106,9 @@ export default class UserAccountService {
         throw new BadRequestError('Incorrect password');
       }
       changes.hash = await UserRepository.generateHash(newPassword);
+    }
+    if (this.filter.isProfane(userPatches.handle)) {
+      throw new BadRequestError('Please remove profanity from handle');
     }
     return this.transactions.readWrite(async (txn) => {
       if (userPatches.handle) {
