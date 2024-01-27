@@ -71,6 +71,7 @@
     "winston-daily-rotate-file": "^4.5.0"
   },
   "devDependencies": {
+    "@types/async-retry": "^1.4.8",
     "@types/bcrypt": "^3.0.0",
     "@types/body-parser": "^1.19.0",
     "@types/datadog-metrics": "^0.6.1",

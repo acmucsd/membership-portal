@@ -1,4 +1,5 @@
 import { EntityManager } from 'typeorm';
+import AsyncRetry = require('async-retry');
 import { UserRepository } from './UserRepository';
 import { FeedbackRepository } from './FeedbackRepository';
 import { AttendanceRepository } from './AttendanceRepository';
@@ -85,10 +86,14 @@ export class TransactionsManager {
   }
 
   public readOnly<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    return this.transactionalEntityManager.transaction('REPEATABLE READ', fn);
+    return AsyncRetry(async (bail) => this.transactionalEntityManager.transaction('REPEATABLE READ', fn),
+      { retries: 5 }
+    );
   }
 
   public readWrite<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    return this.transactionalEntityManager.transaction('SERIALIZABLE', fn);
+    return AsyncRetry(async (bail) => this.transactionalEntityManager.transaction('SERIALIZABLE', fn),
+      { retries: 5 }
+    );
   }
 }
