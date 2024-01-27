@@ -87,13 +87,11 @@ export class TransactionsManager {
 
   public readOnly<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
     return AsyncRetry(async (bail) => this.transactionalEntityManager.transaction('REPEATABLE READ', fn),
-      { retries: 5 }
-    );
+      { retries: 5 });
   }
 
   public readWrite<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
     return AsyncRetry(async (bail) => this.transactionalEntityManager.transaction('SERIALIZABLE', fn),
-      { retries: 5 }
-    );
+      { retries: 5 });
   }
 }
