@@ -29,6 +29,7 @@ import {
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
+import { EventModel } from '../models/EventModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
@@ -1033,16 +1034,25 @@ export default class MerchStoreService {
   }
 
   public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<OrderPickupEventModel> {
-    if (pickupEvent.start >= pickupEvent.end) {
-      throw new UserError('Order pickup event start time must come before the end time');
-    }
-    const pickupEventModel = OrderPickupEventModel.create(pickupEvent);
-    if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEventModel)) {
-      throw new UserError('Cannot create a pickup event that starts in less than 2 days');
-    }
-    return this.transactions.readWrite(async (txn) => Repositories
-      .merchOrderPickupEvent(txn)
-      .upsertPickupEvent(pickupEventModel));
+    return this.transactions.readWrite(async (txn) => {
+      const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
+      if (pickupEvent.start >= pickupEvent.end) {
+        throw new UserError('Order pickup event start time must come before the end time');
+      }
+
+      const pickupEventModel = OrderPickupEventModel.create(pickupEvent);
+
+      if (pickupEvent.linkedEventUuid) {
+        const linkedRegularEvent = await this.getLinkedRegularEvent(pickupEvent.linkedEventUuid);
+        pickupEventModel.linkedEvent = linkedRegularEvent;
+      }
+
+      if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(pickupEventModel)) {
+        throw new UserError('Cannot create a pickup event that starts in less than 2 days');
+      }
+
+      return orderPickupEventRepository.upsertPickupEvent(pickupEventModel);
+    });
   }
 
   public async editPickupEvent(uuid: Uuid, changes: OrderPickupEventEdit): Promise<OrderPickupEventModel> {
@@ -1050,6 +1060,12 @@ export default class MerchStoreService {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
       const updatedPickupEvent = OrderPickupEventModel.merge(pickupEvent, changes);
+
+      if (changes.linkedEventUuid) {
+        const linkedRegularEvent = await this.getLinkedRegularEvent(changes.linkedEventUuid);
+        updatedPickupEvent.linkedEvent = linkedRegularEvent;
+      }
+
       if (updatedPickupEvent.start >= updatedPickupEvent.end) {
         throw new UserError('Order pickup event start time must come before the end time');
       }
@@ -1138,6 +1154,14 @@ export default class MerchStoreService {
 
   private static isActivePickupEvent(pickupEvent: OrderPickupEventModel) {
     return pickupEvent.status === OrderPickupEventStatus.ACTIVE;
+  }
+
+  private async getLinkedRegularEvent(uuid: Uuid): Promise<EventModel> {
+    return this.transactions.readOnly(async (txn) => {
+      const linkedEvent = await Repositories.event(txn).findByUuid(uuid);
+      if (!linkedEvent) throw new NotFoundError('Linked event not found!');
+      return linkedEvent;
+    });
   }
 
   private isUnfulfilledOrder(order: OrderModel): boolean {

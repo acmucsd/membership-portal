@@ -308,6 +308,7 @@ export interface OrderPickupEvent {
   end: Date;
   description: string;
   orderLimit: number;
+  linkedEventUuid?: Uuid;
 }
 
 export interface OrderPickupEventEdit extends Partial<OrderPickupEvent> {}
