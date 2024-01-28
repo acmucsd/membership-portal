@@ -81,4 +81,11 @@ export const Config = {
     FEEDBACK_POINT_REWARD: Number(process.env.FEEDBACK_POINT_REWARD),
     EVENT_FEEDBACK_POINT_REWARD: Number(process.env.EVENT_FEEDBACK_POINT_REWARD),
   },
+
+  rateLimits: {
+    default: {
+      windowMs: Number(process.env.DEFAULT_RATE_LIMIT_WINDOW_MS),
+      max: Number(process.env.DEFAULT_RATE_LIMIT_MAX_REQUESTS),
+    }
+  }
 };

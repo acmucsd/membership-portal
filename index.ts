@@ -12,15 +12,6 @@ import { logger as log } from './utils/Logger';
 import { controllers } from './api/controllers';
 import { middlewares } from './api/middleware';
 
-import { rateLimit } from 'express-rate-limit';
-
-const limiter = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 1, // Limit each IP to 1 requests per `window` (here, per 15 minutes)
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-
 routingUseContainer(Container);
 ormUseContainer(Container);
 
@@ -61,7 +52,5 @@ const app = createExpressServer({
   },
   defaultErrorHandler: false,
 });
-
-app.use(limiter);
 
 app.listen(Config.port);
