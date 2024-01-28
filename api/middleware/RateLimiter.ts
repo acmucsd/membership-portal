@@ -3,7 +3,6 @@ import * as express from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { Config } from '../../config';
 
-
 @Middleware({ type: 'before' })
 export class RateLimiter implements ExpressMiddlewareInterface {
   private limiter = rateLimit({
@@ -18,6 +17,5 @@ export class RateLimiter implements ExpressMiddlewareInterface {
     else {
       return next();
     }
-    //return this.limiter(req, res, next);
   }
 }
