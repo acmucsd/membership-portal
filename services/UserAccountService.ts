@@ -228,8 +228,18 @@ export default class UserAccountService {
       const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
         const { user: userEmail, accessType } = accessUpdate;
 
+        // Prevent a user from demoting themselves
+        if (currentUser.email === userEmail) {
+          throw new BadRequestError('Cannot alter own access level');
+        }
+
         const currUser = emailToUserMap[userEmail];
         const oldAccess = currUser.accessType;
+
+        // Prevent users from promoting to admin or demoting from admin
+        if (oldAccess === 'ADMIN' || accessType === 'ADMIN') {
+          throw new BadRequestError('Cannot alter access level of admin users');
+        }
 
         const updatedUser = await userRepository.upsertUser(currUser, { accessType });
 
