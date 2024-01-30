@@ -4,6 +4,7 @@ import { EventModel } from './EventModel';
 import { AttendanceModel } from './AttendanceModel';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
+import { MerchandiseItemPhotoModel } from './MerchandiseItemPhotoModel';
 import { OrderModel } from './OrderModel';
 import { OrderItemModel } from './OrderItemModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
@@ -21,6 +22,7 @@ export const models = [
   AttendanceModel,
   MerchandiseCollectionModel,
   MerchandiseItemModel,
+  MerchandiseItemPhotoModel,
   MerchandiseItemOptionModel,
   OrderModel,
   OrderItemModel,

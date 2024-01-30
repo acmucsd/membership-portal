@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
-import { BadRequestError, NotFoundError } from 'routing-controllers';
+import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import { ActivityType, PublicAttendance, PublicExpressCheckin, Uuid } from '../types';
@@ -27,11 +27,21 @@ export default class AttendanceService {
     return attendances.map((attendance) => attendance.getPublicAttendance());
   }
 
-  public async getAttendancesForUser(user: UserModel): Promise<PublicAttendance[]> {
+  public async getAttendancesForCurrentUser(user: UserModel): Promise<PublicAttendance[]> {
     const attendances = await this.transactions.readOnly(async (txn) => Repositories
       .attendance(txn)
       .getAttendancesForUser(user));
     return attendances.map((attendance) => attendance.getPublicAttendance());
+  }
+
+  public async getAttendancesForUser(uuid: Uuid): Promise<PublicAttendance[]> {
+    return this.transactions.readOnly(async (txn) => {
+      const user = await Repositories.user(txn).findByUuid(uuid);
+      if (!user) throw new NotFoundError('User does not exist');
+      if (!user.isAttendancePublic) throw new ForbiddenError();
+      const attendances = await Repositories.attendance(txn).getAttendancesForUser(user);
+      return attendances.map((attendance) => attendance.getPublicAttendance());
+    });
   }
 
   public async attendEvent(user: UserModel, attendanceCode: string, asStaff = false): Promise<PublicAttendance> {

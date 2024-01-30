@@ -24,7 +24,7 @@ afterAll(async () => {
 });
 
 describe('resume fetching', () => {
-  test('only admins can get all visible resumes', async () => {
+  test('admins can get all visible resumes', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const member = UserFactory.fake();
@@ -38,12 +38,43 @@ describe('resume fetching', () => {
     const resumeController = ControllerFactory.resume(conn);
 
     // throws permissions error for member
-    expect(resumeController.getAllVisibleResumes(member)).rejects.toThrow(
+    await expect(resumeController.getAllVisibleResumes(member)).rejects.toThrow(
       ForbiddenError,
     );
 
     // get response resumes
     const response = await resumeController.getAllVisibleResumes(admin);
+    expect(response.error).toBeNull();
+    expect(response.resumes).toHaveLength(1);
+    expect(response.resumes[0]).toStrictEqual({
+      uuid: resume.uuid,
+      user: member.getPublicProfile(),
+      isResumeVisible: resume.isResumeVisible,
+      url: resume.url,
+      lastUpdated: resume.lastUpdated,
+    });
+  });
+
+  test('sponsorship managers can get all visible resumes', async () => {
+    const conn = await DatabaseConnection.get();
+    const sponsorshipManager = UserFactory.fake({ accessType: UserAccessType.SPONSORSHIP_MANAGER });
+    const member = UserFactory.fake();
+    const resume = ResumeFactory.fake({ user: member, isResumeVisible: true });
+
+    await new PortalState()
+      .createUsers(sponsorshipManager, member)
+      .createResumes(member, resume)
+      .write();
+
+    const resumeController = ControllerFactory.resume(conn);
+
+    // throws permissions error for member
+    await expect(resumeController.getAllVisibleResumes(member)).rejects.toThrow(
+      ForbiddenError,
+    );
+
+    // get response resumes
+    const response = await resumeController.getAllVisibleResumes(sponsorshipManager);
     expect(response.error).toBeNull();
     expect(response.resumes).toHaveLength(1);
     expect(response.resumes[0]).toStrictEqual({
@@ -68,6 +99,23 @@ describe('resume fetching', () => {
 
     const resumeController = ControllerFactory.resume(conn);
     const response = await resumeController.getAllVisibleResumes(admin);
+    expect(response.error).toBeNull();
+    expect(response.resumes).toHaveLength(0);
+  });
+
+  test('sponsorship managers cannot get hidden resumes', async () => {
+    const conn = await DatabaseConnection.get();
+    const sponsorshipManager = UserFactory.fake({ accessType: UserAccessType.SPONSORSHIP_MANAGER });
+    const member = UserFactory.fake();
+    const resume = ResumeFactory.fake({ user: member, isResumeVisible: false });
+
+    await new PortalState()
+      .createUsers(sponsorshipManager, member)
+      .createResumes(member, resume)
+      .write();
+
+    const resumeController = ControllerFactory.resume(conn);
+    const response = await resumeController.getAllVisibleResumes(sponsorshipManager);
     expect(response.error).toBeNull();
     expect(response.resumes).toHaveLength(0);
   });

@@ -61,6 +61,7 @@ describe('account registration', () => {
       uuid: registerResponse.user.uuid,
       profilePicture: null,
       userSocialMedia: [],
+      isAttendancePublic: true,
     });
 
     // check that no express checkin was processed
