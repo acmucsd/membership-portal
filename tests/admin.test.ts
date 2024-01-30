@@ -322,7 +322,7 @@ describe('updating user access level', () => {
           { user: secondAdmin.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
         ],
       }, admin);
-    }).rejects.toThrow(BadRequestError);
+    }).rejects.toThrow(ForbiddenError);
 
     const repository = conn.getRepository(UserModel);
     const secondAdminFromDatabase = await repository.findOne({ email: secondAdmin.email });
@@ -337,7 +337,7 @@ describe('updating user access level', () => {
           { user: regularUser.email, accessType: UserAccessType.ADMIN },
         ],
       }, admin);
-    }).rejects.toThrow(BadRequestError);
+    }).rejects.toThrow(ForbiddenError);
 
     const regularUserFromDatabase = await repository.findOne({ email: regularUser.email });
 
@@ -404,7 +404,7 @@ describe('updating user access level', () => {
           { user: admin.email, accessType: UserAccessType.STANDARD },
         ],
       }, admin);
-    }).rejects.toThrow(BadRequestError);
+    }).rejects.toThrow(ForbiddenError);
 
     const repository = conn.getRepository(UserModel);
     const existingAdmin = await repository.find({

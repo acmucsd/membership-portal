@@ -1,4 +1,4 @@
-import { BadRequestError, NotFoundError } from 'routing-controllers';
+import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
@@ -230,7 +230,7 @@ export default class UserAccountService {
 
         // Prevent a user from demoting themselves
         if (currentUser.email === userEmail) {
-          throw new BadRequestError('Cannot alter own access level');
+          throw new ForbiddenError('Cannot alter own access level');
         }
 
         const userToUpdate = emailToUserMap[userEmail];
@@ -238,7 +238,7 @@ export default class UserAccountService {
 
         // Prevent users from promoting to admin or demoting from admin
         if (oldAccess === 'ADMIN' || accessType === 'ADMIN') {
-          throw new BadRequestError('Cannot alter access level of admin users');
+          throw new ForbiddenError('Cannot alter access level of admin users');
         }
 
         const updatedUser = await userRepository.upsertUser(userToUpdate, { accessType });
