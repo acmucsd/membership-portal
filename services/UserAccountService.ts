@@ -18,16 +18,23 @@ import {
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
-import Filter = require('bad-words');
+import {
+	RegExpMatcher,
+	englishDataset,
+	englishRecommendedTransformers,
+} from 'obscenity';
 
 @Service()
 export default class UserAccountService {
   private transactions: TransactionsManager;
-  private filter: Filter;
+  private matcher: RegExpMatcher;
 
   constructor(@InjectManager() entityManager: EntityManager) {
     this.transactions = new TransactionsManager(entityManager);
-    this.filter = new Filter({ regex: /[\p{L}\p{M}]/u });
+    this.matcher = new RegExpMatcher({
+      ...englishDataset.build(),
+      ...englishRecommendedTransformers,
+    })
   }
 
   public async findByUuid(uuid: Uuid): Promise<UserModel> {
@@ -107,8 +114,8 @@ export default class UserAccountService {
       }
       changes.hash = await UserRepository.generateHash(newPassword);
     }
-    if (this.filter.isProfane(userPatches.handle)) {
-      throw new BadRequestError('Please remove profanity from handle');
+    if (this.matcher.hasMatch(userPatches.handle)) {
+      throw new BadRequestError('Profane');
     }
     return this.transactions.readWrite(async (txn) => {
       if (userPatches.handle) {
