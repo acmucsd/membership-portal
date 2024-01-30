@@ -5,6 +5,11 @@ import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import * as faker from 'faker';
 import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
+import {
+  RegExpMatcher,
+  englishDataset,
+  englishRecommendedTransformers,
+} from 'obscenity';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -18,15 +23,11 @@ import {
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
-import {
-	RegExpMatcher,
-	englishDataset,
-	englishRecommendedTransformers,
-} from 'obscenity';
 
 @Service()
 export default class UserAccountService {
   private transactions: TransactionsManager;
+
   private matcher: RegExpMatcher;
 
   constructor(@InjectManager() entityManager: EntityManager) {
@@ -34,7 +35,7 @@ export default class UserAccountService {
     this.matcher = new RegExpMatcher({
       ...englishDataset.build(),
       ...englishRecommendedTransformers,
-    })
+    });
   }
 
   public async findByUuid(uuid: Uuid): Promise<UserModel> {
