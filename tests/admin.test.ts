@@ -302,33 +302,50 @@ describe('updating user access level', () => {
     expect(updatedUsers.accessType).toEqual(UserAccessType.STAFF);
   });
 
-  test('admin ability to demote another admin', async () => {
+  test('ensure that admins cannot demote/promote other admins', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
     const secondAdmin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const regularUser = UserFactory.fake({ accessType: UserAccessType.STANDARD });
 
     await new PortalState()
-      .createUsers(admin, secondAdmin)
+      .createUsers(admin, secondAdmin, regularUser)
       .write();
 
     const adminController = ControllerFactory.admin(conn);
 
-    const accessLevelResponse = await adminController.updateUserAccessLevel({
-      accessUpdates: [
-        { user: secondAdmin.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
-      ],
-    }, admin);
+    // attempt to demote an admin to merch store manager
+    await expect(async () => {
+      await adminController.updateUserAccessLevel({
+        accessUpdates: [
+          { user: secondAdmin.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+        ],
+      }, admin);
+    }).rejects.toThrow(BadRequestError);
 
     const repository = conn.getRepository(UserModel);
-    const updatedUser = await repository.findOne({ email: secondAdmin.email });
+    const secondAdminFromDatabase = await repository.findOne({ email: secondAdmin.email });
 
-    expect(updatedUser.email).toEqual(secondAdmin.email);
-    expect(updatedUser.accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
-    expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
+    expect(secondAdminFromDatabase.email).toEqual(secondAdmin.email);
+    expect(secondAdminFromDatabase.accessType).toEqual(UserAccessType.ADMIN);
+
+    // attempt to promote a regular user to admin
+    await expect(async () => {
+      await adminController.updateUserAccessLevel({
+        accessUpdates: [
+          { user: regularUser.email, accessType: UserAccessType.ADMIN },
+        ],
+      }, admin);
+    }).rejects.toThrow(BadRequestError);
+
+    const regularUserFromDatabase = await repository.findOne({ email: regularUser.email });
+
+    expect(regularUserFromDatabase.email).toEqual(regularUser.email);
+    expect(regularUserFromDatabase.accessType).toEqual(UserAccessType.STANDARD);
   });
 
-  test("ensure that the updating user's access level is not changed", async () => {
+  test("ensure that the updating user's access level is not changed & cannot demote themselves", async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
@@ -351,6 +368,43 @@ describe('updating user access level', () => {
         { user: merchStoreDistributorUser.email, accessType: UserAccessType.STAFF },
       ],
     }, admin);
+
+    const repository = conn.getRepository(UserModel);
+    const existingAdmin = await repository.find({
+      email: admin.email,
+    });
+
+    expect(existingAdmin[0].email).toEqual(admin.email);
+    expect(existingAdmin[0].accessType).toEqual(UserAccessType.ADMIN);
+  });
+
+  test('ensure that a user cannot demote themselves', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+
+    const staffUser = UserFactory.fake({ accessType: UserAccessType.STAFF });
+    const standardUser = UserFactory.fake({ accessType: UserAccessType.STANDARD });
+    const marketingUser = UserFactory.fake({ accessType: UserAccessType.MARKETING });
+    const merchStoreDistributorUser = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+
+    await new PortalState()
+      .createUsers(staffUser, standardUser, marketingUser, merchStoreDistributorUser, admin)
+      .write();
+
+    const adminController = ControllerFactory.admin(conn);
+
+    // attempt to demote oneself
+    await expect(async () => {
+      await adminController.updateUserAccessLevel({
+        accessUpdates: [
+          { user: staffUser.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+          { user: standardUser.email, accessType: UserAccessType.MARKETING },
+          { user: marketingUser.email, accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR },
+          { user: merchStoreDistributorUser.email, accessType: UserAccessType.STAFF },
+          { user: admin.email, accessType: UserAccessType.STANDARD },
+        ],
+      }, admin);
+    }).rejects.toThrow(BadRequestError);
 
     const repository = conn.getRepository(UserModel);
     const existingAdmin = await repository.find({
