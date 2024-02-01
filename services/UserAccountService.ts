@@ -1,4 +1,4 @@
-import { BadRequestError, NotFoundError } from 'routing-controllers';
+import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
@@ -116,7 +116,7 @@ export default class UserAccountService {
       changes.hash = await UserRepository.generateHash(newPassword);
     }
     if (this.matcher.hasMatch(userPatches.handle)) {
-      throw new BadRequestError('Profane');
+      throw new ForbiddenError('Please remove profanity from handle.');
     }
     return this.transactions.readWrite(async (txn) => {
       if (userPatches.handle) {
