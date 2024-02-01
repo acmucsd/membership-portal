@@ -86,6 +86,6 @@ export const Config = {
     default: {
       windowMs: Number(process.env.DEFAULT_RATE_LIMIT_WINDOW_MS),
       max: Number(process.env.DEFAULT_RATE_LIMIT_MAX_REQUESTS),
-    }
-  }
+    },
+  },
 };
