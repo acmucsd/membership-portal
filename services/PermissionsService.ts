@@ -16,6 +16,10 @@ export default class PermissionsService {
     return user.state === UserState.ACTIVE;
   }
 
+  public static canViewAllFeedback(user: UserModel): boolean {
+    return user.isMarketing();
+  }
+
   public static canRespondToFeedback(user: UserModel): boolean {
     return user.isAdmin();
   }

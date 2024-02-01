@@ -1,6 +1,7 @@
 import { EntityRepository } from 'typeorm';
 import { FeedbackModel } from '../models/FeedbackModel';
 import { UserModel } from '../models/UserModel';
+import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
 import { Uuid } from '../types';
 
@@ -16,6 +17,10 @@ export class FeedbackRepository extends BaseRepository<FeedbackModel> {
 
   public async getAllFeedbackForUser(user: UserModel): Promise<FeedbackModel[]> {
     return this.getBaseFindQuery().where({ user }).getMany();
+  }
+
+  public async getAllFeedbackForEvent(event: EventModel): Promise<FeedbackModel[]> {
+    return this.getBaseFindQuery().where({ event }).getMany();
   }
 
   public async upsertFeedback(feedback: FeedbackModel,
