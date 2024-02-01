@@ -3,6 +3,7 @@ import { ActivityModel } from './ActivityModel';
 import { EventModel } from './EventModel';
 import { AttendanceModel } from './AttendanceModel';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
+import { MerchCollectionPhotoModel } from './MerchCollectionPhotoModel';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
 import { MerchandiseItemPhotoModel } from './MerchandiseItemPhotoModel';
 import { OrderModel } from './OrderModel';
@@ -20,6 +21,7 @@ export const models = [
   EventModel,
   AttendanceModel,
   MerchandiseCollectionModel,
+  MerchCollectionPhotoModel,
   MerchandiseItemModel,
   MerchandiseItemPhotoModel,
   MerchandiseItemOptionModel,
