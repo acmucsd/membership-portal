@@ -89,7 +89,7 @@ export class TransactionsManager {
   }
 
   public readOnly<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    const res = AsyncRetry(async (bail, attemptNum) => {
+    return AsyncRetry(async (bail, attemptNum) => {
       try {
         const res = await this.transactionalEntityManager.transaction('REPEATABLE READ', fn);
         return res;
@@ -101,11 +101,10 @@ export class TransactionsManager {
     {
       retries: AMOUNT_OF_RETRIES,
     });
-    return res;
   }
 
   public readWrite<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    const res = AsyncRetry(async (bail, attemptNum) => {
+    return AsyncRetry(async (bail, attemptNum) => {
       try {
         const res = await this.transactionalEntityManager.transaction('SERIALIZABLE', fn);
         return res;
@@ -117,6 +116,5 @@ export class TransactionsManager {
     {
       retries: AMOUNT_OF_RETRIES,
     });
-    return res;
   }
 }
