@@ -86,37 +86,40 @@ export class TransactionsManager {
   }
 
   public readOnly<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    return AsyncRetry(async (bail, attemptNum) => {
-      console.log("entering transaction #" + attemptNum);
+    const res = AsyncRetry(async (bail, attemptNum) => {
       try {
+        console.log("entering transaction #" + attemptNum);
         const res = await this.transactionalEntityManager.transaction('REPEATABLE READ', fn);
         return res;
       } catch (e) {
         if (e.hint !== 'The transaction might succeed if retried.') {
           bail(e);
         }
-        throw e;
+        else throw e;
       }
     },
     {
       retries: 10,
     });
+    return res;
   }
 
   public readWrite<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    return AsyncRetry(async (bail) => {
+    const res = AsyncRetry(async (bail, attemptNum) => {
       try {
+        console.log("entering transaction #" + attemptNum);
         const res = await this.transactionalEntityManager.transaction('SERIALIZABLE', fn);
         return res;
       } catch (e) {
         if (e.hint !== 'The transaction might succeed if retried.') {
           bail(e);
         }
-        throw e;
+        else throw e;
       }
     },
     {
       retries: 10,
     });
+    return res;
   }
 }
