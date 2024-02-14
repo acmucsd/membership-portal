@@ -16,6 +16,9 @@ import { LeaderboardRepository } from './LeaderboardRepository';
 import { ResumeRepository } from './ResumeRepository';
 import { UserSocialMediaRepository } from './UserSocialMediaRepository';
 
+const HINT_FOR_RETRIABLE_TRANSACTIONS : string = 'The transaction might succeed if retried.';
+const AMOUNT_OF_RETRIES : number = 10;
+
 export default class Repositories {
   public static activity(transactionalEntityManager: EntityManager): ActivityRepository {
     return transactionalEntityManager.getCustomRepository(ActivityRepository);
@@ -88,18 +91,15 @@ export class TransactionsManager {
   public readOnly<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
     const res = AsyncRetry(async (bail, attemptNum) => {
       try {
-        console.log("entering transaction #" + attemptNum);
         const res = await this.transactionalEntityManager.transaction('REPEATABLE READ', fn);
         return res;
       } catch (e) {
-        if (e.hint !== 'The transaction might succeed if retried.') {
-          bail(e);
-        }
+        if (e.hint !== HINT_FOR_RETRIABLE_TRANSACTIONS) bail(e);
         else throw e;
       }
     },
     {
-      retries: 10,
+      retries: AMOUNT_OF_RETRIES,
     });
     return res;
   }
@@ -107,18 +107,15 @@ export class TransactionsManager {
   public readWrite<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
     const res = AsyncRetry(async (bail, attemptNum) => {
       try {
-        console.log("entering transaction #" + attemptNum);
         const res = await this.transactionalEntityManager.transaction('SERIALIZABLE', fn);
         return res;
       } catch (e) {
-        if (e.hint !== 'The transaction might succeed if retried.') {
-          bail(e);
-        }
+        if (e.hint !== HINT_FOR_RETRIABLE_TRANSACTIONS) bail(e);
         else throw e;
       }
     },
     {
-      retries: 10,
+      retries: AMOUNT_OF_RETRIES,
     });
     return res;
   }

@@ -14,7 +14,7 @@ export class ResumeFactory {
       uuid: uuid(),
       user: UserFactory.fake(),
       isResumeVisible: false,
-      url: `${faker.internet.url()}.pdf`,
+      url: faker.internet.url(),
       lastUpdated: new Date(),
     });
     return ResumeModel.merge(fake, substitute);

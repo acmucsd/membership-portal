@@ -37,10 +37,10 @@ export class EventFactory {
       requiresStaff: FactoryUtils.getRandomBoolean(),
       staffPointBonus: EventFactory.randomPointValue(),
       committee: 'ACM',
-      cover: `http://i.imgur.com/${faker.random.alphaNumeric(10)}.jpeg`,
+      cover: FactoryUtils.getRandomImageUrl(),
       deleted: false,
       eventLink: faker.internet.url(),
-      thumbnail: `http://i.imgur.com/${faker.random.alphaNumeric(10)}.jpeg`,
+      thumbnail: FactoryUtils.getRandomImageUrl(),
     });
     return EventModel.merge(fake, substitute);
   }
