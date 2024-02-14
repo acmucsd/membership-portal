@@ -86,7 +86,8 @@ export class TransactionsManager {
   }
 
   public readOnly<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    return AsyncRetry(async (bail) => {
+    return AsyncRetry(async (bail, attemptNum) => {
+      console.log("entering transaction #" + attemptNum);
       try {
         const res = await this.transactionalEntityManager.transaction('REPEATABLE READ', fn);
         return res;
