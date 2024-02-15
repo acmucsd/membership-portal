@@ -2373,6 +2373,11 @@ expect@^27.5.1:
     jest-matcher-utils "^27.5.1"
     jest-message-util "^27.5.1"
 
+express-rate-limit@6.11.2:
+  version "6.11.2"
+  resolved "https://registry.yarnpkg.com/express-rate-limit/-/express-rate-limit-6.11.2.tgz#6c42035603d3b52e4e2fb59f6ebaa89e628ef980"
+  integrity sha512-a7uwwfNTh1U60ssiIkuLFWHt4hAC5yxlLGU2VP0X4YNlyEDZAqF4tK3GD3NSitVBrCQmQ0++0uOyFOgC2y4DDw==
+
 express-session@^1.17.1:
   version "1.17.2"
   resolved "https://registry.yarnpkg.com/express-session/-/express-session-1.17.2.tgz#397020374f9bf7997f891b85ea338767b30d0efd"
