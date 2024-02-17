@@ -4,7 +4,6 @@ import {
   OrderStatus, UserAccessType, SocialMediaType,
 } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
-import { MerchOrderEdit } from 'api/validators/MerchStoreRequests';
 
 // RESPONSE TYPES
 

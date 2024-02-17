@@ -25,7 +25,6 @@ import {
   OrderPickupEventStatus,
   PublicMerchItemPhoto,
   MerchItemPhoto,
-  PublicOrderWithItems,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
