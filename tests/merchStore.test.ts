@@ -513,13 +513,10 @@ describe('merch items with no options', () => {
   test('can delete all item options and add back options if the item is hidden', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const collection = MerchFactory.fakeCollection();
-    const item = MerchFactory.fakeItem({ hidden: true, collection });
-    collection.items = [item];
+    const item = MerchFactory.fakeItem({ hidden: true });
 
     await new PortalState()
       .createUsers(admin)
-      .createMerchCollections(collection)
       .createMerchItem(item)
       .write();
 
