@@ -25,6 +25,7 @@ import {
   OrderPickupEventStatus,
   PublicMerchItemPhoto,
   MerchItemPhoto,
+  PublicOrderWithItems,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 import { OrderModel } from '../models/OrderModel';
@@ -660,7 +661,7 @@ export default class MerchStoreService {
   /**
    * Cancels a merch order, refunding the user of its credits if the user is the one who cancelled the order.
    */
-  public async cancelMerchOrder(orderUuid: Uuid, user: UserModel): Promise<void> {
+  public async cancelMerchOrder(orderUuid: Uuid, user: UserModel): Promise<OrderModel> {
     return this.transactions.readWrite(async (txn) => {
       const orderRespository = Repositories.merchOrder(txn);
       const order = await orderRespository.findByUuid(orderUuid);
@@ -684,6 +685,7 @@ export default class MerchStoreService {
         type: ActivityType.ORDER_CANCELLED,
         description: `Order ${order.uuid} cancelled and refunded to ${customer.uuid} by ${user.uuid}`,
       });
+      return order;
     });
   }
 

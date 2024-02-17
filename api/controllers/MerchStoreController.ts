@@ -47,6 +47,7 @@ import {
   CompleteOrderPickupEventResponse,
   GetOrderPickupEventResponse,
   CancelOrderPickupEventResponse,
+  CancelMerchOrderResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -272,10 +273,10 @@ export class MerchStoreController {
   }
 
   @Post('/order/:uuid/cancel')
-  async cancelMerchOrder(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel) {
+  async cancelMerchOrder(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel): Promise<CancelMerchOrderResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const order = await this.merchStoreService.cancelMerchOrder(params.uuid, user);
-    return { error: null, order };
+    return { error: null, order: order.getPublicOrderWithItems() };
   }
 
   @Post('/order/:uuid/fulfill')

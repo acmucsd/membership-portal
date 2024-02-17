@@ -4,6 +4,7 @@ import {
   OrderStatus, UserAccessType, SocialMediaType,
 } from './Enums';
 import { MerchItemOptionMetadata, Uuid } from '.';
+import { MerchOrderEdit } from 'api/validators/MerchStoreRequests';
 
 // RESPONSE TYPES
 
@@ -452,3 +453,7 @@ export interface PatchResumeResponse extends ApiResponse {
 }
 
 export interface DeleteResumeResponse extends ApiResponse {}
+
+export interface CancelMerchOrderResponse extends ApiResponse {
+  order: PublicOrderWithItems;
+}
