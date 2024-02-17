@@ -44,6 +44,7 @@ export class DatabaseConnection {
         'Feedback',
         'Resumes',
         'UserSocialMedia',
+        'MerchCollectionPhotos'
       ];
       await Promise.all(tableNames.map((t) => txn.query(`DELETE FROM "${t}"`)));
     });
