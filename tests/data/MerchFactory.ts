@@ -135,6 +135,7 @@ export class MerchFactory {
       orderLimit: FactoryUtils.getRandomNumber(1, 5),
       status: OrderPickupEventStatus.ACTIVE,
       orders: [],
+      linkedEvent: null,
     });
     return OrderPickupEventModel.merge(fake, substitute);
   }

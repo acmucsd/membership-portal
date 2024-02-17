@@ -130,7 +130,7 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
    */
   public async getPastPickupEvents(): Promise<OrderPickupEventModel[]> {
     return this.getBaseFindManyQuery()
-      .where('"end" < :now')
+      .where('"orderPickupEvent"."end" < :now')
       .setParameter('now', new Date())
       .getMany();
   }
@@ -140,7 +140,7 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
    */
   public async getFuturePickupEvents(): Promise<OrderPickupEventModel[]> {
     return this.getBaseFindManyQuery()
-      .where('"end" >= :now')
+      .where('"orderPickupEvent"."end" >= :now')
       .setParameter('now', new Date())
       .getMany();
   }
@@ -157,7 +157,7 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
   }
 
   /**
-   * Make changes to a singke pickup event. Returns the pickup event edited.
+   * Make changes to a single pickup event. Returns the pickup event edited.
    */
   public async upsertPickupEvent(pickupEvent: OrderPickupEventModel, changes?: Partial<OrderPickupEventModel>):
   Promise<OrderPickupEventModel> {
@@ -177,6 +177,7 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('item.option', 'option')
       .leftJoinAndSelect('option.item', 'merchItem')
+      .leftJoinAndSelect('orderPickupEvent.linkedEvent', 'linkedEvent')
       .leftJoinAndSelect('merchItem.merchPhotos', 'merchPhotos');
   }
 
@@ -184,6 +185,7 @@ export class OrderPickupEventRepository extends BaseRepository<OrderPickupEventM
     return this.repository
       .createQueryBuilder('orderPickupEvent')
       .leftJoinAndSelect('orderPickupEvent.orders', 'order')
-      .leftJoinAndSelect('order.user', 'user');
+      .leftJoinAndSelect('order.user', 'user')
+      .leftJoinAndSelect('orderPickupEvent.linkedEvent', 'linkedEvent');
   }
 }
