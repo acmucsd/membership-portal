@@ -88,6 +88,7 @@ export class TransactionsManager {
     this.transactionalEntityManager = transactionalEntityManager;
   }
 
+  // used async-retry library to handle automatic retries under transaction failure due to concurrent transactions
   public readOnly<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
     return AsyncRetry(async (bail, attemptNum) => {
       try {
