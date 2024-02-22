@@ -48,9 +48,9 @@ export class UserRepository extends BaseRepository<UserModel> {
   public async getAllEmails(): Promise<string[]> {
     const emailsRaw = await this.repository
       .createQueryBuilder()
-      .select('email')
+      .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
       .getRawMany();
-    return emailsRaw.map((emailRaw) => emailRaw.email);
+    return emailsRaw.map((emailRaw) => `${emailRaw.UserModel_firstName} ${emailRaw.UserModel_lastName} - ${emailRaw.email}`);
   }
 
   public static async generateHash(pass: string): Promise<string> {
