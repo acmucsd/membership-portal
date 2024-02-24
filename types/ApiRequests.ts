@@ -82,6 +82,12 @@ export interface UpdateFeedbackStatusRequest {
   status: FeedbackStatus;
 }
 
+export interface FeedbackSearchOptions {
+  event?: string;
+  type?: string;
+  status?: string;
+}
+
 export interface InsertUserSocialMediaRequest {
   socialMedia: SocialMedia;
 }

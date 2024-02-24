@@ -18,8 +18,8 @@ export class FeedbackModel extends BaseEntity {
   @Index('feedback_by_event_index')
   event: EventModel;
 
-  @Column('varchar', { length: 255 })
-  title: string;
+  @Column('text')
+  source: string; //Enum? For dropdown menu (Discord, Instagram, etc.)
 
   @Column('text')
   description: string;
@@ -31,13 +31,14 @@ export class FeedbackModel extends BaseEntity {
   status: FeedbackStatus;
 
   @Column('varchar', { length: 255 })
-  type: FeedbackType;
+  type: FeedbackType; //add
 
   public getPublicFeedback(): PublicFeedback {
     return {
       uuid: this.uuid,
       user: this.user.getPublicProfile(),
-      title: this.title,
+      event: this.event.getPublicEvent(),
+      source: this.source,
       description: this.description,
       timestamp: this.timestamp,
       status: this.status,

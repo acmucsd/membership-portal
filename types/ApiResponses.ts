@@ -333,7 +333,8 @@ export interface PrivateProfile extends PublicProfile {
 export interface PublicFeedback {
   uuid: Uuid,
   user: PublicProfile,
-  title: string;
+  event: PublicEvent,
+  source: string;
   description: string;
   timestamp: Date;
   status: FeedbackStatus;
