@@ -105,6 +105,7 @@ export class PortalState {
 
   public createMerchItem(item: MerchandiseItemModel): PortalState {
     const collectionWithItem = MerchFactory.fakeCollection({ items: [item] });
+    // console.log(collectionWithItem)
     return this.createMerchCollections(collectionWithItem);
   }
 

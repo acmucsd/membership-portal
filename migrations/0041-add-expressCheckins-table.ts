@@ -2,7 +2,7 @@ import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
 const TABLE_NAME = 'ExpressCheckins';
 
-export class AddExpressCheckinsTable1680833326530 implements MigrationInterface {
+export class AddExpressCheckinsTable1708807643314 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(new Table({
       name: TABLE_NAME,

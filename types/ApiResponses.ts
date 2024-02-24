@@ -163,6 +163,7 @@ export interface PublicMerchCollection {
   themeColorHex?: string;
   description: string;
   items: PublicMerchItem[];
+  collectionPhotos: PublicMerchCollectionPhoto[]
   createdAt: Date;
 }
 
@@ -204,6 +205,13 @@ export interface PublicMerchItemPhoto {
   uploadedPhoto: string;
   position: number;
   uploadedAt: Date;
+}
+
+export interface PublicMerchCollectionPhoto {
+  uuid: Uuid;
+  uploadedPhoto: string;
+  position: number;
+  uploadedAt: Date
 }
 
 export interface PublicOrderMerchItemOption {
@@ -254,6 +262,12 @@ export interface EditMerchCollectionResponse extends ApiResponse {
 }
 
 export interface DeleteMerchCollectionResponse extends ApiResponse {}
+
+export interface CreateCollectionPhotoResponse extends ApiResponse {
+  collectionPhoto: PublicMerchCollectionPhoto;
+}
+
+export interface DeleteCollectionPhotoResponse extends ApiResponse {}
 
 export interface GetOneMerchItemResponse extends ApiResponse {
   item: PublicMerchItemWithPurchaseLimits;

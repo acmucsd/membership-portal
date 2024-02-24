@@ -8,6 +8,7 @@ import {
   MerchCollectionRepository,
   MerchItemRepository,
   MerchItemOptionRepository,
+  MerchCollectionPhotoRepository,
   MerchItemPhotoRepository,
 } from './MerchStoreRepository';
 import { ActivityRepository } from './ActivityRepository';
@@ -46,6 +47,10 @@ export default class Repositories {
 
   public static merchStoreCollection(transactionalEntityManager: EntityManager): MerchCollectionRepository {
     return transactionalEntityManager.getCustomRepository(MerchCollectionRepository);
+  }
+
+  public static merchStoreCollectionPhoto(transactionalEntityManager: EntityManager): MerchCollectionPhotoRepository {
+    return transactionalEntityManager.getCustomRepository(MerchCollectionPhotoRepository);
   }
 
   public static merchStoreItem(transactionalEntityManager: EntityManager): MerchItemRepository {
