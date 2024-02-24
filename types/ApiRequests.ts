@@ -172,6 +172,11 @@ export interface AttendEventRequest {
   asStaff?: boolean;
 }
 
+export interface AttendViaExpressCheckinRequest {
+  attendanceCode: string;
+  email: string;
+}
+
 export interface SubmitEventFeedbackRequest {
   feedback: string[];
 }

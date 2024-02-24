@@ -13,6 +13,7 @@ import { FeedbackModel } from './FeedbackModel';
 import { OrderPickupEventModel } from './OrderPickupEventModel';
 import { ResumeModel } from './ResumeModel';
 import { UserSocialMediaModel } from './UserSocialMediaModel';
+import { ExpressCheckinModel } from './ExpressCheckinModel';
 
 export const models = [
   UserModel,
@@ -30,4 +31,5 @@ export const models = [
   OrderPickupEventModel,
   ResumeModel,
   UserSocialMediaModel,
+  ExpressCheckinModel,
 ];
