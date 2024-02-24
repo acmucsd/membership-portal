@@ -161,6 +161,7 @@ describe('creating merch collections', () => {
       .toEqual(expectedCollectionOrder);
   });
 });
+
 describe('editing merch collections', () => {
   test('only admins can edit merch collections', async () => {
     const conn = await DatabaseConnection.get();
@@ -184,6 +185,172 @@ describe('editing merch collections', () => {
       .editMerchCollection(params, editMerchCollectionRequest, admin);
     expect(editMerchCollectionResponse.collection.uuid).toEqual(collection.uuid);
     expect(editMerchCollectionResponse.collection.title).toEqual(editMerchCollectionRequest.collection.title);
+  });
+});
+
+describe('merch collection photos', () => {
+  const folderLocation = 'https://s3.amazonaws.com/upload-photo/';
+
+  test('can create a collection with up to 5 pictures', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const photo1 = MerchFactory.fakeCollectionPhoto();
+    const collection = MerchFactory.fakeCollection({ collectionPhotos: [photo1] });
+
+    await new PortalState()
+      .createUsers(admin)
+      .createMerchCollections(collection)
+      .write();
+
+    const image2 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
+    const image3 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
+    const image4 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
+    const image5 = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
+    const imageExtra = FileFactory.image(Config.file.MAX_MERCH_PHOTO_FILE_SIZE / 2);
+    const storageService = Mocks.storage(folderLocation);
+
+    const merchStoreController = ControllerFactory.merchStore(
+      conn,
+      undefined,
+      instance(storageService),
+    );
+
+    const params = { uuid: collection.uuid };
+
+    const response2 = await merchStoreController.createMerchCollectionPhoto(image2, params, { position: '1' }, admin);
+    const response3 = await merchStoreController.createMerchCollectionPhoto(image3, params, { position: '2' }, admin);
+    const response4 = await merchStoreController.createMerchCollectionPhoto(image4, params, { position: '3' }, admin);
+    const response5 = await merchStoreController.createMerchCollectionPhoto(image5, params, { position: '4' }, admin);
+
+    // checking no error is thrown and storage is correctly modified
+    // enough to check first and last response
+    expect(response2.error).toBe(null);
+    expect(response5.error).toBe(null);
+    verify(
+      storageService.uploadToFolder(
+        image2,
+        MediaType.MERCH_PHOTO,
+        anything(),
+        anything(),
+      ),
+    ).called();
+    verify(
+      storageService.uploadToFolder(
+        image5,
+        MediaType.MERCH_PHOTO,
+        anything(),
+        anything(),
+      ),
+    ).called();
+
+    const photo2 = response2.collectionPhoto;
+    const photo3 = response3.collectionPhoto;
+    const photo4 = response4.collectionPhoto;
+    const photo5 = response5.collectionPhoto;
+
+    // 0 index
+    expect(photo2.position).toBe(1);
+    expect(photo3.position).toBe(2);
+    expect(photo4.position).toBe(3);
+    expect(photo5.position).toBe(4);
+
+    const photos = [photo1, photo2, photo3, photo4, photo5];
+    expect((await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos)
+      .toEqual(photos);
+
+    expect(merchStoreController.createMerchCollectionPhoto(imageExtra, params, { position: '5' }, admin))
+      .rejects.toThrow('Collections cannot have more than 5 pictures');
+  });
+
+  test('can remap the picture of a collection to different orders', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const photo1 = MerchFactory.fakeCollectionPhoto({ position: 0 });
+    const photo2 = MerchFactory.fakeCollectionPhoto({ position: 1 });
+    const photo3 = MerchFactory.fakeCollectionPhoto({ position: 2 });
+    const photo4 = MerchFactory.fakeCollectionPhoto({ position: 3 });
+    const photo5 = MerchFactory.fakeCollectionPhoto({ position: 4 });
+    const collectionPhotos = [photo1, photo2, photo3, photo4, photo5];
+    const collection = MerchFactory.fakeCollection({ collectionPhotos });
+
+    await new PortalState()
+      .createUsers(admin)
+      .createMerchCollections(collection)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const params = { uuid: collection.uuid };
+
+    // check before remap whether photos are correctly positioned
+    expect((await merchStoreController.getOneMerchCollection(params, admin))
+      .collection.collectionPhotos).toEqual(collectionPhotos);
+
+    // reversing the order of the photos
+    const editMerchCollectionRequest = { collection: {
+      collectionPhotos: [
+        { uuid: photo5.uuid, position: 0 },
+        { uuid: photo4.uuid, position: 1 },
+        { uuid: photo3.uuid, position: 2 },
+        { uuid: photo2.uuid, position: 3 },
+        { uuid: photo1.uuid, position: 4 },
+      ],
+    } };
+
+    await merchStoreController.editMerchCollection(params, editMerchCollectionRequest, admin);
+
+    const newPhotos = (await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos;
+    const newPhotosUuids = newPhotos.map((photo) => photo.uuid);
+    const expectedPhotosUuids = [photo5.uuid, photo4.uuid, photo3.uuid, photo2.uuid, photo1.uuid];
+    expect(newPhotosUuids).toStrictEqual(expectedPhotosUuids);
+  });
+
+  test('can delete photo until 1 photo left except merch collection is deleted', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const photo1 = MerchFactory.fakeCollectionPhoto({ position: 0 });
+    const photo2 = MerchFactory.fakeCollectionPhoto({ position: 1 });
+    const collectionPhotos = [photo1, photo2];
+    const collection = MerchFactory.fakeCollection({ collectionPhotos });
+
+    await new PortalState()
+      .createUsers(admin)
+      .createMerchCollections(collection)
+      .write();
+
+    const storageService = Mocks.storage();
+    const merchStoreController = ControllerFactory.merchStore(
+      conn,
+      undefined,
+      instance(storageService),
+    );
+    const params = { uuid: collection.uuid };
+
+    // verify before deleting, the photos all exist
+    const collectionInDatabase = (await merchStoreController.getOneMerchCollection(params, admin)).collection;
+    expect(collectionInDatabase.collectionPhotos).toEqual(collectionPhotos);
+
+    const deleteMerchCollectionPhotoParam1 = { uuid: photo1.uuid };
+    const deleteMerchCollectionPhotoParam2 = { uuid: photo2.uuid };
+
+    // verify deletion delete correctly
+    await merchStoreController.deleteMerchCollectionPhoto(deleteMerchCollectionPhotoParam1, admin);
+    const expectedUrl = collectionInDatabase.collectionPhotos[0].uploadedPhoto;
+    verify(storageService.deleteAtUrl(expectedUrl)).called();
+
+    const newPhotos = (await merchStoreController.getOneMerchCollection(params, admin)).collection.collectionPhotos;
+
+    expect(newPhotos).toHaveLength(1);
+    expect(newPhotos[0].uuid).toEqual(photo2.uuid);
+    expect(newPhotos[0].position).toEqual(1);
+
+    // verify visible item photo limitation
+    expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchCollectionPhotoParam2, admin))
+      .rejects.toThrow('Cannot delete the only photo for a collection');
+
+    // check cascade
+    await merchStoreController.deleteMerchCollection(params, admin);
+    expect(merchStoreController.deleteMerchCollectionPhoto(deleteMerchCollectionPhotoParam2, admin))
+      .rejects.toThrow(NotFoundError);
   });
 });
 

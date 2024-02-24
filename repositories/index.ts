@@ -2,13 +2,14 @@ import { EntityManager } from 'typeorm';
 import AsyncRetry = require('async-retry');
 import { UserRepository } from './UserRepository';
 import { FeedbackRepository } from './FeedbackRepository';
-import { AttendanceRepository } from './AttendanceRepository';
+import { AttendanceRepository, ExpressCheckinRepository } from './AttendanceRepository';
 import { EventRepository } from './EventRepository';
 import { MerchOrderRepository, OrderItemRepository, OrderPickupEventRepository } from './MerchOrderRepository';
 import {
   MerchCollectionRepository,
   MerchItemRepository,
   MerchItemOptionRepository,
+  MerchCollectionPhotoRepository,
   MerchItemPhotoRepository,
 } from './MerchStoreRepository';
 import { ActivityRepository } from './ActivityRepository';
@@ -52,6 +53,10 @@ export default class Repositories {
     return transactionalEntityManager.getCustomRepository(MerchCollectionRepository);
   }
 
+  public static merchStoreCollectionPhoto(transactionalEntityManager: EntityManager): MerchCollectionPhotoRepository {
+    return transactionalEntityManager.getCustomRepository(MerchCollectionPhotoRepository);
+  }
+
   public static merchStoreItem(transactionalEntityManager: EntityManager): MerchItemRepository {
     return transactionalEntityManager.getCustomRepository(MerchItemRepository);
   }
@@ -78,6 +83,10 @@ export default class Repositories {
 
   public static userSocialMedia(transactionalEntityManager: EntityManager): UserSocialMediaRepository {
     return transactionalEntityManager.getCustomRepository(UserSocialMediaRepository);
+  }
+
+  public static expressCheckin(transactionalEntityManager: EntityManager): ExpressCheckinRepository {
+    return transactionalEntityManager.getCustomRepository(ExpressCheckinRepository);
   }
 }
 
