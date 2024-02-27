@@ -14,7 +14,7 @@ const limiter = RateLimit(rateLimitOptions);
 export function RateLimited() {
   return createParamDecorator({
     value: async ({ context }) => {
-      await limiter(context.req, context.res, () => {});
+      limiter(context.req, context.res, () => { });
       return true; // Or any other value you need
     },
   });
