@@ -63,7 +63,7 @@ export class MerchFactory {
     const fake = MerchandiseItemPhotoModel.create({
       uuid: uuid(),
       position: 0,
-      uploadedPhoto: 'https://www.fakepicture.com/',
+      uploadedPhoto: FactoryUtils.getRandomImageUrl(),
       uploadedAt: faker.date.recent(),
     });
     return MerchandiseItemPhotoModel.merge(fake, substitute);
