@@ -200,37 +200,30 @@ describe('updating user access level', () => {
       .createUsers(admin, staffUser, standardUser, marketingUser, merchStoreDistributorUser)
       .write();
 
+    // Note that PortalState.createUsers changes the user emails to be lowercase so this array is created afterwards
+    const accessUpdates = [
+      { user: staffUser.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
+      { user: standardUser.email, accessType: UserAccessType.MARKETING },
+      { user: marketingUser.email, accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR },
+      { user: merchStoreDistributorUser.email, accessType: UserAccessType.STAFF },
+    ].sort((a, b) => a.user.localeCompare(b.user));
+
     const adminController = ControllerFactory.admin(conn);
 
-    const accessLevelResponse = await adminController.updateUserAccessLevel({
-      accessUpdates: [
-        { user: staffUser.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
-        { user: standardUser.email, accessType: UserAccessType.MARKETING },
-        { user: marketingUser.email, accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR },
-        { user: merchStoreDistributorUser.email, accessType: UserAccessType.STAFF },
-      ],
-    }, admin);
+    const accessLevelResponse = await adminController.updateUserAccessLevel({ accessUpdates }, admin);
+    accessLevelResponse.updatedUsers.sort((a, b) => a.email.localeCompare(b.email));
 
     const repository = conn.getRepository(UserModel);
     const updatedUsers = await repository.find({
       email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]),
     });
+    updatedUsers.sort((a, b) => a.email.localeCompare(b.email));
 
-    expect(updatedUsers[0].email).toEqual(staffUser.email);
-    expect(updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
-    expect(accessLevelResponse.updatedUsers[0].accessType).toEqual(UserAccessType.MERCH_STORE_MANAGER);
-
-    expect(updatedUsers[1].email).toEqual(standardUser.email);
-    expect(updatedUsers[1].accessType).toEqual(UserAccessType.MARKETING);
-    expect(accessLevelResponse.updatedUsers[1].accessType).toEqual(UserAccessType.MARKETING);
-
-    expect(updatedUsers[2].email).toEqual(marketingUser.email);
-    expect(updatedUsers[2].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
-    expect(accessLevelResponse.updatedUsers[2].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
-
-    expect(updatedUsers[3].email).toEqual(merchStoreDistributorUser.email);
-    expect(updatedUsers[3].accessType).toEqual(UserAccessType.STAFF);
-    expect(accessLevelResponse.updatedUsers[3].accessType).toEqual(UserAccessType.STAFF);
+    accessUpdates.forEach((accessUpdate, index) => {
+      expect(updatedUsers[index].email).toEqual(accessUpdate.user);
+      expect(updatedUsers[index].accessType).toEqual(accessUpdate.accessType);
+      expect(accessLevelResponse.updatedUsers[index].accessType).toEqual(accessUpdate.accessType);
+    });
   });
 
   test('attempt to update when user is not an admin', async () => {
@@ -245,6 +238,10 @@ describe('updating user access level', () => {
     await new PortalState()
       .createUsers(staffUser, standardUser, marketingUser, merchStoreDistributorUser, standard)
       .write();
+
+    // Note that PortalState.createUsers changes the user emails to be lowercase so this array is created afterwards
+    const users = [staffUser, standardUser, marketingUser, merchStoreDistributorUser]
+      .sort((a, b) => a.email.localeCompare(b.email));
 
     const adminController = ControllerFactory.admin(conn);
 
@@ -263,15 +260,12 @@ describe('updating user access level', () => {
     const updatedUsers = await repository.find({
       email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]),
     });
+    updatedUsers.sort((a, b) => a.email.localeCompare(b.email));
 
-    expect(updatedUsers[0].email).toEqual(staffUser.email);
-    expect(updatedUsers[0].accessType).toEqual(UserAccessType.STAFF);
-    expect(updatedUsers[1].email).toEqual(standardUser.email);
-    expect(updatedUsers[1].accessType).toEqual(UserAccessType.STANDARD);
-    expect(updatedUsers[2].email).toEqual(marketingUser.email);
-    expect(updatedUsers[2].accessType).toEqual(UserAccessType.MARKETING);
-    expect(updatedUsers[3].email).toEqual(merchStoreDistributorUser.email);
-    expect(updatedUsers[3].accessType).toEqual(UserAccessType.MERCH_STORE_DISTRIBUTOR);
+    users.forEach((user, index) => {
+      expect(updatedUsers[index].email).toEqual(user.email);
+      expect(updatedUsers[index].accessType).toEqual(user.accessType);
+    });
   });
 
   test('attempt to update duplicate users', async () => {
