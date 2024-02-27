@@ -2,8 +2,9 @@ import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
 import { UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, PortalState, UserFactory } from './data';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
+import { EventModel } from '../models/EventModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -124,5 +125,32 @@ describe('event creation', () => {
     const eventController = ControllerFactory.event(conn);
     await expect(eventController.createEvent(createEventRequest, admin))
       .rejects.toThrow('Start date after end date');
+  });
+});
+
+describe('event deletion', () => {
+  test('should not delete event when it has attendances', async () => {
+    // setting up inputs
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const user = UserFactory.fake();
+    const event = EventFactory.fake();
+
+    await new PortalState()
+      .createUsers(admin, user)
+      .createEvents(event)
+      .attendEvents([user], [event])
+      .write();
+
+    // verifying correct error thrown
+    const eventController = ControllerFactory.event(conn);
+    await expect(eventController.deleteEvent({ uuid: event.uuid }, admin))
+      .rejects.toThrow('Cannot delete event that has attendances');
+
+    // verify event not deleted
+    const repository = conn.getRepository(EventModel);
+    const repositoryEvent = await repository.findOne({ uuid: event.uuid });
+
+    expect(repositoryEvent).toEqual(event);
   });
 });
