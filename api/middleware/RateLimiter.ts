@@ -14,7 +14,7 @@ export class RateLimiter implements ExpressMiddlewareInterface {
   });
 
   use(req: express.Request, res: express.Response, next: express.NextFunction) {
-    if (req.path === '/api/v2/admin') {
+    if (req.path === '/api/v1/admin') {
       return this.limiter(req, res, next);
     }
     return next();
