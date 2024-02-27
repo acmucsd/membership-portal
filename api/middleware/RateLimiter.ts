@@ -6,15 +6,15 @@ import { rateLimit } from 'express-rate-limit';
 @Middleware({ type: 'before' })
 export class RateLimiter implements ExpressMiddlewareInterface {
   private limiter = rateLimit({
-    windowMs: 900000,
-    max: 5,
+    windowMs: 300000,
+    max: 500,
     message: 'Too many requests, please try again later.',
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   });
 
   use(req: express.Request, res: express.Response, next: express.NextFunction) {
-    if (req.path === '/api/v2/user') {
+    if (req.path === '/api/v2/admin') {
       return this.limiter(req, res, next);
     }
     return next();
