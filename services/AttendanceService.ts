@@ -3,7 +3,7 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
-import { ActivityType, PublicAttendance, Uuid } from '../types';
+import { ActivityType, PublicAttendance, PublicExpressCheckin, Uuid } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import { EventModel } from '../models/EventModel';
@@ -47,13 +47,8 @@ export default class AttendanceService {
   public async attendEvent(user: UserModel, attendanceCode: string, asStaff = false): Promise<PublicAttendance> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByAttendanceCode(attendanceCode);
-      if (!event) throw new NotFoundError('Oh no! That code didn\'t work.');
-      if (event.isTooEarlyToAttendEvent()) {
-        throw new UserError('This event hasn\'t started yet, please wait to check in.');
-      }
-      if (event.isTooLateToAttendEvent()) {
-        throw new UserError('This event has ended and is no longer accepting attendances');
-      }
+
+      this.validateEventToAttend(event);
 
       const hasAlreadyAttended = await Repositories.attendance(txn).hasUserAttendedEvent(user, event);
       if (hasAlreadyAttended) throw new UserError('You have already attended this event');
@@ -61,6 +56,16 @@ export default class AttendanceService {
       const attendance = await this.writeEventAttendance(user, event, asStaff, txn);
       return attendance.getPublicAttendance();
     });
+  }
+
+  private validateEventToAttend(event: EventModel) {
+    if (!event) throw new NotFoundError('Oh no! That code didn\'t work.');
+    if (event.isTooEarlyToAttendEvent()) {
+      throw new UserError('This event hasn\'t started yet, please wait to check in.');
+    }
+    if (event.isTooLateToAttendEvent()) {
+      throw new UserError('This event has ended and is no longer accepting attendances');
+    }
   }
 
   private async writeEventAttendance(user: UserModel, event: EventModel, asStaff: boolean,
@@ -78,6 +83,41 @@ export default class AttendanceService {
       user,
       event,
       asStaff: attendedAsStaff,
+    });
+  }
+
+  public async attendViaExpressCheckin(attendanceCode: string, email: string): Promise<PublicExpressCheckin> {
+    return this.transactions.readWrite(async (txn) => {
+      const event = await Repositories.event(txn).findByAttendanceCode(attendanceCode);
+
+      this.validateEventToAttend(event);
+
+      const expressCheckinRepository = Repositories.expressCheckin(txn);
+
+      const isEmailInUse = await Repositories.user(txn).isEmailInUse(email);
+      if (isEmailInUse) {
+        throw new UserError(
+          'This email already has an account registered to it. '
+          + 'Please login to your account to check-in to this event!',
+        );
+      }
+
+      const pastExpressCheckin = await expressCheckinRepository.getPastExpressCheckin(email);
+      if (pastExpressCheckin) {
+        if (pastExpressCheckin.event.uuid === event.uuid) {
+          throw new UserError(
+            'You have already successfully checked into this event!',
+          );
+        } else {
+          throw new UserError(
+            'You have already done an express check-in before for a previous event. '
+            + 'Please complete your account registration to attend this event!',
+          );
+        }
+      }
+
+      const expressCheckin = await expressCheckinRepository.createExpressCheckin(email, event);
+      return expressCheckin.getPublicExpressCheckin();
     });
   }
 

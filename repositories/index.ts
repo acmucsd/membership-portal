@@ -1,7 +1,7 @@
 import { EntityManager } from 'typeorm';
 import { UserRepository } from './UserRepository';
 import { FeedbackRepository } from './FeedbackRepository';
-import { AttendanceRepository } from './AttendanceRepository';
+import { AttendanceRepository, ExpressCheckinRepository } from './AttendanceRepository';
 import { EventRepository } from './EventRepository';
 import { MerchOrderRepository, OrderItemRepository, OrderPickupEventRepository } from './MerchOrderRepository';
 import {
@@ -79,6 +79,10 @@ export default class Repositories {
 
   public static userSocialMedia(transactionalEntityManager: EntityManager): UserSocialMediaRepository {
     return transactionalEntityManager.getCustomRepository(UserSocialMediaRepository);
+  }
+
+  public static expressCheckin(transactionalEntityManager: EntityManager): ExpressCheckinRepository {
+    return transactionalEntityManager.getCustomRepository(ExpressCheckinRepository);
   }
 }
 
