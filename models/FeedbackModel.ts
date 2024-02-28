@@ -13,13 +13,13 @@ export class FeedbackModel extends BaseEntity {
   @Index('feedback_by_user_index')
   user: UserModel;
 
-  @ManyToOne((type) => EventModel, (event) => event.feedback, { nullable: false })
+  @ManyToOne((type) => EventModel, (event) => event.feedback, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'event' })
   @Index('feedback_by_event_index')
   event: EventModel;
 
   @Column('text')
-  source: string; //Enum? For dropdown menu (Discord, Instagram, etc.)
+  source: string;
 
   @Column('text')
   description: string;
