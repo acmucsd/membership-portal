@@ -36,6 +36,7 @@ export class DatabaseConnection {
         'Orders',
         'OrderPickupEvents',
         'MerchandiseItemOptions',
+        'MerchandiseItemPhotos',
         'MerchandiseItems',
         'MerchandiseCollections',
         'Attendances',
