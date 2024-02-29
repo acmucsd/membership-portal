@@ -1,4 +1,4 @@
-import { Between, EntityRepository, SelectQueryBuilder } from 'typeorm';
+import { Between, EntityRepository, LessThanOrEqual, MoreThanOrEqual, SelectQueryBuilder } from 'typeorm';
 import { EventSearchOptions, Uuid } from '../types';
 import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
@@ -41,7 +41,13 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async isAvailableAttendanceCode(attendanceCode: string, start: Date, end: Date): Promise<boolean> {
-    const duringCurrentEvent = await this.repository.find({
+
+    // Existing Event:  ------
+    //      New Event:    ------
+
+    // Existing Event:  ------
+    //      New Event: -----
+    const endsOrStartsDuring = await this.repository.find({
       where: [
         {
           attendanceCode,
@@ -54,7 +60,20 @@ export class EventRepository extends BaseRepository<EventModel> {
       ],
     });
 
-    return duringCurrentEvent.length === 0;
+    // Existing Event:  ------
+    //      New Event:   ---
+    const totalOverlap = await this.repository.find({
+       where: [
+        {
+          attendanceCode,
+          start: LessThanOrEqual(start),
+          end: MoreThanOrEqual(end)
+        },
+       ],
+    })
+
+
+    return endsOrStartsDuring.length === 0 && totalOverlap.length === 0;
   }
 
   private getBaseEventSearchQuery(options: EventSearchOptions): SelectQueryBuilder<EventModel> {
