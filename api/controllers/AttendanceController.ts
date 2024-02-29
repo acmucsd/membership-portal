@@ -36,6 +36,7 @@ export class AttendanceController {
     return { error: null, attendances };
   }
 
+  @UseBefore(UserAuthentication)
   @Get('/user/:uuid')
   async getAttendancesForUser(@Params() params: UuidParam,
     @AuthenticatedUser() currentUser: UserModel): Promise<GetAttendancesForEventResponse> {
