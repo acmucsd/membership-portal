@@ -4361,6 +4361,11 @@ object.values@^1.1.5:
     define-properties "^1.1.3"
     es-abstract "^1.19.1"
 
+obscenity@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/obscenity/-/obscenity-0.2.0.tgz#5a234c7af0aaebcd58fc762b29d2852104350fa2"
+  integrity sha512-eYe8r9hqJk5dEMZkLtWlGlwGxKYO6xA/yEOzd8MGSG3vzn8hAgo6MUZ9dirA3kPAfy/1d1jEOkCUpIU1nGI1EQ==
+
 on-finished@^2.3.0:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.4.1.tgz#58c8c44116e54845ad57f14ab10b03533184ac3f"

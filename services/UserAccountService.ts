@@ -5,6 +5,11 @@ import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import * as faker from 'faker';
 import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
+import {
+  RegExpMatcher,
+  englishDataset,
+  englishRecommendedTransformers,
+} from 'obscenity';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -23,8 +28,14 @@ import { UserModel } from '../models/UserModel';
 export default class UserAccountService {
   private transactions: TransactionsManager;
 
+  private matcher: RegExpMatcher;
+
   constructor(@InjectManager() entityManager: EntityManager) {
     this.transactions = new TransactionsManager(entityManager);
+    this.matcher = new RegExpMatcher({
+      ...englishDataset.build(),
+      ...englishRecommendedTransformers,
+    });
   }
 
   public async findByUuid(uuid: Uuid): Promise<UserModel> {
@@ -103,6 +114,9 @@ export default class UserAccountService {
         throw new BadRequestError('Incorrect password');
       }
       changes.hash = await UserRepository.generateHash(newPassword);
+    }
+    if (this.matcher.hasMatch(userPatches.handle)) {
+      throw new ForbiddenError('Please remove profanity from handle.');
     }
     return this.transactions.readWrite(async (txn) => {
       if (userPatches.handle) {
