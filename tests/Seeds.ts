@@ -1,5 +1,5 @@
 import * as moment from 'moment';
-import { UserAccessType, SocialMediaType } from '../types';
+import { UserAccessType, SocialMediaType, FeedbackStatus, FeedbackType } from '../types';
 import { DatabaseConnection, EventFactory, MerchFactory,
   PortalState, UserFactory, ResumeFactory, UserSocialMediaFactory } from './data';
 import { FeedbackFactory } from './data/FeedbackFactory';
@@ -122,6 +122,11 @@ async function seed(): Promise<void> {
     accessType: UserAccessType.SPONSORSHIP_MANAGER,
   });
 
+  //Used for testing feedback
+  const USER_FEEDBACK_1 = UserFactory.fake({firstName: "FeedbackerOne", lastName: "Jones"});
+  const USER_FEEDBACK_2 = UserFactory.fake({firstName: "FeedbackerTwo", lastName: "Patel"});
+  const USER_FEEDBACK_3 = UserFactory.fake({firstName: "FeedbackerThree", lastName: "Smith"});
+
   // Used for testing various User Social Media
   const USER_SOCIAL_MEDIA_1 = UserFactory.fake();
   const USER_SOCIAL_MEDIA_1_FACEBOOK = UserSocialMediaFactory.fake(
@@ -183,8 +188,6 @@ async function seed(): Promise<void> {
 
   // const USER_FEEDBACK_1 = UserFactory.fake();
   // const EVENT_FEEDBACK_1 = EventFactory.fake();
-
-  const FEEDBACK_1 = FeedbackFactory.fake();
 
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
@@ -676,6 +679,40 @@ async function seed(): Promise<void> {
     orderLimit: 10,
   });
 
+  // FEEDBACK SEEDING
+
+  // Event with multiple feedbacks: PAST_AI_WORKSHOP_1
+  const FEEDBACK_SAME_EVENT_1 = FeedbackFactory.fake({ user: USER_FEEDBACK_1,
+     event: PAST_AI_WORKSHOP_1, description: "Man this shit sucks", type: FeedbackType.AI});
+  const FEEDBACK_SAME_EVENT_2 = FeedbackFactory.fake({ user: USER_FEEDBACK_2,
+      event:PAST_AI_WORKSHOP_1, type: FeedbackType.AI});
+
+  // User with multiple feedbacks: USER_FEEDBACK_3
+  const FEEDBACK_SAME_USER_1 = FeedbackFactory.fake({ user: USER_FEEDBACK_3,
+    event: PAST_AI_WORKSHOP_1, type: FeedbackType.CYBER});
+
+  const FEEDBACK_SAME_USER_2 = FeedbackFactory.fake({ user: USER_FEEDBACK_3,
+      event: PAST_AI_WORKSHOP_2, type: FeedbackType.GENERAL});
+
+  const FEEDBACK_SUBMITTED = FeedbackFactory.fake({ user: USER_FEEDBACK_3,
+    event: PAST_AI_WORKSHOP_1, status: FeedbackStatus.SUBMITTED,
+    type: FeedbackType.INNOVATE});
+
+  const FEEDBACK_IGNORED = FeedbackFactory.fake({ user: USER_FEEDBACK_3,
+    event: PAST_AI_WORKSHOP_1, status: FeedbackStatus.IGNORED,
+    type: FeedbackType.GENERAL});
+
+  const FEEDBACK_ACKNOWLEDGED = FeedbackFactory.fake({ user: USER_FEEDBACK_3,
+    event: PAST_AI_WORKSHOP_1, status: FeedbackStatus.ACKNOWLEDGED,
+    type: FeedbackType.BIT_BYTE});
+
+
+
+
+
+
+
+
   await new PortalState()
     .createUsers(
       ADMIN,
@@ -699,6 +736,9 @@ async function seed(): Promise<void> {
       USER_SOCIAL_MEDIA_2,
       USER_SOCIAL_MEDIA_3,
       USER_SOCIAL_MEDIA_ALL,
+      USER_FEEDBACK_1,
+      USER_FEEDBACK_2,
+      USER_FEEDBACK_3,
       USER_VISIBLE_RESUME,
       USER_HIDDEN_RESUME,
       ...otherMembers,
@@ -804,7 +844,8 @@ async function seed(): Promise<void> {
       USER_SOCIAL_MEDIA_ALL_PORTFOLIO, USER_SOCIAL_MEDIA_ALL_EMAIL)
     .createResumes(USER_VISIBLE_RESUME, RESUME_1)
     .createResumes(USER_HIDDEN_RESUME, RESUME_2)
-    .createFeedback(FEEDBACK_1)
+    .createFeedback(FEEDBACK_SAME_EVENT_1, FEEDBACK_SAME_EVENT_2, FEEDBACK_SAME_USER_1, FEEDBACK_SAME_USER_2,
+       FEEDBACK_ACKNOWLEDGED, FEEDBACK_IGNORED, FEEDBACK_SUBMITTED)
     .write();
 
 

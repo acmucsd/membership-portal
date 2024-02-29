@@ -28,6 +28,7 @@ export class FeedbackRepository extends BaseRepository<FeedbackModel> {
   private getBaseFindQuery(options: FeedbackSearchOptions): SelectQueryBuilder<FeedbackModel> {
     let query = this.repository.createQueryBuilder('feedback')
       .leftJoinAndSelect('feedback.user', 'user')
+      .leftJoinAndSelect('feedback.event', 'event')
       .orderBy('timestamp', 'DESC');
 
     if (options.event) {

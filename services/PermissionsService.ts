@@ -9,7 +9,7 @@ export default class PermissionsService {
   }
 
   public static canSeeEventAttendances(user: UserModel): boolean {
-    return user.isAdmin();
+    return user.isAdmin() || user.isMarketing();
   }
 
   public static canSubmitFeedback(user: UserModel): boolean {
