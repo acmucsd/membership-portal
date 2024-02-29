@@ -15,7 +15,7 @@ import {
 export class Feedback implements IFeedback {
   @IsDefined()
   @IsNotEmpty()
-  title: string;
+  source: string;
 
   @IsDefined()
   @MinLength(100)

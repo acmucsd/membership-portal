@@ -2,6 +2,7 @@ import * as moment from 'moment';
 import { UserAccessType, SocialMediaType } from '../types';
 import { DatabaseConnection, EventFactory, MerchFactory,
   PortalState, UserFactory, ResumeFactory, UserSocialMediaFactory } from './data';
+import { FeedbackFactory } from './data/FeedbackFactory';
 
 function getGraduationYear(n: number) {
   return moment().year() + n;
@@ -798,6 +799,8 @@ async function seed(): Promise<void> {
     .createResumes(USER_VISIBLE_RESUME, RESUME_1)
     .createResumes(USER_HIDDEN_RESUME, RESUME_2)
     .write();
+
+
 }
 
 seed();

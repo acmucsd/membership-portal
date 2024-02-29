@@ -45,7 +45,7 @@ export interface RegistrationRequest {
 // USER
 
 export interface Feedback {
-  title: string;
+  source: string;
   description: string;
   type: FeedbackType;
 }

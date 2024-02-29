@@ -9,7 +9,7 @@ export class FeedbackFactory {
 
   public static fake(substitute?: Partial<Feedback>): Feedback {
     const fake = {
-      title: faker.datatype.hexaDecimal(10),
+      source: faker.datatype.hexaDecimal(10),
       description: faker.lorem.words(100),
       type: FeedbackFactory.randomFeedbackType(),
     };
