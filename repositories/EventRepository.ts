@@ -41,7 +41,6 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async isAvailableAttendanceCode(attendanceCode: string, start: Date, end: Date): Promise<boolean> {
-
     // Existing Event:  ------
     //      New Event:    ------
 
@@ -63,15 +62,14 @@ export class EventRepository extends BaseRepository<EventModel> {
     // Existing Event:  ------
     //      New Event:   ---
     const totalOverlap = await this.repository.find({
-       where: [
+      where: [
         {
           attendanceCode,
           start: LessThanOrEqual(start),
-          end: MoreThanOrEqual(end)
+          end: MoreThanOrEqual(end),
         },
-       ],
-    })
-
+      ],
+    });
 
     return endsOrStartsDuring.length === 0 && totalOverlap.length === 0;
   }
