@@ -31,7 +31,7 @@ export class FeedbackModel extends BaseEntity {
   status: FeedbackStatus;
 
   @Column('varchar', { length: 255 })
-  type: FeedbackType; //add
+  type: FeedbackType;
 
   public getPublicFeedback(): PublicFeedback {
     return {

@@ -127,6 +127,14 @@ export class PortalState {
     return this;
   }
 
+  public createFeedback( ...feedback: Feedback[]): PortalState {
+    for (let s = 0; s < feedback.length; s += 1) {
+      const sm = feedback[s];
+      this.feedback.push(FeedbackModel.create({ ...sm}));
+    }
+    return this;
+  }
+
   public attendEvents(users: UserModel[], events: EventModel[], includesStaff = false): PortalState {
     for (let e = 0; e < events.length; e += 1) {
       const event = events[e];
