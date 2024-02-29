@@ -217,6 +217,7 @@ describe('updating user access level', () => {
     const updatedUsers = await repository.find({
       email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]),
     });
+    // sorting to guarantee order
     updatedUsers.sort((a, b) => a.email.localeCompare(b.email));
 
     accessUpdates.forEach((accessUpdate, index) => {
@@ -260,6 +261,7 @@ describe('updating user access level', () => {
     const updatedUsers = await repository.find({
       email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]),
     });
+    // sorting to guarantee order
     updatedUsers.sort((a, b) => a.email.localeCompare(b.email));
 
     users.forEach((user, index) => {

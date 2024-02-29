@@ -129,7 +129,29 @@ describe('event creation', () => {
 });
 
 describe('event deletion', () => {
-  test('should not delete event when it has attendances', async () => {
+  test('should delete event that has no attendances', async () => {
+    // setting up inputs
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const event = EventFactory.fake();
+
+    await new PortalState()
+      .createUsers(admin)
+      .createEvents(event)
+      .write();
+
+    // deleting the event
+    const eventController = ControllerFactory.event(conn);
+    await eventController.deleteEvent({ uuid: event.uuid }, admin);
+
+    // verifying event deleted
+    const repository = conn.getRepository(EventModel);
+    const repositoryEvent = await repository.find({ uuid: event.uuid });
+
+    expect(repositoryEvent).toHaveLength(0);
+  });
+
+  test('should not delete event that has attendances', async () => {
     // setting up inputs
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
@@ -147,7 +169,7 @@ describe('event deletion', () => {
     await expect(eventController.deleteEvent({ uuid: event.uuid }, admin))
       .rejects.toThrow('Cannot delete event that has attendances');
 
-    // verify event not deleted
+    // verifying event not deleted
     const repository = conn.getRepository(EventModel);
     const repositoryEvent = await repository.findOne({ uuid: event.uuid });
 
