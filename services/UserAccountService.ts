@@ -239,13 +239,23 @@ export default class UserAccountService {
         return map;
       }, {});
 
-      const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
+      const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate) => {
         const { user: userEmail, accessType } = accessUpdate;
 
-        const currUser = emailToUserMap[userEmail];
-        const oldAccess = currUser.accessType;
+        // Prevent a user from demoting themselves
+        if (currentUser.email === userEmail) {
+          throw new ForbiddenError('Cannot alter own access level');
+        }
 
-        const updatedUser = await userRepository.upsertUser(currUser, { accessType });
+        const userToUpdate = emailToUserMap[userEmail];
+        const oldAccess = userToUpdate.accessType;
+
+        // Prevent users from promoting to admin or demoting from admin
+        if (oldAccess === 'ADMIN' || accessType === 'ADMIN') {
+          throw new ForbiddenError('Cannot alter access level of admin users');
+        }
+
+        const updatedUser = await userRepository.upsertUser(userToUpdate, { accessType });
 
         const activity = {
           user: currentUser,
