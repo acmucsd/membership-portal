@@ -21,338 +21,338 @@ afterAll(async () => {
 });
 
 describe('feedback submission', () => {
-//   test('properly persists on successful submission', async () => {
-//     const event = EventFactory.fake({
-//       title: 'AI: Intro to Neural Nets',
-//       description: `Artificial neural networks (ANNs), usually simply called
-//       neural networks (NNs), are computing systems vaguely inspired by the
-//       biological neural networks that constitute animal brains. An ANN is based
-//       on a collection of connected units or nodes called artificial neurons,
-//       which loosely model the neurons in a biological brain.`,
-//       committee: 'AI',
-//       location: 'Qualcomm Room',
-//       ...EventFactory.daysBefore(6),
-//       attendanceCode: 'galaxybrain',
-//       requiresStaff: true,
-//     });
+  test('properly persists on successful submission', async () => {
+    const event = EventFactory.fake({
+      title: 'AI: Intro to Neural Nets',
+      description: `Artificial neural networks (ANNs), usually simply called
+      neural networks (NNs), are computing systems vaguely inspired by the
+      biological neural networks that constitute animal brains. An ANN is based
+      on a collection of connected units or nodes called artificial neurons,
+      which loosely model the neurons in a biological brain.`,
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galaxybrain',
+      requiresStaff: true,
+    });
 
-//     const conn = await DatabaseConnection.get();
-//     const member = UserFactory.fake();
-//     const feedback = FeedbackFactory.fake({event: event});
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const feedback = FeedbackFactory.fake({event: event});
 
-//     await new PortalState()
-//       .createUsers(member)
-//       .createEvents(event)
-//       .write();
+    await new PortalState()
+      .createUsers(member)
+      .createEvents(event)
+      .write();
 
-//     const feedbackController = ControllerFactory.feedback(conn);
+    const feedbackController = ControllerFactory.feedback(conn);
 
-//     await feedbackController.submitFeedback({ feedback }, member);
-//     const submittedFeedbackResponse = await feedbackController.getFeedback({}, member);
+    await feedbackController.submitFeedback({ feedback }, member);
+    const submittedFeedbackResponse = await feedbackController.getFeedback({}, member);
 
-//     expect(submittedFeedbackResponse.feedback).toHaveLength(1);
+    expect(submittedFeedbackResponse.feedback).toHaveLength(1);
 
-//     expect(submittedFeedbackResponse.feedback[0]).toEqual({
-//       ...submittedFeedbackResponse.feedback[0],
-//       user: member.getPublicProfile(),
-//       event: event.getPublicEvent(),
-//       source: feedback.source,
-//       description: feedback.description,
-//       timestamp: feedback.timestamp,
-//       status: FeedbackStatus.SUBMITTED,
-//       type: feedback.type,
-//     });
-//   });
+    expect(submittedFeedbackResponse.feedback[0]).toEqual({
+      ...submittedFeedbackResponse.feedback[0],
+      user: member.getPublicProfile(),
+      event: event.getPublicEvent(),
+      source: feedback.source,
+      description: feedback.description,
+      timestamp: feedback.timestamp,
+      status: FeedbackStatus.SUBMITTED,
+      type: feedback.type,
+    });
+  });
 
-//   test('is invalidated when submission description is too short', async () => {
+  test('is invalidated when submission description is too short', async () => {
 
-//     const event = EventFactory.fake({
-//       title: 'AI: Intro to Neural Nets',
-//       description: `Artificial neural networks (ANNs), usually simply called
-//       neural networks (NNs), are computing systems vaguely inspired by the
-//       biological neural networks that constitute animal brains. An ANN is based
-//       on a collection of connected units or nodes called artificial neurons,
-//       which loosely model the neurons in a biological brain.`,
-//       committee: 'AI',
-//       location: 'Qualcomm Room',
-//       ...EventFactory.daysBefore(6),
-//       attendanceCode: 'galaxybrain',
-//       requiresStaff: true,
-//     });
+    const event = EventFactory.fake({
+      title: 'AI: Intro to Neural Nets',
+      description: `Artificial neural networks (ANNs), usually simply called
+      neural networks (NNs), are computing systems vaguely inspired by the
+      biological neural networks that constitute animal brains. An ANN is based
+      on a collection of connected units or nodes called artificial neurons,
+      which loosely model the neurons in a biological brain.`,
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galaxybrain',
+      requiresStaff: true,
+    });
 
-//     const feedback = FeedbackFactory.fake({ event: event, description: 'A short description' });
+    const feedback = FeedbackFactory.fake({ event: event, description: 'A short description' });
 
-//     const errors = await validate(plainToClass(Feedback, feedback));
+    const errors = await validate(plainToClass(Feedback, feedback));
 
-//     expect(errors).toBeDefined();
-//     expect(errors).toHaveLength(1);
-//     expect(errors[0].property).toEqual('description');
-//     expect(errors[0].constraints.minLength).toBeDefined();
-//   });
+    expect(errors).toBeDefined();
+    expect(errors).toHaveLength(1);
+    expect(errors[0].property).toEqual('description');
+    expect(errors[0].constraints.minLength).toBeDefined();
+  });
 
-//   test('has proper activity scope and type', async () => {
+  test('has proper activity scope and type', async () => {
 
-//     const event = EventFactory.fake({
-//       title: 'AI: Intro to Neural Nets',
-//       description: `Artificial neural networks (ANNs), usually simply called
-//       neural networks (NNs), are computing systems vaguely inspired by the
-//       biological neural networks that constitute animal brains. An ANN is based
-//       on a collection of connected units or nodes called artificial neurons,
-//       which loosely model the neurons in a biological brain.`,
-//       committee: 'AI',
-//       location: 'Qualcomm Room',
-//       ...EventFactory.daysBefore(6),
-//       attendanceCode: 'galaxybrain',
-//       requiresStaff: true,
-//     });
+    const event = EventFactory.fake({
+      title: 'AI: Intro to Neural Nets',
+      description: `Artificial neural networks (ANNs), usually simply called
+      neural networks (NNs), are computing systems vaguely inspired by the
+      biological neural networks that constitute animal brains. An ANN is based
+      on a collection of connected units or nodes called artificial neurons,
+      which loosely model the neurons in a biological brain.`,
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galaxybrain',
+      requiresStaff: true,
+    });
 
-//     const conn = await DatabaseConnection.get();
-//     const member = UserFactory.fake();
-//     const feedback = FeedbackFactory.fake({event: event});
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const feedback = FeedbackFactory.fake({event: event});
 
-//     await new PortalState()
-//       .createUsers(member)
-//       .createEvents(event)
-//       .write();
+    await new PortalState()
+      .createUsers(member)
+      .createEvents(event)
+      .write();
 
-//     await ControllerFactory.feedback(conn).submitFeedback({ feedback }, member);
-//     const activityResponse = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
-//     const feedbackSubmissionActivity = activityResponse.activity[1];
+    await ControllerFactory.feedback(conn).submitFeedback({ feedback }, member);
+    const activityResponse = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
+    const feedbackSubmissionActivity = activityResponse.activity[1];
 
-//     expect(feedbackSubmissionActivity.scope).toEqual(ActivityScope.PRIVATE);
-//     expect(feedbackSubmissionActivity.type).toEqual(ActivityType.SUBMIT_FEEDBACK);
-//   });
+    expect(feedbackSubmissionActivity.scope).toEqual(ActivityScope.PRIVATE);
+    expect(feedbackSubmissionActivity.type).toEqual(ActivityType.SUBMIT_FEEDBACK);
+  });
 
-//   test('admins can view feedback from any member', async () => {
+  test('admins can view feedback from any member', async () => {
 
-//     const event = EventFactory.fake({
-//       title: 'AI: Intro to Neural Nets',
-//       description: `Artificial neural networks (ANNs), usually simply called
-//       neural networks (NNs), are computing systems vaguely inspired by the
-//       biological neural networks that constitute animal brains. An ANN is based
-//       on a collection of connected units or nodes called artificial neurons,
-//       which loosely model the neurons in a biological brain.`,
-//       committee: 'AI',
-//       location: 'Qualcomm Room',
-//       ...EventFactory.daysBefore(6),
-//       attendanceCode: 'galaxybrain',
-//       requiresStaff: true,
-//       cover: null,
-//       thumbnail: null,
-//       eventLink: null,
-//     });
+    const event = EventFactory.fake({
+      title: 'AI: Intro to Neural Nets',
+      description: `Artificial neural networks (ANNs), usually simply called
+      neural networks (NNs), are computing systems vaguely inspired by the
+      biological neural networks that constitute animal brains. An ANN is based
+      on a collection of connected units or nodes called artificial neurons,
+      which loosely model the neurons in a biological brain.`,
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galaxybrain',
+      requiresStaff: true,
+      cover: null,
+      thumbnail: null,
+      eventLink: null,
+    });
 
-//     const conn = await DatabaseConnection.get();
-//     const [member1, member2] = UserFactory.create(2);
-//     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-//     const feedback1 = FeedbackFactory.fake({event: event});
-//     const feedback2 = FeedbackFactory.fake({event: event});
+    const conn = await DatabaseConnection.get();
+    const [member1, member2] = UserFactory.create(2);
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const feedback1 = FeedbackFactory.fake({event: event});
+    const feedback2 = FeedbackFactory.fake({event: event});
 
-//     await new PortalState()
-//       .createUsers(member1, member2, admin)
-//       .createEvents(event)
-//       .write();
+    await new PortalState()
+      .createUsers(member1, member2, admin)
+      .createEvents(event)
+      .write();
 
-//     const feedbackController = ControllerFactory.feedback(conn);
+    const feedbackController = ControllerFactory.feedback(conn);
 
-//     const submittedFeedback1Response = await feedbackController.submitFeedback({ feedback: feedback1 }, member1);
-//     const submittedFeedback2Response = await feedbackController.submitFeedback({ feedback: feedback2 }, member2);
-//     const allSubmittedFeedbackResponse = await feedbackController.getFeedback({}, admin);
+    const submittedFeedback1Response = await feedbackController.submitFeedback({ feedback: feedback1 }, member1);
+    const submittedFeedback2Response = await feedbackController.submitFeedback({ feedback: feedback2 }, member2);
+    const allSubmittedFeedbackResponse = await feedbackController.getFeedback({}, admin);
 
-//     expect(allSubmittedFeedbackResponse.feedback).toHaveLength(2);
+    expect(allSubmittedFeedbackResponse.feedback).toHaveLength(2);
 
-//     expect(allSubmittedFeedbackResponse.feedback).toEqual(
-//       expect.arrayContaining([
-//         submittedFeedback1Response.feedback,
-//         submittedFeedback2Response.feedback
-//       ])
-//     );
+    expect(allSubmittedFeedbackResponse.feedback).toEqual(
+      expect.arrayContaining([
+        submittedFeedback1Response.feedback,
+        submittedFeedback2Response.feedback
+      ])
+    );
 
 
-//   });
+  });
 
-//   test('members can view only their own feedback', async () => {
+  test('members can view only their own feedback', async () => {
 
-//     const event = EventFactory.fake({
-//       title: 'AI: Intro to Neural Nets',
-//       description: `Artificial neural networks (ANNs), usually simply called
-//       neural networks (NNs), are computing systems vaguely inspired by the
-//       biological neural networks that constitute animal brains. An ANN is based
-//       on a collection of connected units or nodes called artificial neurons,
-//       which loosely model the neurons in a biological brain.`,
-//       committee: 'AI',
-//       location: 'Qualcomm Room',
-//       ...EventFactory.daysBefore(6),
-//       attendanceCode: 'galaxybrain',
-//       requiresStaff: true,
-//       cover: null,
-//       thumbnail: null,
-//       eventLink: null,
-//     });
+    const event = EventFactory.fake({
+      title: 'AI: Intro to Neural Nets',
+      description: `Artificial neural networks (ANNs), usually simply called
+      neural networks (NNs), are computing systems vaguely inspired by the
+      biological neural networks that constitute animal brains. An ANN is based
+      on a collection of connected units or nodes called artificial neurons,
+      which loosely model the neurons in a biological brain.`,
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galaxybrain',
+      requiresStaff: true,
+      cover: null,
+      thumbnail: null,
+      eventLink: null,
+    });
 
-//     const conn = await DatabaseConnection.get();
-//     const [member1, member2] = UserFactory.create(2);
-//     const feedback1 = FeedbackFactory.fake({event: event, user: member1});
-//     const feedback2 = FeedbackFactory.fake({event: event, user: member2});
+    const conn = await DatabaseConnection.get();
+    const [member1, member2] = UserFactory.create(2);
+    const feedback1 = FeedbackFactory.fake({event: event, user: member1});
+    const feedback2 = FeedbackFactory.fake({event: event, user: member2});
 
-//     await new PortalState()
-//       .createUsers(member1, member2)
-//       .createEvents(event)
-//       .write();
+    await new PortalState()
+      .createUsers(member1, member2)
+      .createEvents(event)
+      .write();
 
-//     const feedbackController = ControllerFactory.feedback(conn);
-//     await feedbackController.submitFeedback({ feedback: feedback1 }, member1);
-//     await feedbackController.submitFeedback({ feedback: feedback2 }, member2);
-//     const user1Feedback = await feedbackController.getFeedback({}, member1);
+    const feedbackController = ControllerFactory.feedback(conn);
+    await feedbackController.submitFeedback({ feedback: feedback1 }, member1);
+    await feedbackController.submitFeedback({ feedback: feedback2 }, member2);
+    const user1Feedback = await feedbackController.getFeedback({}, member1);
 
-//     expect(user1Feedback.feedback).toHaveLength(1);
+    expect(user1Feedback.feedback).toHaveLength(1);
 
-//     expect(user1Feedback.feedback[0]).toMatchObject({
-//       ...user1Feedback.feedback[0],
-//       user: member1.getPublicProfile(),
-//       event: event.getPublicEvent(),
-//       source: feedback1.source,
-//       description: feedback1.description,
-//       timestamp: feedback1.timestamp,
-//       status: FeedbackStatus.SUBMITTED,
-//       type: feedback1.type,
-//     });
-//   });
+    expect(user1Feedback.feedback[0]).toMatchObject({
+      ...user1Feedback.feedback[0],
+      user: member1.getPublicProfile(),
+      event: event.getPublicEvent(),
+      source: feedback1.source,
+      description: feedback1.description,
+      timestamp: feedback1.timestamp,
+      status: FeedbackStatus.SUBMITTED,
+      type: feedback1.type,
+    });
+  });
 
-//   test('admin can acknowledge and reward points for feedback', async () => {
+  test('admin can acknowledge and reward points for feedback', async () => {
 
-//     const event = EventFactory.fake({
-//       title: 'AI: Intro to Neural Nets',
-//       description: `Artificial neural networks (ANNs), usually simply called
-//       neural networks (NNs), are computing systems vaguely inspired by the
-//       biological neural networks that constitute animal brains. An ANN is based
-//       on a collection of connected units or nodes called artificial neurons,
-//       which loosely model the neurons in a biological brain.`,
-//       committee: 'AI',
-//       location: 'Qualcomm Room',
-//       ...EventFactory.daysBefore(6),
-//       attendanceCode: 'galaxybrain',
-//       requiresStaff: true,
-//     });
+    const event = EventFactory.fake({
+      title: 'AI: Intro to Neural Nets',
+      description: `Artificial neural networks (ANNs), usually simply called
+      neural networks (NNs), are computing systems vaguely inspired by the
+      biological neural networks that constitute animal brains. An ANN is based
+      on a collection of connected units or nodes called artificial neurons,
+      which loosely model the neurons in a biological brain.`,
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galaxybrain',
+      requiresStaff: true,
+    });
 
-//     const conn = await DatabaseConnection.get();
-//     const member = UserFactory.fake();
-//     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-//     const feedback = FeedbackFactory.fake({event: event});
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const feedback = FeedbackFactory.fake({event: event});
 
-//     await new PortalState()
-//       .createUsers(member, admin)
-//       .createEvents(event)
-//       .write();
+    await new PortalState()
+      .createUsers(member, admin)
+      .createEvents(event)
+      .write();
 
-//     const userController = ControllerFactory.user(conn);
-//     const feedbackController = ControllerFactory.feedback(conn);
+    const userController = ControllerFactory.user(conn);
+    const feedbackController = ControllerFactory.feedback(conn);
 
-//     const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, member);
+    const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, member);
 
-//     const status = FeedbackStatus.ACKNOWLEDGED;
-//     const uuid = submittedFeedbackResponse.feedback;
+    const status = FeedbackStatus.ACKNOWLEDGED;
+    const uuid = submittedFeedbackResponse.feedback;
 
-//     const acknowledgedFeedback = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
+    const acknowledgedFeedback = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
 
-//     const persistedUserResponse = await userController.getUser({ uuid: member.uuid }, admin);
+    const persistedUserResponse = await userController.getUser({ uuid: member.uuid }, admin);
 
-//     const feedbackPointReward = Config.pointReward.FEEDBACK_POINT_REWARD;
+    const feedbackPointReward = Config.pointReward.FEEDBACK_POINT_REWARD;
 
-//     expect(acknowledgedFeedback.feedback.status).toEqual(FeedbackStatus.ACKNOWLEDGED);
-//     expect(persistedUserResponse.user.points).toEqual(member.points + feedbackPointReward);
-//   });
+    expect(acknowledgedFeedback.feedback.status).toEqual(FeedbackStatus.ACKNOWLEDGED);
+    expect(persistedUserResponse.user.points).toEqual(member.points + feedbackPointReward);
+  });
 
-//   test('admin can ignore and not reward points for feedback', async () => {
+  test('admin can ignore and not reward points for feedback', async () => {
 
-//   const event = EventFactory.fake({
-//   title: 'AI: Intro to Neural Nets',
-//   description: `Artificial neural networks (ANNs), usually simply called
-//   neural networks (NNs), are computing systems vaguely inspired by the
-//   biological neural networks that constitute animal brains. An ANN is based
-//   on a collection of connected units or nodes called artificial neurons,
-//   which loosely model the neurons in a biological brain.`,
-//   committee: 'AI',
-//   location: 'Qualcomm Room',
-//   ...EventFactory.daysBefore(6),
-//   attendanceCode: 'galaxybrain',
-//   requiresStaff: true,
-// });
+  const event = EventFactory.fake({
+  title: 'AI: Intro to Neural Nets',
+  description: `Artificial neural networks (ANNs), usually simply called
+  neural networks (NNs), are computing systems vaguely inspired by the
+  biological neural networks that constitute animal brains. An ANN is based
+  on a collection of connected units or nodes called artificial neurons,
+  which loosely model the neurons in a biological brain.`,
+  committee: 'AI',
+  location: 'Qualcomm Room',
+  ...EventFactory.daysBefore(6),
+  attendanceCode: 'galaxybrain',
+  requiresStaff: true,
+});
 
-//     const conn = await DatabaseConnection.get();
-//     const member = UserFactory.fake();
-//     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-//     const feedback = FeedbackFactory.fake({event: event});
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const feedback = FeedbackFactory.fake({event: event});
 
-//     await new PortalState()
-//       .createUsers(member, admin)
-//       .createEvents(event)
-//       .write();
+    await new PortalState()
+      .createUsers(member, admin)
+      .createEvents(event)
+      .write();
 
-//     const userController = ControllerFactory.user(conn);
-//     const feedbackController = ControllerFactory.feedback(conn);
+    const userController = ControllerFactory.user(conn);
+    const feedbackController = ControllerFactory.feedback(conn);
 
-//     const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, member);
-//     const status = FeedbackStatus.IGNORED;
-//     const uuid = submittedFeedbackResponse.feedback;
-//     const ignoredFeedbackResponse = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
+    const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, member);
+    const status = FeedbackStatus.IGNORED;
+    const uuid = submittedFeedbackResponse.feedback;
+    const ignoredFeedbackResponse = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
 
-//     const persistedUserResponse = await userController.getUser({ uuid: member.uuid }, admin);
+    const persistedUserResponse = await userController.getUser({ uuid: member.uuid }, admin);
 
-//     expect(ignoredFeedbackResponse.feedback.status).toEqual(FeedbackStatus.IGNORED);
-//     expect(persistedUserResponse.user.points).toEqual(member.points);
-//   });
+    expect(ignoredFeedbackResponse.feedback.status).toEqual(FeedbackStatus.IGNORED);
+    expect(persistedUserResponse.user.points).toEqual(member.points);
+  });
 
-//   test('cannot be responded to after already being responded to', async () => {
+  test('cannot be responded to after already being responded to', async () => {
 
-//     const event = EventFactory.fake({
-//       title: 'AI: Intro to Neural Nets',
-//       description: `Artificial neural networks (ANNs), usually simply called
-//       neural networks (NNs), are computing systems vaguely inspired by the
-//       biological neural networks that constitute animal brains. An ANN is based
-//       on a collection of connected units or nodes called artificial neurons,
-//       which loosely model the neurons in a biological brain.`,
-//       committee: 'AI',
-//       location: 'Qualcomm Room',
-//       ...EventFactory.daysBefore(6),
-//       attendanceCode: 'galaxybrain',
-//       requiresStaff: true,
-//     });
+    const event = EventFactory.fake({
+      title: 'AI: Intro to Neural Nets',
+      description: `Artificial neural networks (ANNs), usually simply called
+      neural networks (NNs), are computing systems vaguely inspired by the
+      biological neural networks that constitute animal brains. An ANN is based
+      on a collection of connected units or nodes called artificial neurons,
+      which loosely model the neurons in a biological brain.`,
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galaxybrain',
+      requiresStaff: true,
+    });
 
-//     const conn = await DatabaseConnection.get();
-//     const member = UserFactory.fake();
-//     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-//     const feedback1 = FeedbackFactory.fake({event: event, user: member});
-//     const feedback2 = FeedbackFactory.fake({event: event, user: member});
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const feedback1 = FeedbackFactory.fake({event: event, user: member});
+    const feedback2 = FeedbackFactory.fake({event: event, user: member});
 
-//     await new PortalState()
-//       .createUsers(member, admin)
-//       .createEvents(event)
-//       .write();
+    await new PortalState()
+      .createUsers(member, admin)
+      .createEvents(event)
+      .write();
 
-//     const feedbackController = ControllerFactory.feedback(conn);
+    const feedbackController = ControllerFactory.feedback(conn);
 
-//     const feedbackToAcknowledgeResponse = await feedbackController.submitFeedback({ feedback: feedback1 }, member);
-//     const feedbackToIgnoreResponse = await feedbackController.submitFeedback({ feedback: feedback2 }, member);
+    const feedbackToAcknowledgeResponse = await feedbackController.submitFeedback({ feedback: feedback1 }, member);
+    const feedbackToIgnoreResponse = await feedbackController.submitFeedback({ feedback: feedback2 }, member);
 
-//     const feedbackToAcknowledgeParams = { uuid: feedbackToAcknowledgeResponse.feedback.uuid };
-//     const feedbackToIgnoreParams = { uuid: feedbackToIgnoreResponse.feedback.uuid };
-//     const acknowledged = { status: FeedbackStatus.ACKNOWLEDGED };
-//     const ignored = { status: FeedbackStatus.IGNORED };
+    const feedbackToAcknowledgeParams = { uuid: feedbackToAcknowledgeResponse.feedback.uuid };
+    const feedbackToIgnoreParams = { uuid: feedbackToIgnoreResponse.feedback.uuid };
+    const acknowledged = { status: FeedbackStatus.ACKNOWLEDGED };
+    const ignored = { status: FeedbackStatus.IGNORED };
 
-//     await feedbackController.updateFeedbackStatus(feedbackToAcknowledgeParams, acknowledged, admin);
-//     await feedbackController.updateFeedbackStatus(feedbackToIgnoreParams, ignored, admin);
+    await feedbackController.updateFeedbackStatus(feedbackToAcknowledgeParams, acknowledged, admin);
+    await feedbackController.updateFeedbackStatus(feedbackToIgnoreParams, ignored, admin);
 
-//     const errorMessage = 'This feedback has already been responded to';
-//     await expect(feedbackController.updateFeedbackStatus(feedbackToAcknowledgeParams, acknowledged, admin))
-//       .rejects.toThrow(errorMessage);
-//     await expect(feedbackController.updateFeedbackStatus(feedbackToAcknowledgeParams, ignored, admin))
-//       .rejects.toThrow(errorMessage);
-//     await expect(feedbackController.updateFeedbackStatus(feedbackToIgnoreParams, acknowledged, admin))
-//       .rejects.toThrow(errorMessage);
-//     await expect(feedbackController.updateFeedbackStatus(feedbackToIgnoreParams, ignored, admin))
-//       .rejects.toThrow(errorMessage);
-//   });
+    const errorMessage = 'This feedback has already been responded to';
+    await expect(feedbackController.updateFeedbackStatus(feedbackToAcknowledgeParams, acknowledged, admin))
+      .rejects.toThrow(errorMessage);
+    await expect(feedbackController.updateFeedbackStatus(feedbackToAcknowledgeParams, ignored, admin))
+      .rejects.toThrow(errorMessage);
+    await expect(feedbackController.updateFeedbackStatus(feedbackToIgnoreParams, acknowledged, admin))
+      .rejects.toThrow(errorMessage);
+    await expect(feedbackController.updateFeedbackStatus(feedbackToIgnoreParams, ignored, admin))
+      .rejects.toThrow(errorMessage);
+  });
 
   test('get all feedback for an event', async () => {
 
