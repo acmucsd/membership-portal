@@ -38,7 +38,7 @@ describe('feedback submission', () => {
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
-    const feedback = FeedbackFactory.fake({event: event});
+    const feedback = FeedbackFactory.fake({ event });
 
     await new PortalState()
       .createUsers(member)
@@ -65,7 +65,6 @@ describe('feedback submission', () => {
   });
 
   test('is invalidated when submission description is too short', async () => {
-
     const event = EventFactory.fake({
       title: 'AI: Intro to Neural Nets',
       description: `Artificial neural networks (ANNs), usually simply called
@@ -80,7 +79,7 @@ describe('feedback submission', () => {
       requiresStaff: true,
     });
 
-    const feedback = FeedbackFactory.fake({ event: event, description: 'A short description' });
+    const feedback = FeedbackFactory.fake({ event, description: 'A short description' });
 
     const errors = await validate(plainToClass(Feedback, feedback));
 
@@ -91,7 +90,6 @@ describe('feedback submission', () => {
   });
 
   test('has proper activity scope and type', async () => {
-
     const event = EventFactory.fake({
       title: 'AI: Intro to Neural Nets',
       description: `Artificial neural networks (ANNs), usually simply called
@@ -108,7 +106,7 @@ describe('feedback submission', () => {
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
-    const feedback = FeedbackFactory.fake({event: event});
+    const feedback = FeedbackFactory.fake({ event });
 
     await new PortalState()
       .createUsers(member)
@@ -124,7 +122,6 @@ describe('feedback submission', () => {
   });
 
   test('admins can view feedback from any member', async () => {
-
     const event = EventFactory.fake({
       title: 'AI: Intro to Neural Nets',
       description: `Artificial neural networks (ANNs), usually simply called
@@ -145,8 +142,8 @@ describe('feedback submission', () => {
     const conn = await DatabaseConnection.get();
     const [member1, member2] = UserFactory.create(2);
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback1 = FeedbackFactory.fake({event: event});
-    const feedback2 = FeedbackFactory.fake({event: event});
+    const feedback1 = FeedbackFactory.fake({ event });
+    const feedback2 = FeedbackFactory.fake({ event });
 
     await new PortalState()
       .createUsers(member1, member2, admin)
@@ -164,15 +161,12 @@ describe('feedback submission', () => {
     expect(allSubmittedFeedbackResponse.feedback).toEqual(
       expect.arrayContaining([
         submittedFeedback1Response.feedback,
-        submittedFeedback2Response.feedback
-      ])
+        submittedFeedback2Response.feedback,
+      ]),
     );
-
-
   });
 
   test('members can view only their own feedback', async () => {
-
     const event = EventFactory.fake({
       title: 'AI: Intro to Neural Nets',
       description: `Artificial neural networks (ANNs), usually simply called
@@ -192,8 +186,8 @@ describe('feedback submission', () => {
 
     const conn = await DatabaseConnection.get();
     const [member1, member2] = UserFactory.create(2);
-    const feedback1 = FeedbackFactory.fake({event: event, user: member1});
-    const feedback2 = FeedbackFactory.fake({event: event, user: member2});
+    const feedback1 = FeedbackFactory.fake({ event, user: member1 });
+    const feedback2 = FeedbackFactory.fake({ event, user: member2 });
 
     await new PortalState()
       .createUsers(member1, member2)
@@ -220,7 +214,6 @@ describe('feedback submission', () => {
   });
 
   test('admin can acknowledge and reward points for feedback', async () => {
-
     const event = EventFactory.fake({
       title: 'AI: Intro to Neural Nets',
       description: `Artificial neural networks (ANNs), usually simply called
@@ -238,7 +231,7 @@ describe('feedback submission', () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback = FeedbackFactory.fake({event: event});
+    const feedback = FeedbackFactory.fake({ event });
 
     await new PortalState()
       .createUsers(member, admin)
@@ -264,25 +257,24 @@ describe('feedback submission', () => {
   });
 
   test('admin can ignore and not reward points for feedback', async () => {
-
-  const event = EventFactory.fake({
-  title: 'AI: Intro to Neural Nets',
-  description: `Artificial neural networks (ANNs), usually simply called
+    const event = EventFactory.fake({
+      title: 'AI: Intro to Neural Nets',
+      description: `Artificial neural networks (ANNs), usually simply called
   neural networks (NNs), are computing systems vaguely inspired by the
   biological neural networks that constitute animal brains. An ANN is based
   on a collection of connected units or nodes called artificial neurons,
   which loosely model the neurons in a biological brain.`,
-  committee: 'AI',
-  location: 'Qualcomm Room',
-  ...EventFactory.daysBefore(6),
-  attendanceCode: 'galaxybrain',
-  requiresStaff: true,
-});
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galaxybrain',
+      requiresStaff: true,
+    });
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback = FeedbackFactory.fake({event: event});
+    const feedback = FeedbackFactory.fake({ event });
 
     await new PortalState()
       .createUsers(member, admin)
@@ -304,7 +296,6 @@ describe('feedback submission', () => {
   });
 
   test('cannot be responded to after already being responded to', async () => {
-
     const event = EventFactory.fake({
       title: 'AI: Intro to Neural Nets',
       description: `Artificial neural networks (ANNs), usually simply called
@@ -322,8 +313,8 @@ describe('feedback submission', () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback1 = FeedbackFactory.fake({event: event, user: member});
-    const feedback2 = FeedbackFactory.fake({event: event, user: member});
+    const feedback1 = FeedbackFactory.fake({ event, user: member });
+    const feedback2 = FeedbackFactory.fake({ event, user: member });
 
     await new PortalState()
       .createUsers(member, admin)
@@ -355,7 +346,6 @@ describe('feedback submission', () => {
   });
 
   test('get all feedback for an event', async () => {
-
     const event1 = EventFactory.fake({
       title: 'AI: Intro to Neural Nets',
       description: `Artificial neural networks (ANNs), usually simply called
@@ -383,7 +373,7 @@ describe('feedback submission', () => {
       committee: 'AI',
       location: 'Qualcomm Room',
       ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
+      attendanceCode: 'galxybrain',
       requiresStaff: true,
       cover: null,
       thumbnail: null,
@@ -393,9 +383,9 @@ describe('feedback submission', () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback1 = FeedbackFactory.fake({event: event1});
-    const feedback2 = FeedbackFactory.fake({event: event1});
-    const feedback3 = FeedbackFactory.fake({event: event2});
+    const feedback1 = FeedbackFactory.fake({ event: event1 });
+    const feedback2 = FeedbackFactory.fake({ event: event1 });
+    const feedback3 = FeedbackFactory.fake({ event: event2 });
 
     await new PortalState()
       .createUsers(member, admin)
@@ -406,8 +396,8 @@ describe('feedback submission', () => {
     const fb1Response = await feedbackController.submitFeedback({ feedback: feedback1 }, member);
     const fb2Response = await feedbackController.submitFeedback({ feedback: feedback2 }, member);
     const fb3Response = await feedbackController.submitFeedback({ feedback: feedback3 }, member);
-    const event1Feedback = await feedbackController.getFeedback({event: event1.uuid}, admin);
-    const event2Feedback = await feedbackController.getFeedback({event: event2.uuid}, admin);
+    const event1Feedback = await feedbackController.getFeedback({ event: event1.uuid }, admin);
+    const event2Feedback = await feedbackController.getFeedback({ event: event2.uuid }, admin);
 
     expect(event1Feedback.feedback).toHaveLength(2);
     expect(event2Feedback.feedback).toHaveLength(1);
@@ -415,20 +405,18 @@ describe('feedback submission', () => {
     expect(event1Feedback.feedback).toEqual(
       expect.arrayContaining([
         fb1Response.feedback,
-        fb2Response.feedback
-      ])
+        fb2Response.feedback,
+      ]),
     );
 
     expect(event2Feedback.feedback).toEqual(
       expect.arrayContaining([
-        fb3Response.feedback
-      ])
+        fb3Response.feedback,
+      ]),
     );
-
   });
 
   test('get all feedback by status', async () => {
-
     const event1 = EventFactory.fake({
       title: 'AI: Intro to Neural Nets',
       description: `Artificial neural networks (ANNs), usually simply called
@@ -449,9 +437,9 @@ describe('feedback submission', () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback1 = FeedbackFactory.fake({event: event1, status: FeedbackStatus.ACKNOWLEDGED,});
-    const feedback2 = FeedbackFactory.fake({event: event1, status: FeedbackStatus.ACKNOWLEDGED});
-    const feedback3 = FeedbackFactory.fake({event: event1, status: FeedbackStatus.SUBMITTED});
+    const feedback1 = FeedbackFactory.fake({ event: event1, status: FeedbackStatus.ACKNOWLEDGED });
+    const feedback2 = FeedbackFactory.fake({ event: event1, status: FeedbackStatus.ACKNOWLEDGED });
+    const feedback3 = FeedbackFactory.fake({ event: event1, status: FeedbackStatus.SUBMITTED });
 
     await new PortalState()
       .createUsers(member, admin)
@@ -462,8 +450,8 @@ describe('feedback submission', () => {
     const fb1Response = await feedbackController.submitFeedback({ feedback: feedback1 }, member);
     const fb2Response = await feedbackController.submitFeedback({ feedback: feedback2 }, member);
     const fb3Response = await feedbackController.submitFeedback({ feedback: feedback3 }, member);
-    const status1Feedback = await feedbackController.getFeedback({status: FeedbackStatus.ACKNOWLEDGED}, admin);
-    const status2Feedback = await feedbackController.getFeedback({status: FeedbackStatus.SUBMITTED}, admin);
+    const status1Feedback = await feedbackController.getFeedback({ status: FeedbackStatus.ACKNOWLEDGED }, admin);
+    const status2Feedback = await feedbackController.getFeedback({ status: FeedbackStatus.SUBMITTED }, admin);
 
     expect(status1Feedback.feedback).toHaveLength(2);
     expect(status2Feedback.feedback).toHaveLength(1);
@@ -471,16 +459,15 @@ describe('feedback submission', () => {
     expect(status1Feedback.feedback).toEqual(
       expect.arrayContaining([
         fb1Response.feedback,
-        fb2Response.feedback
-      ])
+        fb2Response.feedback,
+      ]),
     );
 
     expect(status2Feedback.feedback).toEqual(
       expect.arrayContaining([
-        fb3Response.feedback
-      ])
+        fb3Response.feedback,
+      ]),
     );
-
   });
 
   test('get all feedback by type', async () => {
@@ -504,9 +491,9 @@ describe('feedback submission', () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback1 = FeedbackFactory.fake({event: event1, type: FeedbackType.GENERAL,});
-    const feedback2 = FeedbackFactory.fake({event: event1, type: FeedbackType.GENERAL});
-    const feedback3 = FeedbackFactory.fake({event: event1, type: FeedbackType.AI});
+    const feedback1 = FeedbackFactory.fake({ event: event1, type: FeedbackType.GENERAL });
+    const feedback2 = FeedbackFactory.fake({ event: event1, type: FeedbackType.GENERAL });
+    const feedback3 = FeedbackFactory.fake({ event: event1, type: FeedbackType.AI });
 
     await new PortalState()
       .createUsers(member, admin)
@@ -517,8 +504,8 @@ describe('feedback submission', () => {
     const fb1Response = await feedbackController.submitFeedback({ feedback: feedback1 }, member);
     const fb2Response = await feedbackController.submitFeedback({ feedback: feedback2 }, member);
     const fb3Response = await feedbackController.submitFeedback({ feedback: feedback3 }, member);
-    const type1Feedback = await feedbackController.getFeedback({type: FeedbackType.GENERAL}, admin);
-    const type2Feedback = await feedbackController.getFeedback({type: FeedbackType.AI}, admin);
+    const type1Feedback = await feedbackController.getFeedback({ type: FeedbackType.GENERAL }, admin);
+    const type2Feedback = await feedbackController.getFeedback({ type: FeedbackType.AI }, admin);
 
     expect(type1Feedback.feedback).toHaveLength(2);
     expect(type2Feedback.feedback).toHaveLength(1);
@@ -526,20 +513,18 @@ describe('feedback submission', () => {
     expect(type1Feedback.feedback).toEqual(
       expect.arrayContaining([
         fb1Response.feedback,
-        fb2Response.feedback
-      ])
+        fb2Response.feedback,
+      ]),
     );
 
     expect(type2Feedback.feedback).toEqual(
       expect.arrayContaining([
-        fb3Response.feedback
-      ])
+        fb3Response.feedback,
+      ]),
     );
-
   });
 
   test('get all feedback with multiple parameters', async () => {
-
     const event1 = EventFactory.fake({
       title: 'Event 1',
       description: `Artificial neural networks (ANNs), usually simply called
@@ -567,7 +552,7 @@ describe('feedback submission', () => {
       committee: 'AI',
       location: 'Qualcomm Room',
       ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
+      attendanceCode: 'galxybrain',
       requiresStaff: true,
       cover: null,
       thumbnail: null,
@@ -577,11 +562,21 @@ describe('feedback submission', () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback1 = FeedbackFactory.fake({event: event1, status: FeedbackStatus.ACKNOWLEDGED, type: FeedbackType.GENERAL});
-    const feedback2 = FeedbackFactory.fake({event: event1, status: FeedbackStatus.IGNORED, type: FeedbackType.GENERAL});
-    const feedback3 = FeedbackFactory.fake({event: event1, status: FeedbackStatus.SUBMITTED, type: FeedbackType.INNOVATE});
-    const feedback4 = FeedbackFactory.fake({event: event2, status: FeedbackStatus.ACKNOWLEDGED, type: FeedbackType.GENERAL});
-    const feedback5 = FeedbackFactory.fake({event: event1, status: FeedbackStatus.ACKNOWLEDGED, type: FeedbackType.GENERAL});
+    const feedback1 = FeedbackFactory.fake({ event: event1,
+      status: FeedbackStatus.ACKNOWLEDGED,
+      type: FeedbackType.GENERAL });
+    const feedback2 = FeedbackFactory.fake({ event: event1,
+      status: FeedbackStatus.IGNORED,
+      type: FeedbackType.GENERAL });
+    const feedback3 = FeedbackFactory.fake({ event: event1,
+      status: FeedbackStatus.SUBMITTED,
+      type: FeedbackType.INNOVATE });
+    const feedback4 = FeedbackFactory.fake({ event: event2,
+      status: FeedbackStatus.ACKNOWLEDGED,
+      type: FeedbackType.GENERAL });
+    const feedback5 = FeedbackFactory.fake({ event: event1,
+      status: FeedbackStatus.ACKNOWLEDGED,
+      type: FeedbackType.GENERAL });
 
     await new PortalState()
       .createUsers(member, admin)
@@ -591,11 +586,14 @@ describe('feedback submission', () => {
     const feedbackController = ControllerFactory.feedback(conn);
     const fb1Response = await feedbackController.submitFeedback({ feedback: feedback1 }, member);
     const fb2Response = await feedbackController.submitFeedback({ feedback: feedback2 }, member);
-    const fb3Response = await feedbackController.submitFeedback({ feedback: feedback3 }, member);
-    const fb4Response = await feedbackController.submitFeedback({ feedback: feedback4 }, member);
+    await feedbackController.submitFeedback({ feedback: feedback3 }, member);
+    await feedbackController.submitFeedback({ feedback: feedback4 }, member);
     const fb5Response = await feedbackController.submitFeedback({ feedback: feedback5 }, member);
-    const query1Feedback = await feedbackController.getFeedback({event: event1.uuid, type: FeedbackType.GENERAL}, admin);
-    const query2Feedback = await feedbackController.getFeedback({event: event1.uuid, status: FeedbackStatus.ACKNOWLEDGED, type: FeedbackType.GENERAL}, admin);
+    const query1Feedback = await feedbackController.getFeedback({ event: event1.uuid,
+      type: FeedbackType.GENERAL }, admin);
+    const query2Feedback = await feedbackController.getFeedback({ event: event1.uuid,
+      status: FeedbackStatus.ACKNOWLEDGED,
+      type: FeedbackType.GENERAL }, admin);
 
     expect(query1Feedback.feedback).toHaveLength(3);
     expect(query2Feedback.feedback).toHaveLength(2);
@@ -604,19 +602,15 @@ describe('feedback submission', () => {
       expect.arrayContaining([
         fb1Response.feedback,
         fb2Response.feedback,
-        fb5Response.feedback
-      ])
+        fb5Response.feedback,
+      ]),
     );
 
     expect(query2Feedback.feedback).toEqual(
       expect.arrayContaining([
         fb1Response.feedback,
-        fb5Response.feedback
-      ])
+        fb5Response.feedback,
+      ]),
     );
-
-
   });
-
-
 });

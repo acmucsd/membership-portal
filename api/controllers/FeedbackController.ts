@@ -1,4 +1,5 @@
-import { Body, ForbiddenError, Get, JsonController, Params, Patch, Post, UseBefore, QueryParams } from 'routing-controllers';
+import { Body, ForbiddenError, Get, JsonController, Params,
+  Patch, Post, UseBefore, QueryParams } from 'routing-controllers';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
@@ -11,7 +12,6 @@ import {
   UpdateFeedbackStatusRequest,
   FeedbackSearchOptions,
 } from '../validators/FeedbackControllerRequests';
-import { EventModel } from 'models/EventModel';
 
 @UseBefore(UserAuthentication)
 @JsonController('/feedback')
@@ -23,8 +23,9 @@ export class FeedbackController {
   }
 
   @Get()
-  async getFeedback(@QueryParams() options: FeedbackSearchOptions, @AuthenticatedUser() user: UserModel): Promise<GetFeedbackResponse> {
-   const canSeeAllFeedback = PermissionsService.canRespondToFeedback(user);
+  async getFeedback(@QueryParams() options: FeedbackSearchOptions,
+    @AuthenticatedUser() user: UserModel): Promise<GetFeedbackResponse> {
+    const canSeeAllFeedback = PermissionsService.canRespondToFeedback(user);
     const feedback = await this.feedbackService.getFeedback(canSeeAllFeedback, user, options);
     return { error: null, feedback };
   }

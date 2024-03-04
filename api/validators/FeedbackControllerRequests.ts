@@ -9,7 +9,6 @@ import {
   Feedback as IFeedback,
   FeedbackType,
   FeedbackStatus,
-  Event,
 } from '../../types';
 import { UserModel } from '../../models/UserModel';
 import { EventModel } from '../../models/EventModel';
@@ -27,7 +26,7 @@ export class Feedback implements IFeedback {
   source: string;
 
   @IsDefined()
-  timestamp: Date
+  timestamp: Date;
 
   @IsDefined()
   @MinLength(20)

@@ -1,6 +1,6 @@
 import * as faker from 'faker';
 import { v4 as uuid } from 'uuid';
-import { Feedback, FeedbackStatus, FeedbackType } from '../../types';
+import { FeedbackStatus, FeedbackType } from '../../types';
 import FactoryUtils from './FactoryUtils';
 import { UserFactory } from './UserFactory';
 import { EventFactory } from './EventFactory';
@@ -21,7 +21,7 @@ export class FeedbackFactory {
       description: faker.lorem.words(100),
       status: FeedbackStatus.SUBMITTED,
       type: FeedbackFactory.randomFeedbackType(),
-  });
+    });
     return FeedbackModel.merge(fake, substitute);
   }
 

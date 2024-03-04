@@ -8,7 +8,6 @@ import Repositories, { TransactionsManager } from '../repositories';
 import { PublicFeedback, Feedback, Uuid, ActivityType, FeedbackStatus, FeedbackSearchOptions } from '../types';
 import { UserError } from '../utils/Errors';
 import { Config } from '../config';
-import { EventModel } from 'models/EventModel';
 
 @Service()
 export default class FeedbackService {
@@ -18,7 +17,8 @@ export default class FeedbackService {
     this.transactions = new TransactionsManager(entityManager);
   }
 
-  public async getFeedback(canSeeAllFeedback = false, user: UserModel, options: FeedbackSearchOptions): Promise<PublicFeedback[]> {
+  public async getFeedback(canSeeAllFeedback = false, user: UserModel,
+    options: FeedbackSearchOptions): Promise<PublicFeedback[]> {
     const feedback = await this.transactions.readOnly(async (txn) => {
       const feedbackRepository = Repositories.feedback(txn);
       if (canSeeAllFeedback) return feedbackRepository.getAllFeedback(options);

@@ -42,7 +42,7 @@ describe('sample test', () => {
       discountPercentage: 0,
     });
     const orderPickupEvent = MerchFactory.fakeOrderPickupEvent();
-    const feedback = FeedbackFactory.fake({event: event});
+    const feedback = FeedbackFactory.fake({ event });
 
     const state = new PortalState()
       .createUsers(user1, user2)
