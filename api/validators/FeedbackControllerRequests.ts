@@ -11,19 +11,35 @@ import {
   FeedbackStatus,
   Event,
 } from '../../types';
+import { UserModel } from '../../models/UserModel';
+import { EventModel } from '../../models/EventModel';
 
 export class Feedback implements IFeedback {
   @IsDefined()
   @IsNotEmpty()
+  user: UserModel;
+
+  @IsDefined()
+  @IsNotEmpty()
+  event: EventModel;
+
+  @IsDefined()
   source: string;
 
   @IsDefined()
-  @MinLength(100)
+  timestamp: Date
+
+  @IsDefined()
+  @MinLength(20)
   description: string;
 
   @IsDefined()
   @IsValidFeedbackType()
   type: FeedbackType;
+
+  @IsDefined()
+  @IsValidFeedbackStatus()
+  status: FeedbackStatus;
 }
 
 export class SubmitEventFeedbackRequest implements ISubmitEventFeedbackRequest {

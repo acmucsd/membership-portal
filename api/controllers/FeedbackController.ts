@@ -24,8 +24,7 @@ export class FeedbackController {
 
   @Get()
   async getFeedback(@QueryParams() options: FeedbackSearchOptions, @AuthenticatedUser() user: UserModel): Promise<GetFeedbackResponse> {
-    const canSeeAllFeedback = true; // await PermissionsService.canRespondToFeedback(user);
-    console.log("AHHHHHHH" + canSeeAllFeedback);
+   const canSeeAllFeedback = PermissionsService.canRespondToFeedback(user);
     const feedback = await this.feedbackService.getFeedback(canSeeAllFeedback, user, options);
     return { error: null, feedback };
   }
