@@ -40,4 +40,8 @@ export default class FactoryUtils {
   public static randomHexString(): string {
     return faker.datatype.hexaDecimal(10);
   }
+
+  public static getRandomImageUrl(): string {
+    return `http://i.imgur.com/${faker.random.alphaNumeric(10)}.jpeg`;
+  }
 }

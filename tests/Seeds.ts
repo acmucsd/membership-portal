@@ -479,7 +479,6 @@ async function seed(): Promise<void> {
   });
   const MERCH_ITEM_1_PHOTO_1 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_1,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 1,
   });
   const MERCH_ITEM_1_PHOTO_2 = MerchFactory.fakePhoto({
@@ -542,7 +541,6 @@ async function seed(): Promise<void> {
   ];
   const MERCH_ITEM_2_PHOTO_0 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_2,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 0,
   });
   const MERCH_ITEM_2_PHOTO_1 = MerchFactory.fakePhoto({
@@ -591,7 +589,6 @@ async function seed(): Promise<void> {
   });
   const MERCH_ITEM_3_PHOTO_1 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 1,
   });
   const MERCH_ITEM_3_PHOTO_2 = MerchFactory.fakePhoto({
@@ -601,12 +598,10 @@ async function seed(): Promise<void> {
   });
   const MERCH_ITEM_3_PHOTO_3 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 3,
   });
   const MERCH_ITEM_3_PHOTO_4 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 4,
   });
   MERCH_ITEM_3.merchPhotos = [
