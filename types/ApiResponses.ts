@@ -117,6 +117,8 @@ export interface PublicEvent {
   pointValue: number;
   requiresStaff: boolean;
   staffPointBonus: number;
+  discordEventUuid: Uuid;
+  googleCalendarEventUuid: Uuid;
 }
 
 export interface GetPastEventsResponse extends ApiResponse {
