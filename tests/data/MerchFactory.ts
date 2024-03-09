@@ -1,13 +1,14 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
-import FactoryUtils from './FactoryUtils';
 import { MerchItemOptionMetadata, OrderPickupEventStatus } from '../../types';
 import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
+import { MerchCollectionPhotoModel } from '../../models/MerchCollectionPhotoModel';
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { MerchandiseItemPhotoModel } from '../../models/MerchandiseItemPhotoModel';
+import FactoryUtils from './FactoryUtils';
 
 export class MerchFactory {
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
@@ -28,6 +29,14 @@ export class MerchFactory {
         hidden: substitute?.archived,
       }));
     }
+
+    if (!substitute?.collectionPhotos) {
+      const numPhotos = FactoryUtils.getRandomNumber(1, 5);
+      fake.collectionPhotos = MerchFactory
+        .createCollectionPhotos(numPhotos)
+        .map((collectionPhoto) => MerchCollectionPhotoModel.merge(collectionPhoto, { merchCollection: fake }));
+    }
+
     return MerchandiseCollectionModel.merge(fake, substitute);
   }
 
@@ -63,10 +72,26 @@ export class MerchFactory {
     const fake = MerchandiseItemPhotoModel.create({
       uuid: uuid(),
       position: 0,
-      uploadedPhoto: 'https://www.fakepicture.com/',
+      uploadedPhoto: FactoryUtils.getRandomImageUrl(),
       uploadedAt: faker.date.recent(),
     });
     return MerchandiseItemPhotoModel.merge(fake, substitute);
+  }
+
+  public static fakeCollectionPhoto(substitute?: Partial<MerchCollectionPhotoModel>): MerchCollectionPhotoModel {
+    const fake = MerchCollectionPhotoModel.create({
+      uuid: uuid(),
+      position: 0,
+      uploadedPhoto: 'https://www.fakepicture.com/',
+      uploadedAt: faker.date.recent(),
+    });
+    return MerchCollectionPhotoModel.merge(fake, substitute);
+  }
+
+  private static createCollectionPhotos(n: number): MerchCollectionPhotoModel[] {
+    return FactoryUtils
+      .create(n, () => MerchFactory.fakeCollectionPhoto())
+      .map((collectionPhoto, i) => MerchCollectionPhotoModel.merge(collectionPhoto, { position: i }));
   }
 
   public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {
