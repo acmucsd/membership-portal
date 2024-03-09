@@ -14,9 +14,6 @@ import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
    });
 
    use(req: express.Request, res: express.Response, next: express.NextFunction) {
-     if (req.path === '/api/v2/user') {
-       return this.limiter(req, res, next);
-     }
-     return next();
+     return this.limiter(req, res, next);
    }
 }

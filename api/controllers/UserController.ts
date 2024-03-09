@@ -7,7 +7,7 @@ import UserSocialMediaService from '../../services/UserSocialMediaService';
 import StorageService from '../../services/StorageService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { RateLimited } from '../decorators/RateLimit';
+import { RateLimit } from '../decorators/RateLimit';
 import {
   MediaType,
   File,
