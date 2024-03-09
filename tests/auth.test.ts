@@ -41,7 +41,7 @@ describe('account registration', () => {
 
     // register member
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+    when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const registerRequest = { user };
@@ -89,7 +89,7 @@ describe('account registration', () => {
     });
 
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+    when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const registerRequest = { user };
@@ -113,7 +113,7 @@ describe('account registration', () => {
     });
 
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+    when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const registerRequest = { user };
@@ -140,7 +140,7 @@ describe('account registration', () => {
 
       // register member
       const emailService = mock(EmailService);
-      when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+      when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
         .thenResolve();
       const authController = ControllerFactory.auth(conn, instance(emailService));
       const registerRequest = { user };
@@ -163,7 +163,7 @@ describe('account registration', () => {
 
     // register member
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+    when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const registerRequest = { user };
@@ -283,7 +283,7 @@ describe('verifying email', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
+    when(emailService.sendEmailVerification(member.email.toLowerCase(), member.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     await authController.verifyEmail({ accessCode });
@@ -305,7 +305,7 @@ describe('verifying email', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
+    when(emailService.sendEmailVerification(member.email.toLowerCase(), member.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     await expect(authController.verifyEmail({ accessCode: FactoryUtils.randomHexString() }))
@@ -326,7 +326,7 @@ describe('resending email verification', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
+    when(emailService.sendEmailVerification(member.email.toLowerCase(), member.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
@@ -478,7 +478,7 @@ describe('resending password reset email', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendPasswordReset(member.email, member.firstName, anyString()));
+    when(emailService.sendPasswordReset(member.email.toLowerCase(), member.firstName, anyString()));
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
     await authController.sendPasswordResetEmail(params, FactoryUtils.randomHexString());
@@ -495,7 +495,7 @@ describe('resending password reset email', () => {
     const member = UserFactory.fake();
 
     const emailService = mock(EmailService);
-    when(emailService.sendPasswordReset(member.email, member.firstName, anyString()));
+    when(emailService.sendPasswordReset(member.email.toLowerCase(), member.firstName, anyString()));
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
     await expect(authController.sendPasswordResetEmail(params, FactoryUtils.randomHexString()))

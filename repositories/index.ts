@@ -1,4 +1,5 @@
 import { EntityManager } from 'typeorm';
+import AsyncRetry = require('async-retry');
 import { UserRepository } from './UserRepository';
 import { FeedbackRepository } from './FeedbackRepository';
 import { AttendanceRepository, ExpressCheckinRepository } from './AttendanceRepository';
@@ -15,6 +16,9 @@ import { ActivityRepository } from './ActivityRepository';
 import { LeaderboardRepository } from './LeaderboardRepository';
 import { ResumeRepository } from './ResumeRepository';
 import { UserSocialMediaRepository } from './UserSocialMediaRepository';
+
+const HINT_FOR_RETRIABLE_TRANSACTIONS : string = 'The transaction might succeed if retried.';
+const AMOUNT_OF_RETRIES : number = 10;
 
 export default class Repositories {
   public static activity(transactionalEntityManager: EntityManager): ActivityRepository {
@@ -93,11 +97,34 @@ export class TransactionsManager {
     this.transactionalEntityManager = transactionalEntityManager;
   }
 
+  // used async-retry library to handle automatic retries under transaction failure due to concurrent transactions
   public readOnly<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    return this.transactionalEntityManager.transaction('REPEATABLE READ', fn);
+    return AsyncRetry(async (bail, attemptNum) => {
+      try {
+        const res = await this.transactionalEntityManager.transaction('REPEATABLE READ', fn);
+        return res;
+      } catch (e) {
+        if (e.hint !== HINT_FOR_RETRIABLE_TRANSACTIONS) bail(e);
+        else throw e;
+      }
+    },
+    {
+      retries: AMOUNT_OF_RETRIES,
+    });
   }
 
   public readWrite<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    return this.transactionalEntityManager.transaction('SERIALIZABLE', fn);
+    return AsyncRetry(async (bail, attemptNum) => {
+      try {
+        const res = await this.transactionalEntityManager.transaction('SERIALIZABLE', fn);
+        return res;
+      } catch (e) {
+        if (e.hint !== HINT_FOR_RETRIABLE_TRANSACTIONS) bail(e);
+        else throw e;
+      }
+    },
+    {
+      retries: AMOUNT_OF_RETRIES,
+    });
   }
 }
