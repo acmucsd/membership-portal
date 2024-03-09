@@ -291,6 +291,10 @@ export interface VerifyMerchOrderResponse extends ApiResponse {}
 
 export interface EditMerchOrderResponse extends ApiResponse {}
 
+export interface CancelMerchOrderResponse extends ApiResponse {
+  order: PublicOrderWithItems;
+}
+
 export interface GetCartResponse extends ApiResponse {
   cart: PublicOrderMerchItemOption[];
 }
@@ -452,7 +456,3 @@ export interface PatchResumeResponse extends ApiResponse {
 }
 
 export interface DeleteResumeResponse extends ApiResponse {}
-
-export interface CancelMerchOrderResponse extends ApiResponse {
-  order: PublicOrderWithItems;
-}
