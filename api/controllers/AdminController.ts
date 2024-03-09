@@ -44,7 +44,7 @@ export class AdminController {
 
 
   @Get('/email')
-  @UseBefore(RateLimiter)
+  @RateLimit()
   async getAllEmails(@AuthenticatedUser() user: UserModel): Promise<GetAllEmailsResponse> {
     if (!PermissionsService.canSeeAllUserEmails(user)) throw new ForbiddenError();
     const emails = await this.userAccountService.getAllEmails();

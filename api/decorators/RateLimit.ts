@@ -1,13 +1,15 @@
 import rateLimit from 'express-rate-limit';
 
-export function RateLimit(limit: number): MethodDecorator {
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: limit,
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  });
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
+console.log("HELLO");
+
+export function RateLimit(): MethodDecorator {
   return function (_target: any, _key: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     console.log("originalMethod", originalMethod);
