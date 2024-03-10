@@ -41,8 +41,8 @@ export class EventFactory {
       deleted: false,
       eventLink: faker.internet.url(),
       thumbnail: FactoryUtils.getRandomImageUrl(),
-      discordEventUuid: uuid(),
-      googleCalendarEventUuid: uuid(),
+      discordEvent: uuid(),
+      googleCalendarEvent: uuid(),
     });
     return EventModel.merge(fake, substitute);
   }
