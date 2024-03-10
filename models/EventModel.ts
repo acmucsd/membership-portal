@@ -63,10 +63,10 @@ export class EventModel extends BaseEntity {
   @OneToMany((type) => ExpressCheckinModel, (expressCheckin) => expressCheckin.event, { cascade: true })
   expressCheckins: ExpressCheckinModel[];
 
-  @Column('uuid')
+  @Column('uuid', { nullable: true })
   discordEventUuid: Uuid;
 
-  @Column('uuid')
+  @Column('uuid', { nullable: true })
   googleCalendarEventUuid: Uuid;
 
   public getPublicEvent(canSeeAttendanceCode = false): PublicEvent {
