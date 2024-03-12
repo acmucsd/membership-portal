@@ -77,4 +77,16 @@ export default class PermissionsService {
   private static canDistributeMerch(user: UserModel) {
     return user.isAdmin() || user.isMerchStoreManager() || user.isMerchStoreDistributor();
   }
+
+  public static canSeeAllVisibleResumes(user: UserModel) {
+    return user.isAdmin() || user.isSponsorshipManager();
+  }
+
+  public static canModifyUserAccessLevel(user: UserModel): boolean {
+    return user.isAdmin();
+  }
+
+  public static canSeeAllUserAccessLevels(user: UserModel): boolean {
+    return user.isAdmin();
+  }
 }

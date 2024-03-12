@@ -4,15 +4,17 @@ import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
+import { ExpressCheckinModel } from 'models/ExpressCheckinModel';
 import { UserRepository } from '../repositories/UserRepository';
-import { Uuid, ActivityType, UserState, UserRegistration } from '../types';
+import { Uuid, ActivityType, UserState, UserRegistration, UserAccessType } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
+import UserAccountService from './UserAccountService';
 
 interface AuthToken {
   uuid: Uuid;
-  admin: boolean;
+  accessType: UserAccessType;
 }
 
 @Service()
@@ -26,20 +28,59 @@ export default class UserAuthService {
   public async registerUser(registration: UserRegistration): Promise<UserModel> {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
-      const emailAlreadyUsed = !!(await userRepository.findByEmail(registration.email));
+
+      const { email } = registration;
+      const emailAlreadyUsed = await userRepository.isEmailInUse(email);
       if (emailAlreadyUsed) throw new BadRequestError('Email already in use');
+
+      if (registration.handle) {
+        const userHandleTaken = await userRepository.isHandleTaken(registration.handle);
+        if (userHandleTaken) throw new BadRequestError('This handle is already in use.');
+      }
+      const userHandle = registration.handle
+         ?? UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName);
+
       const user = await userRepository.upsertUser(UserModel.create({
         ...registration,
         hash: await UserRepository.generateHash(registration.password),
         accessCode: UserAuthService.generateAccessCode(),
+        handle: userHandle,
       }));
+
       const activityRepository = Repositories.activity(txn);
       await activityRepository.logActivity({
         user,
         type: ActivityType.ACCOUNT_CREATE,
       });
+
+      const expressCheckin = await Repositories.expressCheckin(txn).getPastExpressCheckin(email);
+      if (expressCheckin) {
+        await this.processExpressCheckin(user, expressCheckin, txn);
+      }
+
       return user;
     });
+  }
+
+  /**
+   * Creates the attendance and activity records and awards user points
+   * given the express checkin details.
+   */
+  private async processExpressCheckin(user: UserModel,
+    expressCheckin: ExpressCheckinModel,
+    txn: EntityManager): Promise<void> {
+    const { event } = expressCheckin;
+
+    await Repositories.attendance(txn).writeAttendance({
+      user,
+      event,
+      asStaff: false,
+    });
+    await Repositories.activity(txn).logActivity({
+      user,
+      type: ActivityType.ATTEND_EVENT,
+    });
+    await Repositories.user(txn).addPoints(user, event.pointValue);
   }
 
   public async modifyEmail(user: UserModel, proposedEmail: string): Promise<UserModel> {
@@ -70,30 +111,6 @@ export default class UserAuthService {
     return user;
   }
 
-  public async login(email: string, pass: string): Promise<string> {
-    const authenticatedUser = await this.transactions.readWrite(async (txn) => {
-      let user = await Repositories
-        .user(txn)
-        .findByEmail(email.toLowerCase());
-      if (!user) throw new NotFoundError('There is no account associated with that email');
-      if (user.isBlocked()) throw new ForbiddenError('Your account has been blocked');
-      if (!(await user.verifyPass(pass))) throw new ForbiddenError('Incorrect password');
-      await Repositories.activity(txn).logActivity({
-        user,
-        type: ActivityType.ACCOUNT_LOGIN,
-      });
-      if (user.state === UserState.PASSWORD_RESET) {
-        user = await Repositories.user(txn).upsertUser(user, { state: UserState.ACTIVE });
-      }
-      return user;
-    });
-    const token: AuthToken = {
-      uuid: authenticatedUser.uuid,
-      admin: authenticatedUser.isAdmin(),
-    };
-    return jwt.sign(token, Config.auth.secret, { expiresIn: Config.auth.tokenLifespan });
-  }
-
   public async checkCredentials(email: string, pass: string): Promise<UserModel> {
     const authenticatedUser = await this.transactions.readWrite(async (txn) => {
       const user = await Repositories
@@ -115,7 +132,7 @@ export default class UserAuthService {
   public static generateAuthToken(user: UserModel): string {
     const token: AuthToken = {
       uuid: user.uuid,
-      admin: user.isAdmin(),
+      accessType: user.accessType,
     };
     return jwt.sign(token, Config.auth.secret, { expiresIn: Config.auth.tokenLifespan });
   }
@@ -134,7 +151,7 @@ export default class UserAuthService {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       let user = await userRepository.findByEmail(email);
-      if (!user) throw new NotFoundError();
+      if (!user) throw new NotFoundError('There is no account associated with that email');
       user = await userRepository.upsertUser(user, {
         state: UserState.PASSWORD_RESET,
         accessCode: UserAuthService.generateAccessCode(),

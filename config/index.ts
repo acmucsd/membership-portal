@@ -60,6 +60,7 @@ export const Config = {
     MAX_EVENT_COVER_FILE_SIZE: Number(process.env.MAX_EVENT_COVER_FILE_SIZE) * BYTES_PER_KILOBYTE,
     MAX_BANNER_FILE_SIZE: Number(process.env.MAX_BANNER_FILE_SIZE) * BYTES_PER_KILOBYTE,
     MAX_MERCH_PHOTO_FILE_SIZE: Number(process.env.MAX_MERCH_PHOTO_FILE_SIZE) * BYTES_PER_KILOBYTE,
+    MAX_COLLECTION_PHOTO_FILE_SIZE: Number(process.env.MAX_MERCH_PHOTO_FILE_SIZE) * BYTES_PER_KILOBYTE,
     MAX_RESUME_FILE_SIZE: Number(process.env.MAX_RESUME_FILE_SIZE) * BYTES_PER_KILOBYTE,
     PROFILE_PICTURE_UPLOAD_PATH: process.env.BASE_UPLOAD_PATH + process.env.PROFILE_PICTURE_UPLOAD_PATH,
     EVENT_COVER_UPLOAD_PATH: process.env.BASE_UPLOAD_PATH + process.env.EVENT_COVER_UPLOAD_PATH,
@@ -80,5 +81,12 @@ export const Config = {
   pointReward: {
     FEEDBACK_POINT_REWARD: Number(process.env.FEEDBACK_POINT_REWARD),
     EVENT_FEEDBACK_POINT_REWARD: Number(process.env.EVENT_FEEDBACK_POINT_REWARD),
+  },
+
+  rateLimits: {
+    default: {
+      windowMs: Number(process.env.DEFAULT_RATE_LIMIT_WINDOW_MS),
+      max: Number(process.env.DEFAULT_RATE_LIMIT_MAX_REQUESTS),
+    },
   },
 };

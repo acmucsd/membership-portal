@@ -12,6 +12,7 @@ import {
   BadRequestError,
   UploadedFile,
 } from 'routing-controllers';
+import { v4 as uuid } from 'uuid';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
@@ -19,6 +20,8 @@ import {
   GetAllMerchCollectionsResponse,
   CreateMerchCollectionResponse,
   EditMerchCollectionResponse,
+  CreateCollectionPhotoResponse,
+  DeleteCollectionPhotoResponse,
   GetOneMerchItemResponse,
   DeleteMerchCollectionResponse,
   CreateMerchItemResponse,
@@ -41,7 +44,8 @@ import {
   CancelAllPendingOrdersResponse,
   MediaType,
   File,
-  UpdateMerchPhotoResponse,
+  CreateMerchPhotoResponse,
+  DeleteMerchItemPhotoResponse,
   CompleteOrderPickupEventResponse,
   GetOrderPickupEventResponse,
   CancelOrderPickupEventResponse,
@@ -53,6 +57,7 @@ import MerchStoreService from '../../services/MerchStoreService';
 import {
   CreateMerchCollectionRequest,
   EditMerchCollectionRequest,
+  CreateCollectionPhotoRequest,
   CreateMerchItemRequest,
   EditMerchItemRequest,
   PlaceMerchOrderRequest,
@@ -60,6 +65,7 @@ import {
   FulfillMerchOrderRequest,
   RescheduleOrderPickupRequest,
   CreateMerchItemOptionRequest,
+  CreateMerchItemPhotoRequest,
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
   GetCartRequest,
@@ -121,6 +127,40 @@ export class MerchStoreController {
     return { error: null };
   }
 
+  @UseBefore(UserAuthentication)
+  @Post('/collection/picture/:uuid')
+  async createMerchCollectionPhoto(@UploadedFile('image',
+    { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
+    @Params() params: UuidParam,
+    @Body() createCollectionRequest: CreateCollectionPhotoRequest,
+    @AuthenticatedUser() user: UserModel): Promise<CreateCollectionPhotoResponse> {
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+
+    // generate a random string for the uploaded photo url
+    const position = parseInt(createCollectionRequest.position, 10);
+    if (Number.isNaN(position)) throw new BadRequestError('Position must be a number');
+    const uniqueFileName = uuid();
+    const uploadedPhoto = await this.storageService.uploadToFolder(
+      file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid,
+    );
+    const collectionPhoto = await this.merchStoreService.createCollectionPhoto(
+      params.uuid, { uploadedPhoto, position },
+    );
+
+    return { error: null, collectionPhoto };
+  }
+
+  @UseBefore(UserAuthentication)
+  @Delete('/collection/picture/:uuid')
+  async deleteMerchCollectionPhoto(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
+  Promise<DeleteCollectionPhotoResponse> {
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    const photoToDelete = await this.merchStoreService.getCollectionPhotoForDeletion(params.uuid);
+    await this.storageService.deleteAtUrl(photoToDelete.uploadedPhoto);
+    await this.merchStoreService.deleteCollectionPhoto(photoToDelete);
+    return { error: null };
+  }
+
   @Get('/item/:uuid')
   async getOneMerchItem(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchItemResponse> {
@@ -158,14 +198,36 @@ export class MerchStoreController {
 
   @UseBefore(UserAuthentication)
   @Post('/item/picture/:uuid')
-  async updateMerchPhoto(@UploadedFile('image',
+  async createMerchItemPhoto(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel): Promise<UpdateMerchPhotoResponse> {
+    @Body() createItemPhotoRequest: CreateMerchItemPhotoRequest,
+    @AuthenticatedUser() user: UserModel): Promise<CreateMerchPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    const picture = await this.storageService.upload(file, MediaType.MERCH_PHOTO, params.uuid);
-    const item = await this.merchStoreService.editItem(params.uuid, { picture });
-    return { error: null, item };
+
+    // generate a random string for the uploaded photo url
+    const position = Number(createItemPhotoRequest.position);
+    if (Number.isNaN(position)) throw new BadRequestError('Position is not a number');
+    const uniqueFileName = uuid();
+    const uploadedPhoto = await this.storageService.uploadToFolder(
+      file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid,
+    );
+    const merchPhoto = await this.merchStoreService.createItemPhoto(
+      params.uuid, { uploadedPhoto, position },
+    );
+
+    return { error: null, merchPhoto };
+  }
+
+  @UseBefore(UserAuthentication)
+  @Delete('/item/picture/:uuid')
+  async deleteMerchItemPhoto(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
+  Promise<DeleteMerchItemPhotoResponse> {
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    const photoToDelete = await this.merchStoreService.getItemPhotoForDeletion(params.uuid);
+    await this.storageService.deleteAtUrl(photoToDelete.uploadedPhoto);
+    await this.merchStoreService.deleteItemPhoto(photoToDelete);
+    return { error: null };
   }
 
   @Post('/option/:uuid')
@@ -189,9 +251,11 @@ export class MerchStoreController {
   async getOneMerchOrder(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetOneMerchOrderResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
-    const order = await this.merchStoreService.findOrderByUuid(params.uuid);
-    if (!PermissionsService.canSeeMerchOrder(user, order)) throw new NotFoundError();
-    return { error: null, order: order.getPublicOrderWithItems() };
+    // get "public" order bc canSeeMerchOrder need singular merchPhoto field
+    // default order has merchPhotos field, which cause incorrect casting
+    const publicOrder = (await this.merchStoreService.findOrderByUuid(params.uuid)).getPublicOrderWithItems();
+    if (!PermissionsService.canSeeMerchOrder(user, publicOrder)) throw new NotFoundError();
+    return { error: null, order: publicOrder };
   }
 
   @Get('/orders/all')

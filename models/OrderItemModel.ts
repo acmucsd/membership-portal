@@ -33,6 +33,7 @@ export class OrderItemModel extends BaseEntity {
   notes: string;
 
   public getPublicOrderItem(): PublicOrderItem {
+    // console.log(this);
     return {
       uuid: this.uuid,
       option: this.option.getPublicOrderMerchItemOption(),

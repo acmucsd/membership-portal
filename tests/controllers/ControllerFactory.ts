@@ -15,13 +15,15 @@ import UserAuthService from '../../services/UserAuthService';
 import EmailService from '../../services/EmailService';
 import EventService from '../../services/EventService';
 import MerchStoreService from '../../services/MerchStoreService';
-import ResumeService from '../../services/ResumeService';
 import { ResumeController } from '../../api/controllers/ResumeController';
+import ResumeService from '../../services/ResumeService';
+import UserSocialMediaService from '../../services/UserSocialMediaService';
 
 export class ControllerFactory {
   public static user(conn: Connection, storageService = new StorageService()): UserController {
     const userAccountService = new UserAccountService(conn.manager);
-    return new UserController(userAccountService, storageService);
+    const userSocialMediaService = new UserSocialMediaService(conn.manager);
+    return new UserController(userAccountService, storageService, userSocialMediaService);
   }
 
   public static resume(conn: Connection, storageService = new StorageService()): ResumeController {
@@ -41,9 +43,9 @@ export class ControllerFactory {
     return new AdminController(storageService, userAccountService, attendanceService);
   }
 
-  public static attendance(conn: Connection): AttendanceController {
+  public static attendance(conn: Connection, emailService = new EmailService()): AttendanceController {
     const attendanceService = new AttendanceService(conn.manager);
-    return new AttendanceController(attendanceService);
+    return new AttendanceController(attendanceService, emailService);
   }
 
   public static auth(conn: Connection, emailService: EmailService): AuthController {

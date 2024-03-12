@@ -2,14 +2,18 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import { NotFoundError } from 'routing-controllers';
 import { anyString, instance, mock, verify, when } from 'ts-mockito';
+import * as faker from 'faker';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import EmailService from '../services/EmailService';
 import UserAuthService from '../services/UserAuthService';
-import { UserAccessType, UserState } from '../types';
+import { ActivityType, UserAccessType, UserState } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, PortalState, UserFactory } from './data';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import FactoryUtils from './data/FactoryUtils';
+import { UserRegistrationFactory } from './data/UserRegistrationFactory';
+import { AttendanceModel } from '../models/AttendanceModel';
+import { ActivityModel } from '../models/ActivityModel';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -33,18 +37,11 @@ describe('account registration', () => {
       .createUsers(admin)
       .write();
 
-    const user = {
-      email: 'acm@ucsd.edu',
-      firstName: 'ACM',
-      lastName: 'UCSD',
-      password: 'password',
-      major: UserFactory.major(),
-      graduationYear: UserFactory.graduationYear(),
-    };
+    const user = UserRegistrationFactory.fake();
 
     // register member
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+    when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const registerRequest = { user };
@@ -60,9 +57,19 @@ describe('account registration', () => {
       graduationYear: user.graduationYear,
       bio: null,
       points: 0,
+      handle: registerResponse.user.handle,
       uuid: registerResponse.user.uuid,
       profilePicture: null,
+      userSocialMedia: [],
+      isAttendancePublic: true,
     });
+
+    // check that no express checkin was processed
+    const attendances = await conn.manager.find(AttendanceModel);
+    expect(attendances).toHaveLength(0);
+
+    const attendanceActivities = await conn.manager.find(ActivityModel, { where: { type: ActivityType.ATTEND_EVENT } });
+    expect(attendanceActivities).toHaveLength(0);
 
     // check that email verification is sent
     verify(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
@@ -77,17 +84,12 @@ describe('account registration', () => {
       .createUsers(member)
       .write();
 
-    const user = {
+    const user = UserRegistrationFactory.fake({
       email: member.email,
-      firstName: 'ACM',
-      lastName: 'UCSD',
-      password: 'password',
-      major: UserFactory.major(),
-      graduationYear: UserFactory.graduationYear(),
-    };
+    });
 
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+    when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const registerRequest = { user };
@@ -96,6 +98,132 @@ describe('account registration', () => {
 
     verify(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
       .never();
+  });
+
+  test('user cannot register with a handle that is already in use', async () => {
+    const conn = await DatabaseConnection.get();
+    const existingMember = UserFactory.fake();
+
+    await new PortalState()
+      .createUsers(existingMember)
+      .write();
+
+    const user = UserRegistrationFactory.fake({
+      handle: existingMember.handle,
+    });
+
+    const emailService = mock(EmailService);
+    when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
+      .thenResolve();
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const registerRequest = { user };
+    await expect(authController.register(registerRequest, FactoryUtils.randomHexString()))
+      .rejects.toThrow('This handle is already in use.');
+
+    verify(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+      .never();
+  });
+
+  test('user registration with a full name longer than 32 characters truncates handle to exactly 32 characters',
+    async () => {
+      const conn = await DatabaseConnection.get();
+      const existingMember = UserFactory.fake();
+
+      await new PortalState()
+        .createUsers(existingMember)
+        .write();
+
+      const user = UserRegistrationFactory.fake({
+        firstName: faker.datatype.string(40),
+        lastName: faker.datatype.string(40),
+      });
+
+      // register member
+      const emailService = mock(EmailService);
+      when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
+        .thenResolve();
+      const authController = ControllerFactory.auth(conn, instance(emailService));
+      const registerRequest = { user };
+      const registerResponse = await authController.register(registerRequest, FactoryUtils.randomHexString());
+
+      expect(registerResponse.user.handle.length).toBe(32);
+    });
+
+  test('user can register with an optional handle to be set', async () => {
+    const conn = await DatabaseConnection.get();
+    const existingMember = UserFactory.fake();
+
+    await new PortalState()
+      .createUsers(existingMember)
+      .write();
+
+    const user = UserRegistrationFactory.fake({
+      handle: 'acmadmin',
+    });
+
+    // register member
+    const emailService = mock(EmailService);
+    when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
+      .thenResolve();
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const registerRequest = { user };
+    const registerResponse = await authController.register(registerRequest, FactoryUtils.randomHexString());
+
+    // check that member is registered as expected
+    const params = { handle: registerResponse.user.handle };
+    const getUserResponse = await ControllerFactory.user(conn).getUserByHandle(params, existingMember);
+    expect(getUserResponse.user.handle).toBe(user.handle);
+
+    // check that email verification is sent
+    verify(emailService.sendEmailVerification(user.email, user.firstName, anyString()))
+      .called();
+  });
+
+  test('user who registers after an express checkin has their attendance properly logged', async () => {
+    const conn = await DatabaseConnection.get();
+    // email can have uppercases in it, so we should test that lowercase emails
+    // are used by SendGrid / written to the database when an uppercase email is sent
+    // in the request
+    const newUserEmail = faker.internet.email();
+    const lowercasedEmail = newUserEmail.toLowerCase();
+    const pastEvent = EventFactory.fake(EventFactory.daysBefore(5));
+
+    await new PortalState()
+      .createEvents(pastEvent)
+      .createExpressCheckin(lowercasedEmail, pastEvent)
+      .write();
+
+    const userToRegister = UserRegistrationFactory.fake({
+      email: newUserEmail,
+    });
+
+    // register user
+    const emailService = mock(EmailService);
+    when(emailService.sendEmailVerification(lowercasedEmail, userToRegister.firstName, anyString()))
+      .thenResolve();
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const registerRequest = { user: userToRegister };
+    const registerResponse = await authController.register(registerRequest, FactoryUtils.randomHexString());
+    const { user } = registerResponse;
+
+    // check that points for event were logged and that attendance and activity objects were persisted
+    expect(user.points).toEqual(pastEvent.pointValue);
+
+    const attendances = await conn.manager.find(AttendanceModel, { relations: ['event', 'user'] });
+    expect(attendances).toHaveLength(1);
+    expect(attendances[0].event.uuid).toEqual(pastEvent.uuid);
+    expect(attendances[0].user.uuid).toEqual(user.uuid);
+
+    const attendanceActivities = await conn.manager.find(
+      ActivityModel,
+      { where: { type: ActivityType.ATTEND_EVENT }, relations: ['user'] },
+    );
+    expect(attendanceActivities).toHaveLength(1);
+    expect(attendanceActivities[0].user.uuid).toEqual(user.uuid);
+
+    // verify email was sent
+    verify(emailService.sendEmailVerification(lowercasedEmail, user.firstName, anyString()))
+      .called();
   });
 });
 
@@ -155,7 +283,7 @@ describe('verifying email', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
+    when(emailService.sendEmailVerification(member.email.toLowerCase(), member.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     await authController.verifyEmail({ accessCode });
@@ -177,7 +305,7 @@ describe('verifying email', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
+    when(emailService.sendEmailVerification(member.email.toLowerCase(), member.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     await expect(authController.verifyEmail({ accessCode: FactoryUtils.randomHexString() }))
@@ -198,7 +326,7 @@ describe('resending email verification', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendEmailVerification(member.email, member.firstName, anyString()))
+    when(emailService.sendEmailVerification(member.email.toLowerCase(), member.firstName, anyString()))
       .thenResolve();
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
@@ -350,7 +478,7 @@ describe('resending password reset email', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendPasswordReset(member.email, member.firstName, anyString()));
+    when(emailService.sendPasswordReset(member.email.toLowerCase(), member.firstName, anyString()));
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
     await authController.sendPasswordResetEmail(params, FactoryUtils.randomHexString());
@@ -367,7 +495,7 @@ describe('resending password reset email', () => {
     const member = UserFactory.fake();
 
     const emailService = mock(EmailService);
-    when(emailService.sendPasswordReset(member.email, member.firstName, anyString()));
+    when(emailService.sendPasswordReset(member.email.toLowerCase(), member.firstName, anyString()));
     const authController = ControllerFactory.auth(conn, instance(emailService));
     const params = { email: member.email };
     await expect(authController.sendPasswordResetEmail(params, FactoryUtils.randomHexString()))

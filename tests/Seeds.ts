@@ -1,6 +1,7 @@
 import * as moment from 'moment';
-import { UserAccessType } from '../types';
-import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
+import { UserAccessType, SocialMediaType } from '../types';
+import { DatabaseConnection, EventFactory, MerchFactory,
+  PortalState, UserFactory, ResumeFactory, UserSocialMediaFactory } from './data';
 
 function getGraduationYear(n: number) {
   return moment().year() + n;
@@ -44,10 +45,10 @@ async function seed(): Promise<void> {
     lastName: 'Hariharan',
   });
   const STAFF_AI = UserFactory.fake({
-    email: 'stao@ucsd.edu',
+    email: 'tkwan@ucsd.edu',
     accessType: UserAccessType.STAFF,
-    firstName: 'Stone',
-    lastName: 'Tao',
+    firstName: 'Trevor',
+    lastName: 'Kwan',
   });
 
   const MEMBER_FRESHMAN = UserFactory.fake({
@@ -59,18 +60,18 @@ async function seed(): Promise<void> {
     graduationYear: getGraduationYear(4),
   });
   const MEMBER_SOPHOMORE = UserFactory.fake({
-    email: 'jpan@ucsd.edu',
+    email: 'r1truong@ucsd.edu',
     accessType: UserAccessType.STANDARD,
-    firstName: 'Paul',
-    lastName: 'Pan',
+    firstName: 'Ryan',
+    lastName: 'Truong',
     points: 800,
     graduationYear: getGraduationYear(3),
   });
   const MEMBER_JUNIOR = UserFactory.fake({
-    email: 'asudhart@ucsd.edu',
+    email: 'rzsun@ucsd.edu',
     accessType: UserAccessType.STANDARD,
-    firstName: 'Andrea',
-    lastName: 'Sudharta',
+    firstName: 'Raymond',
+    lastName: 'Sun',
     graduationYear: getGraduationYear(2),
   });
   const MEMBER_SENIOR = UserFactory.fake({
@@ -115,6 +116,68 @@ async function seed(): Promise<void> {
     email: 'acm_store_distributor@ucsd.edu',
     accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR,
   });
+  const USER_SPONSORSHIP_MANAGER = UserFactory.fake({
+    email: 'acm_sponsorship_manager@ucsd.edu',
+    accessType: UserAccessType.SPONSORSHIP_MANAGER,
+  });
+
+  // Used for testing various User Social Media
+  const USER_SOCIAL_MEDIA_1 = UserFactory.fake();
+  const USER_SOCIAL_MEDIA_1_FACEBOOK = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_1, type: SocialMediaType.FACEBOOK },
+  );
+
+  const USER_SOCIAL_MEDIA_2 = UserFactory.fake();
+  const USER_SOCIAL_MEDIA_2_FACEBOOK = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_2, type: SocialMediaType.FACEBOOK },
+  );
+  const USER_SOCIAL_MEDIA_2_GITHUB = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_2, type: SocialMediaType.GITHUB },
+  );
+
+  const USER_SOCIAL_MEDIA_3 = UserFactory.fake();
+  const USER_SOCIAL_MEDIA_3_FACEBOOK = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_3, type: SocialMediaType.FACEBOOK },
+  );
+  const USER_SOCIAL_MEDIA_3_INSTAGRAM = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_3, type: SocialMediaType.INSTAGRAM },
+  );
+  const USER_SOCIAL_MEDIA_3_LINKEDIN = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_3, type: SocialMediaType.LINKEDIN },
+  );
+
+  const USER_SOCIAL_MEDIA_ALL = UserFactory.fake();
+  const USER_SOCIAL_MEDIA_ALL_FACEBOOK = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.FACEBOOK },
+  );
+  const USER_SOCIAL_MEDIA_ALL_GITHUB = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.GITHUB },
+  );
+  const USER_SOCIAL_MEDIA_ALL_INSTAGRAM = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.INSTAGRAM },
+  );
+  const USER_SOCIAL_MEDIA_ALL_LINKEDIN = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.LINKEDIN },
+  );
+  const USER_SOCIAL_MEDIA_ALL_DEVPOST = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.DEVPOST },
+  );
+  const USER_SOCIAL_MEDIA_ALL_TWITTER = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.TWITTER },
+  );
+  const USER_SOCIAL_MEDIA_ALL_PORTFOLIO = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.PORTFOLIO },
+  );
+  const USER_SOCIAL_MEDIA_ALL_EMAIL = UserSocialMediaFactory.fake(
+    { user: USER_SOCIAL_MEDIA_ALL, type: SocialMediaType.EMAIL },
+  );
+  const RESUME_URL = 'https://acmucsd-local.s3.us-west-1.amazonaws.com/resumeSeedingData/alexface.pdf';
+
+  const USER_VISIBLE_RESUME = UserFactory.fake();
+  const RESUME_1 = ResumeFactory.fake({ user: USER_VISIBLE_RESUME, isResumeVisible: true, url: RESUME_URL });
+
+  const USER_HIDDEN_RESUME = UserFactory.fake();
+  const RESUME_2 = ResumeFactory.fake({ user: USER_HIDDEN_RESUME, isResumeVisible: false, url: RESUME_URL });
 
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
@@ -315,10 +378,31 @@ async function seed(): Promise<void> {
     description: 'Do you like to code? Tell the world with this Hack School inspired collection.',
     themeColorHex: '#EB8C34',
   });
+
+  const MERCH_COLLECTION_1_PHOTO_1 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    position: 0,
+  });
+  const MERCH_COLLECTION_1_PHOTO_2 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  const MERCH_COLLECTION_1_PHOTO_3 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 2,
+  });
+
+  MERCH_COLLECTION_1.collectionPhotos = [
+    MERCH_COLLECTION_1_PHOTO_1,
+    MERCH_COLLECTION_1_PHOTO_2,
+    MERCH_COLLECTION_1_PHOTO_3,
+  ];
+
   const MERCH_ITEM_1 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Unisex Hack School Anorak',
-    picture: 'https://i.imgur.com/jkTcUJO.jpg',
     description: 'San Diego has an average annual precipitation less than 12 inches,'
     + 'but that doesn\'t mean you don\'t need one of these.',
     monthlyLimit: 1,
@@ -388,10 +472,29 @@ async function seed(): Promise<void> {
     MERCH_ITEM_1_OPTION_L,
     MERCH_ITEM_1_OPTION_XL,
   ];
+  // uploadedPhoto is 'https://www.fakepicture.com/' by default, test if this applies
+  const MERCH_ITEM_1_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_1,
+    position: 0,
+  });
+  const MERCH_ITEM_1_PHOTO_1 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_1,
+    position: 1,
+  });
+  const MERCH_ITEM_1_PHOTO_2 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_1,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 2,
+  });
+  MERCH_ITEM_1.merchPhotos = [
+    MERCH_ITEM_1_PHOTO_0,
+    MERCH_ITEM_1_PHOTO_1,
+    MERCH_ITEM_1_PHOTO_2,
+  ];
+
   const MERCH_ITEM_2 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Hack School Sticker Pack (4) - Cyan',
-    picture: 'https://i.imgur.com/pSZ921P.png',
     description: 'Make space on your laptop cover for these Cyan stickers. Pack of 4, size in inches.',
     monthlyLimit: 5,
     lifetimeLimit: 25,
@@ -436,16 +539,36 @@ async function seed(): Promise<void> {
     MERCH_ITEM_2_OPTION_3X3,
     MERCH_ITEM_2_OPTION_4X4,
   ];
+  const MERCH_ITEM_2_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_2,
+    position: 0,
+  });
+  const MERCH_ITEM_2_PHOTO_1 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_2,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 1,
+  });
+  MERCH_ITEM_2.merchPhotos = [
+    MERCH_ITEM_2_PHOTO_0,
+    MERCH_ITEM_2_PHOTO_1,
+  ];
   MERCH_COLLECTION_1.items = [MERCH_ITEM_1, MERCH_ITEM_2];
 
   const MERCH_COLLECTION_2 = MerchFactory.fakeCollection({
     title: 'Fall 2001',
     description: 'Celebrate the opening of Sixth College in style, featuring raccoon print jackets.',
   });
+
+  const MERCH_COLLECTION_2_PHOTO_1 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_2,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  MERCH_COLLECTION_2.collectionPhotos = [MERCH_COLLECTION_2_PHOTO_1];
+
   const MERCH_ITEM_3 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Camp Snoopy Snapback',
-    picture: 'https://i.imgur.com/QNdhfuO.png',
     description: 'Guaranteed 2x return on Grailed.',
     monthlyLimit: 2,
     lifetimeLimit: 5,
@@ -459,10 +582,39 @@ async function seed(): Promise<void> {
     discountPercentage: 5,
   });
   MERCH_ITEM_3.options = [MERCH_ITEM_3_OPTION];
+  const MERCH_ITEM_3_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_3,
+    uploadedPhoto: 'https://i.imgur.com/QNdhfuO.png',
+    position: 0,
+  });
+  const MERCH_ITEM_3_PHOTO_1 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_3,
+    position: 1,
+  });
+  const MERCH_ITEM_3_PHOTO_2 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_3,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 2,
+  });
+  const MERCH_ITEM_3_PHOTO_3 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_3,
+    position: 3,
+  });
+  const MERCH_ITEM_3_PHOTO_4 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_3,
+    position: 4,
+  });
+  MERCH_ITEM_3.merchPhotos = [
+    MERCH_ITEM_3_PHOTO_0,
+    MERCH_ITEM_3_PHOTO_1,
+    MERCH_ITEM_3_PHOTO_2,
+    MERCH_ITEM_3_PHOTO_3,
+    MERCH_ITEM_3_PHOTO_4,
+  ];
+
   const MERCH_ITEM_4 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Salt & Pepper (Canyon) Shakers',
-    picture: 'https://i.pinimg.com/originals/df/c5/72/dfc5729a0dea666c31c5f4daea851619.jpg',
     description: 'Salt and pepper not included.',
     monthlyLimit: 3,
     lifetimeLimit: 10,
@@ -476,10 +628,15 @@ async function seed(): Promise<void> {
     discountPercentage: 20,
   });
   MERCH_ITEM_4.options = [MERCH_ITEM_4_OPTION];
+  const MERCH_ITEM_4_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_4,
+    position: 0,
+    uploadedPhoto: 'https://i.pinimg.com/originals/df/c5/72/dfc5729a0dea666c31c5f4daea851619.jpg',
+  });
+  MERCH_ITEM_4.merchPhotos = [MERCH_ITEM_4_PHOTO_0];
   const MERCH_ITEM_5 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Unisex Raccoon Print Shell Jacket',
-    picture: 'https://i.etsystatic.com/8812670/r/il/655afa/3440382093/il_340x270.3440382093_cbui.jpg',
     description: 'Self-explanatory.',
     monthlyLimit: 1,
     lifetimeLimit: 2,
@@ -509,6 +666,12 @@ async function seed(): Promise<void> {
     },
   });
   MERCH_ITEM_5.options = [MERCH_ITEM_5_MEDIUM, MERCH_ITEM_5_LARGE];
+  const MERCH_ITEM_5_PHOTO_0 = MerchFactory.fakePhoto({
+    merchItem: MERCH_ITEM_5,
+    position: 0,
+    uploadedPhoto: 'https://i.etsystatic.com/8812670/r/il/655afa/3440382093/il_340x270.3440382093_cbui.jpg',
+  });
+  MERCH_ITEM_5.merchPhotos = [MERCH_ITEM_5_PHOTO_0];
   MERCH_COLLECTION_2.items = [MERCH_ITEM_3, MERCH_ITEM_4, MERCH_ITEM_5];
 
   const PAST_ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
@@ -549,6 +712,13 @@ async function seed(): Promise<void> {
       USER_MARKETING,
       USER_MERCH_STORE_MANAGER,
       USER_MERCH_STORE_DISTRIBUTOR,
+      USER_SPONSORSHIP_MANAGER,
+      USER_SOCIAL_MEDIA_1,
+      USER_SOCIAL_MEDIA_2,
+      USER_SOCIAL_MEDIA_3,
+      USER_SOCIAL_MEDIA_ALL,
+      USER_VISIBLE_RESUME,
+      USER_HIDDEN_RESUME,
       ...otherMembers,
     )
     .createEvents(
@@ -642,6 +812,16 @@ async function seed(): Promise<void> {
     .orderMerch(MEMBER_SOPHOMORE, [{ option: MERCH_ITEM_2_OPTION_2X2, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_JUNIOR, [{ option: MERCH_ITEM_2_OPTION_4X4, quantity: 2 }], ONGOING_ORDER_PICKUP_EVENT)
     .orderMerch(MEMBER_SENIOR, [{ option: MERCH_ITEM_2_OPTION_3X3, quantity: 1 }], ONGOING_ORDER_PICKUP_EVENT)
+    .createUserSocialMedia(USER_SOCIAL_MEDIA_1, USER_SOCIAL_MEDIA_1_FACEBOOK)
+    .createUserSocialMedia(USER_SOCIAL_MEDIA_2, USER_SOCIAL_MEDIA_2_FACEBOOK, USER_SOCIAL_MEDIA_2_GITHUB)
+    .createUserSocialMedia(USER_SOCIAL_MEDIA_3, USER_SOCIAL_MEDIA_3_FACEBOOK, USER_SOCIAL_MEDIA_3_INSTAGRAM,
+      USER_SOCIAL_MEDIA_3_LINKEDIN)
+    .createUserSocialMedia(USER_SOCIAL_MEDIA_ALL, USER_SOCIAL_MEDIA_ALL_FACEBOOK, USER_SOCIAL_MEDIA_ALL_GITHUB,
+      USER_SOCIAL_MEDIA_ALL_INSTAGRAM,
+      USER_SOCIAL_MEDIA_ALL_LINKEDIN, USER_SOCIAL_MEDIA_ALL_DEVPOST, USER_SOCIAL_MEDIA_ALL_TWITTER,
+      USER_SOCIAL_MEDIA_ALL_PORTFOLIO, USER_SOCIAL_MEDIA_ALL_EMAIL)
+    .createResumes(USER_VISIBLE_RESUME, RESUME_1)
+    .createResumes(USER_HIDDEN_RESUME, RESUME_2)
     .write();
 }
 

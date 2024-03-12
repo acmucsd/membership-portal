@@ -1,6 +1,7 @@
-import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Uuid, PublicOrderPickupEvent, OrderPickupEventStatus } from '../types';
 import { OrderModel } from './OrderModel';
+import { EventModel } from './EventModel';
 
 @Entity('OrderPickupEvents')
 export class OrderPickupEventModel extends BaseEntity {
@@ -29,6 +30,10 @@ export class OrderPickupEventModel extends BaseEntity {
   @JoinColumn({ name: 'order' })
   orders: OrderModel[];
 
+  @OneToOne((type) => EventModel, { nullable: true })
+  @JoinColumn({ name: 'linkedEvent' })
+  linkedEvent: EventModel;
+
   public getPublicOrderPickupEvent(canSeeOrders = false): PublicOrderPickupEvent {
     const pickupEvent: PublicOrderPickupEvent = {
       uuid: this.uuid,
@@ -38,6 +43,7 @@ export class OrderPickupEventModel extends BaseEntity {
       description: this.description,
       orderLimit: this.orderLimit,
       status: this.status,
+      linkedEvent: this.linkedEvent ? this.linkedEvent.getPublicEvent() : null,
     };
 
     if (canSeeOrders) pickupEvent.orders = this.orders.map((order) => order.getPublicOrderWithItems());

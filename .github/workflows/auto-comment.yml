@@ -4,10 +4,10 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: bubkoo/auto-comment@v1.0.7
+      - uses: wow-actions/auto-comment@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          pullRequestOpened: >
+          pullRequestOpened: |
             Thanks for contributing!
             If you've made changes to the API's functionality, please make sure to bump the package
             version&mdash;see [this guide to semantic versioning](https://semver.org/) for details&mdash;and

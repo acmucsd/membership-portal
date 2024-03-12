@@ -7,7 +7,7 @@ import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
+import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
 import { UserModel } from '../models/UserModel';
 
@@ -567,7 +567,7 @@ describe('merch orders', () => {
 
     // cancel order
     const { uuid } = placedOrderResponse.order;
-    expect(merchController.cancelMerchOrder({ uuid }, otherMember))
+    await expect(merchController.cancelMerchOrder({ uuid }, otherMember))
       .rejects
       .toThrow('Members cannot cancel other members\' orders');
   });
@@ -617,7 +617,7 @@ describe('merch orders', () => {
         },
       ],
     };
-    expect(MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, uuidParams,
+    await expect(MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, uuidParams,
       fulfillMerchOrderItemsRequest, member, conn, pickupEvent))
       .rejects.toThrow(ForbiddenError);
   });
@@ -767,7 +767,7 @@ describe('merch orders', () => {
     const merchController = ControllerFactory.merchStore(conn, emailService);
     await merchController.cancelAllPendingMerchOrders(storeManager);
     // (making sure that store distributors cannot)
-    expect(merchController.cancelAllPendingMerchOrders(merchDistributor))
+    await expect(merchController.cancelAllPendingMerchOrders(merchDistributor))
       .rejects.toThrow(ForbiddenError);
 
     await Promise.all(members.map(async (member) => {
@@ -849,7 +849,7 @@ describe('merch orders', () => {
       .toStrictEqual(expect.arrayContaining([order1.orders[0], order2.orders[0], order3.orders[0],
         adminOrder.orders[0]]));
 
-    expect(merchStoreController.getMerchOrdersForAllUsers(member1)).rejects.toThrow(ForbiddenError);
+    await expect(merchStoreController.getMerchOrdersForAllUsers(member1)).rejects.toThrow(ForbiddenError);
   });
 
   test('unfulfilled ordered items whose order was cancelled do not count towards order limits for user', async () => {
@@ -962,8 +962,50 @@ describe('merch order pickup events', () => {
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.createPickupEvent({ pickupEvent }, merchDistributor);
 
-    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
+      { relations: ['orders', 'linkedEvent'] });
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
+  });
+
+  test('pickup events can be linked to normal events & edited', async () => {
+    const conn = await DatabaseConnection.get();
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const linkedEvent = EventFactory.fake();
+    const eventController = ControllerFactory.event(conn);
+    await eventController.createEvent({ event: linkedEvent }, admin);
+
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ linkedEvent });
+
+    await new PortalState()
+      .createUsers(merchDistributor)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
+    const createPickupEventRequest = { pickupEvent: { ...pickupEvent, linkedEventUuid: linkedEvent.uuid } };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    await merchController.createPickupEvent(createPickupEventRequest, merchDistributor);
+
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
+      { relations: ['orders', 'linkedEvent'] });
+    expect(persistedPickupEvent).toStrictEqual(pickupEvent);
+
+    // edit a linked event
+
+    const newLinkedEvent = EventFactory.fake();
+    await eventController.createEvent({ event: newLinkedEvent }, admin);
+
+    const editPickupEventRequest = { pickupEvent: { linkedEventUuid: newLinkedEvent.uuid } };
+    const params = { uuid: pickupEvent.uuid };
+    await merchController.editPickupEvent(params, editPickupEventRequest, merchDistributor);
+
+    const editedPersistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
+      { relations: ['orders', 'linkedEvent'] });
+    expect(editedPersistedPickupEvent.uuid).toEqual(pickupEvent.uuid);
+    expect(editedPersistedPickupEvent.linkedEvent.uuid).toEqual(editPickupEventRequest.pickupEvent.linkedEventUuid);
   });
 
   test('pickup event creation fails if start date is later than end date', async () => {
@@ -1588,7 +1630,7 @@ describe('merch order pickup events', () => {
     // attempt to reschedule pickup event
     const orderUuid = { uuid: placedOrderResponse.order.uuid };
     const pickupEventRequest = { pickupEvent: moreRecentPickupEvent.uuid };
-    expect(merchController.rescheduleOrderPickup(orderUuid, pickupEventRequest, member))
+    await expect(merchController.rescheduleOrderPickup(orderUuid, pickupEventRequest, member))
       .rejects.toThrow('Cannot change order pickup to an event that starts in less than 2 days');
   });
 

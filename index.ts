@@ -53,4 +53,6 @@ const app = createExpressServer({
   defaultErrorHandler: false,
 });
 
+app.set('trust proxy', 1);
+
 app.listen(Config.port);

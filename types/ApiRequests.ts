@@ -1,4 +1,4 @@
-import { FeedbackStatus, FeedbackType } from './Enums';
+import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 import { Uuid } from '.';
 
 // REQUEST TYPES
@@ -31,6 +31,7 @@ export interface UserRegistration {
   password: string;
   graduationYear: number;
   major: string;
+  handle?: string;
 }
 
 export interface EmailModificationRequest {
@@ -49,16 +50,23 @@ export interface Feedback {
   type: FeedbackType;
 }
 
+export interface SocialMedia {
+  type: SocialMediaType,
+  url: string
+}
+
 export interface PasswordUpdate extends PasswordChange {
   password: string;
 }
 
 export interface UserPatches {
+  handle?: string;
   firstName?: string;
   lastName?: string;
   major?: string;
   graduationYear?: number;
   bio?: string;
+  isAttendancePublic?: boolean;
   passwordChange?: PasswordUpdate;
 }
 
@@ -72,6 +80,18 @@ export interface SubmitFeedbackRequest {
 
 export interface UpdateFeedbackStatusRequest {
   status: FeedbackStatus;
+}
+
+export interface InsertUserSocialMediaRequest {
+  socialMedia: SocialMedia;
+}
+
+export interface SocialMediaPatches {
+  url?: string;
+}
+
+export interface UpdateUserSocialMediaRequest {
+  socialMedia: SocialMediaPatches;
 }
 
 // LEADERBOARD
@@ -106,6 +126,15 @@ export interface SubmitAttendanceForUsersRequest {
   users: string[];
   event: Uuid;
   asStaff?: boolean;
+}
+
+export interface UserAccessUpdates {
+  user: string;
+  accessType: UserAccessType;
+}
+
+export interface ModifyUserAccessLevelRequest {
+  accessUpdates: UserAccessUpdates[];
 }
 
 // EVENT
@@ -143,6 +172,11 @@ export interface AttendEventRequest {
   asStaff?: boolean;
 }
 
+export interface AttendViaExpressCheckinRequest {
+  attendanceCode: string;
+  email: string;
+}
+
 export interface SubmitEventFeedbackRequest {
   feedback: string[];
 }
@@ -164,6 +198,10 @@ export interface EditMerchCollectionRequest {
   collection: MerchCollectionEdit;
 }
 
+export interface CreateCollectionPhotoRequest {
+  position: string;
+}
+
 export interface CreateMerchItemRequest {
   merchandise: MerchItem;
 }
@@ -174,6 +212,10 @@ export interface EditMerchItemRequest {
 
 export interface CreateMerchItemOptionRequest {
   option: MerchItemOption;
+}
+
+export interface CreateMerchItemPhotoRequest {
+  position: string;
 }
 
 export interface PlaceMerchOrderRequest {
@@ -193,22 +235,36 @@ export interface RescheduleOrderPickupRequest {
   pickupEvent: Uuid;
 }
 
-export interface MerchCollection {
+export interface CommonCollectionProperties {
   title: string;
   themeColorHex?: string;
   description: string;
   archived?: boolean;
 }
 
-export interface MerchCollectionEdit extends Partial<MerchCollection> {
+export interface MerchCollectionPhoto {
+  uploadedPhoto: string;
+  position: number;
+}
+
+export interface MerchCollectionPhotoEdit {
+  uuid: string;
+  position?: number;
+}
+
+export interface MerchCollection extends Partial<CommonCollectionProperties> {
+  collectionPhotos: MerchCollectionPhoto[]
+}
+
+export interface MerchCollectionEdit extends Partial<CommonCollectionProperties> {
   discountPercentage?: number;
+  collectionPhotos?: MerchCollectionPhotoEdit[]
 }
 
 export interface CommonMerchItemProperties {
   itemName: string;
   collection: string;
   description: string;
-  picture?: string;
   hidden?: boolean;
   monthlyLimit?: number;
   lifetimeLimit?: number;
@@ -221,6 +277,16 @@ export interface MerchItemOptionMetadata {
   position: number;
 }
 
+export interface MerchItemPhoto {
+  uploadedPhoto: string;
+  position: number;
+}
+
+export interface MerchItemPhotoEdit {
+  uuid: string;
+  position?: number;
+}
+
 export interface MerchItemOption {
   quantity: number;
   price: number;
@@ -230,6 +296,7 @@ export interface MerchItemOption {
 
 export interface MerchItem extends CommonMerchItemProperties {
   options: MerchItemOption[];
+  merchPhotos: MerchItemPhoto[];
 }
 
 export interface MerchItemOptionEdit {
@@ -242,6 +309,7 @@ export interface MerchItemOptionEdit {
 
 export interface MerchItemEdit extends Partial<CommonMerchItemProperties> {
   options?: MerchItemOptionEdit[];
+  merchPhotos?: MerchItemPhotoEdit[];
 }
 
 export interface MerchOrderEdit {
@@ -264,6 +332,7 @@ export interface OrderPickupEvent {
   end: Date;
   description: string;
   orderLimit: number;
+  linkedEventUuid?: Uuid;
 }
 
 export interface OrderPickupEventEdit extends Partial<OrderPickupEvent> {}
@@ -281,6 +350,12 @@ export interface GetCartRequest {
 }
 
 // RESUMES
+/* Request object does not have nested property because the API request is of
+type multipart/form-data which does not support nested properties */
+export interface UploadResumeRequest {
+  isResumeVisible?: boolean
+}
+
 export interface ResumePatches {
   isResumeVisible?: boolean;
 }

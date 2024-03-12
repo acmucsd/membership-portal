@@ -22,6 +22,15 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.findOne({ uuid });
   }
 
+  public async findByHandle(handle: string): Promise<UserModel> {
+    return this.repository.findOne({ handle });
+  }
+
+  public async isHandleTaken(handle: string): Promise<boolean> {
+    const profile = await this.findByHandle(handle);
+    return profile !== undefined;
+  }
+
   public async findByEmail(email: string): Promise<UserModel> {
     return this.repository.findOne({ email });
   }
@@ -30,6 +39,11 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.find({
       email: In(emails),
     });
+  }
+
+  public async isEmailInUse(email: string): Promise<boolean> {
+    const user = await this.findByEmail(email);
+    return user !== undefined;
   }
 
   public async findByAccessCode(accessCode: string): Promise<UserModel> {
@@ -81,5 +95,13 @@ export class UserRepository extends BaseRepository<UserModel> {
         credits: () => `credits + ${points * 100}`,
       })
       .execute();
+  }
+
+  public async getUserInfoAndAccessTypes() {
+    const profiles = await this.repository
+      .createQueryBuilder()
+      .select(['uuid', 'handle', 'email', 'UserModel.firstName', 'UserModel.lastName', 'UserModel.accessType'])
+      .getRawMany();
+    return profiles;
   }
 }
