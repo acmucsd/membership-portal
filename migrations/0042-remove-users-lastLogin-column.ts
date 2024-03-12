@@ -2,7 +2,7 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 const TABLE_NAME = 'Users';
 
-export class RemoveUsersLastLoginColumn1667969918956 implements MigrationInterface {
+export class RemoveUsersLastLoginColumn1710221027614 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropColumn(TABLE_NAME, 'lastLogin');
   }
