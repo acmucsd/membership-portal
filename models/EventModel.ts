@@ -63,6 +63,12 @@ export class EventModel extends BaseEntity {
   @OneToMany((type) => ExpressCheckinModel, (expressCheckin) => expressCheckin.event, { cascade: true })
   expressCheckins: ExpressCheckinModel[];
 
+  @Column('uuid', { nullable: true })
+  discordEvent: Uuid;
+
+  @Column('uuid', { nullable: true })
+  googleCalendarEvent: Uuid;
+
   public getPublicEvent(canSeeAttendanceCode = false): PublicEvent {
     const publicEvent: PublicEvent = {
       uuid: this.uuid,
@@ -79,6 +85,8 @@ export class EventModel extends BaseEntity {
       pointValue: this.pointValue,
       requiresStaff: this.requiresStaff,
       staffPointBonus: this.staffPointBonus,
+      discordEvent: this.discordEvent,
+      googleCalendarEvent: this.googleCalendarEvent,
     };
     if (canSeeAttendanceCode) publicEvent.attendanceCode = this.attendanceCode;
     return publicEvent;
