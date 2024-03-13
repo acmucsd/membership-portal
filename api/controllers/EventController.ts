@@ -3,7 +3,6 @@ import {
 } from 'routing-controllers';
 import EventService from '../../services/EventService';
 import { UserAuthentication, OptionalUserAuthentication } from '../middleware/UserAuthentication';
-// import { RateLimiter } from '../middleware/RateLimiter';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
@@ -29,7 +28,6 @@ import {
   SubmitEventFeedbackRequest,
 } from '../validators/EventControllerRequests';
 
-// @UseBefore(RateLimiter)
 @JsonController('/event')
 export class EventController {
   private eventService: EventService;
