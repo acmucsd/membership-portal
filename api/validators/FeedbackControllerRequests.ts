@@ -11,11 +11,8 @@ import {
   FeedbackStatus,
   Uuid,
 } from '../../types';
-import { UserModel } from '../../models/UserModel';
-import { EventModel } from '../../models/EventModel';
 
 export class Feedback implements IFeedback {
-
   @IsDefined()
   @IsNotEmpty()
   event: Uuid;

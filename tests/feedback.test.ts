@@ -9,13 +9,13 @@ import { ControllerFactory } from './controllers';
 
 function buildFeedbackPartial(feedback) {
   return {
-      feedback: {
-          event: feedback.event.uuid,
-          source: feedback.source,
-          status: feedback.status,
-          type: feedback.type,
-          description: feedback.description,
-      }
+    feedback: {
+      event: feedback.event.uuid,
+      source: feedback.source,
+      status: feedback.status,
+      type: feedback.type,
+      description: feedback.description,
+    },
   };
 }
 
@@ -59,7 +59,7 @@ describe('feedback submission', () => {
 
     const feedbackController = ControllerFactory.feedback(conn);
 
-    await feedbackController.submitFeedback(buildFeedbackPartial(feedback) , member);
+    await feedbackController.submitFeedback(buildFeedbackPartial(feedback), member);
     const submittedFeedbackResponse = await feedbackController.getFeedback({}, member);
 
     expect(submittedFeedbackResponse.feedback).toHaveLength(1);
@@ -124,7 +124,6 @@ describe('feedback submission', () => {
       .createEvents(event)
       .write();
 
-
     await ControllerFactory.feedback(conn).submitFeedback(buildFeedbackPartial(feedback), member);
     const activityResponse = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
     const feedbackSubmissionActivity = activityResponse.activity[1];
@@ -164,8 +163,12 @@ describe('feedback submission', () => {
 
     const feedbackController = ControllerFactory.feedback(conn);
 
-    const submittedFeedback1Response = await feedbackController.submitFeedback(buildFeedbackPartial(feedback1), member1);
-    const submittedFeedback2Response = await feedbackController.submitFeedback(buildFeedbackPartial(feedback2), member2);
+    const submittedFeedback1Response = await feedbackController.submitFeedback(
+      buildFeedbackPartial(feedback1), member1,
+    );
+    const submittedFeedback2Response = await feedbackController.submitFeedback(
+      buildFeedbackPartial(feedback2), member2,
+    );
     const allSubmittedFeedbackResponse = await feedbackController.getFeedback({}, admin);
 
     expect(allSubmittedFeedbackResponse.feedback).toHaveLength(2);
@@ -334,8 +337,12 @@ describe('feedback submission', () => {
 
     const feedbackController = ControllerFactory.feedback(conn);
 
-    const feedbackToAcknowledgeResponse = await feedbackController.submitFeedback(buildFeedbackPartial(feedback1), member);
-    const feedbackToIgnoreResponse = await feedbackController.submitFeedback(buildFeedbackPartial(feedback2), member);
+    const feedbackToAcknowledgeResponse = await feedbackController.submitFeedback(
+      buildFeedbackPartial(feedback1), member,
+    );
+    const feedbackToIgnoreResponse = await feedbackController.submitFeedback(
+      buildFeedbackPartial(feedback2), member,
+    );
 
     const feedbackToAcknowledgeParams = { uuid: feedbackToAcknowledgeResponse.feedback.uuid };
     const feedbackToIgnoreParams = { uuid: feedbackToIgnoreResponse.feedback.uuid };
@@ -557,9 +564,9 @@ describe('feedback submission', () => {
     const member = UserFactory.fake();
     const member2 = UserFactory.fake();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback1 = FeedbackFactory.fake({ event: event1});
-    const feedback2 = FeedbackFactory.fake({ event: event1});
-    const feedback3 = FeedbackFactory.fake({ event: event1});
+    const feedback1 = FeedbackFactory.fake({ event: event1 });
+    const feedback2 = FeedbackFactory.fake({ event: event1 });
+    const feedback3 = FeedbackFactory.fake({ event: event1 });
 
     await new PortalState()
       .createUsers(member, member2, admin)

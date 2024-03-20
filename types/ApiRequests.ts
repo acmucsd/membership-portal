@@ -1,8 +1,5 @@
-import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 import { Uuid } from '.';
-import { uuid } from 'aws-sdk/clients/customerprofiles';
-import { UserModel } from 'models/UserModel';
-import { EventModel } from 'models/EventModel';
+import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 
 // REQUEST TYPES
 

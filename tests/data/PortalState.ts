@@ -9,7 +9,7 @@ import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionMo
 import { OrderModel } from '../../models/OrderModel';
 import { UserModel } from '../../models/UserModel';
 import { ActivityModel } from '../../models/ActivityModel';
-import { ActivityScope, ActivityType, Feedback } from '../../types';
+import { ActivityScope, ActivityType } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { OrderItemModel } from '../../models/OrderItemModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
@@ -130,7 +130,6 @@ export class PortalState {
   public createFeedback(...feedback: FeedbackModel[]): PortalState {
     for (let s = 0; s < feedback.length; s += 1) {
       const sm = feedback[s];
-      const event = sm.event;
 
       this.feedback.push(FeedbackModel.create({ ...sm }));
     }
