@@ -114,7 +114,6 @@ export class EventController {
   async getAllEvents(@QueryParams() options: EventSearchOptions, @AuthenticatedUser() user: UserModel):
   Promise<GetAllEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
-    console.log(`Auth: ${canSeeAttendanceCode}`);
     const events = await this.eventService.getAllEvents(canSeeAttendanceCode, options);
     return { error: null, events };
   }

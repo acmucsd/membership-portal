@@ -127,9 +127,11 @@ export class PortalState {
     return this;
   }
 
-  public createFeedback(...feedback: Feedback[]): PortalState {
+  public createFeedback(...feedback: FeedbackModel[]): PortalState {
     for (let s = 0; s < feedback.length; s += 1) {
       const sm = feedback[s];
+      const event = sm.event;
+
       this.feedback.push(FeedbackModel.create({ ...sm }));
     }
     return this;
@@ -210,7 +212,7 @@ export class PortalState {
     });
   }
 
-  public submitFeedback(user: UserModel, feedback: Feedback[]): PortalState {
+  public submitFeedback(user: UserModel, feedback: FeedbackModel[]): PortalState {
     for (let f = 0; f < feedback.length; f += 1) {
       const fb = feedback[f];
       this.feedback.push(FeedbackModel.create({ ...fb, user }));

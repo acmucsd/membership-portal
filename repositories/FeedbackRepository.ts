@@ -33,6 +33,9 @@ export class FeedbackRepository extends BaseRepository<FeedbackModel> {
     if (options.event) {
       query = query.andWhere('event = :event').setParameter('event', options.event);
     }
+    if (options.user) {
+      query = query.andWhere('"user" = :user').setParameter('user', options.user);
+    }
     if (options.type) {
       query = query.andWhere('type = :type').setParameter('type', options.type);
     }

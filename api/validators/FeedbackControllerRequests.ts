@@ -9,24 +9,19 @@ import {
   Feedback as IFeedback,
   FeedbackType,
   FeedbackStatus,
+  Uuid,
 } from '../../types';
 import { UserModel } from '../../models/UserModel';
 import { EventModel } from '../../models/EventModel';
 
 export class Feedback implements IFeedback {
-  @IsDefined()
-  @IsNotEmpty()
-  user: UserModel;
 
   @IsDefined()
   @IsNotEmpty()
-  event: EventModel;
+  event: Uuid;
 
   @IsDefined()
   source: string;
-
-  @IsDefined()
-  timestamp: Date;
 
   @IsDefined()
   @MinLength(20)
@@ -68,4 +63,7 @@ export class FeedbackSearchOptions implements IFeedbackSearchOptions {
 
   @Allow()
   type?: string;
+
+  @Allow()
+  user?: string;
 }

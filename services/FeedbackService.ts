@@ -28,12 +28,19 @@ export default class FeedbackService {
   }
 
   public async submitFeedback(user: UserModel, feedback: Feedback): Promise<PublicFeedback> {
+
+    const event = await this.transactions.readOnly(async (txn) => Repositories
+    .event(txn)
+    .findByUuid(feedback.event));
+
+    if (!event) throw new NotFoundError('Event not found');
+
     const addedFeedback = await this.transactions.readWrite(async (txn) => {
       await Repositories.activity(txn).logActivity({
         user,
         type: ActivityType.SUBMIT_FEEDBACK,
       });
-      return Repositories.feedback(txn).upsertFeedback(FeedbackModel.create({ ...feedback, user }));
+      return Repositories.feedback(txn).upsertFeedback(FeedbackModel.create({ ...feedback, user, event }));
     });
     return addedFeedback.getPublicFeedback();
   }

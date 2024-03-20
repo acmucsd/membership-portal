@@ -1,5 +1,8 @@
 import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 import { Uuid } from '.';
+import { uuid } from 'aws-sdk/clients/customerprofiles';
+import { UserModel } from 'models/UserModel';
+import { EventModel } from 'models/EventModel';
 
 // REQUEST TYPES
 
@@ -45,9 +48,16 @@ export interface RegistrationRequest {
 // USER
 
 export interface Feedback {
+
+  event: Uuid;
+
   source: string;
+
   description: string;
+
   type: FeedbackType;
+
+  status: FeedbackStatus;
 }
 
 export interface SocialMedia {
@@ -86,6 +96,7 @@ export interface FeedbackSearchOptions {
   event?: string;
   type?: string;
   status?: string;
+  user?: string;
 }
 
 export interface InsertUserSocialMediaRequest {
