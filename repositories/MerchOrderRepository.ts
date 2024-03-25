@@ -31,7 +31,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
   }
 
   /**
-   * Gets all orders for all users. Returns the order joined with its pickup event.
+   * Gets all orders for all users. Returns the order joined with its pickup event and linked event.
    * Can optionally filter by order status.
    */
   public async getAllOrdersForAllUsers(...statuses: OrderStatus[]): Promise<OrderModel[]> {
@@ -42,29 +42,29 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
         },
       });
     }
-    return this.repository.find();
-  }
-
-  /**
-   * Gets all orders for a given user. Returns the order joined with its pickup event and user.
-   */
-  public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
-    //return this.repository.find({ user });
     return this.repository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.pickupEvent', 'orderPickupEvent')
-      .leftJoinAndSelect('order.items', 'orderItem')
       .leftJoinAndSelect('order.user', 'user')
-      .leftJoinAndSelect('orderItem.option', 'option')
-      .leftJoinAndSelect('option.item', 'merchItem')
-      .leftJoinAndSelect('merchItem.merchPhotos', 'merchPhotos')
+      .leftJoinAndSelect('orderPickupEvent.linkedEvent', 'linkedEvent')
+      .getMany();
+  }
+
+  /**
+   * Gets all orders for a given user. Returns the order joined with its pickup event, linked event, and user.
+   */
+  public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
+    return this.repository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.pickupEvent', 'orderPickupEvent')
+      .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('orderPickupEvent.linkedEvent', 'linkedEvent')
       .where('order.user = :uuid', { uuid: user.uuid })
       .getMany();
   }
 
   /**
-   * Gets all orders for a given user. Returns the order joined with its pickup event, user,
+   * Gets all orders for a given user. Returns the order joined with its pickup event, linked event, user,
    * merch item options, merch items, and merch item photos.
    */
   public async getAllOrdersWithItemsForUser(user: UserModel): Promise<OrderModel[]> {
@@ -75,6 +75,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('orderItem.option', 'option')
       .leftJoinAndSelect('option.item', 'merchItem')
+      .leftJoinAndSelect('orderPickupEvent.linkedEvent', 'linkedEvent')
       .leftJoinAndSelect('merchItem.merchPhotos', 'merchPhotos')
       .where('order.user = :uuid', { uuid: user.uuid })
       .getMany();
