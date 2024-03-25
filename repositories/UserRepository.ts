@@ -45,12 +45,13 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.findOne({ accessCode });
   }
 
-  public async getAllEmails(): Promise<string[]> {
-    const emailsRaw = await this.repository
+  public async getAllNamesEmails(): Promise<string[]> {
+    const namesEmailsRaw = await this.repository
       .createQueryBuilder()
       .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
       .getRawMany();
-    return emailsRaw.map((emailRaw) => `${emailRaw.UserModel_firstName} ${emailRaw.UserModel_lastName} - ${emailRaw.email}`);
+    return namesEmailsRaw.map((nameEmailRaw)=>
+    `${nameEmailRaw.UserModel_firstName} ${nameEmailRaw.UserModel_lastName} (${nameEmailRaw.email})`);
   }
 
   public static async generateHash(pass: string): Promise<string> {

@@ -15,6 +15,7 @@ import {
   UserPatches,
   UserState,
   PrivateProfile,
+  GetAllNamesEmailsResponse,
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
@@ -167,10 +168,10 @@ export default class UserAccountService {
     });
   }
 
-  public async getAllEmails(): Promise<string[]> {
+  public async getAllNamesEmails(): Promise<string[]> {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
-      .getAllEmails());
+      .getAllNamesEmails());
   }
 
   /**
