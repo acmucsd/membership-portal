@@ -14,7 +14,7 @@ import {
   Milestone,
   UserPatches,
   UserState,
-  PrivateProfile
+  PrivateProfile,
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
