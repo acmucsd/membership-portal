@@ -64,7 +64,7 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
   }
 
   /**
-   * Gets all orders for a given user. Returns the order joined with its pickup event, linked event, user,
+   * Gets all orders for a given user. Returns the order joined with its pickup event, user,
    * merch item options, merch items, and merch item photos.
    */
   public async getAllOrdersWithItemsForUser(user: UserModel): Promise<OrderModel[]> {

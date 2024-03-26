@@ -52,7 +52,7 @@ async function seed(): Promise<void> {
   });
 
   const MEMBER_FRESHMAN = UserFactory.fake({
-    email: 'nsdange@ucsd.edu',
+    email: 'sisteine@ucsd.edu',
     accessType: UserAccessType.STANDARD,
     firstName: 'Steven',
     lastName: 'Steiner',
