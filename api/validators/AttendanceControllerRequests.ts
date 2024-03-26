@@ -1,5 +1,8 @@
-import { IsDefined, IsNotEmpty, Allow } from 'class-validator';
-import { AttendEventRequest as IAttendEventRequest } from '../../types';
+import { IsDefined, IsNotEmpty, Allow, IsEmail } from 'class-validator';
+import {
+  AttendEventRequest as IAttendEventRequest,
+  AttendViaExpressCheckinRequest as IAttendViaExpressCheckinRequest,
+} from '../../types';
 
 export class AttendEventRequest implements IAttendEventRequest {
   @IsDefined()
@@ -8,4 +11,14 @@ export class AttendEventRequest implements IAttendEventRequest {
 
   @Allow()
   asStaff?: boolean;
+}
+
+export class AttendViaExpressCheckinRequest implements IAttendViaExpressCheckinRequest {
+  @IsDefined()
+  @IsNotEmpty()
+  attendanceCode: string;
+
+  @IsDefined()
+  @IsEmail()
+  email: string;
 }

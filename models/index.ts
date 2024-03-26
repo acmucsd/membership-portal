@@ -3,6 +3,7 @@ import { ActivityModel } from './ActivityModel';
 import { EventModel } from './EventModel';
 import { AttendanceModel } from './AttendanceModel';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
+import { MerchCollectionPhotoModel } from './MerchCollectionPhotoModel';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
 import { MerchandiseItemPhotoModel } from './MerchandiseItemPhotoModel';
 import { OrderModel } from './OrderModel';
@@ -12,6 +13,7 @@ import { FeedbackModel } from './FeedbackModel';
 import { OrderPickupEventModel } from './OrderPickupEventModel';
 import { ResumeModel } from './ResumeModel';
 import { UserSocialMediaModel } from './UserSocialMediaModel';
+import { ExpressCheckinModel } from './ExpressCheckinModel';
 
 export const models = [
   UserModel,
@@ -20,6 +22,7 @@ export const models = [
   EventModel,
   AttendanceModel,
   MerchandiseCollectionModel,
+  MerchCollectionPhotoModel,
   MerchandiseItemModel,
   MerchandiseItemPhotoModel,
   MerchandiseItemOptionModel,
@@ -28,4 +31,5 @@ export const models = [
   OrderPickupEventModel,
   ResumeModel,
   UserSocialMediaModel,
+  ExpressCheckinModel,
 ];

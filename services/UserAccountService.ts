@@ -1,10 +1,15 @@
-import { BadRequestError, NotFoundError } from 'routing-controllers';
+import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import * as faker from 'faker';
 import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
+import {
+  RegExpMatcher,
+  englishDataset,
+  englishRecommendedTransformers,
+} from 'obscenity';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -23,8 +28,14 @@ import { UserModel } from '../models/UserModel';
 export default class UserAccountService {
   private transactions: TransactionsManager;
 
+  private matcher: RegExpMatcher;
+
   constructor(@InjectManager() entityManager: EntityManager) {
     this.transactions = new TransactionsManager(entityManager);
+    this.matcher = new RegExpMatcher({
+      ...englishDataset.build(),
+      ...englishRecommendedTransformers,
+    });
   }
 
   public async findByUuid(uuid: Uuid): Promise<UserModel> {
@@ -103,6 +114,9 @@ export default class UserAccountService {
         throw new BadRequestError('Incorrect password');
       }
       changes.hash = await UserRepository.generateHash(newPassword);
+    }
+    if (this.matcher.hasMatch(userPatches.handle)) {
+      throw new ForbiddenError('Please remove profanity from handle.');
     }
     return this.transactions.readWrite(async (txn) => {
       if (userPatches.handle) {
@@ -225,13 +239,23 @@ export default class UserAccountService {
         return map;
       }, {});
 
-      const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate, index) => {
+      const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate) => {
         const { user: userEmail, accessType } = accessUpdate;
 
-        const currUser = emailToUserMap[userEmail];
-        const oldAccess = currUser.accessType;
+        // Prevent a user from demoting themselves
+        if (currentUser.email === userEmail) {
+          throw new ForbiddenError('Cannot alter own access level');
+        }
 
-        const updatedUser = await userRepository.upsertUser(currUser, { accessType });
+        const userToUpdate = emailToUserMap[userEmail];
+        const oldAccess = userToUpdate.accessType;
+
+        // Prevent users from promoting to admin or demoting from admin
+        if (oldAccess === 'ADMIN' || accessType === 'ADMIN') {
+          throw new ForbiddenError('Cannot alter access level of admin users');
+        }
+
+        const updatedUser = await userRepository.upsertUser(userToUpdate, { accessType });
 
         const activity = {
           user: currentUser,
