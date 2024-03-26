@@ -75,7 +75,6 @@ export class MerchOrderRepository extends BaseRepository<OrderModel> {
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('orderItem.option', 'option')
       .leftJoinAndSelect('option.item', 'merchItem')
-      .leftJoinAndSelect('orderPickupEvent.linkedEvent', 'linkedEvent')
       .leftJoinAndSelect('merchItem.merchPhotos', 'merchPhotos')
       .where('order.user = :uuid', { uuid: user.uuid })
       .getMany();
