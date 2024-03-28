@@ -53,8 +53,6 @@ export interface Feedback {
   description: string;
 
   type: FeedbackType;
-
-  status: FeedbackStatus;
 }
 
 export interface SocialMedia {

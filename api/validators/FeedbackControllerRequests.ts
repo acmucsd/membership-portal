@@ -27,10 +27,6 @@ export class Feedback implements IFeedback {
   @IsDefined()
   @IsValidFeedbackType()
   type: FeedbackType;
-
-  @IsDefined()
-  @IsValidFeedbackStatus()
-  status: FeedbackStatus;
 }
 
 export class SubmitEventFeedbackRequest implements ISubmitEventFeedbackRequest {

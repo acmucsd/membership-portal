@@ -32,21 +32,28 @@ afterAll(async () => {
   await DatabaseConnection.close();
 });
 
+function createEvent() {
+  return EventFactory.fake({
+    title: 'AI: Intro to Neural Nets',
+    description: `Artificial neural networks (ANNs), usually simply called
+    neural networks (NNs), are computing systems vaguely inspired by the
+    biological neural networks that constitute animal brains. An ANN is based
+    on a collection of connected units or nodes called artificial neurons,
+    which loosely model the neurons in a biological brain.`,
+    committee: 'AI',
+    location: 'Qualcomm Room',
+    ...EventFactory.daysBefore(6),
+    attendanceCode: 'galaxybrain',
+    requiresStaff: true,
+    cover: null,
+    thumbnail: null,
+    eventLink: null,
+  });
+}
+
 describe('feedback submission', () => {
   test('properly persists on successful submission', async () => {
-    const event = EventFactory.fake({
-      title: 'AI: Intro to Neural Nets',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-    });
+    const event = createEvent();
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
@@ -76,19 +83,7 @@ describe('feedback submission', () => {
   });
 
   test('is invalidated when submission description is too short', async () => {
-    const event = EventFactory.fake({
-      title: 'AI: Intro to Neural Nets',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-    });
+    const event = createEvent();
 
     const feedback = FeedbackFactory.fake({ event, description: 'A short description' });
 
@@ -133,22 +128,7 @@ describe('feedback submission', () => {
   });
 
   test('admins can view feedback from any member', async () => {
-    const event = EventFactory.fake({
-      title: 'AI: Intro to Neural Nets',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-      cover: null,
-      thumbnail: null,
-      eventLink: null,
-    });
+    const event = createEvent();
 
     const conn = await DatabaseConnection.get();
     const [member1, member2] = UserFactory.create(2);
@@ -182,22 +162,7 @@ describe('feedback submission', () => {
   });
 
   test('members can view only their own feedback', async () => {
-    const event = EventFactory.fake({
-      title: 'AI: Intro to Neural Nets',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-      cover: null,
-      thumbnail: null,
-      eventLink: null,
-    });
+    const event = createEvent();
 
     const conn = await DatabaseConnection.get();
     const [member1, member2] = UserFactory.create(2);
@@ -228,19 +193,7 @@ describe('feedback submission', () => {
   });
 
   test('admin can acknowledge and reward points for feedback', async () => {
-    const event = EventFactory.fake({
-      title: 'AI: Intro to Neural Nets',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-    });
+    const event = createEvent();
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
@@ -271,19 +224,7 @@ describe('feedback submission', () => {
   });
 
   test('admin can ignore and not reward points for feedback', async () => {
-    const event = EventFactory.fake({
-      title: 'AI: Intro to Neural Nets',
-      description: `Artificial neural networks (ANNs), usually simply called
-  neural networks (NNs), are computing systems vaguely inspired by the
-  biological neural networks that constitute animal brains. An ANN is based
-  on a collection of connected units or nodes called artificial neurons,
-  which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-    });
+    const event = createEvent();
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
@@ -310,19 +251,7 @@ describe('feedback submission', () => {
   });
 
   test('cannot be responded to after already being responded to', async () => {
-    const event = EventFactory.fake({
-      title: 'AI: Intro to Neural Nets',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-    });
+    const event = createEvent();
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
@@ -435,22 +364,7 @@ describe('feedback submission', () => {
   });
 
   test('get all feedback by status', async () => {
-    const event1 = EventFactory.fake({
-      title: 'AI: Intro to Neural Nets',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-      cover: null,
-      thumbnail: null,
-      eventLink: null,
-    });
+    const event1 = createEvent();
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
@@ -489,22 +403,7 @@ describe('feedback submission', () => {
   });
 
   test('get all feedback by type', async () => {
-    const event1 = EventFactory.fake({
-      title: 'AI: Intro to Neural Nets',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-      cover: null,
-      thumbnail: null,
-      eventLink: null,
-    });
+    const event1 = createEvent();
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
@@ -543,22 +442,7 @@ describe('feedback submission', () => {
   });
 
   test('get all feedback by member', async () => {
-    const event1 = EventFactory.fake({
-      title: 'AI: Intro to Neural Nets',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-      cover: null,
-      thumbnail: null,
-      eventLink: null,
-    });
+    const event1 = createEvent();
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
@@ -599,39 +483,10 @@ describe('feedback submission', () => {
   });
 
   test('get all feedback with multiple parameters', async () => {
-    const event1 = EventFactory.fake({
-      title: 'Event 1',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galaxybrain',
-      requiresStaff: true,
-      cover: null,
-      thumbnail: null,
-      eventLink: null,
-    });
+    const event1 = createEvent();
 
-    const event2 = EventFactory.fake({
-      title: 'Event 2',
-      description: `Artificial neural networks (ANNs), usually simply called
-      neural networks (NNs), are computing systems vaguely inspired by the
-      biological neural networks that constitute animal brains. An ANN is based
-      on a collection of connected units or nodes called artificial neurons,
-      which loosely model the neurons in a biological brain.`,
-      committee: 'AI',
-      location: 'Qualcomm Room',
-      ...EventFactory.daysBefore(6),
-      attendanceCode: 'galxybrain',
-      requiresStaff: true,
-      cover: null,
-      thumbnail: null,
-      eventLink: null,
-    });
+    const event2 = createEvent();
+    event2.title = 'Event 2';
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();

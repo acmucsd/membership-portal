@@ -145,7 +145,7 @@ export function IsValidFeedbackType(validationOptions?: ValidationOptions) {
 @ValidatorConstraint()
 class FeedbackStatusValidator implements ValidatorConstraintInterface {
   validate(feedbackStatus: FeedbackStatus): boolean {
-    return Object.values(FeedbackStatus).includes(feedbackStatus);
+    return Object.values(FeedbackStatus).includes(feedbackStatus) && feedbackStatus !== FeedbackStatus.SUBMITTED;
   }
 
   defaultMessage(): string {

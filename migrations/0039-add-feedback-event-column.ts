@@ -4,7 +4,7 @@ const TABLE_NAME = 'Feedback';
 const OLD_NAME = 'title';
 const NEW_NAME = 'source';
 
-export class AddFeedbackEventField1709112961573 implements MigrationInterface {
+export class AddFeedbackEventColumn1709112961573 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "${TABLE_NAME}" RENAME COLUMN "${OLD_NAME}" TO "${NEW_NAME}"`);
     await queryRunner.query(`ALTER TABLE "${TABLE_NAME}" ALTER COLUMN "${NEW_NAME}" TYPE text`);
