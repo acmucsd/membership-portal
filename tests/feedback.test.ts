@@ -486,7 +486,7 @@ describe('feedback submission', () => {
     const event1 = createEvent();
 
     const event2 = createEvent();
-    event2.title = 'Event 2';
+    event2.attendanceCode = 'Different';
 
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
