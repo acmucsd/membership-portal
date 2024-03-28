@@ -50,8 +50,8 @@ export class UserRepository extends BaseRepository<UserModel> {
       .createQueryBuilder()
       .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
       .getRawMany();
-    return namesEmailsRaw.map((nameEmailRaw) => `${nameEmailRaw.UserModel_firstName} ` +
-      `${nameEmailRaw.UserModel_lastName} (${nameEmailRaw.email})`);
+    return namesEmailsRaw.map((nameEmailRaw) => `${nameEmailRaw.UserModel_firstName} `
+      + `${nameEmailRaw.UserModel_lastName} (${nameEmailRaw.email})`);
   }
 
   public static async generateHash(pass: string): Promise<string> {
