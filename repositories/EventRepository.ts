@@ -1,4 +1,4 @@
-import { Between, EntityRepository, LessThanOrEqual, MoreThanOrEqual, SelectQueryBuilder } from 'typeorm';
+import { EntityRepository, LessThanOrEqual, MoreThanOrEqual, SelectQueryBuilder } from 'typeorm';
 import { EventSearchOptions, Uuid } from '../types';
 import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
@@ -41,7 +41,6 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async isAvailableAttendanceCode(attendanceCode: string, start: Date, end: Date): Promise<boolean> {
-
     const hasOverlap = await this.repository.find({
       where: [
         {
