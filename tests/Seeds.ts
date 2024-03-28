@@ -683,7 +683,7 @@ async function seed(): Promise<void> {
   // Event with multiple feedbacks: PAST_AI_WORKSHOP_1
   const FEEDBACK_SAME_EVENT_1 = FeedbackFactory.fake({ user: USER_FEEDBACK_1,
     event: PAST_AI_WORKSHOP_1,
-    description: 'Man this shit sucks',
+    description: 'Man this #$%& sucks',
     type: FeedbackType.AI });
   const FEEDBACK_SAME_EVENT_2 = FeedbackFactory.fake({ user: USER_FEEDBACK_2,
     event: PAST_AI_WORKSHOP_1,
