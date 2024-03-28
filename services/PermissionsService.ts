@@ -20,7 +20,7 @@ export default class PermissionsService {
     return user.isMarketing();
   }
 
-  public static canRespondToFeedback(user: UserModel): boolean {
+  public static canQueryAllFeedback(user: UserModel): boolean {
     return user.isAdmin();
   }
 

@@ -25,7 +25,7 @@ export class FeedbackController {
   @Get()
   async getFeedback(@QueryParams() options: FeedbackSearchOptions,
     @AuthenticatedUser() user: UserModel): Promise<GetFeedbackResponse> {
-    const canSeeAllFeedback = PermissionsService.canRespondToFeedback(user);
+    const canSeeAllFeedback = PermissionsService.canQueryAllFeedback(user);
     const feedback = await this.feedbackService.getFeedback(canSeeAllFeedback, user, options);
     return { error: null, feedback };
   }
@@ -42,7 +42,7 @@ export class FeedbackController {
   async updateFeedbackStatus(@Params() params: UuidParam,
     @Body() updateFeedbackStatusRequest: UpdateFeedbackStatusRequest,
     @AuthenticatedUser() user: UserModel): Promise<UpdateFeedbackStatusResponse> {
-    if (!PermissionsService.canRespondToFeedback(user)) throw new ForbiddenError();
+    if (!PermissionsService.canQueryAllFeedback(user)) throw new ForbiddenError();
     const feedback = await this.feedbackService.updateFeedbackStatus(params.uuid, updateFeedbackStatusRequest.status);
     return { error: null, feedback };
   }
