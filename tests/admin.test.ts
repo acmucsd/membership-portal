@@ -131,19 +131,20 @@ describe('retroactive attendance submission', () => {
   });
 });
 
-describe('email retrieval', () => {
+describe('names and emails retrieval', () => {
   test('gets all the emails of stored users', async () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(5);
-    const emails = users.map((user) => user.email.toLowerCase());
+    const namesEmails = users.map((user) => `${user.firstName} ${user.lastName} (${user.email.toLowerCase()})`);
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
     await new PortalState()
       .createUsers(...users, admin)
       .write();
 
-    const response = await ControllerFactory.admin(conn).getAllEmails(admin);
-    expect(expect.arrayContaining(response.emails)).toEqual([...emails, admin.email]);
+    const response = await ControllerFactory.admin(conn).getAllNamesEmails(admin);
+    expect(expect.arrayContaining(response.namesEmails)).toEqual([...namesEmails,
+      `${admin.firstName} ${admin.lastName} (${admin.email})`]);
   });
 });
 
