@@ -41,37 +41,18 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async isAvailableAttendanceCode(attendanceCode: string, start: Date, end: Date): Promise<boolean> {
-    // Existing Event:  ------
-    //      New Event:    ------
 
-    // Existing Event:  ------
-    //      New Event: -----
-    const endsOrStartsDuring = await this.repository.find({
+    const hasOverlap = await this.repository.find({
       where: [
         {
           attendanceCode,
-          start: Between(start, end),
-        },
-        {
-          attendanceCode,
-          end: Between(start, end),
+          start: LessThanOrEqual(end),
+          end: MoreThanOrEqual(start),
         },
       ],
     });
 
-    // Existing Event:  ------
-    //      New Event:   ---
-    const totalOverlap = await this.repository.find({
-      where: [
-        {
-          attendanceCode,
-          start: LessThanOrEqual(start),
-          end: MoreThanOrEqual(end),
-        },
-      ],
-    });
-
-    return endsOrStartsDuring.length === 0 && totalOverlap.length === 0;
+    return hasOverlap.length === 0;
   }
 
   private getBaseEventSearchQuery(options: EventSearchOptions): SelectQueryBuilder<EventModel> {
