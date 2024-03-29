@@ -38,7 +38,6 @@ export class AddFeedbackEventColumn1709112961573 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Is this correct? I followed example in migration #29
     await queryRunner.dropForeignKey(TABLE_NAME, new TableForeignKey({
       columnNames: ['event'],
       referencedTableName: 'Events',
@@ -46,8 +45,8 @@ export class AddFeedbackEventColumn1709112961573 implements MigrationInterface {
       onDelete: 'CASCADE',
     }));
 
-    await queryRunner.dropIndex('Feedback', 'feedback_by_event_index');
-    await queryRunner.dropColumn('Feedback', 'event');
+    await queryRunner.dropIndex(TABLE_NAME, 'feedback_by_event_index');
+    await queryRunner.dropColumn(TABLE_NAME, 'event');
 
     await queryRunner.query(`ALTER TABLE "${TABLE_NAME}" ALTER COLUMN "${NEW_NAME}" TYPE varchar(255)`);
     await queryRunner.query(`ALTER TABLE "${TABLE_NAME}" RENAME COLUMN "${NEW_NAME}" TO "${OLD_NAME}"`);

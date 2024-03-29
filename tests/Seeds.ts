@@ -185,9 +185,6 @@ async function seed(): Promise<void> {
   const USER_HIDDEN_RESUME = UserFactory.fake();
   const RESUME_2 = ResumeFactory.fake({ user: USER_HIDDEN_RESUME, isResumeVisible: false, url: RESUME_URL });
 
-  // const USER_FEEDBACK_1 = UserFactory.fake();
-  // const EVENT_FEEDBACK_1 = EventFactory.fake();
-
   // create members in bulk for testing things like sliding leaderboard in a realistic manner
   const otherMembers = UserFactory.create(200);
   const highAttendanceMembers = otherMembers.slice(0, 50);
