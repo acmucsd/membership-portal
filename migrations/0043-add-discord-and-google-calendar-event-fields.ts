@@ -2,7 +2,7 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 const TABLE_NAME = 'Events';
 
-export class AddDiscordAndGoogleCalendarEventFields1710016392452 implements MigrationInterface {
+export class AddDiscordAndGoogleCalendarEventFields1711750534274 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumns(TABLE_NAME, [
       new TableColumn({
