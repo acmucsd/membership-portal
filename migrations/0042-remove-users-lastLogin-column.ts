@@ -10,7 +10,7 @@ export class RemoveUsersLastLoginColumn1711518997063 implements MigrationInterfa
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(TABLE_NAME, new TableColumn({
       name: 'lastLogin',
-      type: 'timestampz',
+      type: 'timestamptz',
       default: 'CURRENT_TIMESTAMP(6)',
     }));
   }
