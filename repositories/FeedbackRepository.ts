@@ -1,6 +1,7 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { FeedbackModel } from '../models/FeedbackModel';
 import { UserModel } from '../models/UserModel';
+import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
 import { FeedbackSearchOptions, Uuid } from '../types';
 
@@ -22,6 +23,13 @@ export class FeedbackRepository extends BaseRepository<FeedbackModel> {
     changes?: Partial<FeedbackModel>): Promise<FeedbackModel> {
     if (changes) feedback = FeedbackModel.merge(feedback, changes);
     return this.repository.save(feedback);
+  }
+
+  public async hasUserSubmittedFeedback(user: UserModel, event: EventModel): Promise<boolean> {
+    const count = await this.repository.count({
+      where: { user, event },
+    });
+    return count > 0;
   }
 
   private getBaseFindQuery(options: FeedbackSearchOptions): SelectQueryBuilder<FeedbackModel> {

@@ -16,7 +16,7 @@ export class FeedbackFactory {
       uuid: uuid(),
       user: UserFactory.fake(),
       event: EventFactory.fake(),
-      source: faker.datatype.hexaDecimal(10),
+      source: FactoryUtils.pickRandomValue(['Discord', 'Instagram', 'Portal']),
       timestamp: new Date(),
       description: faker.lorem.words(100),
       status: FeedbackStatus.SUBMITTED,

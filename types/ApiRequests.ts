@@ -45,13 +45,9 @@ export interface RegistrationRequest {
 // USER
 
 export interface Feedback {
-
   event: Uuid;
-
   source: string;
-
   description: string;
-
   type: FeedbackType;
 }
 

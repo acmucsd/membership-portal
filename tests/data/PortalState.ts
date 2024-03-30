@@ -128,10 +128,10 @@ export class PortalState {
   }
 
   public createFeedback(...feedback: FeedbackModel[]): PortalState {
-    for (let s = 0; s < feedback.length; s += 1) {
-      const sm = feedback[s];
+    for (let f = 0; f < feedback.length; f += 1) {
+      const fb = feedback[f];
 
-      this.feedback.push(FeedbackModel.create({ ...sm }));
+      this.feedback.push(FeedbackModel.create({ ...fb }));
     }
     return this;
   }
