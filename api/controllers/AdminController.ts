@@ -1,5 +1,6 @@
 import { JsonController, Post, Patch, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
 import { UserAuthentication } from '../middleware/UserAuthentication';
+import { RateLimiter } from '../middleware/RateLimiter';
 import {
   CreateBonusRequest,
   CreateMilestoneRequest,
@@ -23,6 +24,7 @@ import StorageService from '../../services/StorageService';
 import PermissionsService from '../../services/PermissionsService';
 import { UserModel } from '../../models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
+import { RateLimit } from '../decorators/RateLimit';
 
 @UseBefore(UserAuthentication)
 @JsonController('/admin')
@@ -40,7 +42,9 @@ export class AdminController {
     this.attendanceService = attendanceService;
   }
 
+
   @Get('/email')
+  @RateLimit()
   async getAllEmails(@AuthenticatedUser() user: UserModel): Promise<GetAllEmailsResponse> {
     if (!PermissionsService.canSeeAllUserEmails(user)) throw new ForbiddenError();
     const emails = await this.userAccountService.getAllEmails();
