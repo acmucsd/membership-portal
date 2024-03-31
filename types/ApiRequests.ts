@@ -180,6 +180,11 @@ export interface AttendEventRequest {
   asStaff?: boolean;
 }
 
+export interface AttendViaExpressCheckinRequest {
+  attendanceCode: string;
+  email: string;
+}
+
 export interface SubmitEventFeedbackRequest {
   feedback: string[];
 }
@@ -199,6 +204,10 @@ export interface CreateMerchCollectionRequest {
 
 export interface EditMerchCollectionRequest {
   collection: MerchCollectionEdit;
+}
+
+export interface CreateCollectionPhotoRequest {
+  position: string;
 }
 
 export interface CreateMerchItemRequest {
@@ -234,15 +243,30 @@ export interface RescheduleOrderPickupRequest {
   pickupEvent: Uuid;
 }
 
-export interface MerchCollection {
+export interface CommonCollectionProperties {
   title: string;
   themeColorHex?: string;
   description: string;
   archived?: boolean;
 }
 
-export interface MerchCollectionEdit extends Partial<MerchCollection> {
+export interface MerchCollectionPhoto {
+  uploadedPhoto: string;
+  position: number;
+}
+
+export interface MerchCollectionPhotoEdit {
+  uuid: string;
+  position?: number;
+}
+
+export interface MerchCollection extends Partial<CommonCollectionProperties> {
+  collectionPhotos: MerchCollectionPhoto[]
+}
+
+export interface MerchCollectionEdit extends Partial<CommonCollectionProperties> {
   discountPercentage?: number;
+  collectionPhotos?: MerchCollectionPhotoEdit[]
 }
 
 export interface CommonMerchItemProperties {
@@ -316,6 +340,7 @@ export interface OrderPickupEvent {
   end: Date;
   description: string;
   orderLimit: number;
+  linkedEventUuid?: Uuid;
 }
 
 export interface OrderPickupEventEdit extends Partial<OrderPickupEvent> {}

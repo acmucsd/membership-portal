@@ -11,11 +11,13 @@ import {
   ArrayNotEmpty,
   IsNumber,
   IsNumberString,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   CreateMerchCollectionRequest as ICreateMerchCollectionRequest,
   EditMerchCollectionRequest as IEditMerchCollectionRequest,
+  CreateCollectionPhotoRequest as ICreateCollectionPhotoRequest,
   CreateMerchItemRequest as ICreateMerchItemRequest,
   EditMerchItemRequest as IEditMerchItemRequest,
   CreateMerchItemOptionRequest as ICreateMerchItemOptionRequest,
@@ -31,6 +33,8 @@ import {
   OrderItemFulfillmentUpdate as IOrderItemFulfillmentUpdate,
   MerchCollection as IMerchCollection,
   MerchCollectionEdit as IMerchCollectionEdit,
+  MerchCollectionPhoto as IMerchCollectionPhoto,
+  MerchCollectionPhotoEdit as IMerchCollectionPhotoEdit,
   MerchItem as IMerchItem,
   MerchItemEdit as IMerchItemEdit,
   MerchItemOption as IMerchItemOption,
@@ -41,6 +45,7 @@ import {
   MerchOrderEdit as IMerchOrderEdit,
   OrderPickupEvent as IOrderPickupEvent,
   OrderPickupEventEdit as IOrderPickupEventEdit,
+  Uuid,
 } from '../../types';
 
 export class MerchCollection implements IMerchCollection {
@@ -58,6 +63,9 @@ export class MerchCollection implements IMerchCollection {
 
   @Allow()
   archived?: boolean;
+
+  @Allow()
+  collectionPhotos: MerchCollectionPhoto[];
 }
 
 export class MerchCollectionEdit implements IMerchCollectionEdit {
@@ -76,6 +84,26 @@ export class MerchCollectionEdit implements IMerchCollectionEdit {
   @Min(0)
   @Max(100)
   discountPercentage?: number;
+
+  @Allow()
+  collectionPhotos?: MerchCollectionPhotoEdit[];
+}
+
+export class MerchCollectionPhoto implements IMerchCollectionPhoto {
+  @Allow()
+  uploadedPhoto: string;
+
+  @Allow()
+  position: number;
+}
+
+export class MerchCollectionPhotoEdit implements IMerchCollectionPhotoEdit {
+  @IsDefined()
+  @IsUUID()
+  uuid: string;
+
+  @Allow()
+  position: number;
 }
 
 export class MerchItemOptionMetadata implements IMerchItemOptionMetadata {
@@ -258,6 +286,10 @@ export class OrderPickupEvent implements IOrderPickupEvent {
   @IsDefined()
   @Min(1)
   orderLimit: number;
+
+  @IsOptional()
+  @IsUUID()
+  linkedEventUuid?: Uuid;
 }
 
 export class OrderPickupEventEdit implements IOrderPickupEventEdit {
@@ -275,6 +307,9 @@ export class OrderPickupEventEdit implements IOrderPickupEventEdit {
 
   @Min(1)
   orderLimit?: number;
+
+  @IsUUID()
+  linkedEventUuid?: Uuid;
 }
 
 export class MerchOrderEdit implements IMerchOrderEdit {
@@ -294,6 +329,12 @@ export class EditMerchCollectionRequest implements IEditMerchCollectionRequest {
   @ValidateNested()
   @IsDefined()
   collection: MerchCollectionEdit;
+}
+
+export class CreateCollectionPhotoRequest implements ICreateCollectionPhotoRequest {
+  @IsDefined()
+  @IsNumberString()
+  position: string;
 }
 
 export class CreateMerchItemRequest implements ICreateMerchItemRequest {

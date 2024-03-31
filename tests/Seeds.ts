@@ -384,6 +384,28 @@ async function seed(): Promise<void> {
     description: 'Do you like to code? Tell the world with this Hack School inspired collection.',
     themeColorHex: '#EB8C34',
   });
+
+  const MERCH_COLLECTION_1_PHOTO_1 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    position: 0,
+  });
+  const MERCH_COLLECTION_1_PHOTO_2 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  const MERCH_COLLECTION_1_PHOTO_3 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 2,
+  });
+
+  MERCH_COLLECTION_1.collectionPhotos = [
+    MERCH_COLLECTION_1_PHOTO_1,
+    MERCH_COLLECTION_1_PHOTO_2,
+    MERCH_COLLECTION_1_PHOTO_3,
+  ];
+
   const MERCH_ITEM_1 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Unisex Hack School Anorak',
@@ -463,7 +485,6 @@ async function seed(): Promise<void> {
   });
   const MERCH_ITEM_1_PHOTO_1 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_1,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 1,
   });
   const MERCH_ITEM_1_PHOTO_2 = MerchFactory.fakePhoto({
@@ -526,7 +547,6 @@ async function seed(): Promise<void> {
   ];
   const MERCH_ITEM_2_PHOTO_0 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_2,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 0,
   });
   const MERCH_ITEM_2_PHOTO_1 = MerchFactory.fakePhoto({
@@ -544,6 +564,14 @@ async function seed(): Promise<void> {
     title: 'Fall 2001',
     description: 'Celebrate the opening of Sixth College in style, featuring raccoon print jackets.',
   });
+
+  const MERCH_COLLECTION_2_PHOTO_1 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_2,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  MERCH_COLLECTION_2.collectionPhotos = [MERCH_COLLECTION_2_PHOTO_1];
+
   const MERCH_ITEM_3 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Camp Snoopy Snapback',
@@ -567,7 +595,6 @@ async function seed(): Promise<void> {
   });
   const MERCH_ITEM_3_PHOTO_1 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 1,
   });
   const MERCH_ITEM_3_PHOTO_2 = MerchFactory.fakePhoto({
@@ -577,12 +604,10 @@ async function seed(): Promise<void> {
   });
   const MERCH_ITEM_3_PHOTO_3 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 3,
   });
   const MERCH_ITEM_3_PHOTO_4 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 4,
   });
   MERCH_ITEM_3.merchPhotos = [

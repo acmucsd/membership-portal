@@ -7,7 +7,7 @@ import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
+import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
 import { UserModel } from '../models/UserModel';
 
@@ -442,7 +442,8 @@ describe('merch orders', () => {
 
     // cancel order
     const { uuid } = placedOrderResponse.order;
-    await merchController.cancelMerchOrder({ uuid }, member);
+    const cancelOrderResponse = await merchController.cancelMerchOrder({ uuid }, member);
+    expect(cancelOrderResponse.order.uuid).toEqual(uuid);
 
     // get order, making sure state was updated and user has been refunded
     const cancelledOrderResponse = await merchController.getOneMerchOrder({ uuid }, member);
@@ -518,7 +519,8 @@ describe('merch orders', () => {
 
     // cancel the order
     const { uuid } = placedOrderResponse.order;
-    await merchController.cancelMerchOrder({ uuid }, member);
+    const cancelOrderResponse = await merchController.cancelMerchOrder({ uuid }, member);
+    expect(cancelOrderResponse.order.uuid).toEqual(uuid);
 
     // make sure user has only been refunded 1 option worth of points
     await member.reload();
@@ -890,7 +892,8 @@ describe('merch orders', () => {
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placedOrder = await conn.manager.findOne(OrderModel, { user: member }, { relations: ['items'] });
     const cancelOrderParams = { uuid: placedOrder.uuid };
-    await merchController.cancelMerchOrder(cancelOrderParams, member);
+    const cancelOrderResponse = await merchController.cancelMerchOrder(cancelOrderParams, member);
+    expect(cancelOrderResponse.order.uuid).toEqual(cancelOrderParams.uuid);
 
     // place order with 2 items again
     const secondOrder = [{ option: option.uuid, quantity: 2 }];
@@ -962,8 +965,50 @@ describe('merch order pickup events', () => {
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.createPickupEvent({ pickupEvent }, merchDistributor);
 
-    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
+      { relations: ['orders', 'linkedEvent'] });
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
+  });
+
+  test('pickup events can be linked to normal events & edited', async () => {
+    const conn = await DatabaseConnection.get();
+    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const linkedEvent = EventFactory.fake();
+    const eventController = ControllerFactory.event(conn);
+    await eventController.createEvent({ event: linkedEvent }, admin);
+
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ linkedEvent });
+
+    await new PortalState()
+      .createUsers(merchDistributor)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+      .thenResolve();
+
+    const createPickupEventRequest = { pickupEvent: { ...pickupEvent, linkedEventUuid: linkedEvent.uuid } };
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    await merchController.createPickupEvent(createPickupEventRequest, merchDistributor);
+
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
+      { relations: ['orders', 'linkedEvent'] });
+    expect(persistedPickupEvent).toStrictEqual(pickupEvent);
+
+    // edit a linked event
+
+    const newLinkedEvent = EventFactory.fake();
+    await eventController.createEvent({ event: newLinkedEvent }, admin);
+
+    const editPickupEventRequest = { pickupEvent: { linkedEventUuid: newLinkedEvent.uuid } };
+    const params = { uuid: pickupEvent.uuid };
+    await merchController.editPickupEvent(params, editPickupEventRequest, merchDistributor);
+
+    const editedPersistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
+      { relations: ['orders', 'linkedEvent'] });
+    expect(editedPersistedPickupEvent.uuid).toEqual(pickupEvent.uuid);
+    expect(editedPersistedPickupEvent.linkedEvent.uuid).toEqual(editPickupEventRequest.pickupEvent.linkedEventUuid);
   });
 
   test('pickup event creation fails if start date is later than end date', async () => {
