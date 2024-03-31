@@ -9,7 +9,7 @@ import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionMo
 import { OrderModel } from '../../models/OrderModel';
 import { UserModel } from '../../models/UserModel';
 import { ActivityModel } from '../../models/ActivityModel';
-import { ActivityScope, ActivityType, Feedback } from '../../types';
+import { ActivityScope, ActivityType } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { OrderItemModel } from '../../models/OrderItemModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
@@ -133,6 +133,15 @@ export class PortalState {
     return this;
   }
 
+  public createFeedback(...feedback: FeedbackModel[]): PortalState {
+    for (let f = 0; f < feedback.length; f += 1) {
+      const fb = feedback[f];
+
+      this.feedback.push(FeedbackModel.create({ ...fb }));
+    }
+    return this;
+  }
+
   public attendEvents(users: UserModel[], events: EventModel[], includesStaff = false): PortalState {
     for (let e = 0; e < events.length; e += 1) {
       const event = events[e];
@@ -208,7 +217,7 @@ export class PortalState {
     });
   }
 
-  public submitFeedback(user: UserModel, feedback: Feedback[]): PortalState {
+  public submitFeedback(user: UserModel, feedback: FeedbackModel[]): PortalState {
     for (let f = 0; f < feedback.length; f += 1) {
       const fb = feedback[f];
       this.feedback.push(FeedbackModel.create({ ...fb, user }));
