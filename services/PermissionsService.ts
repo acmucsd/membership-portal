@@ -13,7 +13,7 @@ export default class PermissionsService {
   }
 
   public static canSubmitFeedback(user: UserModel): boolean {
-    return user.state === UserState.ACTIVE;
+    return user.state === UserState.ACTIVE || user.state === UserState.PASSWORD_RESET;
   }
 
   public static canSeeAllFeedback(user: UserModel): boolean {
