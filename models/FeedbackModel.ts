@@ -18,6 +18,8 @@ export class FeedbackModel extends BaseEntity {
   @Index('feedback_by_event_index')
   event: EventModel;
 
+  // source refers to how the user heard about the event
+  // ie, Instagram, Portal, Discord, etc.
   @Column('text')
   source: string;
 
