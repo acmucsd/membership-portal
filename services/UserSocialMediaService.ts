@@ -26,18 +26,19 @@ export default class UserSocialMediaService {
     const addedSocialMedia = await this.transactions.readWrite(async (txn) => {
       // checking duplicate
       const setDuplicateType = new Set();
-      for (const socialMedia of socialMedias) {
-        const type = socialMedia.type;
+      socialMedias.forEach((socialMedia) => {
+        const { type } = socialMedia;
         if (setDuplicateType.has(type)) {
           throw new UserError(`Dupllicate type "${type}" found in the request`);
         }
         setDuplicateType.add(type);
-      }
+      });
 
       // inserting social media
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
       const upsertedSocialMedias = await Promise.all(socialMedias.map(async (socialMedia) => {
-        const isNewSocialMediaType = await userSocialMediaRepository.isNewSocialMediaTypeForUser(user, socialMedia.type);
+        const isNewSocialMediaType = await userSocialMediaRepository
+          .isNewSocialMediaTypeForUser(user, socialMedia.type);
         if (!isNewSocialMediaType) {
           throw new UserError(`Social media URL of type "${socialMedia.type}" has already been created for this user`);
         }
@@ -53,13 +54,14 @@ export default class UserSocialMediaService {
     const updatedSocialMedia = await this.transactions.readWrite(async (txn) => {
       // checking duplicate
       const setDuplicateUuid = new Set();
-      for (const socialMediaPatch of changes) {
-        const uuid = socialMediaPatch.uuid;
+
+      changes.forEach((socialMediaPatch) => {
+        const { uuid } = socialMediaPatch;
         if (setDuplicateUuid.has(uuid)) {
           throw new UserError(`Dupllicate UUID "${uuid}" found in the request`);
         }
         setDuplicateUuid.add(uuid);
-      }
+      });
 
       // patching social media
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);

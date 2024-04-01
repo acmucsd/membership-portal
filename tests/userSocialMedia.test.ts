@@ -25,9 +25,7 @@ describe('social media URL submission', () => {
     const conn = await DatabaseConnection.get();
     let member1 = UserFactory.fake();
     const socialMediaTypes = [SocialMediaType.FACEBOOK, SocialMediaType.TWITTER, SocialMediaType.LINKEDIN];
-    const userSocialMediaList = socialMediaTypes.map(type =>
-      UserSocialMediaFactory.fake({ user: member1, type })
-    );
+    const userSocialMediaList = socialMediaTypes.map((type) => UserSocialMediaFactory.fake({ user: member1, type }));
     // sort by type to ensure order is consistent
     userSocialMediaList.sort((a, b) => a.type.localeCompare(b.type));
 
@@ -66,7 +64,8 @@ describe('social media URL submission', () => {
     const userController = ControllerFactory.user(conn);
 
     const userSocialMediaWithSameType = UserSocialMediaFactory.fake({ type: SocialMediaType.FACEBOOK });
-    const errorMessage = `Social media URL of type "${SocialMediaType.FACEBOOK}" has already been created for this user`;
+    const errorMessage = `Social media URL of type "${SocialMediaType.FACEBOOK}"`
+      + ' has already been created for this user';
     await expect(userController.insertSocialMediaForUser({ socialMedia: [userSocialMediaWithSameType] }, member))
       .rejects.toThrow(errorMessage);
   });
@@ -80,11 +79,9 @@ describe('social media URL update', () => {
   test('is invalidated when updating social media URL of another user', async () => {
     const conn = await DatabaseConnection.get();
     let member1 = UserFactory.fake();
-    let unauthorizedMember = UserFactory.fake();
+    const unauthorizedMember = UserFactory.fake();
     const socialMediaTypes = [SocialMediaType.FACEBOOK, SocialMediaType.TWITTER, SocialMediaType.LINKEDIN];
-    const userSocialMediaList = socialMediaTypes.map(type =>
-      UserSocialMediaFactory.fake({ user: member1, type })
-    );
+    const userSocialMediaList = socialMediaTypes.map((type) => UserSocialMediaFactory.fake({ user: member1, type }));
     // sort by type to ensure order is consistent
     userSocialMediaList.sort((a, b) => a.type.localeCompare(b.type));
 
@@ -101,7 +98,7 @@ describe('social media URL update', () => {
     const errorMessage = 'User cannot update a social media URL of another user';
     const socialMediaParams = { socialMedia: [{
       url: faker.internet.url(),
-      uuid: member1.userSocialMedia[0].uuid
+      uuid: member1.userSocialMedia[0].uuid,
     }] };
     await expect(userController.updateSocialMediaForUser(socialMediaParams, unauthorizedMember))
       .rejects.toThrow(errorMessage);
@@ -119,8 +116,8 @@ describe('social media URL update', () => {
 
     const socialMediaParams = { socialMedia: [{
       url: faker.internet.url(),
-      uuid: faker.datatype.uuid()
-    }]};
+      uuid: faker.datatype.uuid(),
+    }] };
     const errorMessage = `Social media of UUID "${socialMediaParams.socialMedia[0].uuid}" not found`;
     await expect(userController.updateSocialMediaForUser(socialMediaParams, member))
       .rejects.toThrow(errorMessage);
@@ -207,8 +204,8 @@ describe('social media URL update concurrency', () => {
     const index = 0;
     const socialMediaParams = { socialMedia: [{
       url: faker.internet.url(),
-      uuid: member.userSocialMedia[index].uuid
-    }]};
+      uuid: member.userSocialMedia[index].uuid,
+    }] };
     await userController.updateSocialMediaForUser(socialMediaParams, member);
 
     const expectedUserSocialMedia0 = {
@@ -233,8 +230,8 @@ describe('social media URL update concurrency', () => {
     const index = 1;
     const socialMediaParams = { socialMedia: [{
       url: faker.internet.url(),
-      uuid: member.userSocialMedia[index].uuid
-    }]};
+      uuid: member.userSocialMedia[index].uuid,
+    }] };
     await userController.updateSocialMediaForUser(socialMediaParams, member);
 
     const expectedUserSocialMedia1 = {
@@ -259,8 +256,8 @@ describe('social media URL update concurrency', () => {
     const index = 2;
     const socialMediaParams = { socialMedia: [{
       url: faker.internet.url(),
-      uuid: member.userSocialMedia[index].uuid
-    }]};
+      uuid: member.userSocialMedia[index].uuid,
+    }] };
     await userController.updateSocialMediaForUser(socialMediaParams, member);
 
     const expectedUserSocialMedia2 = {
@@ -285,8 +282,8 @@ describe('social media URL update concurrency', () => {
     const index = 3;
     const socialMediaParams = { socialMedia: [{
       url: faker.internet.url(),
-      uuid: member.userSocialMedia[index].uuid
-    }]};
+      uuid: member.userSocialMedia[index].uuid,
+    }] };
     await userController.updateSocialMediaForUser(socialMediaParams, member);
 
     const expectedUserSocialMedia3 = {
@@ -311,8 +308,8 @@ describe('social media URL update concurrency', () => {
     const index = 4;
     const socialMediaParams = { socialMedia: [{
       url: faker.internet.url(),
-      uuid: member.userSocialMedia[index].uuid
-    }]};
+      uuid: member.userSocialMedia[index].uuid,
+    }] };
     await userController.updateSocialMediaForUser(socialMediaParams, member);
 
     const expectedUserSocialMedia4 = {
