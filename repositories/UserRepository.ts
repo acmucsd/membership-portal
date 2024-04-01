@@ -53,10 +53,9 @@ export class UserRepository extends BaseRepository<UserModel> {
       .createQueryBuilder()
       .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
       .getRawMany();
-    const nameEmailFormatted: NameEmail[] = namesEmailsRaw.map((nameEmailRaw) =>
-    ({firstName: nameEmailRaw.UserModel_firstName,
-     lastName: nameEmailRaw.UserModel_lastName,
-     email: nameEmailRaw.email}));
+    const nameEmailFormatted: NameEmail[] = namesEmailsRaw.map((nameEmailRaw) => ({ firstName: nameEmailRaw.UserModel_firstName,
+      lastName: nameEmailRaw.UserModel_lastName,
+      email: nameEmailRaw.email }));
     return nameEmailFormatted;
   }
 

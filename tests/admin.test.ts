@@ -5,6 +5,9 @@ import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { UserModel } from '../models/UserModel';
 
+// Remove when relocation is done perhaps
+import { NameEmail } from '../types/ApiResponses';
+
 beforeAll(async () => {
   await DatabaseConnection.connect();
 });
@@ -135,7 +138,7 @@ describe('names and emails retrieval', () => {
   test('gets all the emails of stored users', async () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(5);
-    const namesEmails = users.map((user) => `${user.firstName} ${user.lastName} (${user.email.toLowerCase()})`);
+    const namesEmails: NameEmail[] = users.map((user) => ({ firstName: user.firstName, lastName: user.lastName, email: user.email.toLowerCase() }));
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
     await new PortalState()
@@ -143,8 +146,9 @@ describe('names and emails retrieval', () => {
       .write();
 
     const response = await ControllerFactory.admin(conn).getAllNamesEmails(admin);
+    const expected: NameEmail = { firstName: admin.firstName, lastName: admin.lastName, email: admin.email };
     expect(expect.arrayContaining(response.namesEmails)).toEqual([...namesEmails,
-      `${admin.firstName} ${admin.lastName} (${admin.email})`]);
+      expected]);
   });
 });
 
