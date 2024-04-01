@@ -91,15 +91,16 @@ export interface FeedbackSearchOptions {
 }
 
 export interface InsertUserSocialMediaRequest {
-  socialMedia: SocialMedia;
+  socialMedia: SocialMedia[];
 }
 
 export interface SocialMediaPatches {
-  url?: string;
+  uuid: string;
+  url: string;
 }
 
 export interface UpdateUserSocialMediaRequest {
-  socialMedia: SocialMediaPatches;
+  socialMedia: SocialMediaPatches[];
 }
 
 // LEADERBOARD

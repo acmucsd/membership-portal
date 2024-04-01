@@ -23,22 +23,31 @@ describe('social media URL submission', () => {
 
   test('properly persists on successful submission', async () => {
     const conn = await DatabaseConnection.get();
-    let member = UserFactory.fake();
-    const userSocialMedia = UserSocialMediaFactory.fake({ user: member });
+    let member1 = UserFactory.fake();
+    const socialMediaTypes = [SocialMediaType.FACEBOOK, SocialMediaType.TWITTER, SocialMediaType.LINKEDIN];
+    const userSocialMediaList = socialMediaTypes.map((type) => UserSocialMediaFactory.fake({ user: member1, type }));
+    // sort by type to ensure order is consistent
+    userSocialMediaList.sort((a, b) => a.type.localeCompare(b.type));
+
+    // console.log("LIST", userSocialMediaList);
 
     await new PortalState()
-      .createUsers(member)
+      .createUsers(member1)
       .write();
 
     const userController = ControllerFactory.user(conn);
-    await userController.insertSocialMediaForUser({ socialMedia: userSocialMedia }, member);
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] });
 
-    expect(member.userSocialMedia).toHaveLength(1);
-    expect(member.userSocialMedia[0]).toEqual({
-      url: userSocialMedia.url,
-      type: userSocialMedia.type,
-      uuid: userSocialMedia.uuid,
+    await userController.insertSocialMediaForUser({ socialMedia: userSocialMediaList }, member1);
+    member1 = await conn.manager.findOne(UserModel, { uuid: member1.uuid }, { relations: ['userSocialMedia'] });
+
+    expect(member1.userSocialMedia).toHaveLength(3);
+    const userSocialMediaQuery = member1.userSocialMedia.sort((a, b) => a.type.localeCompare(b.type));
+    userSocialMediaList.forEach((socialMedia, index) => {
+      expect(userSocialMediaQuery[index]).toEqual({
+        url: socialMedia.url,
+        type: socialMedia.type,
+        uuid: socialMedia.uuid,
+      });
     });
   });
 
@@ -55,8 +64,9 @@ describe('social media URL submission', () => {
     const userController = ControllerFactory.user(conn);
 
     const userSocialMediaWithSameType = UserSocialMediaFactory.fake({ type: SocialMediaType.FACEBOOK });
-    const errorMessage = 'Social media URL of this type has already been created for this user';
-    await expect(userController.insertSocialMediaForUser({ socialMedia: userSocialMediaWithSameType }, member))
+    const errorMessage = `Social media URL of type "${SocialMediaType.FACEBOOK}"`
+      + ' has already been created for this user';
+    await expect(userController.insertSocialMediaForUser({ socialMedia: [userSocialMediaWithSameType] }, member))
       .rejects.toThrow(errorMessage);
   });
 });
@@ -68,22 +78,29 @@ describe('social media URL update', () => {
 
   test('is invalidated when updating social media URL of another user', async () => {
     const conn = await DatabaseConnection.get();
-    let member = UserFactory.fake();
+    let member1 = UserFactory.fake();
     const unauthorizedMember = UserFactory.fake();
-    const userSocialMedia = UserSocialMediaFactory.fake({ user: member, type: SocialMediaType.FACEBOOK });
+    const socialMediaTypes = [SocialMediaType.FACEBOOK, SocialMediaType.TWITTER, SocialMediaType.LINKEDIN];
+    const userSocialMediaList = socialMediaTypes.map((type) => UserSocialMediaFactory.fake({ user: member1, type }));
+    // sort by type to ensure order is consistent
+    userSocialMediaList.sort((a, b) => a.type.localeCompare(b.type));
 
     await new PortalState()
-      .createUsers(member, unauthorizedMember)
-      .createUserSocialMedia(member, userSocialMedia)
+      .createUsers(member1, unauthorizedMember)
       .write();
 
     const userController = ControllerFactory.user(conn);
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] });
 
+    await userController.insertSocialMediaForUser({ socialMedia: userSocialMediaList }, member1);
+    member1 = await conn.manager.findOne(UserModel, { uuid: member1.uuid }, { relations: ['userSocialMedia'] });
+
+    expect(member1.userSocialMedia).toHaveLength(3);
     const errorMessage = 'User cannot update a social media URL of another user';
-    const uuidParams = { uuid: member.userSocialMedia[0].uuid };
-    const socialMediaParams = { socialMedia: { url: faker.internet.url() } };
-    await expect(userController.updateSocialMediaForUser(uuidParams, socialMediaParams, unauthorizedMember))
+    const socialMediaParams = { socialMedia: [{
+      url: faker.internet.url(),
+      uuid: member1.userSocialMedia[0].uuid,
+    }] };
+    await expect(userController.updateSocialMediaForUser(socialMediaParams, unauthorizedMember))
       .rejects.toThrow(errorMessage);
   });
 
@@ -97,10 +114,12 @@ describe('social media URL update', () => {
 
     const userController = ControllerFactory.user(conn);
 
-    const errorMessage = 'Social media URL not found';
-    const missingEntityUuid = { uuid: faker.datatype.uuid() };
-    const socialMediaParams = { socialMedia: { url: faker.internet.url() } };
-    await expect(userController.updateSocialMediaForUser(missingEntityUuid, socialMediaParams, member))
+    const socialMediaParams = { socialMedia: [{
+      url: faker.internet.url(),
+      uuid: faker.datatype.uuid(),
+    }] };
+    const errorMessage = `Social media of UUID "${socialMediaParams.socialMedia[0].uuid}" not found`;
+    await expect(userController.updateSocialMediaForUser(socialMediaParams, member))
       .rejects.toThrow(errorMessage);
   });
 });
@@ -130,7 +149,7 @@ describe('social media URL delete', () => {
   });
 });
 
-describe('social media URL update', () => {
+describe('social media URL update concurrency', () => {
   let conn : Connection;
   let member : UserModel;
   let userController : UserController;
@@ -183,14 +202,16 @@ describe('social media URL update', () => {
   test.concurrent('concurrent updates properly persist on successful submission 0', async () => {
     await waitForFlag();
     const index = 0;
-    const uuidParams = { uuid: member.userSocialMedia[index].uuid };
-    const socialMediaParams = { socialMedia: { url: faker.internet.url() } };
-    await userController.updateSocialMediaForUser(uuidParams, socialMediaParams, member);
+    const socialMediaParams = { socialMedia: [{
+      url: faker.internet.url(),
+      uuid: member.userSocialMedia[index].uuid,
+    }] };
+    await userController.updateSocialMediaForUser(socialMediaParams, member);
 
     const expectedUserSocialMedia0 = {
-      url: socialMediaParams.socialMedia.url,
+      url: socialMediaParams.socialMedia[0].url,
       type: member.userSocialMedia[index].type,
-      uuid: uuidParams.uuid,
+      uuid: socialMediaParams.socialMedia[0].uuid,
     };
     const updatedMember = await conn.manager.findOne(
       UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] },
@@ -207,14 +228,16 @@ describe('social media URL update', () => {
   test.concurrent('concurrent updates properly persist on successful submission 1', async () => {
     await waitForFlag();
     const index = 1;
-    const uuidParams = { uuid: member.userSocialMedia[index].uuid };
-    const socialMediaParams = { socialMedia: { url: faker.internet.url() } };
-    await userController.updateSocialMediaForUser(uuidParams, socialMediaParams, member);
+    const socialMediaParams = { socialMedia: [{
+      url: faker.internet.url(),
+      uuid: member.userSocialMedia[index].uuid,
+    }] };
+    await userController.updateSocialMediaForUser(socialMediaParams, member);
 
     const expectedUserSocialMedia1 = {
-      url: socialMediaParams.socialMedia.url,
+      url: socialMediaParams.socialMedia[0].url,
       type: member.userSocialMedia[index].type,
-      uuid: uuidParams.uuid,
+      uuid: socialMediaParams.socialMedia[0].uuid,
     };
     const updatedMember = await conn.manager.findOne(
       UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] },
@@ -231,14 +254,16 @@ describe('social media URL update', () => {
   test.concurrent('concurrent updates properly persist on successful submission 2', async () => {
     await waitForFlag();
     const index = 2;
-    const uuidParams = { uuid: member.userSocialMedia[index].uuid };
-    const socialMediaParams = { socialMedia: { url: faker.internet.url() } };
-    await userController.updateSocialMediaForUser(uuidParams, socialMediaParams, member);
+    const socialMediaParams = { socialMedia: [{
+      url: faker.internet.url(),
+      uuid: member.userSocialMedia[index].uuid,
+    }] };
+    await userController.updateSocialMediaForUser(socialMediaParams, member);
 
     const expectedUserSocialMedia2 = {
-      url: socialMediaParams.socialMedia.url,
+      url: socialMediaParams.socialMedia[0].url,
       type: member.userSocialMedia[index].type,
-      uuid: uuidParams.uuid,
+      uuid: socialMediaParams.socialMedia[0].uuid,
     };
     const updatedMember = await conn.manager.findOne(
       UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] },
@@ -255,14 +280,16 @@ describe('social media URL update', () => {
   test.concurrent('concurrent updates properly persist on successful submission 3', async () => {
     await waitForFlag();
     const index = 3;
-    const uuidParams = { uuid: member.userSocialMedia[index].uuid };
-    const socialMediaParams = { socialMedia: { url: faker.internet.url() } };
-    await userController.updateSocialMediaForUser(uuidParams, socialMediaParams, member);
+    const socialMediaParams = { socialMedia: [{
+      url: faker.internet.url(),
+      uuid: member.userSocialMedia[index].uuid,
+    }] };
+    await userController.updateSocialMediaForUser(socialMediaParams, member);
 
     const expectedUserSocialMedia3 = {
-      url: socialMediaParams.socialMedia.url,
+      url: socialMediaParams.socialMedia[0].url,
       type: member.userSocialMedia[index].type,
-      uuid: uuidParams.uuid,
+      uuid: socialMediaParams.socialMedia[0].uuid,
     };
     const updatedMember = await conn.manager.findOne(
       UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] },
@@ -279,14 +306,16 @@ describe('social media URL update', () => {
   test.concurrent('concurrent updates properly persist on successful submission 4', async () => {
     await waitForFlag();
     const index = 4;
-    const uuidParams = { uuid: member.userSocialMedia[index].uuid };
-    const socialMediaParams = { socialMedia: { url: faker.internet.url() } };
-    await userController.updateSocialMediaForUser(uuidParams, socialMediaParams, member);
+    const socialMediaParams = { socialMedia: [{
+      url: faker.internet.url(),
+      uuid: member.userSocialMedia[index].uuid,
+    }] };
+    await userController.updateSocialMediaForUser(socialMediaParams, member);
 
     const expectedUserSocialMedia4 = {
-      url: socialMediaParams.socialMedia.url,
+      url: socialMediaParams.socialMedia[0].url,
       type: member.userSocialMedia[index].type,
-      uuid: uuidParams.uuid,
+      uuid: socialMediaParams.socialMedia[0].uuid,
     };
     const updatedMember = await conn.manager.findOne(
       UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] },
