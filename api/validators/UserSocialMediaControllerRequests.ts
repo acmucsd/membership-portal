@@ -20,20 +20,25 @@ export class SocialMedia implements ISocialMedia {
 }
 
 export class SocialMediaPatches implements ISocialMediaPatches {
+  @IsDefined()
   @IsNotEmpty()
-  url?: string;
+  uuid: string;
+
+  @IsDefined()
+  @IsNotEmpty()
+  url: string;
 }
 
 export class InsertSocialMediaRequest implements IInsertUserSocialMediaRequest {
   @Type(() => SocialMedia)
   @ValidateNested()
   @IsDefined()
-  socialMedia: SocialMedia;
+  socialMedias: SocialMedia[];
 }
 
 export class UpdateSocialMediaRequest implements IUpdateUserSocialMediaRequest {
   @Type(() => SocialMediaPatches)
   @ValidateNested()
   @IsDefined()
-  socialMedia: SocialMediaPatches;
+  socialMedias: SocialMediaPatches[];
 }

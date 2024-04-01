@@ -107,17 +107,16 @@ export class UserController {
   async insertSocialMediaForUser(@Body() insertSocialMediaRequest: InsertSocialMediaRequest,
     @AuthenticatedUser() user: UserModel): Promise<InsertSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
-      .insertSocialMediaForUser(user, insertSocialMediaRequest.socialMedia);
-    return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
+      .insertSocialMediaForUser(user, insertSocialMediaRequest.socialMedias);
+    return { error: null, userSocialMedia: userSocialMedia.map((socialMedia) => socialMedia.getPublicSocialMedia()) };
   }
 
-  @Patch('/socialMedia/:uuid')
-  async updateSocialMediaForUser(@Params() params: UuidParam,
-    @Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
+  @Patch('/socialMedia')
+  async updateSocialMediaForUser(@Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
     @AuthenticatedUser() user: UserModel): Promise<UpdateSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
-      .updateSocialMediaByUuid(user, params.uuid, updateSocialMediaRequest.socialMedia);
-    return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
+      .updateSocialMediaByUuid(user, updateSocialMediaRequest.socialMedias);
+    return { error: null, userSocialMedia: userSocialMedia.map((socialMedia) => socialMedia.getPublicSocialMedia()) };
   }
 
   @Delete('/socialMedia/:uuid')

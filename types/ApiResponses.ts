@@ -417,11 +417,11 @@ export interface GetUserSocialMediaResponse extends ApiResponse {
 }
 
 export interface InsertSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface UpdateSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface DeleteSocialMediaResponse extends ApiResponse {}
