@@ -33,12 +33,12 @@ export class InsertSocialMediaRequest implements IInsertUserSocialMediaRequest {
   @Type(() => SocialMedia)
   @ValidateNested()
   @IsDefined()
-  socialMedias: SocialMedia[];
+  socialMedia: SocialMedia[];
 }
 
 export class UpdateSocialMediaRequest implements IUpdateUserSocialMediaRequest {
   @Type(() => SocialMediaPatches)
   @ValidateNested()
   @IsDefined()
-  socialMedias: SocialMediaPatches[];
+  socialMedia: SocialMediaPatches[];
 }

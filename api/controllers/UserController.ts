@@ -107,7 +107,7 @@ export class UserController {
   async insertSocialMediaForUser(@Body() insertSocialMediaRequest: InsertSocialMediaRequest,
     @AuthenticatedUser() user: UserModel): Promise<InsertSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
-      .insertSocialMediaForUser(user, insertSocialMediaRequest.socialMedias);
+      .insertSocialMediaForUser(user, insertSocialMediaRequest.socialMedia);
     return { error: null, userSocialMedia: userSocialMedia.map((socialMedia) => socialMedia.getPublicSocialMedia()) };
   }
 
@@ -115,7 +115,7 @@ export class UserController {
   async updateSocialMediaForUser(@Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
     @AuthenticatedUser() user: UserModel): Promise<UpdateSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
-      .updateSocialMediaByUuid(user, updateSocialMediaRequest.socialMedias);
+      .updateSocialMediaByUuid(user, updateSocialMediaRequest.socialMedia);
     return { error: null, userSocialMedia: userSocialMedia.map((socialMedia) => socialMedia.getPublicSocialMedia()) };
   }
 
