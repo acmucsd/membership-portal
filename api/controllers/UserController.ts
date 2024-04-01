@@ -104,26 +104,26 @@ export class UserController {
   }
 
   @Post('/socialMedia')
-  async insertSocialMediaForUser(@Body() insertSocialMediaRequest: InsertSocialMediaRequest,
+  async insertSocialMediasForUser(@Body() insertSocialMediaRequests: InsertSocialMediaRequest[],
     @AuthenticatedUser() user: UserModel): Promise<InsertSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
-      .insertSocialMediaForUser(user, insertSocialMediaRequest.socialMedia);
+      .insertSocialMediasForUser(user, insertSocialMediaRequests.map(request => request.socialMedia));
     return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
   }
 
   @Patch('/socialMedia/:uuid')
-  async updateSocialMediaForUser(@Params() params: UuidParam,
-    @Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
+  async updateSocialMediasForUser(@Params() params: UuidParam[],
+    @Body() updateSocialMediaRequests: UpdateSocialMediaRequest[],
     @AuthenticatedUser() user: UserModel): Promise<UpdateSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
-      .updateSocialMediaByUuid(user, params.uuid, updateSocialMediaRequest.socialMedia);
+      .updateSocialMediasByUuid(user, params.map(param => param.uuid), updateSocialMediaRequests.map(request => request.socialMedia));
     return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
   }
 
   @Delete('/socialMedia/:uuid')
-  async deleteSocialMediaForUser(@Params() params: UuidParam,
+  async deleteSocialMediaForUser(@Params() params: UuidParam[],
     @AuthenticatedUser() user: UserModel): Promise<DeleteSocialMediaResponse> {
-    await this.userSocialMediaService.deleteSocialMediaByUuid(user, params.uuid);
+    for (const uuid of params) await this.userSocialMediaService.deleteSocialMediasByUuid(user, params.map(param => param.uuid));
     return { error: null };
   }
 }

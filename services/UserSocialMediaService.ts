@@ -22,42 +22,53 @@ export default class UserSocialMediaService {
     return userSocialMedia;
   }
 
-  public async insertSocialMediaForUser(user: UserModel, socialMedia: SocialMedia) {
-    const addedSocialMedia = await this.transactions.readWrite(async (txn) => {
+  public async insertSocialMediasForUser(user: UserModel, socialMedias: SocialMedia[]) {
+    const addedSocialMedias = await this.transactions.readWrite(async (txn) => {
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
-      const isNewSocialMediaType = await userSocialMediaRepository.isNewSocialMediaTypeForUser(user, socialMedia.type);
-      if (!isNewSocialMediaType) {
-        throw new UserError('Social media URL of this type has already been created for this user');
+      for (const socialMedia of socialMedias) {
+        const isNewSocialMediaType = await userSocialMediaRepository.isNewSocialMediaTypeForUser(user, socialMedia.type);
+        if (!isNewSocialMediaType) {
+          throw new UserError('Social media URL of this type has already been created for this user');
+        }
       }
-      return userSocialMediaRepository.upsertSocialMedia(UserSocialMediaModel.create({ ...socialMedia, user }));
+      return userSocialMediaRepository.upsertSocialMedia(UserSocialMediaModel.create({ ...socialMedias, user }));
     });
-    return addedSocialMedia;
+    return addedSocialMedias;
   }
 
-  public async updateSocialMediaByUuid(user: UserModel,
-    uuid: Uuid,
-    changes: Partial<UserSocialMediaModel>): Promise<UserSocialMediaModel> {
+  public async updateSocialMediasByUuid(user: UserModel,
+    uuids: Uuid[],
+    changes: Partial<UserSocialMediaModel>[]): Promise<UserSocialMediaModel> {
     const updatedSocialMedia = await this.transactions.readWrite(async (txn) => {
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
-      const socialMedia = await userSocialMediaRepository.findByUuid(uuid);
-      if (!socialMedia) throw new NotFoundError('Social media URL not found');
-      if (user.uuid !== socialMedia.user.uuid) {
-        throw new ForbiddenError('User cannot update a social media URL of another user');
+      const validSocials = [];
+      for (const uuid of uuids) {
+        const socialMedia = await userSocialMediaRepository.findByUuid(uuid);
+        if (!socialMedia) throw new NotFoundError('Social media URL not found');
+        if (user.uuid !== socialMedia.user.uuid) {
+          throw new ForbiddenError('User cannot update a social media URL of another user');
+        }
+        validSocials.push(socialMedia);
       }
-      return userSocialMediaRepository.upsertSocialMedia(socialMedia, changes);
+      return validSocials.map((socialMedia, index) => updatedSocialMedia.upsertSocialMedia(socialMedia, changes[index]));
     });
     return updatedSocialMedia;
   }
 
-  public async deleteSocialMediaByUuid(user: UserModel, uuid: Uuid): Promise<UserSocialMediaModel> {
+  public async deleteSocialMediasByUuid(user: UserModel, uuids: Uuid[]): Promise<UserSocialMediaModel[]> {
     const updatedSocialMedia = await this.transactions.readWrite(async (txn) => {
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
-      const socialMedia = await userSocialMediaRepository.findByUuid(uuid);
-      if (!socialMedia) throw new NotFoundError('Social media URL not found');
-      if (user.uuid !== socialMedia.user.uuid) {
-        throw new ForbiddenError('User cannot delete a social media URL of another user');
+      const validSocials = [];
+      for (const uuid of uuids) {
+        const socialMedia = await userSocialMediaRepository.findByUuid(uuid);
+        if (!socialMedia) throw new NotFoundError('Social media URL not found');
+        if (user.uuid !== socialMedia.user.uuid) {
+          throw new ForbiddenError('User cannot delete a social media URL of another user');
+        }
+        validSocials.push(socialMedia);
       }
-      return userSocialMediaRepository.deleteSocialMedia(socialMedia);
+      for (const social of validSocials) userSocialMediaRepository.deleteSocialMedia(social);
+      return userSocialMediaRepository.getSocialMediaForUser(user);
     });
     return updatedSocialMedia;
   }

@@ -17,12 +17,12 @@ export class UserSocialMediaRepository extends BaseRepository<UserSocialMediaMod
   }
 
   public async upsertSocialMedia(userSocialMedia: UserSocialMediaModel,
-    changes?: Partial<UserSocialMediaModel>): Promise<UserSocialMediaModel> {
-    if (changes) userSocialMedia = UserSocialMediaModel.merge(userSocialMedia, changes);
+    changes?: Partial<UserSocialMediaModel>[]): Promise<UserSocialMediaModel> {
+    if (changes) for (const change of changes) userSocialMedia = UserSocialMediaModel.merge(userSocialMedia, change);
     return this.repository.save(userSocialMedia);
   }
 
-  public async deleteSocialMedia(userSocialMedia: UserSocialMediaModel): Promise<UserSocialMediaModel> {
+  public async deleteSocialMedia(userSocialMedia: UserSocialMediaModel[]): Promise<UserSocialMediaModel[]> {
     return this.repository.remove(userSocialMedia);
   }
 
