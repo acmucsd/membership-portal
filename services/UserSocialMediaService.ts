@@ -24,6 +24,17 @@ export default class UserSocialMediaService {
 
   public async insertSocialMediaForUser(user: UserModel, socialMedias: SocialMedia[]) {
     const addedSocialMedia = await this.transactions.readWrite(async (txn) => {
+      // checking duplicate
+      const setDuplicateType = new Set();
+      for (const socialMedia of socialMedias) {
+        const type = socialMedia.type;
+        if (setDuplicateType.has(type)) {
+          throw new UserError(`Dupllicate type "${type}" found in the request`);
+        }
+        setDuplicateType.add(type);
+      }
+
+      // inserting social media
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
       const upsertedSocialMedias = await Promise.all(socialMedias.map(async (socialMedia) => {
         const isNewSocialMediaType = await userSocialMediaRepository.isNewSocialMediaTypeForUser(user, socialMedia.type);
@@ -40,6 +51,17 @@ export default class UserSocialMediaService {
   public async updateSocialMediaByUuid(user: UserModel,
     changes: SocialMediaPatches[]): Promise<UserSocialMediaModel[]> {
     const updatedSocialMedia = await this.transactions.readWrite(async (txn) => {
+      // checking duplicate
+      const setDuplicateUuid = new Set();
+      for (const socialMediaPatch of changes) {
+        const uuid = socialMediaPatch.uuid;
+        if (setDuplicateUuid.has(uuid)) {
+          throw new UserError(`Dupllicate UUID "${uuid}" found in the request`);
+        }
+        setDuplicateUuid.add(uuid);
+      }
+
+      // patching social media
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
       const modifiedSocialMedia = await Promise.all(changes.map(async (socialMediaPatches) => {
         const socialMedia = await userSocialMediaRepository.findByUuid(socialMediaPatches.uuid);
