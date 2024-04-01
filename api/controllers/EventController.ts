@@ -8,6 +8,7 @@ import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
 import StorageService from '../../services/StorageService';
 import AttendanceService from '../../services/AttendanceService';
+import { v4 as uuid } from 'uuid';
 import {
   MediaType,
   File,
@@ -27,6 +28,8 @@ import {
   CreateEventRequest,
   SubmitEventFeedbackRequest,
 } from '../validators/EventControllerRequests';
+import { EventModel } from 'models/EventModel';
+import { create, uniq } from 'underscore';
 
 @JsonController('/event')
 export class EventController {
@@ -120,9 +123,13 @@ export class EventController {
 
   @UseBefore(UserAuthentication)
   @Post()
-  async createEvent(@Body() createEventRequest: CreateEventRequest,
+  async createEvent(@UploadedFile('image',
+    { options: StorageService.getFileOptions(MediaType.EVENT_COVER) }) file: File,
+    @Body() createEventRequest: CreateEventRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateEventResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
+    const uniqueFileName = uuid();
+    createEventRequest.event.cover = await this.storageService.upload(file, MediaType.EVENT_COVER, uniqueFileName);
     const event = await this.eventService.create(createEventRequest.event);
     return { error: null, event };
   }
