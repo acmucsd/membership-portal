@@ -167,7 +167,7 @@ export default class UserAccountService {
     });
   }
 
-  public async getAllNamesEmails(): Promise<string[]> {
+  public async getAllNamesEmails() {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .getAllNamesEmails());

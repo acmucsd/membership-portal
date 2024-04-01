@@ -5,6 +5,9 @@ import { UserModel } from '../models/UserModel';
 import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
 
+// Temporary interface import location in ApiResponses.ts
+import { NameEmail } from '../types/ApiResponses';
+
 @EntityRepository(UserModel)
 export class UserRepository extends BaseRepository<UserModel> {
   private static readonly SALT_ROUNDS = 10;
@@ -45,13 +48,16 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.findOne({ accessCode });
   }
 
-  public async getAllNamesEmails(): Promise<string[]> {
+  public async getAllNamesEmails(): Promise<NameEmail[]> {
     const namesEmailsRaw = await this.repository
       .createQueryBuilder()
       .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
       .getRawMany();
-    return namesEmailsRaw.map((nameEmailRaw) => `${nameEmailRaw.UserModel_firstName} `
-      + `${nameEmailRaw.UserModel_lastName} (${nameEmailRaw.email})`);
+    const nameEmailFormatted: NameEmail[] = namesEmailsRaw.map((nameEmailRaw) =>
+    ({firstName: nameEmailRaw.UserModel_firstName,
+     lastName: nameEmailRaw.UserModel_lastName,
+     email: nameEmailRaw.email}));
+    return nameEmailFormatted;
   }
 
   public static async generateHash(pass: string): Promise<string> {

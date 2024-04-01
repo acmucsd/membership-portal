@@ -7,6 +7,13 @@ import { MerchItemOptionMetadata, Uuid } from '.';
 
 // RESPONSE TYPES
 
+// Please remove this when it is figured out where to put the new object type:
+export interface NameEmail {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 export interface CustomErrorBody {
   name: string;
   message: string;
@@ -32,7 +39,7 @@ export interface UploadBannerResponse extends ApiResponse {
 }
 
 export interface GetAllNamesEmailsResponse extends ApiResponse {
-  namesEmails: string[];
+  namesEmails: NameEmail[];
 }
 
 export interface SubmitAttendanceForUsersResponse extends ApiResponse {
