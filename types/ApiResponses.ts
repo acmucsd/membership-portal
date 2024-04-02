@@ -6,14 +6,6 @@ import {
 import { MerchItemOptionMetadata, Uuid } from '.';
 
 // RESPONSE TYPES
-
-// Please remove this when it is figured out where to put the new object type:
-export interface NameEmail {
-  firstName: string;
-  lastName: string;
-  email: string;
-}
-
 export interface CustomErrorBody {
   name: string;
   message: string;
@@ -306,6 +298,11 @@ export interface FulfillMerchOrderResponse extends ApiResponse {
 }
 
 // USER
+export interface NameEmail {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 export interface PublicActivity {
   type: ActivityType,

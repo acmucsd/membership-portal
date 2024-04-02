@@ -2,11 +2,8 @@ import { EntityRepository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Activity } from '../types/internal';
 import { UserModel } from '../models/UserModel';
-import { Uuid } from '../types';
+import { Uuid, NameEmail } from '../types';
 import { BaseRepository } from './BaseRepository';
-
-// Temporary interface import location in ApiResponses.ts
-import { NameEmail } from '../types/ApiResponses';
 
 @EntityRepository(UserModel)
 export class UserRepository extends BaseRepository<UserModel> {
@@ -53,9 +50,10 @@ export class UserRepository extends BaseRepository<UserModel> {
       .createQueryBuilder()
       .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
       .getRawMany();
-    const nameEmailFormatted: NameEmail[] = namesEmailsRaw.map((nameEmailRaw) => ({ firstName: nameEmailRaw.UserModel_firstName,
-      lastName: nameEmailRaw.UserModel_lastName,
-      email: nameEmailRaw.email }));
+    const nameEmailFormatted: NameEmail[] = namesEmailsRaw.map((nameEmailRaw) => ({ firstName:
+      nameEmailRaw.UserModel_firstName,
+    lastName: nameEmailRaw.UserModel_lastName,
+    email: nameEmailRaw.email }));
     return nameEmailFormatted;
   }
 
