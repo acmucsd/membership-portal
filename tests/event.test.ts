@@ -1,5 +1,6 @@
 import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
+import { anything, instance, verify } from 'ts-mockito';
 import { MediaType, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
@@ -8,7 +9,6 @@ import { EventModel } from '../models/EventModel';
 import Mocks from './mocks/MockFactory';
 import { FileFactory } from './data/FileFactory';
 import { Config } from '../config';
-import { anything, instance, verify } from 'ts-mockito';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -72,7 +72,7 @@ describe('event creation', () => {
       storageService.upload(
         cover,
         MediaType.EVENT_COVER,
-        anything()
+        anything(),
       ),
     ).called();
 
