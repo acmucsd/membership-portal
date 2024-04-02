@@ -25,7 +25,7 @@ export default class FeedbackService {
           .map((fb) => fb.getPublicFeedback());
       }
 
-      const userFeedback = await feedbackRepository.getAllFeedbackForUser(user);
+      const userFeedback = await feedbackRepository.getStandardUserFeedback(user, options);
       return userFeedback.map((fb) => fb.getPublicFeedback());
     });
   }
