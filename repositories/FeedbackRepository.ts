@@ -15,8 +15,11 @@ export class FeedbackRepository extends BaseRepository<FeedbackModel> {
     return this.getBaseFindQuery({}).where({ uuid }).getOne();
   }
 
+  // temporary fix for getting feedback for a user for an event
   public async getStandardUserFeedback(user: UserModel, options: FeedbackSearchOptions): Promise<FeedbackModel[]> {
     let query = this.getBaseFindQuery(options);
+    query = query.andWhere('feedback.user = :user', { user: user.uuid });
+
     return query.getMany();
   }
 
