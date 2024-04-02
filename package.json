@@ -1,6 +1,6 @@
 {
   "name": "@acmucsd/membership-portal",
-  "version": "3.4.2",
+  "version": "3.5.1",
   "description": "REST API for ACM UCSD's membership portal.",
   "main": "index.d.ts",
   "files": [
@@ -12,6 +12,7 @@
     "start": "node build/index.js",
     "test": "jest --config jest.config.json --runInBand",
     "dev": "nodemon -L -e ts -i node_modules -i .git -V index.ts",
+    "release": "ts-node ./node_modules/typeorm/cli.js migration:run && node build/index.js",
     "lint": "eslint ./ --ext .ts",
     "lint:fix": "eslint ./ --ext .ts --fix",
     "db:migrate:create": "ts-node ./node_modules/typeorm/cli.js migration:create -n",

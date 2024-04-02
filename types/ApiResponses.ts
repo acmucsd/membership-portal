@@ -311,6 +311,10 @@ export interface VerifyMerchOrderResponse extends ApiResponse {}
 
 export interface EditMerchOrderResponse extends ApiResponse {}
 
+export interface CancelMerchOrderResponse extends ApiResponse {
+  order: PublicOrderWithItems;
+}
+
 export interface GetCartResponse extends ApiResponse {
   cart: PublicOrderMerchItemOption[];
 }
@@ -353,7 +357,8 @@ export interface PrivateProfile extends PublicProfile {
 export interface PublicFeedback {
   uuid: Uuid,
   user: PublicProfile,
-  title: string;
+  event: PublicEvent,
+  source: string;
   description: string;
   timestamp: Date;
   status: FeedbackStatus;
@@ -412,11 +417,11 @@ export interface GetUserSocialMediaResponse extends ApiResponse {
 }
 
 export interface InsertSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface UpdateSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface DeleteSocialMediaResponse extends ApiResponse {}

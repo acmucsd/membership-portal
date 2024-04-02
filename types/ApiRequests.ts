@@ -1,5 +1,5 @@
-import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 import { Uuid } from '.';
+import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 
 // REQUEST TYPES
 
@@ -45,7 +45,8 @@ export interface RegistrationRequest {
 // USER
 
 export interface Feedback {
-  title: string;
+  event: Uuid;
+  source: string;
   description: string;
   type: FeedbackType;
 }
@@ -82,16 +83,24 @@ export interface UpdateFeedbackStatusRequest {
   status: FeedbackStatus;
 }
 
+export interface FeedbackSearchOptions {
+  event?: string;
+  type?: string;
+  status?: string;
+  user?: string;
+}
+
 export interface InsertUserSocialMediaRequest {
-  socialMedia: SocialMedia;
+  socialMedia: SocialMedia[];
 }
 
 export interface SocialMediaPatches {
-  url?: string;
+  uuid: string;
+  url: string;
 }
 
 export interface UpdateUserSocialMediaRequest {
-  socialMedia: SocialMediaPatches;
+  socialMedia: SocialMediaPatches[];
 }
 
 // LEADERBOARD

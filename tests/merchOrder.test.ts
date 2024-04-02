@@ -445,7 +445,8 @@ describe('merch orders', () => {
 
     // cancel order
     const { uuid } = placedOrderResponse.order;
-    await merchController.cancelMerchOrder({ uuid }, member);
+    const cancelOrderResponse = await merchController.cancelMerchOrder({ uuid }, member);
+    expect(cancelOrderResponse.order.uuid).toEqual(uuid);
 
     // get order, making sure state was updated and user has been refunded
     const cancelledOrderResponse = await merchController.getOneMerchOrder({ uuid }, member);
@@ -521,7 +522,8 @@ describe('merch orders', () => {
 
     // cancel the order
     const { uuid } = placedOrderResponse.order;
-    await merchController.cancelMerchOrder({ uuid }, member);
+    const cancelOrderResponse = await merchController.cancelMerchOrder({ uuid }, member);
+    expect(cancelOrderResponse.order.uuid).toEqual(uuid);
 
     // make sure user has only been refunded 1 option worth of points
     await member.reload();
@@ -893,7 +895,8 @@ describe('merch orders', () => {
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placedOrder = await conn.manager.findOne(OrderModel, { user: member }, { relations: ['items'] });
     const cancelOrderParams = { uuid: placedOrder.uuid };
-    await merchController.cancelMerchOrder(cancelOrderParams, member);
+    const cancelOrderResponse = await merchController.cancelMerchOrder(cancelOrderParams, member);
+    expect(cancelOrderResponse.order.uuid).toEqual(cancelOrderParams.uuid);
 
     // place order with 2 items again
     const secondOrder = [{ option: option.uuid, quantity: 2 }];
