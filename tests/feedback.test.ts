@@ -164,7 +164,7 @@ describe('feedback submission', () => {
     const feedbackController = ControllerFactory.feedback(conn);
     await feedbackController.submitFeedback(buildFeedbackRequest(feedback1), member1);
     await feedbackController.submitFeedback(buildFeedbackRequest(feedback2), member2);
-    const user1Feedback = await feedbackController.getFeedback({}, member1);
+    const user1Feedback = await feedbackController.getFeedback({ user: member1.uuid }, member1);
 
     expect(user1Feedback.feedback).toHaveLength(1);
 
