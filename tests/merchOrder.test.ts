@@ -10,6 +10,9 @@ import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
 import { UserModel } from '../models/UserModel';
+import { FileFactory } from './data/FileFactory';
+import Mocks from './mocks/MockFactory';
+import { Config } from '../config';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -902,6 +905,8 @@ describe('merch orders', () => {
 });
 
 describe('merch order pickup events', () => {
+  const fileLocation = 'https://s3.amazonaws.com/event-cover.jpg';
+
   test('past, future, and individual pickup events can be retrieved', async () => {
     const conn = await DatabaseConnection.get();
     const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
@@ -972,8 +977,10 @@ describe('merch order pickup events', () => {
     const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
     const linkedEvent = EventFactory.fake();
-    const eventController = ControllerFactory.event(conn);
-    await eventController.createEvent({ event: linkedEvent }, admin);
+    const cover = FileFactory.image(Config.file.MAX_EVENT_COVER_FILE_SIZE / 2);
+    const storageService = Mocks.storage(fileLocation);
+    const eventController = ControllerFactory.event(conn, instance(storageService));
+    await eventController.createEvent(cover, { event: linkedEvent }, admin);
 
     const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ linkedEvent });
 
@@ -996,7 +1003,7 @@ describe('merch order pickup events', () => {
     // edit a linked event
 
     const newLinkedEvent = EventFactory.fake();
-    await eventController.createEvent({ event: newLinkedEvent }, admin);
+    await eventController.createEvent(cover, { event: newLinkedEvent }, admin);
 
     const editPickupEventRequest = { pickupEvent: { linkedEventUuid: newLinkedEvent.uuid } };
     const params = { uuid: pickupEvent.uuid };

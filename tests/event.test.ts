@@ -113,7 +113,6 @@ describe('event creation', () => {
     const eventController = ControllerFactory.event(conn, instance(storageService));
     await expect(eventController.createEvent(cover, createEventRequest, user))
       .rejects.toThrow(ForbiddenError);
-    verify(storageService.deleteAtUrl(fileLocation)).called();
   });
 
   test('throws error when start date later than end date', async () => {
@@ -147,6 +146,7 @@ describe('event creation', () => {
     const eventController = ControllerFactory.event(conn, instance(storageService));
     await expect(eventController.createEvent(cover, createEventRequest, admin))
       .rejects.toThrow('Start date after end date');
+    verify(storageService.deleteAtUrl(fileLocation)).called();
   });
 });
 
