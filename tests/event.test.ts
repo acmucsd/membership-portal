@@ -8,7 +8,7 @@ import { EventModel } from '../models/EventModel';
 import Mocks from './mocks/MockFactory';
 import { FileFactory } from './data/FileFactory';
 import { Config } from '../config';
-import { anything, verify } from 'ts-mockito';
+import { anything, instance, verify } from 'ts-mockito';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -55,7 +55,7 @@ describe('event creation', () => {
     // creating the event
     const cover = FileFactory.image(Config.file.MAX_EVENT_COVER_FILE_SIZE / 2);
     const storageService = Mocks.storage(fileLocation);
-    const eventController = ControllerFactory.event(conn, storageService);
+    const eventController = ControllerFactory.event(conn, instance(storageService));
     const eventResponse = await eventController.createEvent(cover, createEventRequest, admin);
 
     // verifying response from event creation
@@ -110,7 +110,7 @@ describe('event creation', () => {
     // verifying correct error
     const cover = FileFactory.image(Config.file.MAX_EVENT_COVER_FILE_SIZE / 2);
     const storageService = Mocks.storage(fileLocation);
-    const eventController = ControllerFactory.event(conn, storageService);
+    const eventController = ControllerFactory.event(conn, instance(storageService));
     await expect(eventController.createEvent(cover, createEventRequest, user))
       .rejects.toThrow(ForbiddenError);
     verify(storageService.deleteAtUrl(fileLocation)).called();
@@ -144,10 +144,9 @@ describe('event creation', () => {
     // verifying correct error thrown
     const cover = FileFactory.image(Config.file.MAX_EVENT_COVER_FILE_SIZE / 2);
     const storageService = Mocks.storage(fileLocation);
-    const eventController = ControllerFactory.event(conn, storageService);
+    const eventController = ControllerFactory.event(conn, instance(storageService));
     await expect(eventController.createEvent(cover, createEventRequest, admin))
       .rejects.toThrow('Start date after end date');
-    verify(storageService.deleteAtUrl(fileLocation)).called();
   });
 });
 

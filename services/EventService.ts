@@ -29,6 +29,7 @@ export default class EventService {
     const eventCreated = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(event.attendanceCode);
+      // console.log(event.cover);
       if (!isUnusedAttendanceCode) {
         this.storageService.deleteAtUrl(event.cover);
         throw new UserError('Attendance code has already been used');
@@ -37,6 +38,7 @@ export default class EventService {
         this.storageService.deleteAtUrl(event.cover);
         throw new UserError('Start date after end date');
       }
+      console.log("Here");
       return eventRepository.upsertEvent(EventModel.create(event));
     });
     return eventCreated.getPublicEvent();
