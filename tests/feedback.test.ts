@@ -1,11 +1,22 @@
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { DatabaseConnection, PortalState, UserFactory } from './data';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { FeedbackFactory } from './data/FeedbackFactory';
-import { ActivityScope, ActivityType, FeedbackStatus, UserAccessType } from '../types';
+import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType, UserAccessType } from '../types';
 import { Feedback } from '../api/validators/FeedbackControllerRequests';
-import { Config } from '../config';
 import { ControllerFactory } from './controllers';
+
+function buildFeedbackRequest(feedback) {
+  return {
+    feedback: {
+      event: feedback.event.uuid,
+      source: feedback.source,
+      status: feedback.status,
+      type: feedback.type,
+      description: feedback.description,
+    },
+  };
+}
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -21,31 +32,46 @@ afterAll(async () => {
 });
 
 describe('feedback submission', () => {
-  test('properly persists on successful submission', async () => {
+  test('users can submit feedback', async () => {
+    const event = EventFactory.fake();
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
-    const feedback = FeedbackFactory.fake();
+    const feedback = FeedbackFactory.fake({ event });
 
     await new PortalState()
       .createUsers(member)
+      .createEvents(event)
       .write();
 
     const feedbackController = ControllerFactory.feedback(conn);
+    const submittedFeedbackResponse = await feedbackController.submitFeedback(buildFeedbackRequest(feedback), member);
 
-    await feedbackController.submitFeedback({ feedback }, member);
-    const submittedFeedbackResponse = await feedbackController.getFeedback(member);
+    // check response
+    expect(submittedFeedbackResponse.feedback.description).toEqual(feedback.description);
+    expect(submittedFeedbackResponse.feedback.source).toEqual(feedback.source);
+    expect(submittedFeedbackResponse.feedback.type).toEqual(feedback.type);
+    expect(submittedFeedbackResponse.feedback.status).toEqual(FeedbackStatus.SUBMITTED);
+    expect(submittedFeedbackResponse.feedback.event.uuid).toEqual(feedback.event.uuid);
 
-    expect(submittedFeedbackResponse.feedback).toHaveLength(1);
-    expect(submittedFeedbackResponse.feedback[0]).toStrictEqual({
-      ...submittedFeedbackResponse.feedback[0],
+    // check if it persists
+    const queriedFeedback = await feedbackController.getFeedback({}, member);
+    expect(queriedFeedback.feedback).toHaveLength(1);
+
+    expect(queriedFeedback.feedback[0]).toEqual({
+      ...submittedFeedbackResponse.feedback,
       user: member.getPublicProfile(),
+      event: event.getPublicEvent(),
+      source: feedback.source,
+      description: feedback.description,
       status: FeedbackStatus.SUBMITTED,
-      ...feedback,
+      type: feedback.type,
     });
   });
 
   test('is invalidated when submission description is too short', async () => {
-    const feedback = FeedbackFactory.fake({ description: 'A short description' });
+    const event = EventFactory.fake();
+
+    const feedback = FeedbackFactory.fake({ event, description: 'A short description' });
 
     const errors = await validate(plainToClass(Feedback, feedback));
 
@@ -56,15 +82,30 @@ describe('feedback submission', () => {
   });
 
   test('has proper activity scope and type', async () => {
+    const event = EventFactory.fake({
+      title: 'AI: Intro to Neural Nets',
+      description: `Artificial neural networks (ANNs), usually simply called
+      neural networks (NNs), are computing systems vaguely inspired by the
+      biological neural networks that constitute animal brains. An ANN is based
+      on a collection of connected units or nodes called artificial neurons,
+      which loosely model the neurons in a biological brain.`,
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galaxybrain',
+      requiresStaff: true,
+    });
+
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
-    const feedback = FeedbackFactory.fake();
+    const feedback = FeedbackFactory.fake({ event });
 
     await new PortalState()
       .createUsers(member)
+      .createEvents(event)
       .write();
 
-    await ControllerFactory.feedback(conn).submitFeedback({ feedback }, member);
+    await ControllerFactory.feedback(conn).submitFeedback(buildFeedbackRequest(feedback), member);
     const activityResponse = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
     const feedbackSubmissionActivity = activityResponse.activity[1];
 
@@ -73,114 +114,98 @@ describe('feedback submission', () => {
   });
 
   test('admins can view feedback from any member', async () => {
+    const event = EventFactory.fake();
+
     const conn = await DatabaseConnection.get();
     const [member1, member2] = UserFactory.create(2);
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const [feedback1, feedback2] = FeedbackFactory.create(2);
+    const feedback1 = FeedbackFactory.fake({ event });
+    const feedback2 = FeedbackFactory.fake({ event });
 
     await new PortalState()
       .createUsers(member1, member2, admin)
+      .createEvents(event)
       .write();
 
     const feedbackController = ControllerFactory.feedback(conn);
 
-    const submittedFeedback1Response = await feedbackController.submitFeedback({ feedback: feedback1 }, member1);
-    const submittedFeedback2Response = await feedbackController.submitFeedback({ feedback: feedback2 }, member2);
-    const allSubmittedFeedbackResponse = await feedbackController.getFeedback(admin);
+    const submittedFeedback1Response = await feedbackController.submitFeedback(
+      buildFeedbackRequest(feedback1), member1,
+    );
+    const submittedFeedback2Response = await feedbackController.submitFeedback(
+      buildFeedbackRequest(feedback2), member2,
+    );
 
-    expect(allSubmittedFeedbackResponse.feedback).toHaveLength(2);
-    expect(allSubmittedFeedbackResponse.feedback).toEqual(
-      expect.arrayContaining([submittedFeedback1Response.feedback, submittedFeedback2Response.feedback]),
+    const allSubmittedFeedback = await feedbackController.getFeedback({}, admin);
+
+    expect(allSubmittedFeedback.feedback).toHaveLength(2);
+
+    expect(allSubmittedFeedback.feedback).toEqual(
+      expect.arrayContaining([
+        submittedFeedback1Response.feedback,
+        submittedFeedback2Response.feedback,
+      ]),
     );
   });
 
   test('members can view only their own feedback', async () => {
+    const event = EventFactory.fake();
+
     const conn = await DatabaseConnection.get();
     const [member1, member2] = UserFactory.create(2);
-    const [feedback1, feedback2] = FeedbackFactory.create(2);
+    const feedback1 = FeedbackFactory.fake({ event, user: member1 });
+    const feedback2 = FeedbackFactory.fake({ event, user: member2 });
 
     await new PortalState()
       .createUsers(member1, member2)
+      .createEvents(event)
       .write();
 
     const feedbackController = ControllerFactory.feedback(conn);
-    await feedbackController.submitFeedback({ feedback: feedback1 }, member1);
-    await feedbackController.submitFeedback({ feedback: feedback2 }, member2);
-    const user1Feedback = await feedbackController.getFeedback(member1);
+    await feedbackController.submitFeedback(buildFeedbackRequest(feedback1), member1);
+    await feedbackController.submitFeedback(buildFeedbackRequest(feedback2), member2);
+    const user1Feedback = await feedbackController.getFeedback({ user: member1.uuid }, member1);
 
     expect(user1Feedback.feedback).toHaveLength(1);
-    expect(user1Feedback.feedback[0]).toMatchObject(feedback1);
-  });
 
-  test('admin can acknowledge and reward points for feedback', async () => {
-    const conn = await DatabaseConnection.get();
-    const member = UserFactory.fake();
-    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback = FeedbackFactory.fake();
-
-    await new PortalState()
-      .createUsers(member, admin)
-      .write();
-
-    const userController = ControllerFactory.user(conn);
-    const feedbackController = ControllerFactory.feedback(conn);
-
-    const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, member);
-
-    const status = FeedbackStatus.ACKNOWLEDGED;
-    const uuid = submittedFeedbackResponse.feedback;
-    const acknowledgedFeedback = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
-
-    const persistedUserResponse = await userController.getUser({ uuid: member.uuid }, admin);
-
-    const feedbackPointReward = Config.pointReward.FEEDBACK_POINT_REWARD;
-
-    expect(acknowledgedFeedback.feedback.status).toEqual(FeedbackStatus.ACKNOWLEDGED);
-    expect(persistedUserResponse.user.points).toEqual(member.points + feedbackPointReward);
-  });
-
-  test('admin can ignore and not reward points for feedback', async () => {
-    const conn = await DatabaseConnection.get();
-    const member = UserFactory.fake();
-    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const feedback = FeedbackFactory.fake();
-
-    await new PortalState()
-      .createUsers(member, admin)
-      .write();
-
-    const userController = ControllerFactory.user(conn);
-    const feedbackController = ControllerFactory.feedback(conn);
-
-    const submittedFeedbackResponse = await feedbackController.submitFeedback({ feedback }, member);
-    const status = FeedbackStatus.IGNORED;
-    const uuid = submittedFeedbackResponse.feedback;
-    const ignoredFeedbackResponse = await feedbackController.updateFeedbackStatus(uuid, { status }, admin);
-
-    const persistedUserResponse = await userController.getUser({ uuid: member.uuid }, admin);
-
-    expect(ignoredFeedbackResponse.feedback.status).toEqual(FeedbackStatus.IGNORED);
-    expect(persistedUserResponse.user.points).toEqual(member.points);
+    expect(user1Feedback.feedback[0]).toMatchObject({
+      ...user1Feedback.feedback[0],
+      user: member1.getPublicProfile(),
+      event: event.getPublicEvent(),
+      source: feedback1.source,
+      description: feedback1.description,
+      status: FeedbackStatus.SUBMITTED,
+      type: feedback1.type,
+    });
   });
 
   test('cannot be responded to after already being responded to', async () => {
+    const event = EventFactory.fake();
+
     const conn = await DatabaseConnection.get();
-    const member = UserFactory.fake();
+    const [member1, member2] = UserFactory.create(2);
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
-    const [feedback1, feedback2] = FeedbackFactory.create(2);
+    const feedback1 = FeedbackFactory.fake({ event, user: member1 });
+    const feedback2 = FeedbackFactory.fake({ event, user: member2 });
 
     await new PortalState()
-      .createUsers(member, admin)
+      .createUsers(member1, member2, admin)
+      .createEvents(event)
       .write();
 
     const feedbackController = ControllerFactory.feedback(conn);
 
-    const feedbackToAcknowledgeResponse = await feedbackController.submitFeedback({ feedback: feedback1 }, member);
-    const feedbackToIgnoreResponse = await feedbackController.submitFeedback({ feedback: feedback2 }, member);
+    const feedbackToAcknowledgeResponse = await feedbackController.submitFeedback(
+      buildFeedbackRequest(feedback1), member1,
+    );
+    const feedbackToIgnoreResponse = await feedbackController.submitFeedback(
+      buildFeedbackRequest(feedback2), member2,
+    );
 
     const feedbackToAcknowledgeParams = { uuid: feedbackToAcknowledgeResponse.feedback.uuid };
-    const feedbackToIgnoreParams = { uuid: feedbackToIgnoreResponse.feedback.uuid };
     const acknowledged = { status: FeedbackStatus.ACKNOWLEDGED };
+
+    const feedbackToIgnoreParams = { uuid: feedbackToIgnoreResponse.feedback.uuid };
     const ignored = { status: FeedbackStatus.IGNORED };
 
     await feedbackController.updateFeedbackStatus(feedbackToAcknowledgeParams, acknowledged, admin);
@@ -189,11 +214,253 @@ describe('feedback submission', () => {
     const errorMessage = 'This feedback has already been responded to';
     await expect(feedbackController.updateFeedbackStatus(feedbackToAcknowledgeParams, acknowledged, admin))
       .rejects.toThrow(errorMessage);
-    await expect(feedbackController.updateFeedbackStatus(feedbackToAcknowledgeParams, ignored, admin))
-      .rejects.toThrow(errorMessage);
-    await expect(feedbackController.updateFeedbackStatus(feedbackToIgnoreParams, acknowledged, admin))
-      .rejects.toThrow(errorMessage);
+
     await expect(feedbackController.updateFeedbackStatus(feedbackToIgnoreParams, ignored, admin))
       .rejects.toThrow(errorMessage);
+  });
+
+  test('get all feedback for an event', async () => {
+    const event1 = EventFactory.fake({
+      title: 'AI: Intro to Neural Nets',
+      description: `Artificial neural networks (ANNs), usually simply called
+      neural networks (NNs), are computing systems vaguely inspired by the
+      biological neural networks that constitute animal brains. An ANN is based
+      on a collection of connected units or nodes called artificial neurons,
+      which loosely model the neurons in a biological brain.`,
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galaxybrain',
+      requiresStaff: true,
+      cover: null,
+      thumbnail: null,
+      eventLink: null,
+    });
+
+    const event2 = EventFactory.fake({
+      title: 'Not the right event!',
+      description: `Artificial neural networks (ANNs), usually simply called
+      neural networks (NNs), are computing systems vaguely inspired by the
+      biological neural networks that constitute animal brains. An ANN is based
+      on a collection of connected units or nodes called artificial neurons,
+      which loosely model the neurons in a biological brain.`,
+      committee: 'AI',
+      location: 'Qualcomm Room',
+      ...EventFactory.daysBefore(6),
+      attendanceCode: 'galxybrain',
+      requiresStaff: true,
+      cover: null,
+      thumbnail: null,
+      eventLink: null,
+    });
+
+    const conn = await DatabaseConnection.get();
+    const [member1, member2] = UserFactory.create(2);
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const feedback1 = FeedbackFactory.fake({ event: event1, user: member1 });
+    const feedback2 = FeedbackFactory.fake({ event: event1, user: member2 });
+    const feedback3 = FeedbackFactory.fake({ event: event2, user: member1 });
+
+    await new PortalState()
+      .createUsers(member1, member2, admin)
+      .createEvents(event1, event2)
+      .write();
+
+    const feedbackController = ControllerFactory.feedback(conn);
+    const fb1Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback1), member1);
+    const fb2Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback2), member2);
+    const fb3Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback3), member1);
+    const event1Feedback = await feedbackController.getFeedback({ event: event1.uuid }, admin);
+    const event2Feedback = await feedbackController.getFeedback({ event: event2.uuid }, admin);
+
+    expect(event1Feedback.feedback).toHaveLength(2);
+    expect(event2Feedback.feedback).toHaveLength(1);
+
+    expect(event1Feedback.feedback).toEqual(
+      expect.arrayContaining([
+        fb1Response.feedback,
+        fb2Response.feedback,
+      ]),
+    );
+
+    expect(event2Feedback.feedback).toEqual(
+      expect.arrayContaining([
+        fb3Response.feedback,
+      ]),
+    );
+  });
+
+  test('get all feedback by status', async () => {
+    const event1 = EventFactory.fake();
+
+    const conn = await DatabaseConnection.get();
+    const [member1, member2, member3] = UserFactory.create(3);
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const feedback1 = FeedbackFactory.fake({ event: event1, status: FeedbackStatus.ACKNOWLEDGED });
+    const feedback2 = FeedbackFactory.fake({ event: event1, status: FeedbackStatus.ACKNOWLEDGED });
+    const feedback3 = FeedbackFactory.fake({ event: event1, status: FeedbackStatus.SUBMITTED });
+
+    await new PortalState()
+      .createUsers(member1, member2, member3, admin)
+      .createEvents(event1)
+      .write();
+
+    const feedbackController = ControllerFactory.feedback(conn);
+    const fb1Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback1), member1);
+    const fb2Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback2), member2);
+    const fb3Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback3), member3);
+    const status1Feedback = await feedbackController.getFeedback({ status: FeedbackStatus.ACKNOWLEDGED }, admin);
+    const status2Feedback = await feedbackController.getFeedback({ status: FeedbackStatus.SUBMITTED }, admin);
+
+    expect(status1Feedback.feedback).toHaveLength(2);
+    expect(status2Feedback.feedback).toHaveLength(1);
+
+    expect(status1Feedback.feedback).toEqual(
+      expect.arrayContaining([
+        fb1Response.feedback,
+        fb2Response.feedback,
+      ]),
+    );
+
+    expect(status2Feedback.feedback).toEqual(
+      expect.arrayContaining([
+        fb3Response.feedback,
+      ]),
+    );
+  });
+
+  test('get all feedback by type', async () => {
+    const event1 = EventFactory.fake();
+
+    const conn = await DatabaseConnection.get();
+    const [member1, member2, member3] = UserFactory.create(3);
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const feedback1 = FeedbackFactory.fake({ event: event1, type: FeedbackType.GENERAL, user: member1 });
+    const feedback2 = FeedbackFactory.fake({ event: event1, type: FeedbackType.GENERAL, user: member2 });
+    const feedback3 = FeedbackFactory.fake({ event: event1, type: FeedbackType.AI, user: member3 });
+
+    await new PortalState()
+      .createUsers(member1, member2, member3, admin)
+      .createEvents(event1)
+      .write();
+
+    const feedbackController = ControllerFactory.feedback(conn);
+    const fb1Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback1), member1);
+    const fb2Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback2), member2);
+    const fb3Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback3), member3);
+    const type1Feedback = await feedbackController.getFeedback({ type: FeedbackType.GENERAL }, admin);
+    const type2Feedback = await feedbackController.getFeedback({ type: FeedbackType.AI }, admin);
+
+    expect(type1Feedback.feedback).toHaveLength(2);
+    expect(type2Feedback.feedback).toHaveLength(1);
+
+    expect(type1Feedback.feedback).toEqual(
+      expect.arrayContaining([
+        fb1Response.feedback,
+        fb2Response.feedback,
+      ]),
+    );
+
+    expect(type2Feedback.feedback).toEqual(
+      expect.arrayContaining([
+        fb3Response.feedback,
+      ]),
+    );
+  });
+
+  test('get all feedback by member', async () => {
+    const event1 = EventFactory.fake();
+
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const member2 = UserFactory.fake();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const feedback1 = FeedbackFactory.fake({ event: event1, user: member });
+    const feedback2 = FeedbackFactory.fake({ event: event1, user: member2 });
+
+    await new PortalState()
+      .createUsers(member, member2, admin)
+      .createEvents(event1)
+      .write();
+
+    const feedbackController = ControllerFactory.feedback(conn);
+    const fb1Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback1), member);
+    const fb2Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback2), member2);
+
+    const type1Feedback = await feedbackController.getFeedback({ user: member.uuid }, admin);
+    const type2Feedback = await feedbackController.getFeedback({ user: member2.uuid }, admin);
+
+    expect(type1Feedback.feedback).toHaveLength(1);
+    expect(type2Feedback.feedback).toHaveLength(1);
+
+    expect(type1Feedback.feedback).toEqual(
+      expect.arrayContaining([
+        fb1Response.feedback,
+      ]),
+    );
+
+    expect(type2Feedback.feedback).toEqual(
+      expect.arrayContaining([
+        fb2Response.feedback,
+      ]),
+    );
+  });
+
+  test('get all feedback with multiple parameters', async () => {
+    const event1 = EventFactory.fake();
+
+    const event2 = EventFactory.fake();
+
+    const conn = await DatabaseConnection.get();
+    const [member1, member2, member3] = UserFactory.create(3);
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const feedback1 = FeedbackFactory.fake({ event: event1,
+      status: FeedbackStatus.ACKNOWLEDGED,
+      type: FeedbackType.GENERAL,
+      user: member1 });
+    const feedback2 = FeedbackFactory.fake({ event: event1,
+      status: FeedbackStatus.IGNORED,
+      type: FeedbackType.GENERAL,
+      user: member2 });
+    const feedback3 = FeedbackFactory.fake({ event: event1,
+      status: FeedbackStatus.SUBMITTED,
+      type: FeedbackType.INNOVATE,
+      user: member3 });
+    const feedback4 = FeedbackFactory.fake({ event: event2,
+      status: FeedbackStatus.ACKNOWLEDGED,
+      type: FeedbackType.GENERAL,
+      user: member1 });
+
+    await new PortalState()
+      .createUsers(member1, member2, member3, admin)
+      .createEvents(event1, event2)
+      .write();
+
+    const feedbackController = ControllerFactory.feedback(conn);
+    const fb1Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback1), member1);
+    const fb2Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback2), member2);
+    await feedbackController.submitFeedback(buildFeedbackRequest(feedback3), member3);
+    const fb4Response = await feedbackController.submitFeedback(buildFeedbackRequest(feedback4), member1);
+    const query1Feedback = await feedbackController.getFeedback({ event: event1.uuid,
+      type: FeedbackType.GENERAL }, admin);
+    const query2Feedback = await feedbackController.getFeedback({ status: FeedbackStatus.ACKNOWLEDGED,
+      type: FeedbackType.GENERAL }, admin);
+
+    expect(query1Feedback.feedback).toHaveLength(2);
+    expect(query2Feedback.feedback).toHaveLength(2);
+
+    expect(query1Feedback.feedback).toEqual(
+      expect.arrayContaining([
+        fb1Response.feedback,
+        fb2Response.feedback,
+      ]),
+    );
+
+    expect(query2Feedback.feedback).toEqual(
+      expect.arrayContaining([
+        fb1Response.feedback,
+        fb4Response.feedback,
+      ]),
+    );
   });
 });

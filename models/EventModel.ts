@@ -2,6 +2,7 @@ import * as moment from 'moment';
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { PublicEvent, Uuid } from '../types';
 import { AttendanceModel } from './AttendanceModel';
+import { FeedbackModel } from './FeedbackModel';
 import { ExpressCheckinModel } from './ExpressCheckinModel';
 
 @Entity('Events')
@@ -59,6 +60,9 @@ export class EventModel extends BaseEntity {
 
   @OneToMany((type) => AttendanceModel, (attendance) => attendance.event, { cascade: true })
   attendances: AttendanceModel[];
+
+  @OneToMany((type) => FeedbackModel, (feedback) => feedback.event, { cascade: true })
+  feedback: FeedbackModel[];
 
   @OneToMany((type) => ExpressCheckinModel, (expressCheckin) => expressCheckin.event, { cascade: true })
   expressCheckins: ExpressCheckinModel[];

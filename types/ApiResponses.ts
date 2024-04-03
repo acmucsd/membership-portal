@@ -359,7 +359,8 @@ export interface PrivateProfile extends PublicProfile {
 export interface PublicFeedback {
   uuid: Uuid,
   user: PublicProfile,
-  title: string;
+  event: PublicEvent,
+  source: string;
   description: string;
   timestamp: Date;
   status: FeedbackStatus;
@@ -418,11 +419,11 @@ export interface GetUserSocialMediaResponse extends ApiResponse {
 }
 
 export interface InsertSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface UpdateSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface DeleteSocialMediaResponse extends ApiResponse {}
