@@ -4,6 +4,7 @@ import {
 import { Uuid, PublicMerchItem, PublicCartMerchItem } from '../types';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
 import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
+import { MerchandiseItemPhotoModel } from './MerchandiseItemPhotoModel';
 
 @Entity('MerchandiseItems')
 export class MerchandiseItemModel extends BaseEntity {
@@ -20,9 +21,6 @@ export class MerchandiseItemModel extends BaseEntity {
   @JoinColumn({ name: 'collection' })
   collection: MerchandiseCollectionModel;
 
-  @Column('varchar', { length: 255, nullable: true })
-  picture: string;
-
   @Column('text')
   description: string;
 
@@ -38,6 +36,9 @@ export class MerchandiseItemModel extends BaseEntity {
   @Column('boolean', { default: false })
   hasVariantsEnabled: boolean;
 
+  @OneToMany((type) => MerchandiseItemPhotoModel, (merchPhoto) => merchPhoto.merchItem, { cascade: true })
+  merchPhotos: MerchandiseItemPhotoModel[];
+
   @OneToMany((type) => MerchandiseItemOptionModel, (option) => option.item, { cascade: true })
   options: MerchandiseItemOptionModel[];
 
@@ -45,7 +46,7 @@ export class MerchandiseItemModel extends BaseEntity {
     const baseMerchItem: PublicMerchItem = {
       uuid: this.uuid,
       itemName: this.itemName,
-      picture: this.picture,
+      merchPhotos: this.merchPhotos.map((o) => o.getPublicMerchItemPhoto()).sort((a, b) => a.position - b.position),
       description: this.description,
       options: this.options.map((o) => o.getPublicMerchItemOption()),
       monthlyLimit: this.monthlyLimit,
@@ -61,8 +62,17 @@ export class MerchandiseItemModel extends BaseEntity {
     return {
       uuid: this.uuid,
       itemName: this.itemName,
-      picture: this.picture,
+      uploadedPhoto: this.getDefaultPhotoUrl(),
       description: this.description,
     };
+  }
+
+  // get the first index of photo if possible
+  public getDefaultPhotoUrl(): string {
+    if (this.merchPhotos.length === 0) return null;
+    return this.merchPhotos.reduce(
+      (min, current) => ((min.position < current.position) ? min : current),
+      this.merchPhotos[0],
+    ).uploadedPhoto;
   }
 }

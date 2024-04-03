@@ -39,6 +39,14 @@ export interface SubmitAttendanceForUsersResponse extends ApiResponse {
   attendances: PublicAttendance[];
 }
 
+export interface ModifyUserAccessLevelResponse extends ApiResponse {
+  updatedUsers: PrivateProfile[];
+}
+
+export interface GetAllUserAccessLevelsResponse extends ApiResponse {
+  users: PrivateProfile[];
+}
+
 // ATTENDANCE
 
 export interface PublicAttendance {
@@ -59,6 +67,12 @@ export interface GetAttendancesForUserResponse extends ApiResponse {
 
 export interface AttendEventResponse extends ApiResponse {
   event: PublicEvent;
+}
+
+export interface PublicExpressCheckin {
+  email: string;
+  event: PublicEvent;
+  timestamp: Date;
 }
 
 // AUTH
@@ -149,6 +163,7 @@ export interface PublicMerchCollection {
   themeColorHex?: string;
   description: string;
   items: PublicMerchItem[];
+  collectionPhotos: PublicMerchCollectionPhoto[]
   createdAt: Date;
 }
 
@@ -156,12 +171,12 @@ export interface PublicMerchItem {
   uuid: Uuid;
   itemName: string;
   collection?: PublicMerchCollection;
-  picture: string;
   description: string;
   monthlyLimit: number;
   lifetimeLimit: number;
   hidden: boolean;
   hasVariantsEnabled: boolean;
+  merchPhotos: PublicMerchItemPhoto[];
   options: PublicMerchItemOption[];
 }
 
@@ -173,7 +188,7 @@ export interface PublicMerchItemWithPurchaseLimits extends PublicMerchItem {
 export interface PublicCartMerchItem {
   uuid: Uuid;
   itemName: string;
-  picture: string;
+  uploadedPhoto: string;
   description: string;
 }
 
@@ -183,6 +198,20 @@ export interface PublicMerchItemOption {
   quantity: number;
   discountPercentage: number;
   metadata: MerchItemOptionMetadata;
+}
+
+export interface PublicMerchItemPhoto {
+  uuid: Uuid;
+  uploadedPhoto: string;
+  position: number;
+  uploadedAt: Date;
+}
+
+export interface PublicMerchCollectionPhoto {
+  uuid: Uuid;
+  uploadedPhoto: string;
+  position: number;
+  uploadedAt: Date
 }
 
 export interface PublicOrderMerchItemOption {
@@ -234,6 +263,12 @@ export interface EditMerchCollectionResponse extends ApiResponse {
 
 export interface DeleteMerchCollectionResponse extends ApiResponse {}
 
+export interface CreateCollectionPhotoResponse extends ApiResponse {
+  collectionPhoto: PublicMerchCollectionPhoto;
+}
+
+export interface DeleteCollectionPhotoResponse extends ApiResponse {}
+
 export interface GetOneMerchItemResponse extends ApiResponse {
   item: PublicMerchItemWithPurchaseLimits;
 }
@@ -248,9 +283,11 @@ export interface EditMerchItemResponse extends ApiResponse {
 
 export interface DeleteMerchItemResponse extends ApiResponse {}
 
-export interface UpdateMerchPhotoResponse extends ApiResponse {
-  item: PublicMerchItem;
+export interface CreateMerchPhotoResponse extends ApiResponse {
+  merchPhoto: PublicMerchItemPhoto;
 }
+
+export interface DeleteMerchItemPhotoResponse extends ApiResponse {}
 
 export interface CreateMerchItemOptionResponse extends ApiResponse {
   option: PublicMerchItemOption;
@@ -273,6 +310,10 @@ export interface PlaceMerchOrderResponse extends ApiResponse {
 export interface VerifyMerchOrderResponse extends ApiResponse {}
 
 export interface EditMerchOrderResponse extends ApiResponse {}
+
+export interface CancelMerchOrderResponse extends ApiResponse {
+  order: PublicOrderWithItems;
+}
 
 export interface GetCartResponse extends ApiResponse {
   cart: PublicOrderMerchItemOption[];
@@ -302,6 +343,7 @@ export interface PublicProfile {
   bio: string,
   points: number,
   userSocialMedia?: PublicUserSocialMedia[];
+  isAttendancePublic: boolean,
 }
 
 export interface PrivateProfile extends PublicProfile {
@@ -315,7 +357,8 @@ export interface PrivateProfile extends PublicProfile {
 export interface PublicFeedback {
   uuid: Uuid,
   user: PublicProfile,
-  title: string;
+  event: PublicEvent,
+  source: string;
   description: string;
   timestamp: Date;
   status: FeedbackStatus;
@@ -374,11 +417,11 @@ export interface GetUserSocialMediaResponse extends ApiResponse {
 }
 
 export interface InsertSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface UpdateSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface DeleteSocialMediaResponse extends ApiResponse {}
@@ -392,6 +435,7 @@ export interface PublicOrderPickupEvent {
   orders?: PublicOrderWithItems[];
   orderLimit?: number;
   status: OrderPickupEventStatus;
+  linkedEvent?: PublicEvent;
 }
 
 export interface GetOrderPickupEventsResponse extends ApiResponse {

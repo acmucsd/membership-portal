@@ -1,5 +1,5 @@
-import { FeedbackStatus, FeedbackType, SocialMediaType } from './Enums';
 import { Uuid } from '.';
+import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 
 // REQUEST TYPES
 
@@ -45,7 +45,8 @@ export interface RegistrationRequest {
 // USER
 
 export interface Feedback {
-  title: string;
+  event: Uuid;
+  source: string;
   description: string;
   type: FeedbackType;
 }
@@ -66,6 +67,7 @@ export interface UserPatches {
   major?: string;
   graduationYear?: number;
   bio?: string;
+  isAttendancePublic?: boolean;
   passwordChange?: PasswordUpdate;
 }
 
@@ -81,16 +83,24 @@ export interface UpdateFeedbackStatusRequest {
   status: FeedbackStatus;
 }
 
+export interface FeedbackSearchOptions {
+  event?: string;
+  type?: string;
+  status?: string;
+  user?: string;
+}
+
 export interface InsertUserSocialMediaRequest {
-  socialMedia: SocialMedia;
+  socialMedia: SocialMedia[];
 }
 
 export interface SocialMediaPatches {
-  url?: string;
+  uuid: string;
+  url: string;
 }
 
 export interface UpdateUserSocialMediaRequest {
-  socialMedia: SocialMediaPatches;
+  socialMedia: SocialMediaPatches[];
 }
 
 // LEADERBOARD
@@ -125,6 +135,15 @@ export interface SubmitAttendanceForUsersRequest {
   users: string[];
   event: Uuid;
   asStaff?: boolean;
+}
+
+export interface UserAccessUpdates {
+  user: string;
+  accessType: UserAccessType;
+}
+
+export interface ModifyUserAccessLevelRequest {
+  accessUpdates: UserAccessUpdates[];
 }
 
 // EVENT
@@ -162,6 +181,11 @@ export interface AttendEventRequest {
   asStaff?: boolean;
 }
 
+export interface AttendViaExpressCheckinRequest {
+  attendanceCode: string;
+  email: string;
+}
+
 export interface SubmitEventFeedbackRequest {
   feedback: string[];
 }
@@ -183,6 +207,10 @@ export interface EditMerchCollectionRequest {
   collection: MerchCollectionEdit;
 }
 
+export interface CreateCollectionPhotoRequest {
+  position: string;
+}
+
 export interface CreateMerchItemRequest {
   merchandise: MerchItem;
 }
@@ -193,6 +221,10 @@ export interface EditMerchItemRequest {
 
 export interface CreateMerchItemOptionRequest {
   option: MerchItemOption;
+}
+
+export interface CreateMerchItemPhotoRequest {
+  position: string;
 }
 
 export interface PlaceMerchOrderRequest {
@@ -212,22 +244,36 @@ export interface RescheduleOrderPickupRequest {
   pickupEvent: Uuid;
 }
 
-export interface MerchCollection {
+export interface CommonCollectionProperties {
   title: string;
   themeColorHex?: string;
   description: string;
   archived?: boolean;
 }
 
-export interface MerchCollectionEdit extends Partial<MerchCollection> {
+export interface MerchCollectionPhoto {
+  uploadedPhoto: string;
+  position: number;
+}
+
+export interface MerchCollectionPhotoEdit {
+  uuid: string;
+  position?: number;
+}
+
+export interface MerchCollection extends Partial<CommonCollectionProperties> {
+  collectionPhotos: MerchCollectionPhoto[]
+}
+
+export interface MerchCollectionEdit extends Partial<CommonCollectionProperties> {
   discountPercentage?: number;
+  collectionPhotos?: MerchCollectionPhotoEdit[]
 }
 
 export interface CommonMerchItemProperties {
   itemName: string;
   collection: string;
   description: string;
-  picture?: string;
   hidden?: boolean;
   monthlyLimit?: number;
   lifetimeLimit?: number;
@@ -240,6 +286,16 @@ export interface MerchItemOptionMetadata {
   position: number;
 }
 
+export interface MerchItemPhoto {
+  uploadedPhoto: string;
+  position: number;
+}
+
+export interface MerchItemPhotoEdit {
+  uuid: string;
+  position?: number;
+}
+
 export interface MerchItemOption {
   quantity: number;
   price: number;
@@ -249,6 +305,7 @@ export interface MerchItemOption {
 
 export interface MerchItem extends CommonMerchItemProperties {
   options: MerchItemOption[];
+  merchPhotos: MerchItemPhoto[];
 }
 
 export interface MerchItemOptionEdit {
@@ -261,6 +318,7 @@ export interface MerchItemOptionEdit {
 
 export interface MerchItemEdit extends Partial<CommonMerchItemProperties> {
   options?: MerchItemOptionEdit[];
+  merchPhotos?: MerchItemPhotoEdit[];
 }
 
 export interface MerchOrderEdit {
@@ -283,6 +341,7 @@ export interface OrderPickupEvent {
   end: Date;
   description: string;
   orderLimit: number;
+  linkedEventUuid?: Uuid;
 }
 
 export interface OrderPickupEventEdit extends Partial<OrderPickupEvent> {}

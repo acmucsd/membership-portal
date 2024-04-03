@@ -4,8 +4,10 @@ import { v4 as uuid } from 'uuid';
 import { MerchItemOptionMetadata, OrderPickupEventStatus } from '../../types';
 import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
 import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
+import { MerchCollectionPhotoModel } from '../../models/MerchCollectionPhotoModel';
 import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
+import { MerchandiseItemPhotoModel } from '../../models/MerchandiseItemPhotoModel';
 import FactoryUtils from './FactoryUtils';
 
 export class MerchFactory {
@@ -27,6 +29,14 @@ export class MerchFactory {
         hidden: substitute?.archived,
       }));
     }
+
+    if (!substitute?.collectionPhotos) {
+      const numPhotos = FactoryUtils.getRandomNumber(1, 5);
+      fake.collectionPhotos = MerchFactory
+        .createCollectionPhotos(numPhotos)
+        .map((collectionPhoto) => MerchCollectionPhotoModel.merge(collectionPhoto, { merchCollection: fake }));
+    }
+
     return MerchandiseCollectionModel.merge(fake, substitute);
   }
 
@@ -35,14 +45,12 @@ export class MerchFactory {
     const fake = MerchandiseItemModel.create({
       uuid: uuid(),
       itemName: faker.datatype.hexaDecimal(10),
-      picture: faker.image.cats(),
       description: faker.lorem.sentences(2),
       hasVariantsEnabled,
       monthlyLimit: FactoryUtils.getRandomNumber(1, 5),
       lifetimeLimit: FactoryUtils.getRandomNumber(6, 10),
       hidden: false,
     });
-
     // merging arrays returns a union of fake.options and substitute.options so only create
     // fake.options if the substitute doesn't provide any
     if (!substitute?.options) {
@@ -51,7 +59,39 @@ export class MerchFactory {
         .createOptions(numOptions)
         .map((option) => MerchandiseItemOptionModel.merge(option, { item: fake }));
     }
+    if (!substitute?.merchPhotos) {
+      const numPhotos = FactoryUtils.getRandomNumber(1, 5);
+      fake.merchPhotos = MerchFactory
+        .createPhotos(numPhotos)
+        .map((merchPhoto) => MerchandiseItemPhotoModel.merge(merchPhoto, { merchItem: fake }));
+    }
     return MerchandiseItemModel.merge(fake, substitute);
+  }
+
+  public static fakePhoto(substitute?: Partial<MerchandiseItemPhotoModel>): MerchandiseItemPhotoModel {
+    const fake = MerchandiseItemPhotoModel.create({
+      uuid: uuid(),
+      position: 0,
+      uploadedPhoto: FactoryUtils.getRandomImageUrl(),
+      uploadedAt: faker.date.recent(),
+    });
+    return MerchandiseItemPhotoModel.merge(fake, substitute);
+  }
+
+  public static fakeCollectionPhoto(substitute?: Partial<MerchCollectionPhotoModel>): MerchCollectionPhotoModel {
+    const fake = MerchCollectionPhotoModel.create({
+      uuid: uuid(),
+      position: 0,
+      uploadedPhoto: 'https://www.fakepicture.com/',
+      uploadedAt: faker.date.recent(),
+    });
+    return MerchCollectionPhotoModel.merge(fake, substitute);
+  }
+
+  private static createCollectionPhotos(n: number): MerchCollectionPhotoModel[] {
+    return FactoryUtils
+      .create(n, () => MerchFactory.fakeCollectionPhoto())
+      .map((collectionPhoto, i) => MerchCollectionPhotoModel.merge(collectionPhoto, { position: i }));
   }
 
   public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {
@@ -95,6 +135,7 @@ export class MerchFactory {
       orderLimit: FactoryUtils.getRandomNumber(1, 5),
       status: OrderPickupEventStatus.ACTIVE,
       orders: [],
+      linkedEvent: null,
     });
     return OrderPickupEventModel.merge(fake, substitute);
   }
@@ -130,6 +171,12 @@ export class MerchFactory {
     // create multiple options with consistent types
     const type = faker.datatype.hexaDecimal(10);
     return FactoryUtils.create(n, () => MerchFactory.fakeOptionWithType(type));
+  }
+
+  private static createPhotos(n: number): MerchandiseItemPhotoModel[] {
+    return FactoryUtils
+      .create(n, () => MerchFactory.fakePhoto())
+      .map((merchPhoto, i) => MerchandiseItemPhotoModel.merge(merchPhoto, { position: i }));
   }
 
   private static randomPrice(): number {

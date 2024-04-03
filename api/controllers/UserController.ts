@@ -85,9 +85,9 @@ export class UserController {
     if (params.handle === currentUser.handle) {
       return this.getCurrentUser(currentUser);
     }
-
     const user = await this.userAccountService.findByHandle(params.handle);
-    return { error: null, user: user.getPublicProfile() };
+    const userProfile = await this.userAccountService.getPublicProfile(user);
+    return { error: null, user: userProfile };
   }
 
   @Get()
@@ -108,16 +108,15 @@ export class UserController {
     @AuthenticatedUser() user: UserModel): Promise<InsertSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
       .insertSocialMediaForUser(user, insertSocialMediaRequest.socialMedia);
-    return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
+    return { error: null, userSocialMedia: userSocialMedia.map((socialMedia) => socialMedia.getPublicSocialMedia()) };
   }
 
-  @Patch('/socialMedia/:uuid')
-  async updateSocialMediaForUser(@Params() params: UuidParam,
-    @Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
+  @Patch('/socialMedia')
+  async updateSocialMediaForUser(@Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
     @AuthenticatedUser() user: UserModel): Promise<UpdateSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
-      .updateSocialMediaByUuid(user, params.uuid, updateSocialMediaRequest.socialMedia);
-    return { error: null, userSocialMedia: userSocialMedia.getPublicSocialMedia() };
+      .updateSocialMediaByUuid(user, updateSocialMediaRequest.socialMedia);
+    return { error: null, userSocialMedia: userSocialMedia.map((socialMedia) => socialMedia.getPublicSocialMedia()) };
   }
 
   @Delete('/socialMedia/:uuid')

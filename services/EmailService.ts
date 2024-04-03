@@ -34,6 +34,9 @@ export default class EmailService {
 
   private static readonly orderPartiallyFulfilledTemplate = EmailService.readTemplate('orderPartiallyFulfilled.ejs');
 
+  private static readonly expressCheckinConfirmationTemplate = EmailService
+    .readTemplate('expressCheckinConfirmation.ejs');
+
   constructor() {
     this.mailer.setApiKey(Config.email.apiKey);
   }
@@ -222,6 +225,25 @@ export default class EmailService {
       await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send partial order fulfillment email to ${email}`, { error });
+    }
+  }
+
+  public async sendExpressCheckinConfirmation(email: string, eventName, pointValue) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Express Checkin - Complete Your Account Registration',
+        html: ejs.render(EmailService.expressCheckinConfirmationTemplate, {
+          eventName,
+          pointValue,
+          registerLink: `${Config.client}/register`,
+          storeLink: `${Config.client}/store`,
+        }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send express checkin confirmation to ${email}`, { error });
     }
   }
 

@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
-import { NotFoundError } from 'routing-controllers';
+import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { EventModel } from '../models/EventModel';
 import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
@@ -85,6 +85,8 @@ export default class EventService {
       const eventRepository = Repositories.event(txn);
       const event = await eventRepository.findByUuid(uuid);
       if (!event) throw new NotFoundError('Event not found');
+      const attendances = await Repositories.attendance(txn).getAttendancesForEvent(uuid);
+      if (attendances.length > 0) throw new ForbiddenError('Cannot delete event that has attendances');
       await eventRepository.deleteEvent(event);
     });
   }

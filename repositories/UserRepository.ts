@@ -41,6 +41,11 @@ export class UserRepository extends BaseRepository<UserModel> {
     });
   }
 
+  public async isEmailInUse(email: string): Promise<boolean> {
+    const user = await this.findByEmail(email);
+    return user !== undefined;
+  }
+
   public async findByAccessCode(accessCode: string): Promise<UserModel> {
     return this.repository.findOne({ accessCode });
   }
@@ -90,5 +95,13 @@ export class UserRepository extends BaseRepository<UserModel> {
         credits: () => `credits + ${points * 100}`,
       })
       .execute();
+  }
+
+  public async getUserInfoAndAccessTypes() {
+    const profiles = await this.repository
+      .createQueryBuilder()
+      .select(['uuid', 'handle', 'email', 'UserModel.firstName', 'UserModel.lastName', 'UserModel.accessType'])
+      .getRawMany();
+    return profiles;
   }
 }

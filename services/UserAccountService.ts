@@ -1,9 +1,15 @@
-import { BadRequestError, NotFoundError } from 'routing-controllers';
+import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import * as faker from 'faker';
+import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
+import {
+  RegExpMatcher,
+  englishDataset,
+  englishRecommendedTransformers,
+} from 'obscenity';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -22,8 +28,14 @@ import { UserModel } from '../models/UserModel';
 export default class UserAccountService {
   private transactions: TransactionsManager;
 
+  private matcher: RegExpMatcher;
+
   constructor(@InjectManager() entityManager: EntityManager) {
     this.transactions = new TransactionsManager(entityManager);
+    this.matcher = new RegExpMatcher({
+      ...englishDataset.build(),
+      ...englishRecommendedTransformers,
+    });
   }
 
   public async findByUuid(uuid: Uuid): Promise<UserModel> {
@@ -102,6 +114,9 @@ export default class UserAccountService {
         throw new BadRequestError('Incorrect password');
       }
       changes.hash = await UserRepository.generateHash(newPassword);
+    }
+    if (this.matcher.hasMatch(userPatches.handle)) {
+      throw new ForbiddenError('Please remove profanity from handle.');
     }
     return this.transactions.readWrite(async (txn) => {
       if (userPatches.handle) {
@@ -191,5 +206,79 @@ export default class UserAccountService {
       userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
       return userProfile;
     });
+  }
+
+  public checkDuplicateEmails(emails: string[]) {
+    const emailSet = emails.reduce((set, email) => {
+      set.add(email);
+      return set;
+    }, new Set<string>());
+
+    if (emailSet.size !== emails.length) {
+      throw new BadRequestError('Duplicate emails found in request');
+    }
+  }
+
+  public async updateUserAccessLevels(accessUpdates: UserAccessUpdates[], emails: string[],
+    currentUser: UserModel): Promise<PrivateProfile[]> {
+    return this.transactions.readWrite(async (txn) => {
+      this.checkDuplicateEmails(emails);
+
+      // Strip out the user emails & validate that users exist
+      const userRepository = Repositories.user(txn);
+      const users = await userRepository.findByEmails(emails);
+      const emailsFound = users.map((user) => user.email);
+      const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
+
+      if (emailsNotFound.length > 0) {
+        throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
+      }
+
+      const emailToUserMap = users.reduce((map, user) => {
+        map[user.email] = user;
+        return map;
+      }, {});
+
+      const updatedUsers = await Promise.all(accessUpdates.map(async (accessUpdate) => {
+        const { user: userEmail, accessType } = accessUpdate;
+
+        // Prevent a user from demoting themselves
+        if (currentUser.email === userEmail) {
+          throw new ForbiddenError('Cannot alter own access level');
+        }
+
+        const userToUpdate = emailToUserMap[userEmail];
+        const oldAccess = userToUpdate.accessType;
+
+        // Prevent users from promoting to admin or demoting from admin
+        if (oldAccess === 'ADMIN' || accessType === 'ADMIN') {
+          throw new ForbiddenError('Cannot alter access level of admin users');
+        }
+
+        const updatedUser = await userRepository.upsertUser(userToUpdate, { accessType });
+
+        const activity = {
+          user: currentUser,
+          type: ActivityType.ACCOUNT_ACCESS_LEVEL_UPDATE,
+          description: `${currentUser.email} changed ${updatedUser.email}'s
+          access level from ${oldAccess} to ${accessType}`,
+        };
+
+        await Repositories
+          .activity(txn)
+          .logActivity(activity);
+
+        return updatedUser;
+      }));
+
+      return updatedUsers;
+    });
+  }
+
+  public async getAllFullUserProfiles(): Promise<PrivateProfile[]> {
+    const users = await this.transactions.readOnly(async (txn) => Repositories
+      .user(txn)
+      .findAll());
+    return users.map((user) => user.getFullUserProfile());
   }
 }
