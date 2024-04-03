@@ -9,15 +9,15 @@ export default class PermissionsService {
   }
 
   public static canSeeEventAttendances(user: UserModel): boolean {
-    return user.isAdmin();
+    return user.isAdmin() || user.isMarketing();
   }
 
   public static canSubmitFeedback(user: UserModel): boolean {
-    return user.state === UserState.ACTIVE;
+    return user.state === UserState.ACTIVE || user.state === UserState.PASSWORD_RESET;
   }
 
-  public static canRespondToFeedback(user: UserModel): boolean {
-    return user.isAdmin();
+  public static canSeeAllFeedback(user: UserModel): boolean {
+    return user.isAdmin() || user.isMarketing();
   }
 
   public static canCreateMilestones(user: UserModel): boolean {

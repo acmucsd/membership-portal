@@ -20,6 +20,8 @@ import {
   GetAllMerchCollectionsResponse,
   CreateMerchCollectionResponse,
   EditMerchCollectionResponse,
+  CreateCollectionPhotoResponse,
+  DeleteCollectionPhotoResponse,
   GetOneMerchItemResponse,
   DeleteMerchCollectionResponse,
   CreateMerchItemResponse,
@@ -47,6 +49,7 @@ import {
   CompleteOrderPickupEventResponse,
   GetOrderPickupEventResponse,
   CancelOrderPickupEventResponse,
+  CancelMerchOrderResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -55,6 +58,7 @@ import MerchStoreService from '../../services/MerchStoreService';
 import {
   CreateMerchCollectionRequest,
   EditMerchCollectionRequest,
+  CreateCollectionPhotoRequest,
   CreateMerchItemRequest,
   EditMerchItemRequest,
   PlaceMerchOrderRequest,
@@ -121,6 +125,40 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel): Promise<DeleteMerchCollectionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     await this.merchStoreService.deleteCollection(params.uuid);
+    return { error: null };
+  }
+
+  @UseBefore(UserAuthentication)
+  @Post('/collection/picture/:uuid')
+  async createMerchCollectionPhoto(@UploadedFile('image',
+    { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
+    @Params() params: UuidParam,
+    @Body() createCollectionRequest: CreateCollectionPhotoRequest,
+    @AuthenticatedUser() user: UserModel): Promise<CreateCollectionPhotoResponse> {
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+
+    // generate a random string for the uploaded photo url
+    const position = parseInt(createCollectionRequest.position, 10);
+    if (Number.isNaN(position)) throw new BadRequestError('Position must be a number');
+    const uniqueFileName = uuid();
+    const uploadedPhoto = await this.storageService.uploadToFolder(
+      file, MediaType.MERCH_PHOTO, uniqueFileName, params.uuid,
+    );
+    const collectionPhoto = await this.merchStoreService.createCollectionPhoto(
+      params.uuid, { uploadedPhoto, position },
+    );
+
+    return { error: null, collectionPhoto };
+  }
+
+  @UseBefore(UserAuthentication)
+  @Delete('/collection/picture/:uuid')
+  async deleteMerchCollectionPhoto(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
+  Promise<DeleteCollectionPhotoResponse> {
+    if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
+    const photoToDelete = await this.merchStoreService.getCollectionPhotoForDeletion(params.uuid);
+    await this.storageService.deleteAtUrl(photoToDelete.uploadedPhoto);
+    await this.merchStoreService.deleteCollectionPhoto(photoToDelete);
     return { error: null };
   }
 
@@ -272,10 +310,11 @@ export class MerchStoreController {
   }
 
   @Post('/order/:uuid/cancel')
-  async cancelMerchOrder(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel) {
+  async cancelMerchOrder(@Params() params: UuidParam,
+    @AuthenticatedUser() user: UserModel): Promise<CancelMerchOrderResponse> {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const order = await this.merchStoreService.cancelMerchOrder(params.uuid, user);
-    return { error: null, order };
+    return { error: null, order: order.getPublicOrderWithItems() };
   }
 
   @Post('/order/:uuid/fulfill')
