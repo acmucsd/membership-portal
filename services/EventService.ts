@@ -70,7 +70,8 @@ export default class EventService {
       if (!currentEvent) throw new NotFoundError('Event not found');
       if (changes.attendanceCode !== currentEvent.attendanceCode) {
         const isAvailableAttendanceCode = await eventRepository.isAvailableAttendanceCode(
-          changes.attendanceCode, changes.start, changes.end);
+          changes.attendanceCode, changes.start, changes.end,
+        );
         if (!isAvailableAttendanceCode) {
           throw new UserError('There is a conflicting event with the same attendance code');
         }
