@@ -129,6 +129,10 @@ export interface GetFutureEventsResponse extends ApiResponse {
   events: PublicEvent[];
 }
 
+export interface GetFeedbackForEventResponse extends ApiResponse {
+  feedback: PublicFeedback[];
+}
+
 export interface UpdateEventCoverResponse extends ApiResponse {
   event: PublicEvent;
 }
