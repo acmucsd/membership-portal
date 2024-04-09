@@ -651,9 +651,9 @@ describe('merch item edits', () => {
     expect(getMerchItemResponse.item.collection.uuid).toEqual(merchItemEdits.collection);
 
     // test collection update
-    const oldCollectionParams = {uuid: oldCollection.uuid };
+    const oldCollectionParams = { uuid: oldCollection.uuid };
     const getOldMerchCollectionResponse = await merchStoreController.getOneMerchCollection(oldCollectionParams, admin);
-    const newCollectionParams = {uuid: collection.uuid };
+    const newCollectionParams = { uuid: collection.uuid };
     const getNewMerchCollectionResponse = await merchStoreController.getOneMerchCollection(newCollectionParams, admin);
 
     expect(getOldMerchCollectionResponse.collection.items.length).toBe(0);
