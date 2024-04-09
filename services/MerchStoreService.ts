@@ -343,10 +343,12 @@ export default class MerchStoreService {
 
       if (updatedCollection) {
         const collection = await Repositories
-          .merchStoreCollection(txn)
-          .findByUuid(updatedCollection);
+        .merchStoreCollection(txn)
+        .findByUuid(updatedCollection);
         if (!collection) throw new NotFoundError('Merch collection not found');
+        updatedItem.collection = collection;
       }
+
       return merchItemRepository.upsertMerchItem(updatedItem);
     });
   }
