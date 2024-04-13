@@ -33,7 +33,7 @@
     "url": "https://github.com/acmucsd/membership-portal/issues"
   },
   "engines": {
-    "node": "^14.0.0",
+    "node": "^20.0.0",
     "yarn": "^1.22.0"
   },
   "homepage": "https://github.com/acmucsd/membership-portal#readme",
@@ -70,7 +70,8 @@
     "underscore": "^1.13.1",
     "uuid": "^8.3.1",
     "winston": "^3.3.3",
-    "winston-daily-rotate-file": "^4.5.0"
+    "winston-daily-rotate-file": "^4.5.0",
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "@types/async-retry": "^1.4.8",
