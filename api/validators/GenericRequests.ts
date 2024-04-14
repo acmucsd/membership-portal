@@ -1,5 +1,5 @@
 import { Min, IsEmail, IsUUID, IsHexadecimal, Length } from 'class-validator';
-import { IsValidHandle } from '../decorators/Validators';
+import { IsValidHandle } from '../decorators';
 import { Pagination as IPagination, Uuid } from '../../types';
 
 export class Pagination implements IPagination {

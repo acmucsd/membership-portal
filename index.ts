@@ -7,8 +7,7 @@ import { Container } from 'typedi';
 import { models as entities } from './models';
 
 import { Config } from './config';
-import { InMemoryDatabaseCache } from './utils/InMemoryDatabaseCache';
-import { logger as log } from './utils/Logger';
+import { InMemoryDatabaseCache, logger as log } from './utils';
 import { controllers } from './api/controllers';
 import { middlewares } from './api/middleware';
 

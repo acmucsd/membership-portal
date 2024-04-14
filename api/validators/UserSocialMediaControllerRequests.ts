@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
-import { IsValidSocialMediaType } from '../decorators/Validators';
+import { IsValidSocialMediaType } from '../decorators';
 import {
   InsertUserSocialMediaRequest as IInsertUserSocialMediaRequest,
   UpdateUserSocialMediaRequest as IUpdateUserSocialMediaRequest,

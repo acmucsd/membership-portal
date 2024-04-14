@@ -1,7 +1,5 @@
-import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
-import { EventModel } from '../../models/EventModel';
-import { UserModel } from '../../models/UserModel';
-import { ActivityScope, ActivityType } from '../Enums';
+import { MerchandiseItemModel, EventModel, UserModel } from '../../models';
+import { ActivityScope, ActivityType } from '..';
 
 export type Attendance = {
   user: UserModel,

@@ -2,7 +2,7 @@ import { IsEmail, IsDefined, ValidateNested, Length } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   IsValidPassword, IsValidName, IsValidGraduationYear, IsValidMajor, HasMatchingPasswords, IsValidHandle,
-} from '../decorators/Validators';
+} from '../decorators';
 import {
   LoginRequest as ILoginRequest,
   RegistrationRequest as IRegistrationRequest,

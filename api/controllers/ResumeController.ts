@@ -12,16 +12,19 @@ import {
   Delete,
 } from 'routing-controllers';
 import * as path from 'path';
-import PermissionsService from '../../services/PermissionsService';
-import StorageService from '../../services/StorageService';
-import { UserAuthentication } from '../middleware/UserAuthentication';
-import ResumeService from '../../services/ResumeService';
-import { UserModel } from '../../models/UserModel';
-import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { File, MediaType, GetVisibleResumesResponse,
-  PatchResumeResponse, UpdateResumeResponse, DeleteResumeResponse } from '../../types';
-import { PatchResumeRequest, UploadResumeRequest } from '../validators/ResumeControllerRequests';
-import { UuidParam } from '../validators/GenericRequests';
+import { PermissionsService, StorageService, ResumeService } from '../../services';
+import { UserAuthentication } from '../middleware';
+import { UserModel } from '../../models';
+import { AuthenticatedUser } from '../decorators';
+import {
+  File,
+  MediaType,
+  GetVisibleResumesResponse,
+  PatchResumeResponse,
+  UpdateResumeResponse,
+  DeleteResumeResponse,
+} from '../../types';
+import { PatchResumeRequest, UploadResumeRequest, UuidParam } from '../validators';
 
 @UseBefore(UserAuthentication)
 @JsonController('/resume')

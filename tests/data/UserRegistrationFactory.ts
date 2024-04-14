@@ -1,7 +1,7 @@
 import { UserRegistration } from 'types';
 import * as faker from 'faker';
-import FactoryUtils from './FactoryUtils';
-import { UserFactory } from './UserFactory';
+import { FactoryUtils } from '.';
+import { UserFactory } from '.';
 
 export class UserRegistrationFactory {
   public static create(n: number) {

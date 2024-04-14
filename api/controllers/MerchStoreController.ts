@@ -13,8 +13,8 @@ import {
   UploadedFile,
 } from 'routing-controllers';
 import { v4 as uuid } from 'uuid';
-import PermissionsService from '../../services/PermissionsService';
-import { UserAuthentication } from '../middleware/UserAuthentication';
+import { PermissionsService, MerchStoreService, StorageService } from '../../services';
+import { UserAuthentication } from '../middleware';
 import {
   GetOneMerchCollectionResponse,
   GetAllMerchCollectionsResponse,
@@ -51,11 +51,8 @@ import {
   CancelOrderPickupEventResponse,
   CancelMerchOrderResponse,
 } from '../../types';
-import { UuidParam } from '../validators/GenericRequests';
-import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { UserModel } from '../../models/UserModel';
-import MerchStoreService from '../../services/MerchStoreService';
 import {
+  UuidParam,
   CreateMerchCollectionRequest,
   EditMerchCollectionRequest,
   CreateCollectionPhotoRequest,
@@ -70,9 +67,10 @@ import {
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
   GetCartRequest,
-} from '../validators/MerchStoreRequests';
-import { UserError } from '../../utils/Errors';
-import StorageService from '../../services/StorageService';
+} from '../validators';
+import { AuthenticatedUser } from '../decorators';
+import { UserModel } from '../../models';
+import { UserError } from '../../utils';
 
 @UseBefore(UserAuthentication)
 @JsonController('/merch')

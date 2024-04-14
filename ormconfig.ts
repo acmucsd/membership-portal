@@ -1,5 +1,4 @@
-import { Config } from './config';
-import { DatabaseNamingStrategy } from './config/DatabaseNamingStrategy';
+import { Config, DatabaseNamingStrategy } from './config';
 
 module.exports = {
   type: 'postgres',

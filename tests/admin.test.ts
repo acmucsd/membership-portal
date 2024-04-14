@@ -3,7 +3,7 @@ import { In } from 'typeorm';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
-import { UserModel } from '../models/UserModel';
+import { UserModel } from '../models';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

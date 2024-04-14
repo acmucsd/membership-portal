@@ -1,7 +1,6 @@
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
-import { FeedbackFactory } from './data/FeedbackFactory';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory, FeedbackFactory } from './data';
 import { ActivityScope, ActivityType, FeedbackStatus, FeedbackType, UserAccessType } from '../types';
 import { Feedback } from '../api/validators/FeedbackControllerRequests';
 import { ControllerFactory } from './controllers';

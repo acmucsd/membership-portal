@@ -4,7 +4,7 @@ import { UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
-import { EventModel } from '../models/EventModel';
+import { EventModel } from '../models';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

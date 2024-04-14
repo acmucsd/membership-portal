@@ -11,7 +11,7 @@ import {
   IsValidGraduationYear,
   HasMatchingPasswords,
   IsValidHandle,
-} from '../decorators/Validators';
+} from '../decorators';
 import {
   PasswordUpdate as IPasswordUpdate,
   PatchUserRequest as IPatchUserRequest,

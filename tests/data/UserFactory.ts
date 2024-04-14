@@ -1,10 +1,10 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
-import UserAccountService from '../../services/UserAccountService';
+import { UserAccountService } from '../../services';
 import { UserAccessType, UserState } from '../../types';
-import { UserModel } from '../../models/UserModel';
-import FactoryUtils from './FactoryUtils';
+import { UserModel } from '../../models';
+import { FactoryUtils } from '.';
 
 export class UserFactory {
   public static readonly PASSWORD_RAW = 'password';

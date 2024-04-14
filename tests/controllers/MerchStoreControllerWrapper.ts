@@ -1,9 +1,8 @@
 import * as moment from 'moment';
 import { Connection } from 'typeorm';
-import { MerchStoreController } from '../../api/controllers/MerchStoreController';
-import { UuidParam } from '../../api/validators/GenericRequests';
-import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
-import { UserModel } from '../../models/UserModel';
+import { MerchStoreController } from '../../api/controllers';
+import { UuidParam } from '../../api/validators';
+import { OrderPickupEventModel, UserModel } from '../../models';
 import { FulfillMerchOrderRequest } from '../../types';
 
 /**

@@ -1,11 +1,7 @@
 import { EntityRepository, In, SelectQueryBuilder } from 'typeorm';
 import { OrderStatus, Uuid } from '../types';
-import { OrderModel } from '../models/OrderModel';
-import { UserModel } from '../models/UserModel';
-import { OrderItemModel } from '../models/OrderItemModel';
-import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
+import { OrderModel, UserModel, OrderItemModel, OrderPickupEventModel, MerchandiseItemModel } from '../models';
 import { BaseRepository } from './BaseRepository';
-import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
 
 @EntityRepository(OrderModel)
 export class MerchOrderRepository extends BaseRepository<OrderModel> {

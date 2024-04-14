@@ -2,13 +2,13 @@ import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
-import { EventModel } from '../models/EventModel';
+import { EventModel } from '../models';
 import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
-import Repositories, { TransactionsManager } from '../repositories';
-import { UserError } from '../utils/Errors';
+import { Repositories, TransactionsManager } from '../repositories';
+import { UserError } from '../utils';
 
 @Service()
-export default class EventService {
+export class EventService {
   private transactions: TransactionsManager;
 
   constructor(@InjectManager() entityManager: EntityManager) {

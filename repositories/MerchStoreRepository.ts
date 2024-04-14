@@ -1,9 +1,11 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
-import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
-import { MerchandiseItemPhotoModel } from '../models/MerchandiseItemPhotoModel';
-import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
-import { MerchCollectionPhotoModel } from '../models/MerchCollectionPhotoModel';
-import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
+import {
+  MerchandiseItemOptionModel,
+  MerchandiseItemPhotoModel,
+  MerchandiseCollectionModel,
+  MerchCollectionPhotoModel,
+  MerchandiseItemModel,
+} from '../models';
 import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
 

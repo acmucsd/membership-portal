@@ -1,7 +1,7 @@
 import { EntityRepository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Activity } from '../types/internal';
-import { UserModel } from '../models/UserModel';
+import { UserModel } from '../models';
 import { Uuid } from '../types';
 import { BaseRepository } from './BaseRepository';
 

@@ -2,7 +2,7 @@ import 'reflect-metadata'; // this shim is required
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import * as faker from 'faker';
-import { UserPatches } from '../api/validators/UserControllerRequests';
+import { UserPatches } from '../api/validators';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, PortalState, UserFactory } from './data';
 

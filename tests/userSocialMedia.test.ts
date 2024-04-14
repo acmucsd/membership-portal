@@ -1,11 +1,10 @@
 import faker = require('faker');
 import { Connection } from 'typeorm';
-import { UserModel } from '../models/UserModel';
+import { UserModel } from '../models';
 import { SocialMediaType } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, PortalState, UserFactory } from './data';
-import { UserSocialMediaFactory } from './data/UserSocialMediaFactory';
-import { UserController } from '../api/controllers/UserController';
+import { DatabaseConnection, PortalState, UserFactory, UserSocialMediaFactory } from './data';
+import { UserController } from '../api/controllers';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

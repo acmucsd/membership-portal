@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { Allow, IsDefined, IsNotEmpty, MinLength, ValidateNested } from 'class-validator';
-import { IsValidFeedbackType, IsValidFeedbackStatus } from '../decorators/Validators';
+import { IsValidFeedbackType, IsValidFeedbackStatus } from '../decorators';
 import {
   SubmitEventFeedbackRequest as ISubmitEventFeedbackRequest,
   SubmitFeedbackRequest as ISubmitFeedbackRequest,

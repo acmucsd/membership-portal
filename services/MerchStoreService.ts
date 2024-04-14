@@ -5,7 +5,18 @@ import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
 import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
-import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
+import {
+  MerchandiseItemOptionModel,
+  MerchandiseItemModel,
+  OrderModel,
+  UserModel,
+  EventModel,
+  MerchandiseCollectionModel,
+  MerchCollectionPhotoModel,
+  OrderItemModel,
+  OrderPickupEventModel,
+  MerchandiseItemPhotoModel,
+} from '../models';
 import {
   Uuid,
   PublicMerchCollection,
@@ -28,21 +39,12 @@ import {
   PublicMerchCollectionPhoto,
   MerchCollectionPhoto,
 } from '../types';
-import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
-import { OrderModel } from '../models/OrderModel';
-import { UserModel } from '../models/UserModel';
-import { EventModel } from '../models/EventModel';
-import Repositories, { TransactionsManager } from '../repositories';
-import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
-import { MerchCollectionPhotoModel } from '../models/MerchCollectionPhotoModel';
+import { Repositories, TransactionsManager } from '../repositories';
 import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
-import { UserError } from '../utils/Errors';
-import { OrderItemModel } from '../models/OrderItemModel';
-import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
-import { MerchandiseItemPhotoModel } from '../models/MerchandiseItemPhotoModel';
+import { UserError } from '../utils';
 
 @Service()
-export default class MerchStoreService {
+export class MerchStoreService {
   private static readonly MAX_MERCH_PHOTO_COUNT = 5;
 
   private static readonly MAX_COLLECTION_PHOTO_COUNT = 5;

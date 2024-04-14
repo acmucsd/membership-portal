@@ -17,7 +17,7 @@ interface MediaTypeConfig {
 }
 
 @Service()
-export default class StorageService {
+export class StorageService {
   private s3 = new aws.S3({
     apiVersion: '2006-03-01',
     region: Config.s3.region,

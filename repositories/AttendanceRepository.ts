@@ -1,9 +1,6 @@
 import { EntityRepository } from 'typeorm';
-import { ExpressCheckinModel } from '../models/ExpressCheckinModel';
+import { ExpressCheckinModel, AttendanceModel, UserModel, EventModel } from '../models';
 import { Uuid } from '../types';
-import { AttendanceModel } from '../models/AttendanceModel';
-import { UserModel } from '../models/UserModel';
-import { EventModel } from '../models/EventModel';
 import { BaseRepository } from './BaseRepository';
 import { Attendance } from '../types/internal';
 

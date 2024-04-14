@@ -1,7 +1,5 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
-import { FeedbackModel } from '../models/FeedbackModel';
-import { UserModel } from '../models/UserModel';
-import { EventModel } from '../models/EventModel';
+import { FeedbackModel, UserModel, EventModel } from '../models';
 import { BaseRepository } from './BaseRepository';
 import { FeedbackSearchOptions, Uuid } from '../types';
 

@@ -1,6 +1,6 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { EventSearchOptions, Uuid } from '../types';
-import { EventModel } from '../models/EventModel';
+import { EventModel } from '../models';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(EventModel)

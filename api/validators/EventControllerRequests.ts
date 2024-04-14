@@ -9,7 +9,7 @@ import {
   Event as IEvent,
   Uuid,
 } from '../../types';
-import { IsValidEventFeedback } from '../decorators/Validators';
+import { IsValidEventFeedback } from '../decorators';
 
 export class OptionalEventProperties implements IOptionalEventProperties {
   @IsNotEmpty()

@@ -20,7 +20,7 @@ import { UserSocialMediaRepository } from './UserSocialMediaRepository';
 const HINT_FOR_RETRIABLE_TRANSACTIONS : string = 'The transaction might succeed if retried.';
 const AMOUNT_OF_RETRIES : number = 10;
 
-export default class Repositories {
+export class Repositories {
   public static activity(transactionalEntityManager: EntityManager): ActivityRepository {
     return transactionalEntityManager.getCustomRepository(ActivityRepository);
   }
@@ -128,3 +128,25 @@ export class TransactionsManager {
     });
   }
 }
+
+export {
+  ActivityRepository,
+  AttendanceRepository,
+  ExpressCheckinRepository,
+  EventRepository,
+  FeedbackRepository,
+  LeaderboardRepository,
+  MerchOrderRepository,
+  OrderItemRepository,
+  OrderPickupEventRepository,
+  MerchCollectionRepository,
+  MerchCollectionPhotoRepository,
+  MerchItemRepository,
+  MerchItemOptionRepository,
+  MerchItemPhotoRepository,
+  ResumeRepository,
+  UserRepository,
+  UserSocialMediaRepository,
+};
+
+export { BaseRepository } from './BaseRepository';

@@ -9,22 +9,19 @@ import {
   ResendEmailVerificationResponse,
   EmailModificationResponse,
 } from '../../types';
-import UserAccountService from '../../services/UserAccountService';
-import UserAuthService from '../../services/UserAuthService';
-import { logger as log } from '../../utils/Logger';
-import { RequestTrace } from '../decorators/RequestTrace';
-import EmailService from '../../services/EmailService';
+import { UserAccountService, UserAuthService, EmailService } from '../../services';
+import { logger as log, authActionMetadata } from '../../utils';
+import { RequestTrace, AuthenticatedUser } from '../decorators';
 import {
   LoginRequest,
   RegistrationRequest,
   PasswordResetRequest,
   EmailModificationRequest,
-} from '../validators/AuthControllerRequests';
-import { authActionMetadata } from '../../utils/AuthActionMetadata';
-import { OptionalUserAuthentication, UserAuthentication } from '../middleware/UserAuthentication';
-import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { UserModel } from '../../models/UserModel';
-import { EmailParam, AccessCodeParam } from '../validators/GenericRequests';
+  EmailParam,
+  AccessCodeParam,
+} from '../validators';
+import { OptionalUserAuthentication, UserAuthentication } from '../middleware';
+import { UserModel } from '../../models';
 
 @JsonController('/auth')
 export class AuthController {

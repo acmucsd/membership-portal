@@ -2,13 +2,13 @@ import { MailService, MailDataRequired } from '@sendgrid/mail';
 import * as ejs from 'ejs';
 import * as fs from 'fs';
 import * as path from 'path';
-import { logger as log } from '../utils/Logger';
+import { logger as log } from '../utils';
 import { Config } from '../config';
 import { Uuid } from '../types';
 
 type EmailData = MailDataRequired;
 
-export default class EmailService {
+export class EmailService {
   private readonly mailer = new MailService();
 
   private static readonly itemDisplayTemplate = EmailService.readTemplate('itemDisplay.ejs');
