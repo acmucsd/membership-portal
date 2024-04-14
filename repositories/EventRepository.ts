@@ -33,8 +33,33 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async findByAttendanceCode(attendanceCode: string): Promise<EventModel> {
-    return this.repository.findOne({ attendanceCode });
-  }
+
+        const allEvents = await this.repository.find({ attendanceCode });
+
+        // For finding the closest event
+        let closestEvent: EventModel | null = null;
+        let closestTimeDifference = Infinity;
+
+        for (const event of allEvents) {
+            if (!event.isTooEarlyToAttendEvent() && !event.isTooLateToAttendEvent()) {
+                // Return the event if it is currently able to be checked in
+                return event;
+            } else {
+                // Otherwise, return the closest event to the current time
+                const currentTime = new Date();
+                const eventStartTime = new Date(event.start);
+                const timeDifference = Math.abs(eventStartTime.getTime() - currentTime.getTime());
+
+                // Update closest event if necessary
+                if (timeDifference < closestTimeDifference) {
+                    closestEvent = event;
+                    closestTimeDifference = timeDifference;
+                }
+            }
+        }
+
+        return closestEvent;
+}
 
   public async deleteEvent(event: EventModel): Promise<EventModel> {
     return this.repository.remove(event);

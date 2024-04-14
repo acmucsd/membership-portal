@@ -137,6 +137,38 @@ describe('attendance', () => {
     expect(attendance.event.uuid).toEqual(event.uuid);
   });
 
+  test('if there are two events with same attendance code, the user attends the right one', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake();
+    const attendanceCode = 'samecode';
+    const event1 = EventFactory.fake({
+      attendanceCode: attendanceCode,
+      start: moment().subtract(20, 'minutes').toDate(),
+      end: moment().add(2, 'hours').add(20, 'minutes').toDate(),
+    });
+    const event2 = EventFactory.fake({
+      attendanceCode: attendanceCode,
+      start: moment().add(10, 'hours').toDate(),
+      end: moment().add(12, 'hours').add(20, 'minutes').toDate(),
+    });
+
+    await new PortalState()
+      .createUsers(member)
+      .createEvents(event1, event2)
+      .write();
+
+    // attend event
+    const attendanceController = ControllerFactory.attendance(conn);
+    const attendEventRequest = { attendanceCode: attendanceCode };
+    await attendanceController.attendEvent(attendEventRequest, member);
+
+    // check attendances for user (event1 should be the attended one)
+    const getAttendancesForUserResponse = await attendanceController.getAttendancesForCurrentUser(member);
+    const attendance = getAttendancesForUserResponse.attendances[0];
+    expect(attendance.user.uuid).toEqual(member.uuid);
+    expect(attendance.event.uuid).toEqual(event1.uuid);
+  });
+
   test('throws if invalid attendance code', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
