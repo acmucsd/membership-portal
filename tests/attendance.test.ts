@@ -142,12 +142,12 @@ describe('attendance', () => {
     const member = UserFactory.fake();
     const attendanceCode = 'samecode';
     const event1 = EventFactory.fake({
-      attendanceCode: attendanceCode,
+      attendanceCode,
       start: moment().subtract(20, 'minutes').toDate(),
       end: moment().add(2, 'hours').add(20, 'minutes').toDate(),
     });
     const event2 = EventFactory.fake({
-      attendanceCode: attendanceCode,
+      attendanceCode,
       start: moment().add(10, 'hours').toDate(),
       end: moment().add(12, 'hours').add(20, 'minutes').toDate(),
     });
@@ -159,7 +159,7 @@ describe('attendance', () => {
 
     // attend event
     const attendanceController = ControllerFactory.attendance(conn);
-    const attendEventRequest = { attendanceCode: attendanceCode };
+    const attendEventRequest = { attendanceCode };
     await attendanceController.attendEvent(attendEventRequest, member);
 
     // check attendances for user (event1 should be the attended one)

@@ -33,33 +33,34 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async findByAttendanceCode(attendanceCode: string): Promise<EventModel> {
+    const allEvents = await this.repository.find({ attendanceCode });
 
-        const allEvents = await this.repository.find({ attendanceCode });
+    // Find all events with the given attendance code
+    const eligible = allEvents.filter((event) => !event.isTooEarlyToAttendEvent() && !event.isTooLateToAttendEvent());
 
-        // For finding the closest event
-        let closestEvent: EventModel | null = null;
-        let closestTimeDifference = Infinity;
+    // If there are eligible events, return the first one
+    if (eligible.length > 0) {
+      return eligible[0];
+    }
 
-        for (const event of allEvents) {
-            if (!event.isTooEarlyToAttendEvent() && !event.isTooLateToAttendEvent()) {
-                // Return the event if it is currently able to be checked in
-                return event;
-            } else {
-                // Otherwise, return the closest event to the current time
-                const currentTime = new Date();
-                const eventStartTime = new Date(event.start);
-                const timeDifference = Math.abs(eventStartTime.getTime() - currentTime.getTime());
+    // Otherwise, find the closest event to the current time
+    const currentTime = new Date();
+    let closestEvent = null;
+    let closestTimeDifference = Infinity;
 
-                // Update closest event if necessary
-                if (timeDifference < closestTimeDifference) {
-                    closestEvent = event;
-                    closestTimeDifference = timeDifference;
-                }
-            }
-        }
+    allEvents.forEach((event) => {
+      const eventStartTime = new Date(event.start);
+      const timeDifference = Math.abs(eventStartTime.getTime() - currentTime.getTime());
 
-        return closestEvent;
-}
+      // Update closest event if necessary
+      if (timeDifference < closestTimeDifference) {
+        closestEvent = event;
+        closestTimeDifference = timeDifference;
+      }
+    });
+
+    return closestEvent;
+  }
 
   public async deleteEvent(event: EventModel): Promise<EventModel> {
     return this.repository.remove(event);
