@@ -104,7 +104,7 @@ export class UserController {
   }
 
   @Post('/socialMedia')
-  async insertSocialMediaForUser(@Body() insertSocialMediaRequest: InsertSocialMediaRequest,
+  async insertSocialMediasForUser(@Body() insertSocialMediaRequest: InsertSocialMediaRequest,
     @AuthenticatedUser() user: UserModel): Promise<InsertSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
       .insertSocialMediaForUser(user, insertSocialMediaRequest.socialMedia);
@@ -112,7 +112,7 @@ export class UserController {
   }
 
   @Patch('/socialMedia')
-  async updateSocialMediaForUser(@Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
+  async updateSocialMediasForUser(@Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
     @AuthenticatedUser() user: UserModel): Promise<UpdateSocialMediaResponse> {
     const userSocialMedia = await this.userSocialMediaService
       .updateSocialMediaByUuid(user, updateSocialMediaRequest.socialMedia);
@@ -120,7 +120,7 @@ export class UserController {
   }
 
   @Delete('/socialMedia/:uuid')
-  async deleteSocialMediaForUser(@Params() params: UuidParam,
+  async deleteSocialMediasForUser(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<DeleteSocialMediaResponse> {
     await this.userSocialMediaService.deleteSocialMediaByUuid(user, params.uuid);
     return { error: null };

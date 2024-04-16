@@ -58,7 +58,7 @@ export default class UserSocialMediaService {
       changes.forEach((socialMediaPatch) => {
         const { uuid } = socialMediaPatch;
         if (setDuplicateUuid.has(uuid)) {
-          throw new UserError(`Dupllicate UUID "${uuid}" found in the request`);
+          throw new UserError(`Duplicate UUID "${uuid}" found in the request`);
         }
         setDuplicateUuid.add(uuid);
       });
@@ -78,7 +78,7 @@ export default class UserSocialMediaService {
     return updatedSocialMedia;
   }
 
-  public async deleteSocialMediaByUuid(user: UserModel, uuid: Uuid): Promise<UserSocialMediaModel> {
+  public async deleteSocialMediaByUuid(user: UserModel, uuid: Uuid): Promise<UserSocialMediaModel[]> {
     const updatedSocialMedia = await this.transactions.readWrite(async (txn) => {
       const userSocialMediaRepository = Repositories.userSocialMedia(txn);
       const socialMedia = await userSocialMediaRepository.findByUuid(uuid);

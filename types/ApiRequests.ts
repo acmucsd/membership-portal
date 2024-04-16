@@ -91,7 +91,7 @@ export interface FeedbackSearchOptions {
 }
 
 export interface InsertUserSocialMediaRequest {
-  socialMedia: SocialMedia[];
+  socialMedias: SocialMedia[];
 }
 
 export interface SocialMediaPatches {
@@ -100,7 +100,7 @@ export interface SocialMediaPatches {
 }
 
 export interface UpdateUserSocialMediaRequest {
-  socialMedia: SocialMediaPatches[];
+  socialMedias: SocialMediaPatches[];
 }
 
 // LEADERBOARD
