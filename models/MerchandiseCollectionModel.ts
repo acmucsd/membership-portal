@@ -1,7 +1,6 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn } from 'typeorm';
 import { Uuid, PublicMerchCollection } from '../types';
-import { MerchandiseItemModel } from './MerchandiseItemModel';
-import { MerchCollectionPhotoModel } from './MerchCollectionPhotoModel';
+import { MerchandiseItemModel, MerchCollectionPhotoModel } from '.';
 
 @Entity('MerchandiseCollections')
 export class MerchandiseCollectionModel extends BaseEntity {

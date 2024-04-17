@@ -1,6 +1,6 @@
 import { Min } from 'class-validator';
 import { SlidingLeaderboardQueryParams as ISlidingLeaderboardQueryParams } from '../../types';
-import { Pagination } from './GenericRequests';
+import { Pagination } from '.';
 
 export class SlidingLeaderboardQueryParams extends Pagination implements ISlidingLeaderboardQueryParams {
   @Min(0)

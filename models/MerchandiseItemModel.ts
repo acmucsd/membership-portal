@@ -2,9 +2,7 @@ import {
   Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn, OneToMany,
 } from 'typeorm';
 import { Uuid, PublicMerchItem, PublicCartMerchItem } from '../types';
-import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
-import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
-import { MerchandiseItemPhotoModel } from './MerchandiseItemPhotoModel';
+import { MerchandiseCollectionModel, MerchandiseItemOptionModel, MerchandiseItemPhotoModel } from '.';
 
 @Entity('MerchandiseItems')
 export class MerchandiseItemModel extends BaseEntity {

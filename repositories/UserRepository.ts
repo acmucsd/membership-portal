@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { Activity } from '../types/internal';
 import { UserModel } from '../models';
 import { Uuid } from '../types';
-import { BaseRepository } from './BaseRepository';
+import { BaseRepository } from '.';
 
 @EntityRepository(UserModel)
 export class UserRepository extends BaseRepository<UserModel> {

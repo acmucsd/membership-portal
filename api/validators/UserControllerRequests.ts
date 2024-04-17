@@ -17,7 +17,7 @@ import {
   PatchUserRequest as IPatchUserRequest,
   UserPatches as IUserPatches,
 } from '../../types';
-import { PasswordChange } from './AuthControllerRequests';
+import { PasswordChange } from '.';
 
 export class PasswordUpdate extends PasswordChange implements IPasswordUpdate {
   @IsDefined()

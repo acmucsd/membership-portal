@@ -1,7 +1,6 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Uuid, PublicOrderItem } from '../types';
-import { OrderModel } from './OrderModel';
-import { MerchandiseItemOptionModel } from './MerchandiseItemOptionModel';
+import { OrderModel, MerchandiseItemOptionModel } from '.';
 
 @Entity('OrderItems')
 export class OrderItemModel extends BaseEntity {

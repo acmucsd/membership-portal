@@ -1,6 +1,6 @@
 import { EntityRepository } from 'typeorm';
 import { ResumeModel, UserModel } from '../models';
-import { BaseRepository } from './BaseRepository';
+import { BaseRepository } from '.';
 
 @EntityRepository(ResumeModel)
 export class ResumeRepository extends BaseRepository<ResumeModel> {

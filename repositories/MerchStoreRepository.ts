@@ -7,7 +7,7 @@ import {
   MerchandiseItemModel,
 } from '../models';
 import { Uuid } from '../types';
-import { BaseRepository } from './BaseRepository';
+import { BaseRepository } from '.';
 
 @EntityRepository(MerchandiseCollectionModel)
 export class MerchCollectionRepository extends BaseRepository<MerchandiseCollectionModel> {

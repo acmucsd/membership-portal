@@ -1,7 +1,7 @@
 import { EntityRepository } from 'typeorm';
 import { ExpressCheckinModel, AttendanceModel, UserModel, EventModel } from '../models';
 import { Uuid } from '../types';
-import { BaseRepository } from './BaseRepository';
+import { BaseRepository } from '.';
 import { Attendance } from '../types/internal';
 
 @EntityRepository(AttendanceModel)

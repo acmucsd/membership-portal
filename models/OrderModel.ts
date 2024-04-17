@@ -9,9 +9,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Uuid, PublicOrder, OrderStatus, PublicOrderWithItems } from '../types';
-import { UserModel } from './UserModel';
-import { OrderItemModel } from './OrderItemModel';
-import { OrderPickupEventModel } from './OrderPickupEventModel';
+import { UserModel, OrderItemModel, OrderPickupEventModel } from '.';
 
 @Entity('Orders')
 export class OrderModel extends BaseEntity {

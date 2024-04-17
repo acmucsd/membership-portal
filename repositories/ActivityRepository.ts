@@ -2,7 +2,7 @@ import { EntityRepository, Raw } from 'typeorm';
 import * as moment from 'moment';
 import { ActivityScope, ActivityType, Uuid } from '../types';
 import { UserModel, ActivityModel } from '../models';
-import { BaseRepository } from './BaseRepository';
+import { BaseRepository } from '.';
 import { Activity, ActivityTypeToScope } from '../types/internal';
 
 @EntityRepository(ActivityModel)

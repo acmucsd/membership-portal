@@ -1,12 +1,7 @@
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { PrivateProfile, PublicProfile, Uuid, UserAccessType, UserState } from '../types';
-import { ActivityModel } from './ActivityModel';
-import { AttendanceModel } from './AttendanceModel';
-import { OrderModel } from './OrderModel';
-import { FeedbackModel } from './FeedbackModel';
-import { ResumeModel } from './ResumeModel';
-import { UserSocialMediaModel } from './UserSocialMediaModel';
+import { ActivityModel, AttendanceModel, OrderModel, FeedbackModel, ResumeModel, UserSocialMediaModel } from '.';
 
 @Entity('Users')
 export class UserModel extends BaseEntity {

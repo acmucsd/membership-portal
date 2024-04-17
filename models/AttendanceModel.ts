@@ -1,7 +1,6 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { PublicAttendance, Uuid } from '../types';
-import { UserModel } from './UserModel';
-import { EventModel } from './EventModel';
+import { UserModel, EventModel } from '.';
 
 @Entity('Attendances')
 export class AttendanceModel extends BaseEntity {

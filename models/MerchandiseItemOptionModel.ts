@@ -2,8 +2,7 @@ import {
   Entity, BaseEntity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, Index,
 } from 'typeorm';
 import { Uuid, PublicMerchItemOption, MerchItemOptionMetadata, PublicOrderMerchItemOption } from '../types';
-import { OrderItemModel } from './OrderItemModel';
-import { MerchandiseItemModel } from './MerchandiseItemModel';
+import { OrderItemModel, MerchandiseItemModel } from '.';
 
 @Entity('MerchandiseItemOptions')
 export class MerchandiseItemOptionModel extends BaseEntity {

@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
-import { UserModel } from './UserModel';
+import { UserModel } from '.';
 import { Uuid, SocialMediaType, PublicUserSocialMedia } from '../types';
 
 @Entity('UserSocialMedia')

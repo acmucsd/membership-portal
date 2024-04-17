@@ -1,6 +1,6 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { ActivityScope, ActivityType, PublicActivity, Uuid } from '../types';
-import { UserModel } from './UserModel';
+import { UserModel } from '.';
 
 @Entity('Activities')
 @Index('sliding_leaderboard_index', ['timestamp', 'pointsEarned'], { where: '"pointsEarned" > 0' })

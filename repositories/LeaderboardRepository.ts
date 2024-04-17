@@ -3,7 +3,7 @@ import * as moment from 'moment';
 import { Config } from '../config';
 import { ActivityModel, UserModel } from '../models';
 import { UserState } from '../types';
-import { BaseRepository } from './BaseRepository';
+import { BaseRepository } from '.';
 
 @EntityRepository(UserModel)
 export class LeaderboardRepository extends BaseRepository<UserModel> {

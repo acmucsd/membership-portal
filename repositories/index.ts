@@ -1,5 +1,6 @@
 import { EntityManager } from 'typeorm';
 import AsyncRetry = require('async-retry');
+import { BaseRepository } from './BaseRepository';
 import { UserRepository } from './UserRepository';
 import { FeedbackRepository } from './FeedbackRepository';
 import { AttendanceRepository, ExpressCheckinRepository } from './AttendanceRepository';
@@ -132,6 +133,7 @@ export class TransactionsManager {
 export {
   ActivityRepository,
   AttendanceRepository,
+  BaseRepository,
   ExpressCheckinRepository,
   EventRepository,
   FeedbackRepository,
@@ -148,5 +150,3 @@ export {
   UserRepository,
   UserSocialMediaRepository,
 };
-
-export { BaseRepository } from './BaseRepository';

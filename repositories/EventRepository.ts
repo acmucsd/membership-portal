@@ -1,7 +1,7 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { EventSearchOptions, Uuid } from '../types';
 import { EventModel } from '../models';
-import { BaseRepository } from './BaseRepository';
+import { BaseRepository } from '.';
 
 @EntityRepository(EventModel)
 export class EventRepository extends BaseRepository<EventModel> {
