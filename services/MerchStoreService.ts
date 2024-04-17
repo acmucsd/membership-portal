@@ -40,7 +40,7 @@ import {
   MerchCollectionPhoto,
 } from '../types';
 import { Repositories, TransactionsManager } from '../repositories';
-import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
+import { EmailService, OrderInfo, OrderPickupEventInfo } from '.';
 import { UserError } from '../utils';
 
 @Service()

@@ -9,7 +9,7 @@ import { Repositories, UserRepository, TransactionsManager } from '../repositori
 import { Uuid, ActivityType, UserState, UserRegistration } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models';
-import UserAccountService from './UserAccountService';
+import { UserAccountService } from '.';
 
 interface AuthToken {
   uuid: Uuid;
