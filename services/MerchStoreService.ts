@@ -216,35 +216,6 @@ export default class MerchStoreService {
     });
   }
 
-  public async findItemByUuid(uuid: Uuid, user: UserModel): Promise<PublicMerchItemWithPurchaseLimits> {
-    return this.transactions.readOnly(async (txn) => {
-      const item = await Repositories.merchStoreItem(txn).findByUuid(uuid);
-
-      if (!item) throw new NotFoundError('Merch item not found');
-
-      // calculate monthly and lifetime remaining purchases for this item
-      const merchOrderItemRepository = Repositories.merchOrderItem(txn);
-      const lifetimePurchaseHistory = await merchOrderItemRepository.getPastItemOrdersByUser(user, item);
-      const oneMonthAgo = new Date(moment().subtract(1, 'month').unix());
-      const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((oi) => oi.order.orderedAt > oneMonthAgo);
-      const lifetimeCancelledItems = lifetimePurchaseHistory
-        .filter((oi) => oi.order.status === OrderStatus.CANCELLED);
-      const pastMonthCancelledItems = pastMonthPurchaseHistory
-        .filter((oi) => oi.order.status === OrderStatus.CANCELLED);
-      const lifetimeItemOrderCounts = lifetimePurchaseHistory.length - lifetimeCancelledItems.length;
-      const pastMonthItemOrderCounts = pastMonthPurchaseHistory.length - pastMonthCancelledItems.length;
-
-      const monthlyRemaining = item.monthlyLimit - pastMonthItemOrderCounts;
-      const lifetimeRemaining = item.lifetimeLimit - lifetimeItemOrderCounts;
-
-      return {
-        ...item.getPublicMerchItem(),
-        monthlyRemaining,
-        lifetimeRemaining,
-      };
-    });
-  }
-
   public async createItem(item: MerchItem): Promise<MerchandiseItemModel> {
     return this.transactions.readWrite(async (txn) => {
       MerchStoreService.verifyItemHasValidOptions(item);
@@ -477,26 +448,6 @@ export default class MerchStoreService {
       await merchStoreItemPhotoRepository.deleteMerchItemPhoto(merchPhoto);
       return merchPhoto;
     });
-  }
-
-  public async findOrderByUuid(uuid: Uuid): Promise<OrderModel> {
-    const order = await this.transactions.readOnly(async (txn) => Repositories
-      .merchOrder(txn)
-      .findByUuid(uuid));
-    if (!order) throw new NotFoundError('Merch order not found');
-    return order;
-  }
-
-  public async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
-    return this.transactions.readOnly(async (txn) => Repositories
-      .merchOrder(txn)
-      .getAllOrdersForUser(user));
-  }
-
-  public async getAllOrdersForAllUsers(): Promise<OrderModel[]> {
-    return this.transactions.readOnly(async (txn) => Repositories
-      .merchOrder(txn)
-      .getAllOrdersForAllUsers());
   }
 
   /**
