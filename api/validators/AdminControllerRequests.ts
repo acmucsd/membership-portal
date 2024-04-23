@@ -9,7 +9,7 @@ import {
   Bonus as IBonus,
   UserAccessUpdates as IUserAccessUpdates,
   UserAccessType,
-} from '../../types';
+} from '@customtypes';
 
 const validUserAccessTypes = Object.values(UserAccessType);
 

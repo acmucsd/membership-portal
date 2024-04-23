@@ -1,9 +1,9 @@
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
 import { In } from 'typeorm';
-import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
-import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
-import { UserModel } from '../models';
+import { ControllerFactory } from '@tests/controllers';
+import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '@customtypes';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from '@tests/data';
+import { UserModel } from '@models';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

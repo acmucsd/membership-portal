@@ -10,7 +10,7 @@ import {
   MerchStoreService,
   ResumeService,
   UserSocialMediaService,
-} from '../../services';
+} from '@services';
 import {
   FeedbackController,
   UserController,
@@ -21,7 +21,7 @@ import {
   LeaderboardController,
   MerchStoreController,
   ResumeController,
-} from '../../api/controllers';
+} from '@controllers';
 
 export class ControllerFactory {
   public static user(conn: Connection, storageService = new StorageService()): UserController {

@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { UserModel } from '../../models';
+import { UserModel } from '@models';
 import { UserController } from './UserController';
 import { AuthController } from './AuthController';
 import { EventController } from './EventController';
@@ -22,7 +22,6 @@ export const controllers = [
   ResumeController,
 ];
 
-// can't export imports in the same line if imports are used in the file so must export separately
 export {
   UserController,
   AuthController,

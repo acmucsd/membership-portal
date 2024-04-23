@@ -1,7 +1,7 @@
 import * as moment from 'moment';
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { PublicEvent, Uuid } from '../types';
-import { AttendanceModel, FeedbackModel, ExpressCheckinModel } from '.';
+import { PublicEvent, Uuid } from '@customtypes';
+import { AttendanceModel, FeedbackModel, ExpressCheckinModel } from '@models';
 
 @Entity('Events')
 @Index('event_start_end_index', ['start', 'end'])

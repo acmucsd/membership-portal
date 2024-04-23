@@ -1,6 +1,6 @@
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
-import { Config } from '../config';
+import { Config } from '@config';
 
 export const logger = winston.createLogger({
   level: Config.logging.level,

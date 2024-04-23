@@ -1,4 +1,4 @@
-import { Uuid, FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from '.';
+import { Uuid, FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from '@customtypes';
 
 // REQUEST TYPES
 

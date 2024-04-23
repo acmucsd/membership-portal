@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
-import { UserModel } from '../models';
-import { UserState, PublicOrder } from '../types';
+import { UserState, PublicOrder } from '@customtypes';
+import { UserModel } from '@models';
 
 @Service()
 export class PermissionsService {

@@ -1,13 +1,13 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
+import { Uuid } from '@customtypes';
 import {
   MerchandiseItemOptionModel,
   MerchandiseItemPhotoModel,
   MerchandiseCollectionModel,
   MerchCollectionPhotoModel,
   MerchandiseItemModel,
-} from '../models';
-import { Uuid } from '../types';
-import { BaseRepository } from '.';
+} from '@models';
+import { BaseRepository } from '@repositories';
 
 @EntityRepository(MerchandiseCollectionModel)
 export class MerchCollectionRepository extends BaseRepository<MerchandiseCollectionModel> {

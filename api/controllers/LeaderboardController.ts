@@ -1,8 +1,8 @@
 import { UseBefore, JsonController, Get, QueryParams } from 'routing-controllers';
-import { GetLeaderboardResponse } from '../../types';
-import { UserAuthentication } from '../middleware';
-import { UserAccountService } from '../../services';
-import { SlidingLeaderboardQueryParams } from '../validators';
+import { GetLeaderboardResponse } from '@customtypes';
+import { UserAccountService } from '@services';
+import { SlidingLeaderboardQueryParams } from '@validators';
+import { UserAuthentication } from '@middleware';
 
 @UseBefore(UserAuthentication)
 @JsonController('/leaderboard')

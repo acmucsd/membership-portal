@@ -1,6 +1,6 @@
 import { Connection, createConnection } from 'typeorm';
-import { Config } from '../../config';
-import { models as entities } from '../../models';
+import { models as entities } from '@models';
+import { Config } from '@config';
 
 export class DatabaseConnection {
   private static conn: Connection = null;

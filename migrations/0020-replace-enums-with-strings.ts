@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 import { TableColumnOptions } from 'typeorm/schema-builder/options/TableColumnOptions';
-import { ActivityType, UserAccessType, UserState } from '../types';
+import { ActivityType, UserAccessType, UserState } from '@customtypes';
 
 interface ReplacementInfo {
   table: string;

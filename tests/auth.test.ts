@@ -3,11 +3,8 @@ import * as bcrypt from 'bcrypt';
 import { NotFoundError } from 'routing-controllers';
 import { anyString, instance, mock, verify, when } from 'ts-mockito';
 import * as faker from 'faker';
-import { Config } from '../config';
-import { UserModel, AttendanceModel, ActivityModel } from '../models';
-import { EmailService, UserAuthService } from '../services';
-import { ActivityType, UserAccessType, UserState } from '../types';
-import { ControllerFactory } from './controllers';
+import { ActivityType, UserAccessType, UserState } from '@customtypes';
+import { ControllerFactory } from '@tests/controllers';
 import {
   DatabaseConnection,
   FactoryUtils,
@@ -15,7 +12,10 @@ import {
   PortalState,
   UserFactory,
   UserRegistrationFactory,
-} from './data';
+} from '@tests/data';
+import { EmailService, UserAuthService } from '@services';
+import { UserModel, AttendanceModel, ActivityModel } from '@models';
+import { Config } from '@config';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

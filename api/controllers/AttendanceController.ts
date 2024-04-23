@@ -1,10 +1,10 @@
 import { JsonController, Get, Post, UseBefore, Params, ForbiddenError, Body } from 'routing-controllers';
-import { EmailService, AttendanceService, PermissionsService } from '../../services';
-import { UserAuthentication } from '../middleware';
-import { AuthenticatedUser } from '../decorators';
-import { AttendEventRequest, AttendViaExpressCheckinRequest, UuidParam } from '../validators';
-import { UserModel } from '../../models';
-import { GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '../../types';
+import { GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '@customtypes';
+import { EmailService, AttendanceService, PermissionsService } from '@services';
+import { UserModel } from '@models';
+import { UserAuthentication } from '@middleware';
+import { AttendEventRequest, AttendViaExpressCheckinRequest, UuidParam } from '@validators';
+import { AuthenticatedUser } from '@decorators';
 
 @JsonController('/attendance')
 export class AttendanceController {

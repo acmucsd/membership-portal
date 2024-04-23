@@ -1,5 +1,5 @@
 import { anything, mock, when } from 'ts-mockito';
-import { StorageService } from '../../services';
+import { StorageService } from '@services';
 
 const DEFAULT_FILE_URL = 'https://s3.amazonaws.com/default-file-url.pdf';
 

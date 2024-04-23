@@ -1,8 +1,8 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
-import { EventModel } from '../../models';
-import { FactoryUtils } from '.';
+import { EventModel } from '@models';
+import { FactoryUtils } from '@tests/data';
 
 export class EventFactory {
   private static readonly ORGS = [

@@ -13,8 +13,6 @@ import {
   UploadedFile,
 } from 'routing-controllers';
 import { v4 as uuid } from 'uuid';
-import { PermissionsService, MerchStoreService, StorageService } from '../../services';
-import { UserAuthentication } from '../middleware';
 import {
   GetOneMerchCollectionResponse,
   GetAllMerchCollectionsResponse,
@@ -50,7 +48,9 @@ import {
   GetOrderPickupEventResponse,
   CancelOrderPickupEventResponse,
   CancelMerchOrderResponse,
-} from '../../types';
+} from '@customtypes';
+import { PermissionsService, MerchStoreService, StorageService } from '@services';
+import { UserModel } from '@models';
 import {
   UuidParam,
   CreateMerchCollectionRequest,
@@ -67,10 +67,10 @@ import {
   CreateOrderPickupEventRequest,
   EditOrderPickupEventRequest,
   GetCartRequest,
-} from '../validators';
-import { AuthenticatedUser } from '../decorators';
-import { UserModel } from '../../models';
-import { UserError } from '../../utils';
+} from '@validators';
+import { UserAuthentication } from '@middleware';
+import { AuthenticatedUser } from '@decorators';
+import { UserError } from '@utils';
 
 @UseBefore(UserAuthentication)
 @JsonController('/merch')

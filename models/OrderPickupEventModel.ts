@@ -1,6 +1,6 @@
 import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, JoinColumn, OneToMany, OneToOne } from 'typeorm';
-import { Uuid, PublicOrderPickupEvent, OrderPickupEventStatus } from '../types';
-import { OrderModel, EventModel } from '.';
+import { Uuid, PublicOrderPickupEvent, OrderPickupEventStatus } from '@customtypes';
+import { OrderModel, EventModel } from '@models';
 
 @Entity('OrderPickupEvents')
 export class OrderPickupEventModel extends BaseEntity {

@@ -9,7 +9,7 @@ import {
   SocialMediaType,
   MerchItemOptionMetadata,
   Uuid,
-} from '.';
+} from '@customtypes';
 
 // RESPONSE TYPES
 

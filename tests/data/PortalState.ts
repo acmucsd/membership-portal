@@ -1,6 +1,7 @@
 import * as rfdc from 'rfdc';
 import { flatten } from 'underscore';
 import * as moment from 'moment';
+import { ActivityScope, ActivityType } from '@customtypes';
 import {
   OrderPickupEventModel,
   MerchandiseItemModel,
@@ -16,10 +17,8 @@ import {
   UserSocialMediaModel,
   ResumeModel,
   ExpressCheckinModel,
-} from '../../models';
-import { ActivityScope, ActivityType } from '../../types';
-import { DatabaseConnection } from '.';
-import { MerchFactory } from '.';
+} from '@models';
+import { DatabaseConnection, MerchFactory } from '@tests/data';
 
 export class PortalState {
   users: UserModel[] = [];

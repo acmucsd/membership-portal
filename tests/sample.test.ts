@@ -1,4 +1,5 @@
-import { ActivityType } from '../types';
+import { ActivityType } from '@customtypes';
+import { DatabaseConnection, UserFactory, EventFactory, MerchFactory, PortalState, FeedbackFactory } from '@tests/data';
 import {
   ActivityModel,
   AttendanceModel,
@@ -7,8 +8,7 @@ import {
   OrderModel,
   MerchandiseItemModel,
   MerchandiseCollectionModel,
-} from '../models';
-import { DatabaseConnection, UserFactory, EventFactory, MerchFactory, PortalState, FeedbackFactory } from './data';
+} from '@models';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

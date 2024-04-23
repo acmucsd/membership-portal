@@ -1,8 +1,8 @@
 import * as express from 'express';
 import { HttpError } from 'routing-controllers';
-import { ApiResponse, CustomErrorBody } from '../types';
-import { Config } from '../config';
-import { logger as log } from '../utils';
+import { ApiResponse, CustomErrorBody } from '@customtypes';
+import { Config } from '@config';
+import { logger as log } from '@utils';
 
 export function handleError(error: Error,
   request: express.Request,

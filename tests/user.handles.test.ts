@@ -2,9 +2,9 @@ import 'reflect-metadata'; // this shim is required
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import * as faker from 'faker';
-import { UserPatches } from '../api/validators';
-import { ControllerFactory } from './controllers';
-import { DatabaseConnection, PortalState, UserFactory } from './data';
+import { ControllerFactory } from '@tests/controllers';
+import { DatabaseConnection, PortalState, UserFactory } from '@tests/data';
+import { UserPatches } from '@validators';
 
 // Required to pass class-validator validation on user patch even for optional fields
 const passwordChange = {

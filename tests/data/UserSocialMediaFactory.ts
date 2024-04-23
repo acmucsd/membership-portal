@@ -1,9 +1,8 @@
 import * as faker from 'faker';
 import { v4 as uuid } from 'uuid';
-import { UserSocialMediaModel } from '../../models';
-import { SocialMediaType } from '../../types';
-import { FactoryUtils } from '.';
-import { UserFactory } from '.';
+import { SocialMediaType } from '@customtypes';
+import { UserSocialMediaModel } from '@models';
+import { FactoryUtils, UserFactory } from '@tests/data';
 
 export class UserSocialMediaFactory {
   public static create(n: number): UserSocialMediaModel[] {

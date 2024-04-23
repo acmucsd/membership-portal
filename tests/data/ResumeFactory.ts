@@ -1,8 +1,7 @@
 import * as faker from 'faker';
 import { v4 as uuid } from 'uuid';
-import { ResumeModel } from '../../models';
-import { FactoryUtils } from '.';
-import { UserFactory } from '.';
+import { ResumeModel } from '@models';
+import { FactoryUtils, UserFactory } from '@tests/data';
 
 export class ResumeFactory {
   public static create(n: number) {

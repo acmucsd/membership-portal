@@ -1,8 +1,8 @@
 import * as faker from 'faker';
 import { v4 as uuid } from 'uuid';
-import { FeedbackStatus, FeedbackType } from '../../types';
-import { FactoryUtils, UserFactory, EventFactory } from '.';
-import { FeedbackModel } from '../../models';
+import { FeedbackStatus, FeedbackType } from '@customtypes';
+import { FeedbackModel } from '@models';
+import { FactoryUtils, UserFactory, EventFactory } from '@tests/data';
 
 export class FeedbackFactory {
   public static create(n: number): FeedbackModel[] {

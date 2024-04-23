@@ -1,10 +1,6 @@
 import {
   JsonController, Get, Patch, Delete, Post, UseBefore, Params, ForbiddenError, QueryParams, UploadedFile, Body,
 } from 'routing-controllers';
-import { EventService, PermissionsService, StorageService, AttendanceService } from '../../services';
-import { UserAuthentication, OptionalUserAuthentication } from '../middleware';
-import { AuthenticatedUser } from '../decorators';
-import { UserModel } from '../../models';
 import {
   MediaType,
   File,
@@ -16,8 +12,12 @@ import {
   GetFutureEventsResponse,
   GetAllEventsResponse,
   GetPastEventsResponse,
-} from '../../types';
-import { UuidParam } from '../validators';
+} from '@customtypes';
+import { EventService, PermissionsService, StorageService, AttendanceService } from '@services';
+import { UserModel } from '@models';
+import { UuidParam } from '@validators';
+import { UserAuthentication, OptionalUserAuthentication } from '@middleware';
+import { AuthenticatedUser } from '@decorators';
 import {
   EventSearchOptions,
   PatchEventRequest,

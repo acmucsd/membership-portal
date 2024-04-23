@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
-import { UserModel } from '.';
-import { Uuid, SocialMediaType, PublicUserSocialMedia } from '../types';
+import { Uuid, SocialMediaType, PublicUserSocialMedia } from '@customtypes';
+import { UserModel } from '@models';
 
 @Entity('UserSocialMedia')
 export class UserSocialMediaModel extends BaseEntity {

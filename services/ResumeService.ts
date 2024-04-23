@@ -2,9 +2,9 @@ import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 import { InjectManager } from 'typeorm-typedi-extensions';
-import { ActivityType, ResumePatches } from '../types';
-import { ResumeModel, UserModel } from '../models';
-import { Repositories, TransactionsManager } from '../repositories';
+import { ActivityType, ResumePatches } from '@customtypes';
+import { Repositories, TransactionsManager } from '@repositories';
+import { ResumeModel, UserModel } from '@models';
 
 @Service()
 export class ResumeService {

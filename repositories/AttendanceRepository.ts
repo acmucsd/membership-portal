@@ -1,8 +1,8 @@
 import { EntityRepository } from 'typeorm';
-import { ExpressCheckinModel, AttendanceModel, UserModel, EventModel } from '../models';
-import { Uuid } from '../types';
-import { BaseRepository } from '.';
-import { Attendance } from '../types/internal';
+import { Uuid } from '@customtypes';
+import { Attendance } from '@customtypes/internal';
+import { ExpressCheckinModel, AttendanceModel, UserModel, EventModel } from '@models';
+import { BaseRepository } from '@repositories';
 
 @EntityRepository(AttendanceModel)
 export class AttendanceRepository extends BaseRepository<AttendanceModel> {

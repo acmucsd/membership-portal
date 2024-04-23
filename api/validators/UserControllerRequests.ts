@@ -6,18 +6,18 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
+  PasswordUpdate as IPasswordUpdate,
+  PatchUserRequest as IPatchUserRequest,
+  UserPatches as IUserPatches,
+} from '@customtypes';
+import {
   IsValidName,
   IsValidMajor,
   IsValidGraduationYear,
   HasMatchingPasswords,
   IsValidHandle,
-} from '../decorators';
-import {
-  PasswordUpdate as IPasswordUpdate,
-  PatchUserRequest as IPatchUserRequest,
-  UserPatches as IUserPatches,
-} from '../../types';
-import { PasswordChange } from '.';
+} from '@decorators';
+import { PasswordChange } from '@validators';
 
 export class PasswordUpdate extends PasswordChange implements IPasswordUpdate {
   @IsDefined()

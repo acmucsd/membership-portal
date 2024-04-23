@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { PublicResume, Uuid } from '../types';
-import { UserModel } from '.';
+import { PublicResume, Uuid } from '@customtypes';
+import { UserModel } from '@models';
 
 @Entity('Resumes')
 export class ResumeModel extends BaseEntity {

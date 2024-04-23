@@ -12,10 +12,6 @@ import {
   Delete,
 } from 'routing-controllers';
 import * as path from 'path';
-import { PermissionsService, StorageService, ResumeService } from '../../services';
-import { UserAuthentication } from '../middleware';
-import { UserModel } from '../../models';
-import { AuthenticatedUser } from '../decorators';
 import {
   File,
   MediaType,
@@ -23,8 +19,12 @@ import {
   PatchResumeResponse,
   UpdateResumeResponse,
   DeleteResumeResponse,
-} from '../../types';
-import { PatchResumeRequest, UploadResumeRequest, UuidParam } from '../validators';
+} from '@customtypes';
+import { PermissionsService, StorageService, ResumeService } from '@services';
+import { UserModel } from '@models';
+import { UserAuthentication } from '@middleware';
+import { PatchResumeRequest, UploadResumeRequest, UuidParam } from '@validators';
+import { AuthenticatedUser } from '@decorators';
 
 @UseBefore(UserAuthentication)
 @JsonController('/resume')

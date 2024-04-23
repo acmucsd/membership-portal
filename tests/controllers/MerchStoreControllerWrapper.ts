@@ -1,9 +1,9 @@
 import * as moment from 'moment';
 import { Connection } from 'typeorm';
-import { MerchStoreController } from '../../api/controllers';
-import { UuidParam } from '../../api/validators';
-import { OrderPickupEventModel, UserModel } from '../../models';
-import { FulfillMerchOrderRequest } from '../../types';
+import { FulfillMerchOrderRequest } from '@customtypes';
+import { OrderPickupEventModel, UserModel } from '@models';
+import { UuidParam } from '@validators';
+import { MerchStoreController } from '@controllers';
 
 /**
  * Wrapper class over MerchStoreController for performing merch controller

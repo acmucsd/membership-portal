@@ -1,11 +1,4 @@
 import { JsonController, Post, Patch, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
-import { UserAuthentication } from '../middleware';
-import {
-  CreateBonusRequest,
-  CreateMilestoneRequest,
-  SubmitAttendanceForUsersRequest,
-  ModifyUserAccessLevelRequest,
-} from '../validators';
 import {
   File,
   MediaType,
@@ -16,10 +9,17 @@ import {
   SubmitAttendanceForUsersResponse,
   ModifyUserAccessLevelResponse,
   GetAllUserAccessLevelsResponse,
-} from '../../types';
-import { AuthenticatedUser } from '../decorators';
-import { UserAccountService, StorageService, PermissionsService, AttendanceService } from '../../services';
-import { UserModel } from '../../models';
+} from '@customtypes';
+import { UserAccountService, StorageService, PermissionsService, AttendanceService } from '@services';
+import { UserModel } from '@models';
+import {
+  CreateBonusRequest,
+  CreateMilestoneRequest,
+  SubmitAttendanceForUsersRequest,
+  ModifyUserAccessLevelRequest,
+} from '@validators';
+import { UserAuthentication } from '@middleware';
+import { AuthenticatedUser } from '@decorators';
 
 @UseBefore(UserAuthentication)
 @JsonController('/admin')

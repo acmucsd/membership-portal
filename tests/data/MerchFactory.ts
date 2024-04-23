@@ -1,7 +1,7 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
-import { MerchItemOptionMetadata, OrderPickupEventStatus } from '../../types';
+import { MerchItemOptionMetadata, OrderPickupEventStatus } from '@customtypes';
 import {
   OrderPickupEventModel,
   MerchandiseCollectionModel,
@@ -9,8 +9,8 @@ import {
   MerchandiseItemModel,
   MerchandiseItemOptionModel,
   MerchandiseItemPhotoModel,
-} from '../../models';
-import { FactoryUtils } from '.';
+} from '@models';
+import { FactoryUtils } from '@tests/data';
 
 export class MerchFactory {
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {

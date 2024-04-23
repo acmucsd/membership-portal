@@ -1,9 +1,9 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
-import { ActivityType, UserAccessType } from '../types';
-import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
+import { ControllerFactory } from '@tests/controllers';
+import { ActivityType, UserAccessType } from '@customtypes';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from '@tests/data';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

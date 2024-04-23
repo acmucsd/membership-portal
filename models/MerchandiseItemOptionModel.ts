@@ -1,8 +1,8 @@
 import {
   Entity, BaseEntity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, Index,
 } from 'typeorm';
-import { Uuid, PublicMerchItemOption, MerchItemOptionMetadata, PublicOrderMerchItemOption } from '../types';
-import { OrderItemModel, MerchandiseItemModel } from '.';
+import { Uuid, PublicMerchItemOption, MerchItemOptionMetadata, PublicOrderMerchItemOption } from '@customtypes';
+import { OrderItemModel, MerchandiseItemModel } from '@models';
 
 @Entity('MerchandiseItemOptions')
 export class MerchandiseItemOptionModel extends BaseEntity {

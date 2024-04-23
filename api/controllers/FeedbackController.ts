@@ -9,12 +9,12 @@ import {
   UseBefore,
   QueryParams,
 } from 'routing-controllers';
-import { AuthenticatedUser } from '../decorators';
-import { UserModel } from '../../models';
-import { PermissionsService, FeedbackService } from '../../services';
-import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse } from '../../types';
-import { UuidParam } from '../validators';
-import { UserAuthentication } from '../middleware';
+import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse } from '@customtypes';
+import { PermissionsService, FeedbackService } from '@services';
+import { UserModel } from '@models';
+import { UuidParam } from '@validators';
+import { UserAuthentication } from '@middleware';
+import { AuthenticatedUser } from '@decorators';
 import {
   SubmitFeedbackRequest,
   UpdateFeedbackStatusRequest,

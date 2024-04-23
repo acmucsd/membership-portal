@@ -1,10 +1,10 @@
 import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
-import { UserAccessType } from '../types';
-import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
+import { UserAccessType } from '@customtypes';
+import { ControllerFactory } from '@tests/controllers';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from '@tests/data';
+import { EventModel } from '@models';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
-import { EventModel } from '../models';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

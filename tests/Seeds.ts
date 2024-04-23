@@ -1,5 +1,7 @@
+import '../aliases';
+
 import * as moment from 'moment';
-import { UserAccessType, SocialMediaType, FeedbackStatus, FeedbackType } from '../types';
+import { UserAccessType, SocialMediaType, FeedbackStatus, FeedbackType } from '@customtypes';
 import {
   DatabaseConnection,
   EventFactory,
@@ -9,7 +11,7 @@ import {
   ResumeFactory,
   UserSocialMediaFactory,
   FeedbackFactory,
-} from './data';
+} from '@tests/data';
 
 function getGraduationYear(n: number) {
   return moment().year() + n;

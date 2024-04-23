@@ -1,5 +1,5 @@
-import { MerchandiseItemModel, EventModel, UserModel } from '../../models';
-import { ActivityScope, ActivityType } from '..';
+import { MerchandiseItemModel, EventModel, UserModel } from '@models';
+import { ActivityScope, ActivityType } from '@customtypes';
 
 export type Attendance = {
   user: UserModel,

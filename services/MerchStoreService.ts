@@ -4,19 +4,7 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
-import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
-import {
-  MerchandiseItemOptionModel,
-  MerchandiseItemModel,
-  OrderModel,
-  UserModel,
-  EventModel,
-  MerchandiseCollectionModel,
-  MerchCollectionPhotoModel,
-  OrderItemModel,
-  OrderPickupEventModel,
-  MerchandiseItemPhotoModel,
-} from '../models';
+import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from '@customtypes/internal';
 import {
   Uuid,
   PublicMerchCollection,
@@ -38,10 +26,22 @@ import {
   MerchItemPhoto,
   PublicMerchCollectionPhoto,
   MerchCollectionPhoto,
-} from '../types';
-import { Repositories, TransactionsManager } from '../repositories';
-import { EmailService, OrderInfo, OrderPickupEventInfo } from '.';
-import { UserError } from '../utils';
+} from '@customtypes';
+import { Repositories, TransactionsManager } from '@repositories';
+import {
+  MerchandiseItemOptionModel,
+  MerchandiseItemModel,
+  OrderModel,
+  UserModel,
+  EventModel,
+  MerchandiseCollectionModel,
+  MerchCollectionPhotoModel,
+  OrderItemModel,
+  OrderPickupEventModel,
+  MerchandiseItemPhotoModel,
+} from '@models';
+import { EmailService, OrderInfo, OrderPickupEventInfo } from '@services';
+import { UserError } from '@utils';
 
 @Service()
 export class MerchStoreService {

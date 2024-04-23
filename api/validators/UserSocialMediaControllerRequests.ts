@@ -1,13 +1,13 @@
 import { Type } from 'class-transformer';
 import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
-import { IsValidSocialMediaType } from '../decorators';
 import {
   InsertUserSocialMediaRequest as IInsertUserSocialMediaRequest,
   UpdateUserSocialMediaRequest as IUpdateUserSocialMediaRequest,
   SocialMedia as ISocialMedia,
   SocialMediaPatches as ISocialMediaPatches,
   SocialMediaType,
-} from '../../types';
+} from '@customtypes';
+import { IsValidSocialMediaType } from '@decorators';
 
 export class SocialMedia implements ISocialMedia {
   @IsDefined()

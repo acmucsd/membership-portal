@@ -1,11 +1,11 @@
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
 import { anything, instance, verify } from 'ts-mockito';
-import { ActivityType, UserAccessType, MediaType } from '../types';
-import { ResumeModel, ActivityModel } from '../models';
-import { Config } from '../config';
-import { ControllerFactory } from './controllers';
-import { DatabaseConnection, PortalState, UserFactory, FileFactory, ResumeFactory } from './data';
-import { Mocks } from './mocks';
+import { ControllerFactory } from '@tests/controllers';
+import { ActivityType, UserAccessType, MediaType } from '@customtypes';
+import { DatabaseConnection, PortalState, UserFactory, FileFactory, ResumeFactory } from '@tests/data';
+import { Mocks } from '@tests/mocks';
+import { ResumeModel, ActivityModel } from '@models';
+import { Config } from '@config';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

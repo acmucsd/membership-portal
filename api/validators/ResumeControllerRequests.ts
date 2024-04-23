@@ -4,7 +4,7 @@ import {
   UploadResumeRequest as IUploadResumeRequest,
   ResumePatches as IResumePatches,
   PatchResumeRequest as IPatchResumeRequest,
-} from '../../types';
+} from '@customtypes';
 
 export class UploadResumeRequest implements IUploadResumeRequest {
   // IsBooleanString is used here instead of IsBoolean since multipart/form-data

@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
 import { Allow, IsDefined, IsNotEmpty, MinLength, ValidateNested } from 'class-validator';
-import { IsValidFeedbackType, IsValidFeedbackStatus } from '../decorators';
 import {
   SubmitEventFeedbackRequest as ISubmitEventFeedbackRequest,
   SubmitFeedbackRequest as ISubmitFeedbackRequest,
@@ -10,7 +9,8 @@ import {
   FeedbackType,
   FeedbackStatus,
   Uuid,
-} from '../../types';
+} from '@customtypes';
+import { IsValidFeedbackType, IsValidFeedbackStatus } from '@decorators';
 
 export class Feedback implements IFeedback {
   @IsDefined()
