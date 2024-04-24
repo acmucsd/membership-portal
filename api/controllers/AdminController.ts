@@ -43,8 +43,8 @@ export class AdminController {
   @Get('/email')
   async getAllNamesAndEmails(@AuthenticatedUser() user: UserModel): Promise<GetAllNamesAndEmailsResponse> {
     if (!PermissionsService.canSeeAllUserEmails(user)) throw new ForbiddenError();
-    const namesEmails = await this.userAccountService.getAllNamesAndEmails();
-    return { error: null, namesEmails };
+    const namesAndEmails = await this.userAccountService.getAllNamesAndEmails();
+    return { error: null, namesAndEmails };
   }
 
   @Post('/milestone')

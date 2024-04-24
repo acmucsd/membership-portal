@@ -31,7 +31,7 @@ export interface UploadBannerResponse extends ApiResponse {
 }
 
 export interface GetAllNamesAndEmailsResponse extends ApiResponse {
-  namesEmails: NameAndEmail[];
+  namesAndEmails: NameAndEmail[];
 }
 
 export interface SubmitAttendanceForUsersResponse extends ApiResponse {

@@ -46,15 +46,15 @@ export class UserRepository extends BaseRepository<UserModel> {
   }
 
   public async getAllNamesAndEmails(): Promise<NameAndEmail[]> {
-    const namesEmailsRaw = await this.repository
+    const namesAndEmailsRaw = await this.repository
       .createQueryBuilder()
       .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
       .getRawMany();
-    const nameEmailFormatted: NameAndEmail[] = namesEmailsRaw.map((nameEmailRaw) => ({ firstName:
-      nameEmailRaw.UserModel_firstName,
-    lastName: nameEmailRaw.UserModel_lastName,
-    email: nameEmailRaw.email }));
-    return nameEmailFormatted;
+    const namesAndEmailsFormatted: NameAndEmail[] = namesAndEmailsRaw.map((nameAndEmailRaw) => ({ firstName:
+      nameAndEmailRaw.UserModel_firstName,
+    lastName: nameAndEmailRaw.UserModel_lastName,
+    email: nameAndEmailRaw.email }));
+    return namesAndEmailsFormatted;
   }
 
   public static async generateHash(pass: string): Promise<string> {
