@@ -298,7 +298,7 @@ export interface FulfillMerchOrderResponse extends ApiResponse {
 }
 
 // USER
-export interface NameEmail {
+export interface NameAndEmail {
   firstName: string;
   lastName: string;
   email: string;

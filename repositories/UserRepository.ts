@@ -45,7 +45,7 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.findOne({ accessCode });
   }
 
-  public async getAllNamesEmails(): Promise<NameEmail[]> {
+  public async getAllNamesAndEmails(): Promise<NameEmail[]> {
     const namesEmailsRaw = await this.repository
       .createQueryBuilder()
       .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
