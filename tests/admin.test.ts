@@ -1,6 +1,6 @@
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
 import { In } from 'typeorm';
-import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType, NameEmail } from '../types';
+import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType, NameAndEmail } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { UserModel } from '../models/UserModel';
@@ -135,7 +135,7 @@ describe('names and emails retrieval', () => {
   test('gets all the emails of stored users', async () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(5);
-    const namesEmails: NameEmail[] = users.map((user) => ({ firstName: user.firstName,
+    const namesEmails: NameAndEmail[] = users.map((user) => ({ firstName: user.firstName,
       lastName: user.lastName,
       email:
       user.email.toLowerCase() }));
@@ -146,7 +146,7 @@ describe('names and emails retrieval', () => {
       .write();
 
     const response = await ControllerFactory.admin(conn).getAllNamesEmails(admin);
-    const expected: NameEmail = { firstName: admin.firstName, lastName: admin.lastName, email: admin.email };
+    const expected: NameAndEmail = { firstName: admin.firstName, lastName: admin.lastName, email: admin.email };
     expect(expect.arrayContaining(response.namesEmails)).toEqual([...namesEmails,
       expected]);
   });

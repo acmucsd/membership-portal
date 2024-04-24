@@ -170,7 +170,7 @@ export default class UserAccountService {
   public async getAllNamesAndEmails() {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
-      .getAllNamesEmails());
+      .getAllNamesAndEmails());
   }
 
   /**

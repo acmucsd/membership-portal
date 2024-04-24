@@ -2,7 +2,7 @@ import { EntityRepository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Activity } from '../types/internal';
 import { UserModel } from '../models/UserModel';
-import { Uuid, NameEmail } from '../types';
+import { Uuid, NameAndEmail } from '../types';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(UserModel)
@@ -45,12 +45,12 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.findOne({ accessCode });
   }
 
-  public async getAllNamesAndEmails(): Promise<NameEmail[]> {
+  public async getAllNamesAndEmails(): Promise<NameAndEmail[]> {
     const namesEmailsRaw = await this.repository
       .createQueryBuilder()
       .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
       .getRawMany();
-    const nameEmailFormatted: NameEmail[] = namesEmailsRaw.map((nameEmailRaw) => ({ firstName:
+    const nameEmailFormatted: NameAndEmail[] = namesEmailsRaw.map((nameEmailRaw) => ({ firstName:
       nameEmailRaw.UserModel_firstName,
     lastName: nameEmailRaw.UserModel_lastName,
     email: nameEmailRaw.email }));
