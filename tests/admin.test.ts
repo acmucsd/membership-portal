@@ -135,7 +135,7 @@ describe('names and emails retrieval', () => {
   test('gets all the emails of stored users', async () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(5);
-    const namesEmails: NameAndEmail[] = users.map((user) => ({ firstName: user.firstName,
+    const namesAndEmails: NameAndEmail[] = users.map((user) => ({ firstName: user.firstName,
       lastName: user.lastName,
       email:
       user.email.toLowerCase() }));
@@ -147,7 +147,7 @@ describe('names and emails retrieval', () => {
 
     const response = await ControllerFactory.admin(conn).getAllNamesAndEmails(admin);
     const expected: NameAndEmail = { firstName: admin.firstName, lastName: admin.lastName, email: admin.email };
-    expect(expect.arrayContaining(response.namesEmails)).toEqual([...namesEmails,
+    expect(expect.arrayContaining(response.namesAndEmails)).toEqual([...namesAndEmails,
       expected]);
   });
 });
