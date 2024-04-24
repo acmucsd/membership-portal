@@ -30,7 +30,7 @@ export interface UploadBannerResponse extends ApiResponse {
   banner: string;
 }
 
-export interface GetAllNamesEmailsResponse extends ApiResponse {
+export interface GetAllNamesAndEmailsResponse extends ApiResponse {
   namesEmails: NameAndEmail[];
 }
 

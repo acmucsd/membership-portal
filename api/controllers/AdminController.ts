@@ -12,7 +12,7 @@ import {
   CreateMilestoneResponse,
   CreateBonusResponse,
   UploadBannerResponse,
-  GetAllNamesEmailsResponse,
+  GetAllNamesAndEmailsResponse,
   SubmitAttendanceForUsersResponse,
   ModifyUserAccessLevelResponse,
   GetAllUserAccessLevelsResponse,
@@ -41,9 +41,9 @@ export class AdminController {
   }
 
   @Get('/email')
-  async getAllNamesEmails(@AuthenticatedUser() user: UserModel): Promise<GetAllNamesEmailsResponse> {
+  async getAllNamesAndEmails(@AuthenticatedUser() user: UserModel): Promise<GetAllNamesAndEmailsResponse> {
     if (!PermissionsService.canSeeAllUserEmails(user)) throw new ForbiddenError();
-    const namesEmails = await this.userAccountService.getAllNamesEmails();
+    const namesEmails = await this.userAccountService.getAllNamesAndEmails();
     return { error: null, namesEmails };
   }
 

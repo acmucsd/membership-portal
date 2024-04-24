@@ -145,7 +145,7 @@ describe('names and emails retrieval', () => {
       .createUsers(...users, admin)
       .write();
 
-    const response = await ControllerFactory.admin(conn).getAllNamesEmails(admin);
+    const response = await ControllerFactory.admin(conn).getAllNamesAndEmails(admin);
     const expected: NameAndEmail = { firstName: admin.firstName, lastName: admin.lastName, email: admin.email };
     expect(expect.arrayContaining(response.namesEmails)).toEqual([...namesEmails,
       expected]);
