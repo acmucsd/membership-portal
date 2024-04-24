@@ -12,7 +12,6 @@ import {
   OrderPickupEvent,
   OrderPickupEventEdit,
   MerchItemOptionAndQuantity,
-  PublicMerchItemWithPurchaseLimits,
   OrderPickupEventStatus,
   OrderItemFulfillmentUpdate,
 
@@ -40,35 +39,6 @@ export default class MerchOrderService {
   constructor(@InjectManager() entityManager: EntityManager, emailService: EmailService) {
     this.transactions = new TransactionsManager(entityManager);
     this.emailService = emailService;
-  }
-
-  public async findItemByUuid(uuid: Uuid, user: UserModel): Promise<PublicMerchItemWithPurchaseLimits> {
-    return this.transactions.readOnly(async (txn) => {
-      const item = await Repositories.merchStoreItem(txn).findByUuid(uuid);
-
-      if (!item) throw new NotFoundError('Merch item not found');
-
-      // calculate monthly and lifetime remaining purchases for this item
-      const merchOrderItemRepository = Repositories.merchOrderItem(txn);
-      const lifetimePurchaseHistory = await merchOrderItemRepository.getPastItemOrdersByUser(user, item);
-      const oneMonthAgo = new Date(moment().subtract(1, 'month').unix());
-      const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((oi) => oi.order.orderedAt > oneMonthAgo);
-      const lifetimeCancelledItems = lifetimePurchaseHistory
-        .filter((oi) => oi.order.status === OrderStatus.CANCELLED);
-      const pastMonthCancelledItems = pastMonthPurchaseHistory
-        .filter((oi) => oi.order.status === OrderStatus.CANCELLED);
-      const lifetimeItemOrderCounts = lifetimePurchaseHistory.length - lifetimeCancelledItems.length;
-      const pastMonthItemOrderCounts = pastMonthPurchaseHistory.length - pastMonthCancelledItems.length;
-
-      const monthlyRemaining = item.monthlyLimit - pastMonthItemOrderCounts;
-      const lifetimeRemaining = item.lifetimeLimit - lifetimeItemOrderCounts;
-
-      return {
-        ...item.getPublicMerchItem(),
-        monthlyRemaining,
-        lifetimeRemaining,
-      };
-    });
   }
 
   public async findOrderByUuid(uuid: Uuid): Promise<OrderModel> {
@@ -691,18 +661,6 @@ export default class MerchOrderService {
     && order.status !== OrderStatus.CANCELLED;
   }
 
-  public async getCartItems(options: string[]): Promise<MerchandiseItemOptionModel[]> {
-    return this.transactions.readOnly(async (txn) => {
-      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-      const itemOptionsByUuid = await merchItemOptionRepository.batchFindByUuid(options);
-      const itemOptionUuidsFound = Array.from(itemOptionsByUuid.keys());
-      const missingItems = difference(options, itemOptionUuidsFound);
-      if (missingItems.length > 0) {
-        throw new NotFoundError(`The following items were not found: ${missingItems}`);
-      }
-      return options.map((option) => itemOptionsByUuid.get(option));
-    });
-  }
 
     /**
    * Builds an order update info object to be sent in emails, based on the order.
