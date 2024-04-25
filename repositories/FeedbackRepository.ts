@@ -1,9 +1,7 @@
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
-import { FeedbackModel } from '../models/FeedbackModel';
-import { UserModel } from '../models/UserModel';
-import { EventModel } from '../models/EventModel';
-import { BaseRepository } from './BaseRepository';
-import { FeedbackSearchOptions, Uuid } from '../types';
+import { FeedbackSearchOptions, Uuid } from '@customtypes';
+import { FeedbackModel, UserModel, EventModel } from '@models';
+import { BaseRepository } from '@repositories';
 
 @EntityRepository(FeedbackModel)
 export class FeedbackRepository extends BaseRepository<FeedbackModel> {

@@ -1,6 +1,6 @@
 import { ExpressMiddlewareInterface, NotFoundError, Middleware } from 'routing-controllers';
 import * as express from 'express';
-import { handleError } from '../../error';
+import { handleError } from '@error';
 
 @Middleware({ type: 'after' })
 export class NotFoundHandler implements ExpressMiddlewareInterface {

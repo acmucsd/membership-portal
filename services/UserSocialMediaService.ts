@@ -2,14 +2,13 @@ import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
-import { UserError } from '../utils/Errors';
-import { UserSocialMediaModel } from '../models/UserSocialMediaModel';
-import { UserModel } from '../models/UserModel';
-import Repositories, { TransactionsManager } from '../repositories';
-import { Uuid, SocialMedia, SocialMediaPatches } from '../types';
+import { Uuid, SocialMedia, SocialMediaPatches } from '@customtypes';
+import { Repositories, TransactionsManager } from '@repositories';
+import { UserSocialMediaModel, UserModel } from '@models';
+import { UserError } from '@utils';
 
 @Service()
-export default class UserSocialMediaService {
+export class UserSocialMediaService {
   private transactions: TransactionsManager;
 
   constructor(@InjectManager() entityManager: EntityManager) {

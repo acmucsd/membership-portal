@@ -1,7 +1,6 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { FeedbackStatus, FeedbackType, PublicFeedback, Uuid } from '../types';
-import { UserModel } from './UserModel';
-import { EventModel } from './EventModel';
+import { FeedbackStatus, FeedbackType, PublicFeedback, Uuid } from '@customtypes';
+import { UserModel, EventModel } from '@models';
 
 @Entity('Feedback')
 export class FeedbackModel extends BaseEntity {

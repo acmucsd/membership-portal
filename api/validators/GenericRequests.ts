@@ -1,6 +1,6 @@
 import { Min, IsEmail, IsUUID, IsHexadecimal, Length } from 'class-validator';
-import { IsValidHandle } from '../decorators/Validators';
-import { Pagination as IPagination, Uuid } from '../../types';
+import { Pagination as IPagination, Uuid } from '@customtypes';
+import { IsValidHandle } from '@decorators';
 
 export class Pagination implements IPagination {
   @Min(0)

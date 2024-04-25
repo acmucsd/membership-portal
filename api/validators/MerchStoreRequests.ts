@@ -46,7 +46,7 @@ import {
   OrderPickupEvent as IOrderPickupEvent,
   OrderPickupEventEdit as IOrderPickupEventEdit,
   Uuid,
-} from '../../types';
+} from '@customtypes';
 
 export class MerchCollection implements IMerchCollection {
   @IsDefined()

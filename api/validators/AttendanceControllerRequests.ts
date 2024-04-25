@@ -2,7 +2,7 @@ import { IsDefined, IsNotEmpty, Allow, IsEmail } from 'class-validator';
 import {
   AttendEventRequest as IAttendEventRequest,
   AttendViaExpressCheckinRequest as IAttendViaExpressCheckinRequest,
-} from '../../types';
+} from '@customtypes';
 
 export class AttendEventRequest implements IAttendEventRequest {
   @IsDefined()

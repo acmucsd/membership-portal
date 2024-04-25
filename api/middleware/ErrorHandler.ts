@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { ExpressErrorMiddlewareInterface, Middleware } from 'routing-controllers';
-import { handleError } from '../../error';
+import { handleError } from '@error';
 
 @Middleware({ type: 'after' })
 export class ErrorHandler implements ExpressErrorMiddlewareInterface {

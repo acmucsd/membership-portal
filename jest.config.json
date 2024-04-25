@@ -9,5 +9,19 @@
 		"js",
 		"json",
 		"node"
-	]
+	],
+	"moduleNameMapper": {
+		"@controllers": "<rootDir>/api/controllers",
+		"@decorators": "<rootDir>/api/decorators",
+		"@middleware": "<rootDir>/api/middleware",
+		"@validators": "<rootDir>/api/validators",
+		"@config": "<rootDir>/config",
+		"@error": "<rootDir>/error",
+		"@models": "<rootDir>/models",
+		"@repositories": "<rootDir>/repositories",
+		"@services": "<rootDir>/services",
+		"@tests/(.*)": "<rootDir>/tests/$1",
+		"@customtypes(.*)": "<rootDir>/types$1",
+		"@utils": "<rootDir>/utils"
+	}
 }

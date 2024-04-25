@@ -1,8 +1,7 @@
 import { EntityRepository } from 'typeorm';
-import { SocialMediaType, Uuid } from 'types';
-import { UserSocialMediaModel } from '../models/UserSocialMediaModel';
-import { UserModel } from '../models/UserModel';
-import { BaseRepository } from './BaseRepository';
+import { SocialMediaType, Uuid } from '@customtypes';
+import { UserSocialMediaModel, UserModel } from '@models';
+import { BaseRepository } from '@repositories';
 
 @EntityRepository(UserSocialMediaModel)
 export class UserSocialMediaRepository extends BaseRepository<UserSocialMediaModel> {

@@ -1,23 +1,24 @@
 import * as rfdc from 'rfdc';
 import { flatten } from 'underscore';
 import * as moment from 'moment';
-import { OrderPickupEventModel } from '../../models/OrderPickupEventModel';
-import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
-import { AttendanceModel } from '../../models/AttendanceModel';
-import { EventModel } from '../../models/EventModel';
-import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionModel';
-import { OrderModel } from '../../models/OrderModel';
-import { UserModel } from '../../models/UserModel';
-import { ActivityModel } from '../../models/ActivityModel';
-import { ActivityScope, ActivityType } from '../../types';
-import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
-import { OrderItemModel } from '../../models/OrderItemModel';
-import { FeedbackModel } from '../../models/FeedbackModel';
-import { UserSocialMediaModel } from '../../models/UserSocialMediaModel';
-import { DatabaseConnection } from './DatabaseConnection';
-import { MerchFactory } from '.';
-import { ResumeModel } from '../../models/ResumeModel';
-import { ExpressCheckinModel } from '../../models/ExpressCheckinModel';
+import { ActivityScope, ActivityType } from '@customtypes';
+import {
+  OrderPickupEventModel,
+  MerchandiseItemModel,
+  AttendanceModel,
+  EventModel,
+  MerchandiseCollectionModel,
+  OrderModel,
+  UserModel,
+  ActivityModel,
+  MerchandiseItemOptionModel,
+  OrderItemModel,
+  FeedbackModel,
+  UserSocialMediaModel,
+  ResumeModel,
+  ExpressCheckinModel,
+} from '@models';
+import { DatabaseConnection, MerchFactory } from '@tests/data';
 
 export class PortalState {
   users: UserModel[] = [];

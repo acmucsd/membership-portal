@@ -1,9 +1,8 @@
 import { ExpressMiddlewareInterface, ForbiddenError } from 'routing-controllers';
 import * as express from 'express';
 import { Inject } from 'typedi';
-import UserAuthService from '../../services/UserAuthService';
-import { authActionMetadata } from '../../utils/AuthActionMetadata';
-import { logger as log } from '../../utils/Logger';
+import { UserAuthService } from '@services';
+import { authActionMetadata, logger as log } from '@utils';
 
 export class UserAuthentication implements ExpressMiddlewareInterface {
   @Inject()

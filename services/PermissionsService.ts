@@ -1,9 +1,9 @@
 import { Service } from 'typedi';
-import { UserModel } from '../models/UserModel';
-import { UserState, PublicOrder } from '../types';
+import { UserState, PublicOrder } from '@customtypes';
+import { UserModel } from '@models';
 
 @Service()
-export default class PermissionsService {
+export class PermissionsService {
   public static canEditEvents(user: UserModel): boolean {
     return user.isAdmin() || user.isMarketing();
   }

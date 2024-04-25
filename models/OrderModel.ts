@@ -8,10 +8,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Uuid, PublicOrder, OrderStatus, PublicOrderWithItems } from '../types';
-import { UserModel } from './UserModel';
-import { OrderItemModel } from './OrderItemModel';
-import { OrderPickupEventModel } from './OrderPickupEventModel';
+import { Uuid, PublicOrder, OrderStatus, PublicOrderWithItems } from '@customtypes';
+import { UserModel, OrderItemModel, OrderPickupEventModel } from '@models';
 
 @Entity('Orders')
 export class OrderModel extends BaseEntity {

@@ -3,17 +3,19 @@ import * as bcrypt from 'bcrypt';
 import { NotFoundError } from 'routing-controllers';
 import { anyString, instance, mock, verify, when } from 'ts-mockito';
 import * as faker from 'faker';
-import { Config } from '../config';
-import { UserModel } from '../models/UserModel';
-import EmailService from '../services/EmailService';
-import UserAuthService from '../services/UserAuthService';
-import { ActivityType, UserAccessType, UserState } from '../types';
-import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
-import FactoryUtils from './data/FactoryUtils';
-import { UserRegistrationFactory } from './data/UserRegistrationFactory';
-import { AttendanceModel } from '../models/AttendanceModel';
-import { ActivityModel } from '../models/ActivityModel';
+import { ActivityType, UserAccessType, UserState } from '@customtypes';
+import { ControllerFactory } from '@tests/controllers';
+import {
+  DatabaseConnection,
+  FactoryUtils,
+  EventFactory,
+  PortalState,
+  UserFactory,
+  UserRegistrationFactory,
+} from '@tests/data';
+import { EmailService, UserAuthService } from '@services';
+import { UserModel, AttendanceModel, ActivityModel } from '@models';
+import { Config } from '@config';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

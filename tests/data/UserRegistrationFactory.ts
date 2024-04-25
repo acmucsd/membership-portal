@@ -1,7 +1,6 @@
-import { UserRegistration } from 'types';
+import { UserRegistration } from '@customtypes';
 import * as faker from 'faker';
-import FactoryUtils from './FactoryUtils';
-import { UserFactory } from './UserFactory';
+import { FactoryUtils, UserFactory } from '@tests/data';
 
 export class UserRegistrationFactory {
   public static create(n: number) {

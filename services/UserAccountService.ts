@@ -4,13 +4,12 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import * as faker from 'faker';
-import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
+import { UserAccessUpdates } from '@validators';
 import {
   RegExpMatcher,
   englishDataset,
   englishRecommendedTransformers,
 } from 'obscenity';
-import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
   PublicProfile,
@@ -20,12 +19,12 @@ import {
   UserPatches,
   UserState,
   PrivateProfile,
-} from '../types';
-import { UserRepository } from '../repositories/UserRepository';
-import { UserModel } from '../models/UserModel';
+} from '@customtypes';
+import { Repositories, TransactionsManager, UserRepository } from '@repositories';
+import { UserModel } from '@models';
 
 @Service()
-export default class UserAccountService {
+export class UserAccountService {
   private transactions: TransactionsManager;
 
   private matcher: RegExpMatcher;

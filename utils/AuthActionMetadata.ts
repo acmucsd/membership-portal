@@ -1,5 +1,5 @@
-import { Uuid } from '../types';
-import { UserModel } from '../models/UserModel';
+import { Uuid } from '@customtypes';
+import { UserModel } from '@models';
 
 export interface AuthActionMetadata {
   trace_id: string;

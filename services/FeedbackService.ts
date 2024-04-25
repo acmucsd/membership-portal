@@ -2,14 +2,13 @@ import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError } from 'routing-controllers';
-import { FeedbackModel } from '../models/FeedbackModel';
-import { UserModel } from '../models/UserModel';
-import Repositories, { TransactionsManager } from '../repositories';
-import { PublicFeedback, Feedback, Uuid, ActivityType, FeedbackStatus, FeedbackSearchOptions } from '../types';
-import { UserError } from '../utils/Errors';
+import { PublicFeedback, Feedback, Uuid, ActivityType, FeedbackStatus, FeedbackSearchOptions } from '@customtypes';
+import { Repositories, TransactionsManager } from '@repositories';
+import { FeedbackModel, UserModel } from '@models';
+import { UserError } from '@utils';
 
 @Service()
-export default class FeedbackService {
+export class FeedbackService {
   private transactions: TransactionsManager;
 
   constructor(@InjectManager() entityManager: EntityManager) {

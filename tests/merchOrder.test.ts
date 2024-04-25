@@ -2,14 +2,11 @@ import * as faker from 'faker';
 import * as moment from 'moment';
 import { mock, when, anything, instance, verify, anyString } from 'ts-mockito';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
-import EmailService from '../services/EmailService';
-import { OrderModel } from '../models/OrderModel';
-import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
-import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } from '../types';
-import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
-import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
-import { UserModel } from '../models/UserModel';
+import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } from '@customtypes';
+import { ControllerFactory, MerchStoreControllerWrapper } from '@tests/controllers';
+import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from '@tests/data';
+import { EmailService } from '@services';
+import { OrderModel, OrderPickupEventModel, UserModel } from '@models';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

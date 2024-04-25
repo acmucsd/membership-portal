@@ -1,10 +1,9 @@
 import { EntityRepository, Raw } from 'typeorm';
 import * as moment from 'moment';
-import { ActivityScope, ActivityType, Uuid } from '../types';
-import { UserModel } from '../models/UserModel';
-import { ActivityModel } from '../models/ActivityModel';
-import { BaseRepository } from './BaseRepository';
-import { Activity, ActivityTypeToScope } from '../types/internal';
+import { ActivityScope, ActivityType, Uuid } from '@customtypes';
+import { Activity, ActivityTypeToScope } from '@customtypes/internal';
+import { UserModel, ActivityModel } from '@models';
+import { BaseRepository } from '@repositories';
 
 @EntityRepository(ActivityModel)
 export class ActivityRepository extends BaseRepository<ActivityModel> {

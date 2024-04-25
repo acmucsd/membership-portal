@@ -7,7 +7,22 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "outDir": "./build",
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "@controllers": ["api/controllers"],
+      "@decorators": ["api/decorators"],
+      "@middleware": ["api/middleware"],
+      "@validators": ["api/validators"],
+      "@config": ["config"],
+      "@error": ["error"],
+      "@models": ["models"],
+      "@repositories": ["repositories"],
+      "@services": ["services"],
+      "@tests/*": ["tests/*"],
+      "@customtypes": ["types"],
+      "@customtypes/*": ["types/*"],
+      "@utils": ["utils"],
+    }
   },
   "include": [
     "./**/*.ts"

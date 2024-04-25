@@ -8,8 +8,8 @@ import {
   SubmitEventFeedbackRequest as ISubmitEventFeedbackRequest,
   Event as IEvent,
   Uuid,
-} from '../../types';
-import { IsValidEventFeedback } from '../decorators/Validators';
+} from '@customtypes';
+import { IsValidEventFeedback } from '@decorators';
 
 export class OptionalEventProperties implements IOptionalEventProperties {
   @IsNotEmpty()

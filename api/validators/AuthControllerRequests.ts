@@ -1,16 +1,16 @@
 import { IsEmail, IsDefined, ValidateNested, Length } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
-  IsValidPassword, IsValidName, IsValidGraduationYear, IsValidMajor, HasMatchingPasswords, IsValidHandle,
-} from '../decorators/Validators';
-import {
   LoginRequest as ILoginRequest,
   RegistrationRequest as IRegistrationRequest,
   PasswordResetRequest as IPasswordResetRequest,
   UserRegistration as IUserRegistration,
   PasswordChange as IPasswordChange,
   EmailModificationRequest as IEmailModificationRequest,
-} from '../../types';
+} from '@customtypes';
+import {
+  IsValidPassword, IsValidName, IsValidGraduationYear, IsValidMajor, HasMatchingPasswords, IsValidHandle,
+} from '@decorators';
 
 export class UserRegistration implements IUserRegistration {
   @IsDefined()

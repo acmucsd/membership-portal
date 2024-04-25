@@ -4,13 +4,11 @@ import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
-import { ExpressCheckinModel } from 'models/ExpressCheckinModel';
-import { UserRepository } from '../repositories/UserRepository';
-import { Uuid, ActivityType, UserState, UserRegistration } from '../types';
-import { Config } from '../config';
-import { UserModel } from '../models/UserModel';
-import Repositories, { TransactionsManager } from '../repositories';
-import UserAccountService from './UserAccountService';
+import { ExpressCheckinModel, UserModel } from '@models';
+import { Uuid, ActivityType, UserState, UserRegistration } from '@customtypes';
+import { Repositories, UserRepository, TransactionsManager } from '@repositories';
+import { Config } from '@config';
+import { UserAccountService } from '@services';
 
 interface AuthToken {
   uuid: Uuid;
@@ -18,7 +16,7 @@ interface AuthToken {
 }
 
 @Service()
-export default class UserAuthService {
+export class UserAuthService {
   private transactions: TransactionsManager;
 
   constructor(@InjectManager() entityManager: EntityManager) {

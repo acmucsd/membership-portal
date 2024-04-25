@@ -33,3 +33,23 @@ export const models = [
   UserSocialMediaModel,
   ExpressCheckinModel,
 ];
+
+// can't export imports in the same line if imports are used in the file so must export separately
+export {
+  UserModel,
+  FeedbackModel,
+  ActivityModel,
+  EventModel,
+  AttendanceModel,
+  MerchandiseCollectionModel,
+  MerchCollectionPhotoModel,
+  MerchandiseItemModel,
+  MerchandiseItemPhotoModel,
+  MerchandiseItemOptionModel,
+  OrderModel,
+  OrderItemModel,
+  OrderPickupEventModel,
+  ResumeModel,
+  UserSocialMediaModel,
+  ExpressCheckinModel,
+};

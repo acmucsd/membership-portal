@@ -83,3 +83,5 @@ export const Config = {
     EVENT_FEEDBACK_POINT_REWARD: Number(process.env.EVENT_FEEDBACK_POINT_REWARD),
   },
 };
+
+export * from './DatabaseNamingStrategy';

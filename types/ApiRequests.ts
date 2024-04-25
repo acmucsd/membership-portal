@@ -1,5 +1,4 @@
-import { Uuid } from '.';
-import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
+import { Uuid, FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from '@customtypes';
 
 // REQUEST TYPES
 

@@ -1,12 +1,6 @@
 import {
   JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body, Delete,
 } from 'routing-controllers';
-import { UserModel } from '../../models/UserModel';
-import UserAccountService from '../../services/UserAccountService';
-import UserSocialMediaService from '../../services/UserSocialMediaService';
-import StorageService from '../../services/StorageService';
-import { UserAuthentication } from '../middleware/UserAuthentication';
-import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import {
   MediaType,
   File,
@@ -18,13 +12,18 @@ import {
   InsertSocialMediaResponse,
   UpdateSocialMediaResponse,
   DeleteSocialMediaResponse,
-} from '../../types';
-import { UserHandleParam, UuidParam } from '../validators/GenericRequests';
-import { PatchUserRequest } from '../validators/UserControllerRequests';
+} from '@customtypes';
+import { UserAccountService, UserSocialMediaService, StorageService } from '@services';
+import { UserModel } from '@models';
 import {
+  UserHandleParam,
+  UuidParam,
+  PatchUserRequest,
   InsertSocialMediaRequest,
   UpdateSocialMediaRequest,
-} from '../validators/UserSocialMediaControllerRequests';
+} from '@validators';
+import { UserAuthentication } from '@middleware';
+import { AuthenticatedUser } from '@decorators';
 
 @UseBefore(UserAuthentication)
 @JsonController('/user')

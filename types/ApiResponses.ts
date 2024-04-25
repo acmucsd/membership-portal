@@ -1,9 +1,15 @@
 import {
-  ActivityScope, ActivityType, FeedbackStatus,
-  FeedbackType, OrderPickupEventStatus,
-  OrderStatus, UserAccessType, SocialMediaType,
-} from './Enums';
-import { MerchItemOptionMetadata, Uuid } from '.';
+  ActivityScope,
+  ActivityType,
+  FeedbackStatus,
+  FeedbackType,
+  OrderPickupEventStatus,
+  OrderStatus,
+  UserAccessType,
+  SocialMediaType,
+  MerchItemOptionMetadata,
+  Uuid,
+} from '@customtypes';
 
 // RESPONSE TYPES
 

@@ -1,10 +1,9 @@
 import { EntityRepository, Not, Raw } from 'typeorm';
 import * as moment from 'moment';
-import { Config } from '../config';
-import { ActivityModel } from '../models/ActivityModel';
-import { UserModel } from '../models/UserModel';
-import { UserState } from '../types';
-import { BaseRepository } from './BaseRepository';
+import { UserState } from '@customtypes';
+import { ActivityModel, UserModel } from '@models';
+import { Config } from '@config';
+import { BaseRepository } from '@repositories';
 
 @EntityRepository(UserModel)
 export class LeaderboardRepository extends BaseRepository<UserModel> {

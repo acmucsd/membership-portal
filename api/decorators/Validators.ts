@@ -1,7 +1,7 @@
 import {
   ValidatorConstraintInterface, registerDecorator, ValidationOptions, ValidatorConstraint,
 } from 'class-validator';
-import { PasswordChange, FeedbackType, FeedbackStatus, OrderStatus, SocialMediaType } from '../../types';
+import { PasswordChange, FeedbackType, FeedbackStatus, OrderStatus, SocialMediaType } from '@customtypes';
 
 function templatedValidationDecorator(
   validator: ValidatorConstraintInterface | Function, validationOptions?: ValidationOptions,

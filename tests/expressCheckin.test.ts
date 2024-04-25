@@ -1,10 +1,10 @@
 import * as faker from 'faker';
-import { } from '../types';
+import { } from '@customtypes';
 import { anything, instance, mock, verify, when } from 'ts-mockito';
-import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
-import EmailService from '../services/EmailService';
-import { ExpressCheckinModel } from '../models/ExpressCheckinModel';
+import { ControllerFactory } from '@tests/controllers';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from '@tests/data';
+import { EmailService } from '@services';
+import { ExpressCheckinModel } from '@models';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

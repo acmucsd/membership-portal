@@ -1,4 +1,4 @@
-import { File } from '../../types';
+import { File } from '@customtypes';
 
 const ONE_BYTE_FILLER = 'a';
 

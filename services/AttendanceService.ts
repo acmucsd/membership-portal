@@ -3,17 +3,15 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
-import { ActivityType, PublicAttendance, PublicExpressCheckin, Uuid } from '../types';
-import { Config } from '../config';
-import { UserModel } from '../models/UserModel';
-import { EventModel } from '../models/EventModel';
-import { AttendanceModel } from '../models/AttendanceModel';
-import { UserError } from '../utils/Errors';
-import Repositories, { TransactionsManager } from '../repositories';
-import { Activity, Attendance } from '../types/internal';
+import { ActivityType, PublicAttendance, PublicExpressCheckin, Uuid } from '@customtypes';
+import { Activity, Attendance } from '@customtypes/internal';
+import { Repositories, TransactionsManager } from '@repositories';
+import { UserModel, EventModel, AttendanceModel } from '@models';
+import { Config } from '@config';
+import { UserError } from '@utils';
 
 @Service()
-export default class AttendanceService {
+export class AttendanceService {
   private transactions: TransactionsManager;
 
   constructor(@InjectManager() entityManager: EntityManager) {

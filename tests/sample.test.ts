@@ -1,13 +1,14 @@
-import { ActivityType } from '../types';
-import { ActivityModel } from '../models/ActivityModel';
-import { AttendanceModel } from '../models/AttendanceModel';
-import { EventModel } from '../models/EventModel';
-import { UserModel } from '../models/UserModel';
-import { DatabaseConnection, UserFactory, EventFactory, MerchFactory, PortalState } from './data';
-import { OrderModel } from '../models/OrderModel';
-import { FeedbackFactory } from './data/FeedbackFactory';
-import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
-import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
+import { ActivityType } from '@customtypes';
+import { DatabaseConnection, UserFactory, EventFactory, MerchFactory, PortalState, FeedbackFactory } from '@tests/data';
+import {
+  ActivityModel,
+  AttendanceModel,
+  EventModel,
+  UserModel,
+  OrderModel,
+  MerchandiseItemModel,
+  MerchandiseCollectionModel,
+} from '@models';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

@@ -1,12 +1,20 @@
-import { Body, ForbiddenError, Get, JsonController, Params,
-  Patch, Post, UseBefore, QueryParams } from 'routing-controllers';
-import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
-import { UserModel } from '../../models/UserModel';
-import PermissionsService from '../../services/PermissionsService';
-import FeedbackService from '../../services/FeedbackService';
-import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse } from '../../types';
-import { UuidParam } from '../validators/GenericRequests';
-import { UserAuthentication } from '../middleware/UserAuthentication';
+import {
+  Body,
+  ForbiddenError,
+  Get,
+  JsonController,
+  Params,
+  Patch,
+  Post,
+  UseBefore,
+  QueryParams,
+} from 'routing-controllers';
+import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse } from '@customtypes';
+import { PermissionsService, FeedbackService } from '@services';
+import { UserModel } from '@models';
+import { UuidParam } from '@validators';
+import { UserAuthentication } from '@middleware';
+import { AuthenticatedUser } from '@decorators';
 import {
   SubmitFeedbackRequest,
   UpdateFeedbackStatusRequest,
