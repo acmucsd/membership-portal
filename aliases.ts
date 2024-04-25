@@ -1,5 +1,6 @@
 import { addAliases } from 'module-alias';
 
+// Any changes to aliases must be mirrored in tsconfig.json and jest.config.json as well!!
 addAliases({
   '@controllers': `${__dirname}/api/controllers`,
   '@decorators': `${__dirname}/api/decorators`,
