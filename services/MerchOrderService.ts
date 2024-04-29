@@ -31,7 +31,6 @@ import Repositories, { TransactionsManager } from '../repositories';
 
 @Service()
 export default class MerchOrderService {
-
   private emailService: EmailService;
 
   private transactions: TransactionsManager;
@@ -61,7 +60,7 @@ export default class MerchOrderService {
       .getAllOrdersForAllUsers());
   }
 
-    /**
+  /**
    * Places an order with the list of options and their quantities for the given user.
    *
    * The order is placed if the following conditions are met:
@@ -78,105 +77,105 @@ export default class MerchOrderService {
    * @param user user placing the order
    * @returns the finalized order, including sale price, discount, and fulfillment details
    */
-    public async placeOrder(originalOrder: MerchItemOptionAndQuantity[],
-      user: UserModel,
-      pickupEventUuid: Uuid): Promise<OrderModel> {
-      const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
-        const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-        const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
-        await this.validateOrderInTransaction(originalOrder, user, txn);
+  public async placeOrder(originalOrder: MerchItemOptionAndQuantity[],
+    user: UserModel,
+    pickupEventUuid: Uuid): Promise<OrderModel> {
+    const [order, merchItemOptions] = await this.transactions.readWrite(async (txn) => {
+      const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const itemOptions = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
+      await this.validateOrderInTransaction(originalOrder, user, txn);
 
-        // Verify the requested pickup event exists,
-        // and that the order is placed at least 2 days before the pickup event starts
-        const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
-        if (!pickupEvent) {
-          throw new NotFoundError('Pickup event requested is not found');
-        }
-        if (MerchOrderService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
-          throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
-        }
+      // Verify the requested pickup event exists,
+      // and that the order is placed at least 2 days before the pickup event starts
+      const pickupEvent = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
+      if (!pickupEvent) {
+        throw new NotFoundError('Pickup event requested is not found');
+      }
+      if (MerchOrderService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
+        throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
+      }
 
-        // Verify that this order would not set the pickup event's order count
-        // over the order limit
-        const currentOrderCount = pickupEvent.orders.filter((o) => o.status !== OrderStatus.CANCELLED).length;
-        if (currentOrderCount >= pickupEvent.orderLimit) {
-          throw new UserError('This merch pickup event is full! Please choose a different pickup event');
-        }
-        const totalCost = MerchOrderService.totalCost(originalOrder, itemOptions);
-        const merchOrderRepository = Repositories.merchOrder(txn);
+      // Verify that this order would not set the pickup event's order count
+      // over the order limit
+      if (MerchOrderService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
+        throw new UserError('Cannot change order pickup to an event that starts in less than 2 days');
+      }
 
-        // if all checks pass, the order is placed
-        const createdOrder = await merchOrderRepository.upsertMerchOrder(OrderModel.create({
-          user,
-          totalCost,
-          items: flatten(originalOrder.map((optionAndQuantity) => {
-            const option = itemOptions.get(optionAndQuantity.option);
-            const quantityRequested = optionAndQuantity.quantity;
-            return Array(quantityRequested).fill(OrderItemModel.create({
-              option,
-              salePriceAtPurchase: option.getPrice(),
-              discountPercentageAtPurchase: option.discountPercentage,
-            }));
-          })),
-          pickupEvent,
-        }));
+      const totalCost = MerchOrderService.totalCost(originalOrder, itemOptions);
+      const merchOrderRepository = Repositories.merchOrder(txn);
 
-        const activityRepository = Repositories.activity(txn);
-        await activityRepository.logActivity({
-          user,
-          type: ActivityType.ORDER_PLACED,
-          description: `Order ${createdOrder.uuid}`,
-        });
-
-        await Promise.all(originalOrder.map(async (optionAndQuantity) => {
+      // if all checks pass, the order is placed
+      const createdOrder = await merchOrderRepository.upsertMerchOrder(OrderModel.create({
+        user,
+        totalCost,
+        items: flatten(originalOrder.map((optionAndQuantity) => {
           const option = itemOptions.get(optionAndQuantity.option);
-          const updatedQuantity = option.quantity - optionAndQuantity.quantity;
-          return merchItemOptionRepository.upsertMerchItemOption(option, { quantity: updatedQuantity });
-        }));
+          const quantityRequested = optionAndQuantity.quantity;
+          return Array(quantityRequested).fill(OrderItemModel.create({
+            option,
+            salePriceAtPurchase: option.getPrice(),
+            discountPercentageAtPurchase: option.discountPercentage,
+          }));
+        })),
+        pickupEvent,
+      }));
 
-        const userRepository = Repositories.user(txn);
-        await userRepository.upsertUser(user, { credits: user.credits - totalCost });
-        return [createdOrder, itemOptions];
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity({
+        user,
+        type: ActivityType.ORDER_PLACED,
+        description: `Order ${createdOrder.uuid}`,
       });
 
-      const orderConfirmation = {
-        uuid: order.uuid,
-        items: originalOrder.map((oi) => {
-          const option = merchItemOptions.get(oi.option);
-          const { item } = option;
-          return {
-            ...item,
-            picture: item.getDefaultPhotoUrl(),
-            quantityRequested: oi.quantity,
-            salePrice: option.getPrice(),
-            total: oi.quantity * option.getPrice(),
-          };
-        }),
-        totalCost: order.totalCost,
-        pickupEvent: MerchOrderService.toPickupEventUpdateInfo(order.pickupEvent),
-      };
-      this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
+      await Promise.all(originalOrder.map(async (optionAndQuantity) => {
+        const option = itemOptions.get(optionAndQuantity.option);
+        const updatedQuantity = option.quantity - optionAndQuantity.quantity;
+        return merchItemOptionRepository.upsertMerchItemOption(option, { quantity: updatedQuantity });
+      }));
 
-      return order;
-    }
+      const userRepository = Repositories.user(txn);
+      await userRepository.upsertUser(user, { credits: user.credits - totalCost });
+      return [createdOrder, itemOptions];
+    });
 
-    private static toPickupEventUpdateInfo(pickupEvent: OrderPickupEventModel): OrderPickupEventInfo {
-      return {
-        ...pickupEvent,
-        start: MerchOrderService.humanReadableDateString(pickupEvent.start),
-        end: MerchOrderService.humanReadableDateString(pickupEvent.end),
-      };
-    }
+    const orderConfirmation = {
+      uuid: order.uuid,
+      items: originalOrder.map((oi) => {
+        const option = merchItemOptions.get(oi.option);
+        const { item } = option;
+        return {
+          ...item,
+          picture: item.getDefaultPhotoUrl(),
+          quantityRequested: oi.quantity,
+          salePrice: option.getPrice(),
+          total: oi.quantity * option.getPrice(),
+        };
+      }),
+      totalCost: order.totalCost,
+      pickupEvent: MerchOrderService.toPickupEventUpdateInfo(order.pickupEvent),
+    };
+    this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
 
-    private static humanReadableDateString(date: Date): string {
-      return moment(date).tz('America/Los_Angeles').format('MMMM D, h:mm A');
-    }
+    return order;
+  }
 
-    public async validateOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
-      return this.transactions.readWrite(async (txn) => this.validateOrderInTransaction(originalOrder, user, txn));
-    }
+  public async validateOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
+    return this.transactions.readWrite(async (txn) => this.validateOrderInTransaction(originalOrder, user, txn));
+  }
 
-    /**
+  private static toPickupEventUpdateInfo(pickupEvent: OrderPickupEventModel): OrderPickupEventInfo {
+    return {
+      ...pickupEvent,
+      start: MerchOrderService.humanReadableDateString(pickupEvent.start),
+      end: MerchOrderService.humanReadableDateString(pickupEvent.end),
+    };
+  }
+
+  private static humanReadableDateString(date: Date): string {
+    return moment(date).tz('America/Los_Angeles').format('MMMM D, h:mm A');
+  }
+
+  /**
    * Validates a merch order. An order is considered valid if all the below are true:
    *  - all the ordered item options exist within the database
    *  - the ordered item options were placed for non-hidden items
@@ -248,10 +247,6 @@ export default class MerchOrderService {
     if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
   }
 
-  private static isLessThanTwoDaysBeforePickupEvent(pickupEvent: OrderPickupEventModel): boolean {
-    return new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate();
-  }
-
   private static isPickupEventOrderLimitFull(pickupEvent: OrderPickupEventModel): boolean {
     const currentOrderCount = pickupEvent.orders.filter((o) => o.status !== OrderStatus.CANCELLED).length;
     return currentOrderCount >= pickupEvent.orderLimit;
@@ -293,6 +288,10 @@ export default class MerchOrderService {
         status: OrderStatus.PLACED,
       });
     });
+  }
+
+  private static isLessThanTwoDaysBeforePickupEvent(pickupEvent: OrderPickupEventModel): boolean {
+    return new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate();
   }
 
   private static isInactiveOrder(order: OrderModel): boolean {
@@ -622,7 +621,6 @@ export default class MerchOrderService {
     return moment().isBefore(moment(pickupEvent.start));
   }
 
-
   /**
    * Completes an order pickup event, marking any orders that haven't been fulfilled
    * or partially fulfilled as missed.
@@ -661,41 +659,40 @@ export default class MerchOrderService {
     && order.status !== OrderStatus.CANCELLED;
   }
 
-
-    /**
+  /**
    * Builds an order update info object to be sent in emails, based on the order.
    * @param order order
    * @param txn transaction
    * @returns order update info for email
    */
-    private static async buildOrderUpdateInfo(order: OrderModel, pickupEvent: OrderPickupEventModel,
-      txn: EntityManager): Promise<OrderInfo> {
-      // maps an item option to its price at purchase and quantity ordered by the user
-      const optionPricesAndQuantities = MerchOrderService.getPriceAndQuantityByOption(order);
-      const itemOptionsOrdered = Array.from(optionPricesAndQuantities.keys());
-      const itemOptionByUuid = await Repositories
-        .merchStoreItemOption(txn)
-        .batchFindByUuid(itemOptionsOrdered);
+  private static async buildOrderUpdateInfo(order: OrderModel, pickupEvent: OrderPickupEventModel,
+    txn: EntityManager): Promise<OrderInfo> {
+    // maps an item option to its price at purchase and quantity ordered by the user
+    const optionPricesAndQuantities = MerchOrderService.getPriceAndQuantityByOption(order);
+    const itemOptionsOrdered = Array.from(optionPricesAndQuantities.keys());
+    const itemOptionByUuid = await Repositories
+      .merchStoreItemOption(txn)
+      .batchFindByUuid(itemOptionsOrdered);
 
-      return {
-        uuid: order.uuid,
-        items: itemOptionsOrdered.map((option) => {
-          const { item } = itemOptionByUuid.get(option);
-          const { quantity, price } = optionPricesAndQuantities.get(option);
-          return {
-            ...item,
-            picture: item.getDefaultPhotoUrl(),
-            quantityRequested: quantity,
-            salePrice: price,
-            total: quantity * price,
-          };
-        }),
-        totalCost: order.totalCost,
-        pickupEvent: MerchOrderService.toPickupEventUpdateInfo(pickupEvent),
-      };
-    }
+    return {
+      uuid: order.uuid,
+      items: itemOptionsOrdered.map((option) => {
+        const { item } = itemOptionByUuid.get(option);
+        const { quantity, price } = optionPricesAndQuantities.get(option);
+        return {
+          ...item,
+          picture: item.getDefaultPhotoUrl(),
+          quantityRequested: quantity,
+          salePrice: price,
+          total: quantity * price,
+        };
+      }),
+      totalCost: order.totalCost,
+      pickupEvent: MerchOrderService.toPickupEventUpdateInfo(pickupEvent),
+    };
+  }
 
-    /**
+  /**
    * Maps an item's option to its price at purchase and quantity ordered by the user
    * @param order order
    * @returns map of item option to its price at purchase and quantity ordered by the user
@@ -831,7 +828,6 @@ export default class MerchOrderService {
       await orderPickupEventRepository.upsertPickupEvent(pickupEvent, { status: OrderPickupEventStatus.CANCELLED });
     });
   }
-
 
   private static isActivePickupEvent(pickupEvent: OrderPickupEventModel) {
     return pickupEvent.status === OrderPickupEventStatus.ACTIVE;

@@ -2,40 +2,31 @@ import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
-import { difference, flatten, intersection } from 'underscore';
+import { difference } from 'underscore';
 import * as moment from 'moment-timezone';
-import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import {
   Uuid,
   PublicMerchCollection,
-  ActivityType,
-  OrderItemFulfillmentUpdate,
   MerchCollection,
   MerchCollectionEdit,
   MerchItem,
   MerchItemOption,
-  MerchItemOptionAndQuantity,
   MerchItemEdit,
   PublicMerchItemOption,
   OrderStatus,
   PublicMerchItemWithPurchaseLimits,
-  OrderPickupEventStatus,
   PublicMerchItemPhoto,
   MerchItemPhoto,
   PublicMerchCollectionPhoto,
   MerchCollectionPhoto,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
-import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import { MerchCollectionPhotoModel } from '../models/MerchCollectionPhotoModel';
-import EmailService from './EmailService';
 import { UserError } from '../utils/Errors';
-import { OrderItemModel } from '../models/OrderItemModel';
-import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { MerchandiseItemPhotoModel } from '../models/MerchandiseItemPhotoModel';
 
 @Service()
@@ -44,13 +35,10 @@ export default class MerchStoreService {
 
   private static readonly MAX_COLLECTION_PHOTO_COUNT = 5;
 
-  private emailService: EmailService;
-
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager, emailService: EmailService) {
+  constructor(@InjectManager() entityManager: EntityManager) {
     this.transactions = new TransactionsManager(entityManager);
-    this.emailService = emailService;
   }
 
   public async findItemByUuid(uuid: Uuid, user: UserModel): Promise<PublicMerchItemWithPurchaseLimits> {
@@ -343,7 +331,10 @@ export default class MerchStoreService {
           .merchStoreCollection(txn)
           .findByUuid(updatedCollection);
         if (!collection) throw new NotFoundError('Merch collection not found');
+
+        updatedItem.collection = collection;
       }
+
       return merchItemRepository.upsertMerchItem(updatedItem);
     });
   }
@@ -476,166 +467,6 @@ export default class MerchStoreService {
     });
   }
 
-  private static humanReadableDateString(date: Date): string {
-    return moment(date).tz('America/Los_Angeles').format('MMMM D, h:mm A');
-  }
-
-  public async validateOrder(originalOrder: MerchItemOptionAndQuantity[], user: UserModel): Promise<void> {
-    return this.transactions.readWrite(async (txn) => this.validateOrderInTransaction(originalOrder, user, txn));
-  }
-
-  /**
-   * Validates a merch order. An order is considered valid if all the below are true:
-   *  - all the ordered item options exist within the database
-   *  - the ordered item options were placed for non-hidden items
-   *  - the user wouldn't reach monthly or lifetime limits for any item if this order is placed
-   *  - the requested item options are in stock
-   *  - the user has enough credits to place the order
-   */
-  private async validateOrderInTransaction(originalOrder: MerchItemOptionAndQuantity[],
-    user: UserModel,
-    txn: EntityManager): Promise<void> {
-    await user.reload();
-    const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-    const itemOptionsToOrder = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
-    if (itemOptionsToOrder.size !== originalOrder.length) {
-      const requestedItems = originalOrder.map((oi) => oi.option);
-      const foundItems = Array.from(itemOptionsToOrder.values())
-        .filter((o) => !o.item.hidden)
-        .map((o) => o.uuid);
-      const missingItems = difference(requestedItems, foundItems);
-      throw new NotFoundError(`The following items were not found: ${missingItems}`);
-    }
-
-    // Checks that hidden items were not ordered
-    const hiddenItems = Array.from(itemOptionsToOrder.values())
-      .filter((o) => o.item.hidden)
-      .map((o) => o.uuid);
-
-    if (hiddenItems.length !== 0) {
-      throw new UserError(`Not allowed to order: ${hiddenItems}`);
-    }
-
-    // checks that the user hasn't exceeded monthly/lifetime purchase limits
-    const merchOrderRepository = Repositories.merchOrder(txn);
-    const lifetimePurchaseHistory = await merchOrderRepository.getAllOrdersWithItemsForUser(user);
-    const oneMonthAgo = new Date(moment().subtract(1, 'month').unix());
-    const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((o) => o.orderedAt > oneMonthAgo);
-    const lifetimeItemOrderCounts = MerchStoreService.countItemOrders(itemOptionsToOrder, lifetimePurchaseHistory);
-    const pastMonthItemOrderCounts = MerchStoreService.countItemOrders(itemOptionsToOrder, pastMonthPurchaseHistory);
-
-    // aggregate requested quantities by item
-    const requestedQuantitiesByMerchItem = Array.from(MerchStoreService
-      .countItemRequestedQuantities(originalOrder, itemOptionsToOrder)
-      .entries());
-
-    for (let i = 0; i < requestedQuantitiesByMerchItem.length; i += 1) {
-      const [uuid, itemWithQuantity] = requestedQuantitiesByMerchItem[i];
-      if (!!itemWithQuantity.item.lifetimeLimit
-        && lifetimeItemOrderCounts.get(uuid) + itemWithQuantity.quantity > itemWithQuantity.item.lifetimeLimit) {
-        throw new UserError(`This order exceeds the lifetime limit for ${itemWithQuantity.item.itemName}`);
-      }
-      if (!!itemWithQuantity.item.monthlyLimit
-        && pastMonthItemOrderCounts.get(uuid) + itemWithQuantity.quantity > itemWithQuantity.item.monthlyLimit) {
-        throw new UserError(`This order exceeds the monthly limit for ${itemWithQuantity.item.itemName}`);
-      }
-    }
-
-    // checks that enough units of requested item options are in stock
-    for (let i = 0; i < originalOrder.length; i += 1) {
-      const optionAndQuantity = originalOrder[i];
-      const option = itemOptionsToOrder.get(optionAndQuantity.option);
-      const quantityRequested = optionAndQuantity.quantity;
-      if (option.quantity < quantityRequested) {
-        throw new UserError(`There aren't enough units of ${option.item.itemName} in stock`);
-      }
-    }
-
-    // checks that the user has enough credits to place order
-    const totalCost = MerchStoreService.totalCost(originalOrder, itemOptionsToOrder);
-    if (user.credits < totalCost) throw new UserError('You don\'t have enough credits for this order');
-  }
-
-  /**
-   * Counts the number of times any MerchandiseItem has been ordered by the user.
-   *
-   * An ordered item does not contribute towards an option's count if its order
-   * has been cancelled AND the item is unfufilled. An ordered item
-   * whose order has been cancelled but the item is fulfilled still counts towards the count.
-   */
-  private static countItemOrders(itemOptionsToOrder: Map<string, MerchandiseItemOptionModel>, pastOrders: OrderModel[]):
-  Map<string, number> {
-    const counts = new Map<string, number>();
-    const options = Array.from(itemOptionsToOrder.values());
-    for (let o = 0; o < options.length; o += 1) {
-      counts.set(options[o].item.uuid, 0);
-    }
-    const ordersByOrderItem = new Map<string, OrderModel>();
-    const orderedItems: OrderItemModel[] = [];
-
-    // go through every OrderItem previously ordered and add to above map/list
-    for (let o = 0; o < pastOrders.length; o += 1) {
-      for (let oi = 0; oi < pastOrders[o].items.length; oi += 1) {
-        const orderItem = pastOrders[o].items[oi];
-        ordersByOrderItem.set(orderItem.uuid, pastOrders[o]);
-        orderedItems.push(orderItem);
-      }
-    }
-
-    // count MerchItems based on number of OrderItems previously ordered
-    for (let i = 0; i < orderedItems.length; i += 1) {
-      const orderedItem = orderedItems[i];
-      const order = ordersByOrderItem.get(orderedItem.uuid);
-      if (MerchStoreService.doesItemCountTowardsOrderLimits(orderedItem, order)) {
-        const { uuid: itemUuid } = orderedItem.option.item;
-        if (counts.has(itemUuid)) {
-          counts.set(itemUuid, counts.get(itemUuid) + 1);
-        }
-      }
-    }
-    return counts;
-  }
-
-  /**
-   * An item counts towards the order limit if it has either been fulfilled or if
-   * it's on hold for that customer. This means if the customer's order was cancelled
-   * and the item is unfulfilled, then the item shouldn't count.
-   * (having the order cancelled and the item fulfilled would mean the order was
-   * partially fulfilled then cancelled, which would still count since that item belongs to that user)
-   */
-  private static doesItemCountTowardsOrderLimits(orderItem: OrderItemModel, order: OrderModel) {
-    return order.status !== OrderStatus.CANCELLED || orderItem.fulfilled;
-  }
-
-  private static countItemRequestedQuantities(order: MerchItemOptionAndQuantity[],
-    itemOptions: Map<string, MerchandiseItemOptionModel>): Map<string, MerchItemWithQuantity> {
-    const requestedQuantitiesByMerchItem = new Map<string, MerchItemWithQuantity>();
-    for (let i = 0; i < order.length; i += 1) {
-      const option = itemOptions.get(order[i].option);
-
-      const { item } = option;
-      const quantityRequested = order[i].quantity;
-
-      if (!requestedQuantitiesByMerchItem.has(item.uuid)) {
-        requestedQuantitiesByMerchItem.set(item.uuid, {
-          item,
-          quantity: 0,
-        });
-      }
-      requestedQuantitiesByMerchItem.get(item.uuid).quantity += quantityRequested;
-    }
-    return requestedQuantitiesByMerchItem;
-  }
-
-  private static totalCost(order: MerchItemOptionAndQuantity[],
-    itemOptions: Map<string, MerchandiseItemOptionModel>): number {
-    return order.reduce((sum, o) => {
-      const option = itemOptions.get(o.option);
-      const quantityRequested = o.quantity;
-      return sum + (option.getPrice() * quantityRequested);
-    }, 0);
-  }
-
   public async getCartItems(options: string[]): Promise<MerchandiseItemOptionModel[]> {
     return this.transactions.readOnly(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
@@ -648,5 +479,4 @@ export default class MerchStoreService {
       return options.map((option) => itemOptionsByUuid.get(option));
     });
   }
-
 }

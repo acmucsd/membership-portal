@@ -70,7 +70,7 @@ export class ControllerFactory {
   public static merchStore(conn: Connection,
     emailService = new EmailService(),
     storageService = new StorageService()): MerchStoreController {
-    const merchStoreService = new MerchStoreService(conn.manager, emailService);
+    const merchStoreService = new MerchStoreService(conn.manager);
     const merchOrderService = new MerchOrderService(conn.manager, emailService);
     return new MerchStoreController(merchStoreService, merchOrderService, storageService);
   }

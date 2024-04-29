@@ -84,7 +84,8 @@ export class MerchStoreController {
 
   private storageService: StorageService;
 
-  constructor(merchStoreService: MerchStoreService, merchOrderService: MerchOrderService, storageService: StorageService) {
+  constructor(merchStoreService: MerchStoreService, merchOrderService: MerchOrderService,
+    storageService: StorageService) {
     this.merchStoreService = merchStoreService;
     this.merchOrderService = merchOrderService;
     this.storageService = storageService;
