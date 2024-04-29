@@ -1805,8 +1805,6 @@ describe('merch order pickup events', () => {
       pickupEvent: pickupEvent.uuid,
     };
 
-    console.log('PICKUP EVENT', pickupEvent);
-
     await expect(merchController.placeMerchOrder(placeMerchOrderRequest, member))
       .rejects
       .toThrow('This merch pickup event is full! Please choose a different pickup event');

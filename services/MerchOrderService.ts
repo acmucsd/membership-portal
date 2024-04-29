@@ -97,8 +97,8 @@ export default class MerchOrderService {
 
       // Verify that this order would not set the pickup event's order count
       // over the order limit
-      if (MerchOrderService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
-        throw new UserError('Cannot change order pickup to an event that starts in less than 2 days');
+      if (MerchOrderService.isPickupEventOrderLimitFull(pickupEvent)) {
+        throw new UserError('This merch pickup event is full! Please choose a different pickup event');
       }
 
       const totalCost = MerchOrderService.totalCost(originalOrder, itemOptions);
