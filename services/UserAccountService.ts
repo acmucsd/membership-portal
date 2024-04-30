@@ -15,9 +15,11 @@ import {
   UserPatches,
   UserState,
   PrivateProfile,
+  NameAndEmail
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
+import { Name } from 'aws-sdk/clients/appstream';
 
 @Service()
 export default class UserAccountService {
@@ -167,7 +169,7 @@ export default class UserAccountService {
     });
   }
 
-  public async getAllNamesAndEmails() {
+  public async getAllNamesAndEmails(): Promise<NameAndEmail[]> {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .getAllNamesAndEmails());
