@@ -9,7 +9,7 @@ import { MerchandiseCollectionModel } from '../../models/MerchandiseCollectionMo
 import { OrderModel } from '../../models/OrderModel';
 import { UserModel } from '../../models/UserModel';
 import { ActivityModel } from '../../models/ActivityModel';
-import { ActivityScope, ActivityType, Feedback } from '../../types';
+import { ActivityScope, ActivityType } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { OrderItemModel } from '../../models/OrderItemModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
@@ -17,6 +17,7 @@ import { UserSocialMediaModel } from '../../models/UserSocialMediaModel';
 import { DatabaseConnection } from './DatabaseConnection';
 import { MerchFactory } from '.';
 import { ResumeModel } from '../../models/ResumeModel';
+import { ExpressCheckinModel } from '../../models/ExpressCheckinModel';
 
 export class PortalState {
   users: UserModel[] = [];
@@ -39,6 +40,8 @@ export class PortalState {
 
   userSocialMedia: UserSocialMediaModel[] = [];
 
+  expressCheckins: ExpressCheckinModel[] = [];
+
   public from(state: PortalState): PortalState {
     // deep clones all around for immutable PortalStates
     this.users = rfdc()(state.users);
@@ -51,6 +54,7 @@ export class PortalState {
     this.feedback = rfdc()(state.feedback);
     this.resumes = rfdc()(state.resumes);
     this.userSocialMedia = rfdc()(state.userSocialMedia);
+    this.expressCheckins = rfdc()(state.expressCheckins);
     return this;
   }
 
@@ -67,6 +71,7 @@ export class PortalState {
       this.feedback = await txn.save(this.feedback);
       this.resumes = await txn.save(this.resumes);
       this.userSocialMedia = await txn.save(this.userSocialMedia);
+      this.expressCheckins = await txn.save(this.expressCheckins);
     });
   }
 
@@ -100,6 +105,7 @@ export class PortalState {
 
   public createMerchItem(item: MerchandiseItemModel): PortalState {
     const collectionWithItem = MerchFactory.fakeCollection({ items: [item] });
+    // console.log(collectionWithItem)
     return this.createMerchCollections(collectionWithItem);
   }
 
@@ -123,6 +129,15 @@ export class PortalState {
     for (let s = 0; s < userSocialMedia.length; s += 1) {
       const sm = userSocialMedia[s];
       this.userSocialMedia.push(UserSocialMediaModel.create({ ...sm, user }));
+    }
+    return this;
+  }
+
+  public createFeedback(...feedback: FeedbackModel[]): PortalState {
+    for (let f = 0; f < feedback.length; f += 1) {
+      const fb = feedback[f];
+
+      this.feedback.push(FeedbackModel.create({ ...fb }));
     }
     return this;
   }
@@ -202,7 +217,7 @@ export class PortalState {
     });
   }
 
-  public submitFeedback(user: UserModel, feedback: Feedback[]): PortalState {
+  public submitFeedback(user: UserModel, feedback: FeedbackModel[]): PortalState {
     for (let f = 0; f < feedback.length; f += 1) {
       const fb = feedback[f];
       this.feedback.push(FeedbackModel.create({ ...fb, user }));
@@ -228,6 +243,15 @@ export class PortalState {
         type: ActivityType.RESUME_UPLOAD,
       }));
     }
+    return this;
+  }
+
+  public createExpressCheckin(email: string, event: EventModel): PortalState {
+    this.expressCheckins.push(ExpressCheckinModel.create({
+      email: email.toLowerCase(),
+      event,
+    }));
+
     return this;
   }
 }

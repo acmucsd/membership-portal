@@ -68,6 +68,12 @@ export interface AttendEventResponse extends ApiResponse {
   event: PublicEvent;
 }
 
+export interface PublicExpressCheckin {
+  email: string;
+  event: PublicEvent;
+  timestamp: Date;
+}
+
 // AUTH
 
 export interface RegistrationResponse extends ApiResponse {
@@ -110,6 +116,8 @@ export interface PublicEvent {
   pointValue: number;
   requiresStaff: boolean;
   staffPointBonus: number;
+  discordEvent: Uuid;
+  googleCalendarEvent: Uuid;
 }
 
 export interface GetPastEventsResponse extends ApiResponse {
@@ -156,6 +164,7 @@ export interface PublicMerchCollection {
   themeColorHex?: string;
   description: string;
   items: PublicMerchItem[];
+  collectionPhotos: PublicMerchCollectionPhoto[]
   createdAt: Date;
 }
 
@@ -197,6 +206,13 @@ export interface PublicMerchItemPhoto {
   uploadedPhoto: string;
   position: number;
   uploadedAt: Date;
+}
+
+export interface PublicMerchCollectionPhoto {
+  uuid: Uuid;
+  uploadedPhoto: string;
+  position: number;
+  uploadedAt: Date
 }
 
 export interface PublicOrderMerchItemOption {
@@ -248,6 +264,12 @@ export interface EditMerchCollectionResponse extends ApiResponse {
 
 export interface DeleteMerchCollectionResponse extends ApiResponse {}
 
+export interface CreateCollectionPhotoResponse extends ApiResponse {
+  collectionPhoto: PublicMerchCollectionPhoto;
+}
+
+export interface DeleteCollectionPhotoResponse extends ApiResponse {}
+
 export interface GetOneMerchItemResponse extends ApiResponse {
   item: PublicMerchItemWithPurchaseLimits;
 }
@@ -289,6 +311,10 @@ export interface PlaceMerchOrderResponse extends ApiResponse {
 export interface VerifyMerchOrderResponse extends ApiResponse {}
 
 export interface EditMerchOrderResponse extends ApiResponse {}
+
+export interface CancelMerchOrderResponse extends ApiResponse {
+  order: PublicOrderWithItems;
+}
 
 export interface GetCartResponse extends ApiResponse {
   cart: PublicOrderMerchItemOption[];
@@ -337,7 +363,8 @@ export interface PrivateProfile extends PublicProfile {
 export interface PublicFeedback {
   uuid: Uuid,
   user: PublicProfile,
-  title: string;
+  event: PublicEvent,
+  source: string;
   description: string;
   timestamp: Date;
   status: FeedbackStatus;
@@ -396,11 +423,11 @@ export interface GetUserSocialMediaResponse extends ApiResponse {
 }
 
 export interface InsertSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface UpdateSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface DeleteSocialMediaResponse extends ApiResponse {}

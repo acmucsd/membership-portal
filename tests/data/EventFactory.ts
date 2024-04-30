@@ -37,10 +37,12 @@ export class EventFactory {
       requiresStaff: FactoryUtils.getRandomBoolean(),
       staffPointBonus: EventFactory.randomPointValue(),
       committee: 'ACM',
-      cover: faker.internet.url(),
+      cover: FactoryUtils.getRandomImageUrl(),
       deleted: false,
       eventLink: faker.internet.url(),
-      thumbnail: faker.internet.url(),
+      thumbnail: FactoryUtils.getRandomImageUrl(),
+      discordEvent: uuid(),
+      googleCalendarEvent: uuid(),
     });
     return EventModel.merge(fake, substitute);
   }
