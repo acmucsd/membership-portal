@@ -6,7 +6,6 @@ import {
 import { MerchItemOptionMetadata, Uuid } from '.';
 
 // RESPONSE TYPES
-
 export interface CustomErrorBody {
   name: string;
   message: string;
@@ -31,8 +30,8 @@ export interface UploadBannerResponse extends ApiResponse {
   banner: string;
 }
 
-export interface GetAllEmailsResponse extends ApiResponse {
-  emails: string[];
+export interface GetAllNamesAndEmailsResponse extends ApiResponse {
+  namesAndEmails: NameAndEmail[];
 }
 
 export interface SubmitAttendanceForUsersResponse extends ApiResponse {
@@ -325,6 +324,11 @@ export interface FulfillMerchOrderResponse extends ApiResponse {
 }
 
 // USER
+export interface NameAndEmail {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 export interface PublicActivity {
   type: ActivityType,

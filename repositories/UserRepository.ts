@@ -2,7 +2,7 @@ import { EntityRepository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Activity } from '../types/internal';
 import { UserModel } from '../models/UserModel';
-import { Uuid } from '../types';
+import { Uuid, NameAndEmail } from '../types';
 import { BaseRepository } from './BaseRepository';
 
 @EntityRepository(UserModel)
@@ -50,12 +50,16 @@ export class UserRepository extends BaseRepository<UserModel> {
     return this.repository.findOne({ accessCode });
   }
 
-  public async getAllEmails(): Promise<string[]> {
-    const emailsRaw = await this.repository
+  public async getAllNamesAndEmails(): Promise<NameAndEmail[]> {
+    const namesAndEmailsRaw = await this.repository
       .createQueryBuilder()
-      .select('email')
+      .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
       .getRawMany();
-    return emailsRaw.map((emailRaw) => emailRaw.email);
+    const namesAndEmailsFormatted: NameAndEmail[] = namesAndEmailsRaw.map((nameAndEmailRaw) => ({ firstName:
+      nameAndEmailRaw.UserModel_firstName,
+    lastName: nameAndEmailRaw.UserModel_lastName,
+    email: nameAndEmailRaw.email }));
+    return namesAndEmailsFormatted;
   }
 
   public static async generateHash(pass: string): Promise<string> {
