@@ -1,6 +1,7 @@
 ## membership-portal-api &nbsp; [![CircleCI](https://circleci.com/gh/acmucsd/membership-portal/tree/master.svg?style=svg)](https://circleci.com/gh/acmucsd/membership-portal/tree/master)
 REST API for the UC San Diego ACM chapter's membership portal. This is an open-source project, made for members by members, and we welcome any contributions! If you're interested in using the API for your own project and/or contributing, check out our guide [here](https://github.com/acmucsd/membership-portal/blob/master/.github/CONTRIBUTING.md).
 
+
 ### Build Instructions
 Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commit the `yarn.lock`.
 
@@ -10,7 +11,7 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 4. Install the necessary dependencies: `npm install`. For Windows users, see [specific build instructions below](#windows-build-instructions).
 5. Create a new `.env` file using [`.env.example`](https://github.com/acmucsd/membership-portal/blob/master/.env.example) as a template: `cp .env.example .env`.
 6. Fill out the `.env`. See the [example file below](#sample-env).
-7. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`.
+7. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`. If you do not have docker already, please install docker https://www.docker.com/products/docker-desktop/.
 8. Initialize the database: `npm run db:migrate`.
 9. Populate the database: `npm run db:seed`.
 10. Start the Node app: `npm run dev`.

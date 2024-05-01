@@ -156,6 +156,13 @@ export default class AttendanceService {
     const attendances: Attendance[] = [];
     const activities: Activity[] = [];
 
+    await Promise.all(users.map(async (user) => {
+      const attendanceRepository = Repositories.attendance(txn);
+      const didAttend = await attendanceRepository.getUserAttendanceForEvent(user, event);
+      if (!didAttend) throw new UserError(`${user.firstName} already attended this event!`);
+      console.log(didAttend);
+    }));
+
     users.forEach((user) => {
       const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
       const description = `Attendance submitted on behalf of user by ${proxyUser.uuid}`;
@@ -175,6 +182,8 @@ export default class AttendanceService {
       attendances.push(attendance);
       activities.push(activity);
     });
+
+
 
     await Repositories.user(txn).addPointsByActivities(activities);
     await Repositories.activity(txn).logActivityBatch(activities);
