@@ -67,11 +67,11 @@ export class EventModel extends BaseEntity {
   @OneToMany((type) => ExpressCheckinModel, (expressCheckin) => expressCheckin.event, { cascade: true })
   expressCheckins: ExpressCheckinModel[];
 
-  @Column('uuid', { nullable: true })
-  discordEvent: Uuid;
+  @Column('varchar', { nullable: true })
+  discordEvent: string;
 
-  @Column('uuid', { nullable: true })
-  googleCalendarEvent: Uuid;
+  @Column('varchar', { nullable: true })
+  googleCalendarEvent: string;
 
   public getPublicEvent(canSeeAttendanceCode = false): PublicEvent {
     const publicEvent: PublicEvent = {

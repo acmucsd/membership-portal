@@ -31,10 +31,10 @@ export class OptionalEventProperties implements IOptionalEventProperties {
   staffPointBonus?: number;
 
   @Allow()
-  discordEvent?: Uuid;
+  discordEvent?: string;
 
   @Allow()
-  googleCalendarEvent?: Uuid;
+  googleCalendarEvent?: string;
 }
 
 export class Event extends OptionalEventProperties implements IEvent {
