@@ -141,7 +141,7 @@ export default class EmailService {
           firstName,
           order,
           orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
-          link: `${Config.client}/store/order/${order.uuid}`,
+          link: `${Config.client}/store/orders`,
         }),
       };
       await this.sendEmail(data);
