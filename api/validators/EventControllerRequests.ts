@@ -7,7 +7,6 @@ import {
   PatchEventRequest as IPatchEventRequest,
   SubmitEventFeedbackRequest as ISubmitEventFeedbackRequest,
   Event as IEvent,
-  Uuid,
 } from '../../types';
 import { IsValidEventFeedback } from '../decorators/Validators';
 
