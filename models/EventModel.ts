@@ -68,10 +68,10 @@ export class EventModel extends BaseEntity {
   expressCheckins: ExpressCheckinModel[];
 
   @Column('varchar', { nullable: true })
-  discordEvent: string;
+  discordEvent: Uuid;
 
   @Column('varchar', { nullable: true })
-  googleCalendarEvent: string;
+  googleCalendarEvent: Uuid;
 
   public getPublicEvent(canSeeAttendanceCode = false): PublicEvent {
     const publicEvent: PublicEvent = {

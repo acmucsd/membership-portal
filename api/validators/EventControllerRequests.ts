@@ -7,6 +7,7 @@ import {
   PatchEventRequest as IPatchEventRequest,
   SubmitEventFeedbackRequest as ISubmitEventFeedbackRequest,
   Event as IEvent,
+  Uuid,
 } from '../../types';
 import { IsValidEventFeedback } from '../decorators/Validators';
 
@@ -30,10 +31,10 @@ export class OptionalEventProperties implements IOptionalEventProperties {
   staffPointBonus?: number;
 
   @Allow()
-  discordEvent?: string;
+  discordEvent?: Uuid;
 
   @Allow()
-  googleCalendarEvent?: string;
+  googleCalendarEvent?: Uuid;
 }
 
 export class Event extends OptionalEventProperties implements IEvent {
