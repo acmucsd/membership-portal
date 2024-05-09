@@ -25,14 +25,16 @@ export class AttendanceController {
   async getAttendancesForEvent(@Params() params: UuidParam,
     @AuthenticatedUser() user: UserModel): Promise<GetAttendancesForEventResponse> {
     if (!PermissionsService.canSeeEventAttendances(user)) throw new ForbiddenError();
-    const attendances = await this.attendanceService.getAttendancesForEvent(params.uuid);
+    const attendanceModels = await this.attendanceService.getAttendancesForEvent(params.uuid);
+    const attendances = attendanceModels.map((attendance) => attendance.getPublicAttendance());
     return { error: null, attendances };
   }
 
   @UseBefore(UserAuthentication)
   @Get()
   async getAttendancesForCurrentUser(@AuthenticatedUser() user: UserModel): Promise<GetAttendancesForUserResponse> {
-    const attendances = await this.attendanceService.getAttendancesForCurrentUser(user);
+    const attendanceModels = await this.attendanceService.getAttendancesForCurrentUser(user);
+    const attendances = attendanceModels.map((attendance) => attendance.getPublicAttendance());
     return { error: null, attendances };
   }
 
@@ -43,7 +45,8 @@ export class AttendanceController {
     if (params.uuid === currentUser.uuid) {
       return this.getAttendancesForCurrentUser(currentUser);
     }
-    const attendances = await this.attendanceService.getAttendancesForUser(params.uuid);
+    const attendanceModels = await this.attendanceService.getAttendancesForUser(params.uuid);
+    const attendances = attendanceModels.map((attendance) => attendance.getPublicAttendance())
     return { error: null, attendances };
   }
 
@@ -51,7 +54,8 @@ export class AttendanceController {
   @Post()
   async attendEvent(@Body() body: AttendEventRequest,
     @AuthenticatedUser() user: UserModel): Promise<AttendEventResponse> {
-    const { event } = await this.attendanceService.attendEvent(user, body.attendanceCode, body.asStaff);
+    const attendanceModel = await this.attendanceService.attendEvent(user, body.attendanceCode, body.asStaff);
+    const { event } = attendanceModel.getPublicAttendance();
     return { error: null, event };
   }
 
