@@ -30,17 +30,10 @@ describe('event creation', () => {
       .createUsers(admin, user)
       .write();
 
-    const event = {
-      cover: 'https://www.google.com',
-      title: 'ACM Party @ RIMAC',
-      description: 'Indoor Pool Party',
-      location: 'RIMAC',
-      committee: 'ACM',
+    const event = EventFactory.fake({
       start: moment().subtract(2, 'hour').toDate(),
       end: moment().subtract(1, 'hour').toDate(),
-      attendanceCode: 'p4rty',
-      pointValue: 10,
-    };
+    });
 
     const createEventRequest: CreateEventRequest = {
       event,
@@ -74,17 +67,10 @@ describe('event creation', () => {
       .createUsers(user)
       .write();
 
-    const event = {
-      cover: 'https://www.google.com',
-      title: 'ACM Party @ RIMAC',
-      description: 'Indoor Pool Party',
-      location: 'RIMAC',
-      committee: 'ACM',
+    const event = EventFactory.fake({
       start: moment().subtract(2, 'hour').toDate(),
       end: moment().subtract(1, 'hour').toDate(),
-      attendanceCode: 'p4rty',
-      pointValue: 10,
-    };
+    });
 
     const createEventRequest: CreateEventRequest = {
       event,
@@ -105,17 +91,10 @@ describe('event creation', () => {
       .createUsers(admin)
       .write();
 
-    const event = {
-      cover: 'https://www.google.com',
-      title: 'ACM Party @ RIMAC',
-      description: 'Indoor Pool Party',
-      location: 'RIMAC',
-      committee: 'ACM',
+    const event = EventFactory.fake({
       start: moment().subtract(1, 'hour').toDate(),
       end: moment().subtract(2, 'hour').toDate(),
-      attendanceCode: 'p4rty',
-      pointValue: 10,
-    };
+    });
 
     const createEventRequest: CreateEventRequest = {
       event,
@@ -136,17 +115,10 @@ describe('event creation', () => {
       .createUsers(admin, user)
       .write();
 
-    const event = {
-      cover: 'https://www.google.com',
-      title: 'ACM Party @ RIMAC',
-      description: 'Indoor Pool Party',
-      location: 'RIMAC',
-      committee: 'ACM',
+    const event = EventFactory.fake({
       start: new Date('2050-08-20T10:00:00.000Z'),
       end: new Date('2050-08-20T12:00:00.000Z'),
-      attendanceCode: 'ferris',
-      pointValue: 10,
-    };
+    });
 
     const createEventRequest: CreateEventRequest = {
       event,
@@ -178,17 +150,11 @@ describe('event creation', () => {
       .createUsers(admin, user)
       .write();
 
-    let event = {
-      cover: 'https://www.google.com',
-      title: 'ACM Party @ RIMAC',
-      description: 'Indoor Pool Party',
-      location: 'RIMAC',
-      committee: 'ACM',
+    let event = EventFactory.fake({
       start: new Date('2050-08-20T10:00:00.000Z'),
       end: new Date('2050-08-20T12:00:00.000Z'),
       attendanceCode: 'repeated',
-      pointValue: 10,
-    };
+    });
 
     const createEventRequest: CreateEventRequest = {
       event,
@@ -197,17 +163,11 @@ describe('event creation', () => {
     const eventController = ControllerFactory.event(conn);
     await eventController.createEvent(createEventRequest, admin);
 
-    event = {
-      cover: 'https://www.google.com',
-      title: 'ACM Party @ RIMAC',
-      description: 'Indoor Pool Party',
-      location: 'RIMAC',
-      committee: 'ACM',
+    event = EventFactory.fake({
       start: new Date('2050-08-20T09:00:00.000Z'),
       end: new Date('2050-08-20T10:30:00.000Z'),
       attendanceCode: 'repeated',
-      pointValue: 10,
-    };
+    });
 
     const createEventRequest2: CreateEventRequest = {
       event,
