@@ -14,9 +14,7 @@ import {
   MerchItemOptionAndQuantity,
   OrderPickupEventStatus,
   OrderItemFulfillmentUpdate,
-
 } from '../types';
-
 import { OrderModel } from '../models/OrderModel';
 import { UserModel } from '../models/UserModel';
 import { EventModel } from '../models/EventModel';
