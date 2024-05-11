@@ -619,6 +619,47 @@ describe('merch item edits', () => {
     expect(getMerchItemResponse.item.lifetimeLimit).toEqual(merchItemEdits.lifetimeLimit);
   });
 
+  test('merch item collections can be updated', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const collection = MerchFactory.fakeCollection();
+    const item = MerchFactory.fakeItem();
+
+    await new PortalState()
+      .createUsers(admin)
+      .createMerchCollections(collection)
+      .createMerchItem(item)
+      .write();
+
+    const merchStoreController = ControllerFactory.merchStore(conn);
+    const params = { uuid: item.uuid };
+
+    const oldCollection = (await merchStoreController.getOneMerchItem(params, admin)).item.collection;
+    const newCollectionSize = collection.items.length;
+
+    // update the description and increment the purchase limits
+    const merchItemEdits: MerchItemEdit = {
+      description: faker.datatype.hexaDecimal(10),
+      collection: collection.uuid,
+    };
+    const editMerchItemRequest = { merchandise: merchItemEdits };
+    await merchStoreController.editMerchItem(params, editMerchItemRequest, admin);
+
+    const getMerchItemResponse = await merchStoreController.getOneMerchItem(params, admin);
+    expect(getMerchItemResponse.item.description).toEqual(merchItemEdits.description);
+    expect(getMerchItemResponse.item.collection.uuid).toEqual(merchItemEdits.collection);
+
+    // test collection update
+    const oldCollectionParams = { uuid: oldCollection.uuid };
+    const getOldMerchCollectionResponse = await merchStoreController.getOneMerchCollection(oldCollectionParams, admin);
+    const newCollectionParams = { uuid: collection.uuid };
+    const getNewMerchCollectionResponse = await merchStoreController.getOneMerchCollection(newCollectionParams, admin);
+
+    expect(getOldMerchCollectionResponse.collection.items.length).toBe(0);
+    expect(getNewMerchCollectionResponse.collection.items.length).toBe(newCollectionSize + 1);
+    expect(getNewMerchCollectionResponse.collection.items[0].uuid).toBe(item.uuid);
+  });
+
   test('merch item option fields can be updated', async () => {
     const conn = await DatabaseConnection.get();
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
