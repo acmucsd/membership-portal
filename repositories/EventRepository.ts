@@ -33,14 +33,14 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async findByAttendanceCode(attendanceCode: string): Promise<EventModel> {
-    const allEvents = await this.repository.find({ attendanceCode });
+    const matchingEvents = await this.repository.find({ attendanceCode });
 
     // Find all events with the given attendance code
-    const eligible = allEvents.filter((event) => !event.isTooEarlyToAttendEvent() && !event.isTooLateToAttendEvent());
+    const validEvents = matchingEvents.filter((event) => !event.isTooEarlyToAttendEvent() && !event.isTooLateToAttendEvent());
 
     // If there are eligible events, return the first one
-    if (eligible.length > 0) {
-      return eligible[0];
+    if (validEvents.length > 0) {
+      return validEvents[0];
     }
 
     // Otherwise, find the closest event to the current time
@@ -48,7 +48,7 @@ export class EventRepository extends BaseRepository<EventModel> {
     let closestEvent = null;
     let closestTimeDifference = Infinity;
 
-    allEvents.forEach((event) => {
+    matchingEvents.forEach((event) => {
       const eventStartTime = new Date(event.start);
       const timeDifference = Math.abs(eventStartTime.getTime() - currentTime.getTime());
 
