@@ -536,7 +536,7 @@ export default class MerchStoreService {
 
       // Verify that this order would not set the pickup event's order count
       // over the order limit
-      if(MerchStoreService.isPickupEventOrderLimitFull(pickupEvent)) {
+      if (MerchStoreService.isPickupEventOrderLimitFull(pickupEvent)) {
         throw new UserError('This merch pickup event is full! Please choose a different pickup event');
       }
 
@@ -713,7 +713,7 @@ export default class MerchStoreService {
       if (MerchStoreService.isLessThanTwoDaysBeforePickupEvent(newPickupEventForOrder)) {
         throw new UserError('Cannot change order pickup to an event that starts in less than 2 days');
       }
-      if(MerchStoreService.isPickupEventOrderLimitFull(newPickupEventForOrder)) {
+      if (MerchStoreService.isPickupEventOrderLimitFull(newPickupEventForOrder)) {
         throw new UserError('This merch pickup event is full! Please choose a different pickup event');
       }
       const orderInfo = await MerchStoreService.buildOrderUpdateInfo(order, newPickupEventForOrder, txn);
