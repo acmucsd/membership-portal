@@ -7,7 +7,7 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 
 1. Clone the repository: `git clone https://github.com/acmucsd/membership-portal`.
 2. Navigate to the directory: `cd membership-portal`.
-3. Install PostgreSQL. See [installation instructions below](#installing-postgres).
+3. Install PostgreSQL. See [installation instructions below](#installing-postgres). Make sure to `export` the file path to your `.bash_profile` for bash terminals or other corresponding file.
 4. Install the necessary dependencies: `npm install`. For Windows users, see [specific build instructions below](#windows-build-instructions).
 5. Create a new `.env` file using [`.env.example`](https://github.com/acmucsd/membership-portal/blob/master/.env.example) as a template: `cp .env.example .env`.
 6. Fill out the `.env`. See the [example file below](#sample-env).
