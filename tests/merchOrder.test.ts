@@ -48,7 +48,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
     const order = [
       {
@@ -82,7 +82,7 @@ describe('merch orders', () => {
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_PLACED);
 
     // check order confirmation email has been sent
-    verify(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    verify(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .called();
   });
 
@@ -110,7 +110,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
     when(emailService.sendOrderFulfillment(member.email, member.firstName, anything()))
       .thenResolve();
@@ -186,7 +186,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
     when(emailService.sendOrderFulfillment(member.email, member.firstName, anything()))
       .thenResolve();
@@ -256,7 +256,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
     when(emailService.sendPartialOrderFulfillment(
       member.email, member.firstName, anything(), anything(), anything(), anything(),
@@ -338,7 +338,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
     when(emailService.sendPartialOrderFulfillment(
       member.email, member.firstName, anything(), anything(), anything(), anything(),
@@ -421,7 +421,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
     when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
       .thenResolve();
@@ -485,7 +485,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
     when(emailService.sendPartialOrderFulfillment(
       member.email, member.firstName, anything(), anything(), anything(), anything(),
@@ -550,7 +550,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
 
     // place order
@@ -591,7 +591,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
 
     // place order
@@ -645,7 +645,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
 
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
@@ -695,7 +695,7 @@ describe('merch orders', () => {
     await member.reload();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
 
     // Test Lifetime limit
@@ -831,7 +831,7 @@ describe('merch orders', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
 
     const merchStoreController = ControllerFactory.merchStore(conn, instance(emailService));
@@ -885,7 +885,7 @@ describe('merch orders', () => {
     const emailService = mock(EmailService);
     when(emailService.sendOrderCancellation(anyString(), anyString(), anything()))
       .thenResolve();
-    when(emailService.sendOrderConfirmation(anyString(), anyString(), anything()))
+    when(emailService.sendOrderConfirmation(anyString(), anything(), anyString(), anything()))
       .thenResolve();
 
     // cancel order
@@ -927,7 +927,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
 
@@ -959,7 +959,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
 
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
@@ -985,7 +985,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
 
     const createPickupEventRequest = { pickupEvent: { ...pickupEvent, linkedEventUuid: linkedEvent.uuid } };
@@ -1080,7 +1080,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
 
     const params = { uuid: pickupEvent.uuid };
@@ -1106,7 +1106,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
 
     // place order
@@ -1159,7 +1159,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anyString(), anyString(), anything()))
+    when(emailService.sendOrderConfirmation(anyString(), anything(), anyString(), anything()))
       .thenResolve();
     when(emailService.sendOrderPickupCancelled(anyString(), anyString(), anything()))
       .thenResolve();
@@ -1224,7 +1224,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
     when(emailService.sendOrderFulfillment(member1.email, member1.firstName, anything()))
       .thenResolve();
@@ -1442,9 +1442,9 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
-    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything(), anything()))
       .thenResolve();
 
     // place order
@@ -1468,7 +1468,7 @@ describe('merch order pickup events', () => {
     const updatedOrderResponse = await merchController.getOneMerchOrder(orderUuid, member);
 
     expect(updatedOrderResponse.order.pickupEvent).toStrictEqual(anotherPickupEvent.getPublicOrderPickupEvent());
-    verify(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+    verify(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything(), anything()))
       .called();
   });
 
@@ -1490,9 +1490,9 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
-    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything(), anything()))
       .thenResolve();
 
     // place order
@@ -1527,7 +1527,7 @@ describe('merch order pickup events', () => {
     const updatedOrderResponse = await merchController.getOneMerchOrder(orderUuid, member);
 
     expect(updatedOrderResponse.order.pickupEvent).toStrictEqual(anotherPickupEvent.getPublicOrderPickupEvent());
-    verify(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+    verify(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything(), anything()))
       .called();
   });
 
@@ -1549,9 +1549,9 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
-    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything(), anything()))
       .thenResolve();
 
     // place order
@@ -1586,7 +1586,7 @@ describe('merch order pickup events', () => {
     const updatedOrderResponse = await merchController.getOneMerchOrder(orderUuid, member);
 
     expect(updatedOrderResponse.order.pickupEvent).toStrictEqual(anotherPickupEvent.getPublicOrderPickupEvent());
-    verify(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+    verify(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything(), anything()))
       .called();
   });
 
@@ -1611,9 +1611,9 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
-    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything()))
+    when(emailService.sendOrderPickupUpdated(member.email, member.firstName, anything(), anything()))
       .thenResolve();
 
     // place order
@@ -1663,7 +1663,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
 
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
@@ -1702,7 +1702,7 @@ describe('merch order pickup events', () => {
     };
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
 
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
@@ -1740,7 +1740,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
+    when(emailService.sendOrderConfirmation(anything(), anything(), anything(), anything()))
       .thenResolve();
 
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
@@ -1796,7 +1796,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
     when(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
       .thenResolve();
