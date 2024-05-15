@@ -3,7 +3,7 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
-import { ActivityType, PublicAttendance, PublicExpressCheckin, Uuid } from '../types';
+import { ActivityType, Uuid } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import { EventModel } from '../models/EventModel';
@@ -11,6 +11,7 @@ import { AttendanceModel } from '../models/AttendanceModel';
 import { UserError } from '../utils/Errors';
 import Repositories, { TransactionsManager } from '../repositories';
 import { Activity, Attendance } from '../types/internal';
+import { ExpressCheckinModel } from 'models/ExpressCheckinModel';
 
 @Service()
 export default class AttendanceService {
@@ -20,31 +21,31 @@ export default class AttendanceService {
     this.transactions = new TransactionsManager(entityManager);
   }
 
-  public async getAttendancesForEvent(event: Uuid): Promise<PublicAttendance[]> {
+  public async getAttendancesForEvent(event: Uuid): Promise<AttendanceModel[]> {
     const attendances = await this.transactions.readOnly(async (txn) => Repositories
       .attendance(txn)
       .getAttendancesForEvent(event));
-    return attendances.map((attendance) => attendance.getPublicAttendance());
+    return attendances;
   }
 
-  public async getAttendancesForCurrentUser(user: UserModel): Promise<PublicAttendance[]> {
+  public async getAttendancesForCurrentUser(user: UserModel): Promise<AttendanceModel[]> {
     const attendances = await this.transactions.readOnly(async (txn) => Repositories
       .attendance(txn)
       .getAttendancesForUser(user));
-    return attendances.map((attendance) => attendance.getPublicAttendance());
+    return attendances;
   }
 
-  public async getAttendancesForUser(uuid: Uuid): Promise<PublicAttendance[]> {
+  public async getAttendancesForUser(uuid: Uuid): Promise<AttendanceModel[]> {
     return this.transactions.readOnly(async (txn) => {
       const user = await Repositories.user(txn).findByUuid(uuid);
       if (!user) throw new NotFoundError('User does not exist');
       if (!user.isAttendancePublic) throw new ForbiddenError();
       const attendances = await Repositories.attendance(txn).getAttendancesForUser(user);
-      return attendances.map((attendance) => attendance.getPublicAttendance());
+      return attendances;
     });
   }
 
-  public async attendEvent(user: UserModel, attendanceCode: string, asStaff = false): Promise<PublicAttendance> {
+  public async attendEvent(user: UserModel, attendanceCode: string, asStaff = false): Promise<AttendanceModel> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByAttendanceCode(attendanceCode);
 
@@ -54,7 +55,7 @@ export default class AttendanceService {
       if (hasAlreadyAttended) throw new UserError('You have already attended this event');
 
       const attendance = await this.writeEventAttendance(user, event, asStaff, txn);
-      return attendance.getPublicAttendance();
+      return attendance;
     });
   }
 
@@ -86,7 +87,7 @@ export default class AttendanceService {
     });
   }
 
-  public async attendViaExpressCheckin(attendanceCode: string, email: string): Promise<PublicExpressCheckin> {
+  public async attendViaExpressCheckin(attendanceCode: string, email: string): Promise<ExpressCheckinModel> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByAttendanceCode(attendanceCode);
 
@@ -117,12 +118,12 @@ export default class AttendanceService {
       }
 
       const expressCheckin = await expressCheckinRepository.createExpressCheckin(email, event);
-      return expressCheckin.getPublicExpressCheckin();
+      return expressCheckin;
     });
   }
 
   public async submitAttendanceForUsers(emails: string[], eventUuid: Uuid, asStaff = false,
-    proxyUser: UserModel): Promise<PublicAttendance[]> {
+    proxyUser: UserModel): Promise<AttendanceModel[]> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByUuid(eventUuid);
       if (!event) throw new NotFoundError('This event doesn\'t exist');
@@ -181,7 +182,7 @@ export default class AttendanceService {
     return Repositories.attendance(txn).writeAttendanceBatch(attendances);
   }
 
-  public async submitEventFeedback(feedback: string[], eventUuid: Uuid, user: UserModel): Promise<PublicAttendance> {
+  public async submitEventFeedback(feedback: string[], eventUuid: Uuid, user: UserModel): Promise<AttendanceModel> {
     return this.transactions.readWrite(async (txn) => {
       const attendanceRepository = Repositories.attendance(txn);
 
@@ -206,7 +207,7 @@ export default class AttendanceService {
       });
       await Repositories.user(txn).addPoints(user, pointsEarned);
 
-      return attendanceWithFeedback.getPublicAttendance();
+      return attendanceWithFeedback;
     });
   }
 }
