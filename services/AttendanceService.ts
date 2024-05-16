@@ -59,10 +59,7 @@ export default class AttendanceService {
   }
 
   private validateEventToAttend(event: EventModel) {
-    if (!event) throw new NotFoundError('Oh no! That code didn\'t work.');
-    if (event.isTooEarlyToAttendEvent()) {
-      throw new UserError('This event hasn\'t started yet, please wait to check in.');
-    }
+    if (!event || event.isTooEarlyToAttendEvent()) throw new NotFoundError('Oh no! That code didn\'t work.');
     if (event.isTooLateToAttendEvent()) {
       throw new UserError('This event has ended and is no longer accepting attendances');
     }

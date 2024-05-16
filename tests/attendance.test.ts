@@ -196,7 +196,7 @@ describe('attendance', () => {
 
     const attendEventRequest = { attendanceCode: event.attendanceCode };
     await expect(ControllerFactory.attendance(conn).attendEvent(attendEventRequest, member))
-      .rejects.toThrow('This event hasn\'t started yet, please wait to check in.');
+      .rejects.toThrow('Oh no! That code didn\'t work.');
   });
 
   test('throws if attendance code entered more than 30 minutes after event', async () => {

@@ -33,10 +33,12 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async findByAttendanceCode(attendanceCode: string): Promise<EventModel> {
+    // Find all events with the given attendance code
     const matchingEvents = await this.repository.find({ attendanceCode });
 
-    // Find all events with the given attendance code
-    const validEvents = matchingEvents.filter((event) => !event.isTooEarlyToAttendEvent() && !event.isTooLateToAttendEvent());
+    // Find all events that are currently
+    const validEvents = matchingEvents.filter((event) => !event.isTooEarlyToAttendEvent()
+    && !event.isTooLateToAttendEvent());
 
     // If there are eligible events, return the first one
     if (validEvents.length > 0) {
@@ -67,12 +69,19 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async isAvailableAttendanceCode(attendanceCode: string, start: Date, end: Date): Promise<boolean> {
+
+    const bufferedStart = new Date(start);
+    bufferedStart.setDate(bufferedStart.getDate() + 3);
+
+    const bufferedEnd = new Date(end);
+    bufferedEnd.setDate(bufferedEnd.getDate() - 3);
+
     const hasOverlap = await this.repository.find({
       where: [
         {
           attendanceCode,
-          start: LessThanOrEqual(end),
-          end: MoreThanOrEqual(start),
+          start: LessThanOrEqual(bufferedEnd),
+          end: MoreThanOrEqual(bufferedStart),
         },
       ],
     });
