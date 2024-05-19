@@ -442,7 +442,8 @@ describe('merch orders', () => {
 
     // cancel order
     const { uuid } = placedOrderResponse.order;
-    await merchController.cancelMerchOrder({ uuid }, member);
+    const cancelOrderResponse = await merchController.cancelMerchOrder({ uuid }, member);
+    expect(cancelOrderResponse.order.uuid).toEqual(uuid);
 
     // get order, making sure state was updated and user has been refunded
     const cancelledOrderResponse = await merchController.getOneMerchOrder({ uuid }, member);
@@ -518,7 +519,8 @@ describe('merch orders', () => {
 
     // cancel the order
     const { uuid } = placedOrderResponse.order;
-    await merchController.cancelMerchOrder({ uuid }, member);
+    const cancelOrderResponse = await merchController.cancelMerchOrder({ uuid }, member);
+    expect(cancelOrderResponse.order.uuid).toEqual(uuid);
 
     // make sure user has only been refunded 1 option worth of points
     await member.reload();
@@ -890,7 +892,8 @@ describe('merch orders', () => {
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     const placedOrder = await conn.manager.findOne(OrderModel, { user: member }, { relations: ['items'] });
     const cancelOrderParams = { uuid: placedOrder.uuid };
-    await merchController.cancelMerchOrder(cancelOrderParams, member);
+    const cancelOrderResponse = await merchController.cancelMerchOrder(cancelOrderParams, member);
+    expect(cancelOrderResponse.order.uuid).toEqual(cancelOrderParams.uuid);
 
     // place order with 2 items again
     const secondOrder = [{ option: option.uuid, quantity: 2 }];
@@ -1709,6 +1712,62 @@ describe('merch order pickup events', () => {
     const persistedPickupEvent = await merchController.getOnePickupEvent(params, merchDistributor);
 
     expect(persistedPickupEvent.pickupEvent.orderLimit).toEqual(2);
+  });
+
+  test('members cannot update their orders\' pickup events if the new pickup event is full', async () => {
+    const conn = await DatabaseConnection.get();
+    const member = UserFactory.fake({ credits: 10000 });
+    const item = MerchFactory.fakeItem({
+      hidden: false,
+      monthlyLimit: 100,
+    });
+    const option = MerchFactory.fakeOption({
+      item,
+      quantity: 2,
+      price: 2000,
+    });
+    const firstPickupEvent = MerchFactory.fakeFutureOrderPickupEvent({
+      orderLimit: 1,
+    });
+
+    const secondPickupEvent = MerchFactory.fakeFutureOrderPickupEvent({
+      orderLimit: 1,
+    });
+
+    await new PortalState()
+      .createUsers(member)
+      .createMerchItem(item)
+      .createMerchItemOptions(option)
+      .createOrderPickupEvents(firstPickupEvent, secondPickupEvent)
+      .orderMerch(member, [{ option, quantity: 1 }], firstPickupEvent)
+      .write();
+
+    const emailService = mock(EmailService);
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+      .thenResolve();
+
+    // place order to secondPickupEvent
+    const order = [
+      {
+        option: option.uuid,
+        quantity: 1,
+      },
+    ];
+    const placeMerchOrderRequest = {
+      order,
+      pickupEvent: secondPickupEvent.uuid,
+    };
+
+    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
+    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
+    const placedOrder = placedOrderResponse.order;
+
+    // attempt to reschedule to firstPickupEvent
+    const orderParams = { uuid: placedOrder.uuid };
+    const newPickupEventParams = { pickupEvent: firstPickupEvent.uuid };
+    await expect(merchController.rescheduleOrderPickup(orderParams, newPickupEventParams, member))
+      .rejects
+      .toThrow('This merch pickup event is full! Please choose a different pickup event');
   });
 
   test('placing an order with a pickup event that has reached the order limit fails', async () => {

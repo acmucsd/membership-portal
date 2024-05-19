@@ -1,5 +1,5 @@
-import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 import { Uuid } from '.';
+import { FeedbackStatus, FeedbackType, SocialMediaType, UserAccessType } from './Enums';
 
 // REQUEST TYPES
 
@@ -45,7 +45,8 @@ export interface RegistrationRequest {
 // USER
 
 export interface Feedback {
-  title: string;
+  event: Uuid;
+  source: string;
   description: string;
   type: FeedbackType;
 }
@@ -82,16 +83,24 @@ export interface UpdateFeedbackStatusRequest {
   status: FeedbackStatus;
 }
 
+export interface FeedbackSearchOptions {
+  event?: string;
+  type?: string;
+  status?: string;
+  user?: string;
+}
+
 export interface InsertUserSocialMediaRequest {
-  socialMedia: SocialMedia;
+  socialMedia: SocialMedia[];
 }
 
 export interface SocialMediaPatches {
-  url?: string;
+  uuid: string;
+  url: string;
 }
 
 export interface UpdateUserSocialMediaRequest {
-  socialMedia: SocialMediaPatches;
+  socialMedia: SocialMediaPatches[];
 }
 
 // LEADERBOARD
@@ -146,6 +155,8 @@ export interface OptionalEventProperties {
   eventLink?: string;
   requiresStaff?: boolean;
   staffPointBonus?: number;
+  discordEvent?: Uuid;
+  googleCalendarEvent?: Uuid;
 }
 
 export interface Event extends OptionalEventProperties {
@@ -172,6 +183,11 @@ export interface AttendEventRequest {
   asStaff?: boolean;
 }
 
+export interface AttendViaExpressCheckinRequest {
+  attendanceCode: string;
+  email: string;
+}
+
 export interface SubmitEventFeedbackRequest {
   feedback: string[];
 }
@@ -191,6 +207,10 @@ export interface CreateMerchCollectionRequest {
 
 export interface EditMerchCollectionRequest {
   collection: MerchCollectionEdit;
+}
+
+export interface CreateCollectionPhotoRequest {
+  position: string;
 }
 
 export interface CreateMerchItemRequest {
@@ -226,15 +246,30 @@ export interface RescheduleOrderPickupRequest {
   pickupEvent: Uuid;
 }
 
-export interface MerchCollection {
+export interface CommonCollectionProperties {
   title: string;
   themeColorHex?: string;
   description: string;
   archived?: boolean;
 }
 
-export interface MerchCollectionEdit extends Partial<MerchCollection> {
+export interface MerchCollectionPhoto {
+  uploadedPhoto: string;
+  position: number;
+}
+
+export interface MerchCollectionPhotoEdit {
+  uuid: string;
+  position?: number;
+}
+
+export interface MerchCollection extends Partial<CommonCollectionProperties> {
+  collectionPhotos: MerchCollectionPhoto[]
+}
+
+export interface MerchCollectionEdit extends Partial<CommonCollectionProperties> {
   discountPercentage?: number;
+  collectionPhotos?: MerchCollectionPhotoEdit[]
 }
 
 export interface CommonMerchItemProperties {

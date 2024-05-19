@@ -34,6 +34,9 @@ export default class EmailService {
 
   private static readonly orderPartiallyFulfilledTemplate = EmailService.readTemplate('orderPartiallyFulfilled.ejs');
 
+  private static readonly expressCheckinConfirmationTemplate = EmailService
+    .readTemplate('expressCheckinConfirmation.ejs');
+
   constructor() {
     this.mailer.setApiKey(Config.email.apiKey);
   }
@@ -83,7 +86,7 @@ export default class EmailService {
           order,
           orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
           pickupEvent: order.pickupEvent,
-          link: `${Config.client}/store/order/${order.uuid}`,
+          link: `${Config.client}/store/orders`,
         }),
       };
       await this.sendEmail(data);
@@ -138,7 +141,7 @@ export default class EmailService {
           firstName,
           order,
           orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
-          link: `${Config.client}/store/order/${order.uuid}`,
+          link: `${Config.client}/store/orders`,
         }),
       };
       await this.sendEmail(data);
@@ -157,7 +160,7 @@ export default class EmailService {
           firstName,
           order,
           orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
-          link: `${Config.client}/store/order/${order.uuid}`,
+          link: `${Config.client}/store/orders`,
         }),
       };
       await this.sendEmail(data);
@@ -176,7 +179,7 @@ export default class EmailService {
           firstName,
           order,
           orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
-          link: `${Config.client}/store/order/${order.uuid}`,
+          link: `${Config.client}/store/orders`,
         }),
       };
       await this.sendEmail(data);
@@ -216,12 +219,31 @@ export default class EmailService {
           unfulfilledItems: ejs.render(EmailService.itemDisplayTemplate, { items: unfulfilledItems }),
           fulfilledItems: ejs.render(EmailService.itemDisplayTemplate, { items: fulfilledItems }),
           pickupEvent,
-          link: `${Config.client}/store/order/${orderUuid}`,
+          link: `${Config.client}/store/orders`,
         }),
       };
       await this.sendEmail(data);
     } catch (error) {
       log.warn(`Failed to send partial order fulfillment email to ${email}`, { error });
+    }
+  }
+
+  public async sendExpressCheckinConfirmation(email: string, eventName, pointValue) {
+    try {
+      const data = {
+        to: email,
+        from: Config.email.user,
+        subject: 'ACM UCSD Express Checkin - Complete Your Account Registration',
+        html: ejs.render(EmailService.expressCheckinConfirmationTemplate, {
+          eventName,
+          pointValue,
+          registerLink: `${Config.client}/register`,
+          storeLink: `${Config.client}/store`,
+        }),
+      };
+      await this.sendEmail(data);
+    } catch (error) {
+      log.warn(`Failed to send express checkin confirmation to ${email}`, { error });
     }
   }
 

@@ -1,7 +1,8 @@
 import * as moment from 'moment';
-import { UserAccessType, SocialMediaType } from '../types';
+import { UserAccessType, SocialMediaType, FeedbackStatus, FeedbackType } from '../types';
 import { DatabaseConnection, EventFactory, MerchFactory,
   PortalState, UserFactory, ResumeFactory, UserSocialMediaFactory } from './data';
+import { FeedbackFactory } from './data/FeedbackFactory';
 
 function getGraduationYear(n: number) {
   return moment().year() + n;
@@ -120,6 +121,11 @@ async function seed(): Promise<void> {
     email: 'acm_sponsorship_manager@ucsd.edu',
     accessType: UserAccessType.SPONSORSHIP_MANAGER,
   });
+
+  // Used for testing feedback
+  const USER_FEEDBACK_1 = UserFactory.fake({ firstName: 'FeedbackerOne', lastName: 'Jones' });
+  const USER_FEEDBACK_2 = UserFactory.fake({ firstName: 'FeedbackerTwo', lastName: 'Patel' });
+  const USER_FEEDBACK_3 = UserFactory.fake({ firstName: 'FeedbackerThree', lastName: 'Smith' });
 
   // Used for testing various User Social Media
   const USER_SOCIAL_MEDIA_1 = UserFactory.fake();
@@ -378,6 +384,28 @@ async function seed(): Promise<void> {
     description: 'Do you like to code? Tell the world with this Hack School inspired collection.',
     themeColorHex: '#EB8C34',
   });
+
+  const MERCH_COLLECTION_1_PHOTO_1 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    position: 0,
+  });
+  const MERCH_COLLECTION_1_PHOTO_2 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  const MERCH_COLLECTION_1_PHOTO_3 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_1,
+    uploadedPhoto: 'https://i.imgur.com/pSZ921P.png',
+    position: 2,
+  });
+
+  MERCH_COLLECTION_1.collectionPhotos = [
+    MERCH_COLLECTION_1_PHOTO_1,
+    MERCH_COLLECTION_1_PHOTO_2,
+    MERCH_COLLECTION_1_PHOTO_3,
+  ];
+
   const MERCH_ITEM_1 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_1,
     itemName: 'Unisex Hack School Anorak',
@@ -457,7 +485,6 @@ async function seed(): Promise<void> {
   });
   const MERCH_ITEM_1_PHOTO_1 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_1,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 1,
   });
   const MERCH_ITEM_1_PHOTO_2 = MerchFactory.fakePhoto({
@@ -520,7 +547,6 @@ async function seed(): Promise<void> {
   ];
   const MERCH_ITEM_2_PHOTO_0 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_2,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 0,
   });
   const MERCH_ITEM_2_PHOTO_1 = MerchFactory.fakePhoto({
@@ -538,6 +564,14 @@ async function seed(): Promise<void> {
     title: 'Fall 2001',
     description: 'Celebrate the opening of Sixth College in style, featuring raccoon print jackets.',
   });
+
+  const MERCH_COLLECTION_2_PHOTO_1 = MerchFactory.fakeCollectionPhoto({
+    merchCollection: MERCH_COLLECTION_2,
+    uploadedPhoto: 'https://www.fakepicture.com/',
+    position: 1,
+  });
+  MERCH_COLLECTION_2.collectionPhotos = [MERCH_COLLECTION_2_PHOTO_1];
+
   const MERCH_ITEM_3 = MerchFactory.fakeItem({
     collection: MERCH_COLLECTION_2,
     itemName: 'Camp Snoopy Snapback',
@@ -561,7 +595,6 @@ async function seed(): Promise<void> {
   });
   const MERCH_ITEM_3_PHOTO_1 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 1,
   });
   const MERCH_ITEM_3_PHOTO_2 = MerchFactory.fakePhoto({
@@ -571,12 +604,10 @@ async function seed(): Promise<void> {
   });
   const MERCH_ITEM_3_PHOTO_3 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 3,
   });
   const MERCH_ITEM_3_PHOTO_4 = MerchFactory.fakePhoto({
     merchItem: MERCH_ITEM_3,
-    uploadedPhoto: 'https://www.fakepicture.com/',
     position: 4,
   });
   MERCH_ITEM_3.merchPhotos = [
@@ -669,6 +700,41 @@ async function seed(): Promise<void> {
     orderLimit: 10,
   });
 
+  // FEEDBACK SEEDING
+
+  // Event with multiple feedbacks: PAST_AI_WORKSHOP_1
+  const FEEDBACK_SAME_EVENT_1 = FeedbackFactory.fake({ user: USER_FEEDBACK_1,
+    event: PAST_AI_WORKSHOP_1,
+    description: 'Man this #$%& sucks',
+    type: FeedbackType.AI });
+  const FEEDBACK_SAME_EVENT_2 = FeedbackFactory.fake({ user: USER_FEEDBACK_2,
+    event: PAST_AI_WORKSHOP_1,
+    type: FeedbackType.AI });
+
+  // User with multiple feedbacks: USER_FEEDBACK_3
+  const FEEDBACK_SAME_USER_1 = FeedbackFactory.fake({ user: USER_FEEDBACK_3,
+    event: PAST_AI_WORKSHOP_1,
+    type: FeedbackType.CYBER });
+
+  const FEEDBACK_SAME_USER_2 = FeedbackFactory.fake({ user: USER_FEEDBACK_3,
+    event: PAST_AI_WORKSHOP_2,
+    type: FeedbackType.GENERAL });
+
+  const FEEDBACK_SUBMITTED = FeedbackFactory.fake({ user: USER_FEEDBACK_3,
+    event: PAST_AI_WORKSHOP_1,
+    status: FeedbackStatus.SUBMITTED,
+    type: FeedbackType.INNOVATE });
+
+  const FEEDBACK_IGNORED = FeedbackFactory.fake({ user: USER_FEEDBACK_3,
+    event: PAST_AI_WORKSHOP_1,
+    status: FeedbackStatus.IGNORED,
+    type: FeedbackType.GENERAL });
+
+  const FEEDBACK_ACKNOWLEDGED = FeedbackFactory.fake({ user: USER_FEEDBACK_3,
+    event: PAST_AI_WORKSHOP_1,
+    status: FeedbackStatus.ACKNOWLEDGED,
+    type: FeedbackType.BIT_BYTE });
+
   await new PortalState()
     .createUsers(
       ADMIN,
@@ -692,6 +758,9 @@ async function seed(): Promise<void> {
       USER_SOCIAL_MEDIA_2,
       USER_SOCIAL_MEDIA_3,
       USER_SOCIAL_MEDIA_ALL,
+      USER_FEEDBACK_1,
+      USER_FEEDBACK_2,
+      USER_FEEDBACK_3,
       USER_VISIBLE_RESUME,
       USER_HIDDEN_RESUME,
       ...otherMembers,
@@ -797,6 +866,8 @@ async function seed(): Promise<void> {
       USER_SOCIAL_MEDIA_ALL_PORTFOLIO, USER_SOCIAL_MEDIA_ALL_EMAIL)
     .createResumes(USER_VISIBLE_RESUME, RESUME_1)
     .createResumes(USER_HIDDEN_RESUME, RESUME_2)
+    .createFeedback(FEEDBACK_SAME_EVENT_1, FEEDBACK_SAME_EVENT_2, FEEDBACK_SAME_USER_1, FEEDBACK_SAME_USER_2,
+      FEEDBACK_ACKNOWLEDGED, FEEDBACK_IGNORED, FEEDBACK_SUBMITTED)
     .write();
 }
 

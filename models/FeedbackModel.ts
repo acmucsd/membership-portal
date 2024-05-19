@@ -1,6 +1,7 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { FeedbackStatus, FeedbackType, PublicFeedback, Uuid } from '../types';
 import { UserModel } from './UserModel';
+import { EventModel } from './EventModel';
 
 @Entity('Feedback')
 export class FeedbackModel extends BaseEntity {
@@ -12,8 +13,15 @@ export class FeedbackModel extends BaseEntity {
   @Index('feedback_by_user_index')
   user: UserModel;
 
-  @Column('varchar', { length: 255 })
-  title: string;
+  @ManyToOne((type) => EventModel, (event) => event.feedback, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'event' })
+  @Index('feedback_by_event_index')
+  event: EventModel;
+
+  // source refers to how the user heard about the event
+  // ie, Instagram, Portal, Discord, etc.
+  @Column('text')
+  source: string;
 
   @Column('text')
   description: string;
@@ -31,7 +39,8 @@ export class FeedbackModel extends BaseEntity {
     return {
       uuid: this.uuid,
       user: this.user.getPublicProfile(),
-      title: this.title,
+      event: this.event.getPublicEvent(),
+      source: this.source,
       description: this.description,
       timestamp: this.timestamp,
       status: this.status,

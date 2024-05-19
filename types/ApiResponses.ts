@@ -6,7 +6,6 @@ import {
 import { MerchItemOptionMetadata, Uuid } from '.';
 
 // RESPONSE TYPES
-
 export interface CustomErrorBody {
   name: string;
   message: string;
@@ -31,8 +30,8 @@ export interface UploadBannerResponse extends ApiResponse {
   banner: string;
 }
 
-export interface GetAllEmailsResponse extends ApiResponse {
-  emails: string[];
+export interface GetAllNamesAndEmailsResponse extends ApiResponse {
+  namesAndEmails: NameAndEmail[];
 }
 
 export interface SubmitAttendanceForUsersResponse extends ApiResponse {
@@ -67,6 +66,12 @@ export interface GetAttendancesForUserResponse extends ApiResponse {
 
 export interface AttendEventResponse extends ApiResponse {
   event: PublicEvent;
+}
+
+export interface PublicExpressCheckin {
+  email: string;
+  event: PublicEvent;
+  timestamp: Date;
 }
 
 // AUTH
@@ -111,6 +116,8 @@ export interface PublicEvent {
   pointValue: number;
   requiresStaff: boolean;
   staffPointBonus: number;
+  discordEvent: Uuid;
+  googleCalendarEvent: Uuid;
 }
 
 export interface GetPastEventsResponse extends ApiResponse {
@@ -157,6 +164,7 @@ export interface PublicMerchCollection {
   themeColorHex?: string;
   description: string;
   items: PublicMerchItem[];
+  collectionPhotos: PublicMerchCollectionPhoto[]
   createdAt: Date;
 }
 
@@ -198,6 +206,13 @@ export interface PublicMerchItemPhoto {
   uploadedPhoto: string;
   position: number;
   uploadedAt: Date;
+}
+
+export interface PublicMerchCollectionPhoto {
+  uuid: Uuid;
+  uploadedPhoto: string;
+  position: number;
+  uploadedAt: Date
 }
 
 export interface PublicOrderMerchItemOption {
@@ -249,6 +264,12 @@ export interface EditMerchCollectionResponse extends ApiResponse {
 
 export interface DeleteMerchCollectionResponse extends ApiResponse {}
 
+export interface CreateCollectionPhotoResponse extends ApiResponse {
+  collectionPhoto: PublicMerchCollectionPhoto;
+}
+
+export interface DeleteCollectionPhotoResponse extends ApiResponse {}
+
 export interface GetOneMerchItemResponse extends ApiResponse {
   item: PublicMerchItemWithPurchaseLimits;
 }
@@ -291,6 +312,10 @@ export interface VerifyMerchOrderResponse extends ApiResponse {}
 
 export interface EditMerchOrderResponse extends ApiResponse {}
 
+export interface CancelMerchOrderResponse extends ApiResponse {
+  order: PublicOrderWithItems;
+}
+
 export interface GetCartResponse extends ApiResponse {
   cart: PublicOrderMerchItemOption[];
 }
@@ -299,6 +324,11 @@ export interface FulfillMerchOrderResponse extends ApiResponse {
 }
 
 // USER
+export interface NameAndEmail {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 export interface PublicActivity {
   type: ActivityType,
@@ -333,7 +363,8 @@ export interface PrivateProfile extends PublicProfile {
 export interface PublicFeedback {
   uuid: Uuid,
   user: PublicProfile,
-  title: string;
+  event: PublicEvent,
+  source: string;
   description: string;
   timestamp: Date;
   status: FeedbackStatus;
@@ -392,11 +423,11 @@ export interface GetUserSocialMediaResponse extends ApiResponse {
 }
 
 export interface InsertSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface UpdateSocialMediaResponse extends ApiResponse {
-  userSocialMedia: PublicUserSocialMedia;
+  userSocialMedia: PublicUserSocialMedia[];
 }
 
 export interface DeleteSocialMediaResponse extends ApiResponse {}

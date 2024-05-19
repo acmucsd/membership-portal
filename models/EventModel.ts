@@ -2,6 +2,8 @@ import * as moment from 'moment';
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { PublicEvent, Uuid } from '../types';
 import { AttendanceModel } from './AttendanceModel';
+import { FeedbackModel } from './FeedbackModel';
+import { ExpressCheckinModel } from './ExpressCheckinModel';
 
 @Entity('Events')
 @Index('event_start_end_index', ['start', 'end'])
@@ -59,6 +61,18 @@ export class EventModel extends BaseEntity {
   @OneToMany((type) => AttendanceModel, (attendance) => attendance.event, { cascade: true })
   attendances: AttendanceModel[];
 
+  @OneToMany((type) => FeedbackModel, (feedback) => feedback.event, { cascade: true })
+  feedback: FeedbackModel[];
+
+  @OneToMany((type) => ExpressCheckinModel, (expressCheckin) => expressCheckin.event, { cascade: true })
+  expressCheckins: ExpressCheckinModel[];
+
+  @Column('varchar', { nullable: true })
+  discordEvent: Uuid;
+
+  @Column('varchar', { nullable: true })
+  googleCalendarEvent: Uuid;
+
   public getPublicEvent(canSeeAttendanceCode = false): PublicEvent {
     const publicEvent: PublicEvent = {
       uuid: this.uuid,
@@ -75,6 +89,8 @@ export class EventModel extends BaseEntity {
       pointValue: this.pointValue,
       requiresStaff: this.requiresStaff,
       staffPointBonus: this.staffPointBonus,
+      discordEvent: this.discordEvent,
+      googleCalendarEvent: this.googleCalendarEvent,
     };
     if (canSeeAttendanceCode) publicEvent.attendanceCode = this.attendanceCode;
     return publicEvent;
