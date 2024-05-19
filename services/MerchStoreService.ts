@@ -911,6 +911,7 @@ export default class MerchStoreService {
       end: pickupEvent.end.getTime(),
       title: pickupEvent.title,
       description: pickupEvent.description,
+      location: pickupEvent.location,
     };
   }
 

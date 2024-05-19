@@ -311,4 +311,5 @@ export interface OrderPickupEventCalendarInfo {
   end: number;
   title: string;
   description: string;
+  location: string;
 }
