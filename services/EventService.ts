@@ -6,13 +6,17 @@ import { EventModel } from '../models/EventModel';
 import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
 import Repositories, { TransactionsManager } from '../repositories';
 import { UserError } from '../utils/Errors';
+import StorageService from './StorageService';
 
 @Service()
 export default class EventService {
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
+  private storageService: StorageService;
+
+  constructor(@InjectManager() entityManager: EntityManager, storageService: StorageService) {
     this.transactions = new TransactionsManager(entityManager);
+    this.storageService = storageService;
   }
 
   /**
@@ -25,9 +29,15 @@ export default class EventService {
     const eventCreated = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(event.attendanceCode);
-      if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
-      if (event.start > event.end) throw new UserError('Start date after end date');
-      return eventRepository.upsertEvent(EventModel.create(event));
+      if (!isUnusedAttendanceCode) {
+        // this.storageService.deleteAtUrl(event.cover);
+        throw new UserError('Attendance code has already been used');
+      }
+      if (event.start > event.end) {
+        // this.storageService.deleteAtUrl(event.cover);
+        throw new UserError('Start date after end date');
+      }
+      return eventRepository.upsertEvent(EventModel.create({ ...event, published: false }));
     });
     return eventCreated.getPublicEvent();
   }

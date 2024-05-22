@@ -160,7 +160,7 @@ export interface OptionalEventProperties {
 }
 
 export interface Event extends OptionalEventProperties {
-  cover: string;
+  cover?: string;
   title: string;
   description: string;
   location: string;
