@@ -1743,7 +1743,7 @@ describe('merch order pickup events', () => {
       .write();
 
     const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything(), anything()))
       .thenResolve();
 
     // place order to secondPickupEvent
