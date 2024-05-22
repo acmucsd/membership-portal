@@ -49,6 +49,9 @@ export class EventModel extends BaseEntity {
   @Column('integer')
   pointValue: number;
 
+  @Column('boolean', { default: true })
+  published: boolean;
+
   @Column('boolean', { default: false })
   deleted: boolean;
 

@@ -31,8 +31,8 @@ export class OptionalEventProperties implements IOptionalEventProperties {
 }
 
 export class Event extends OptionalEventProperties implements IEvent {
-  @IsNotEmpty()
-  cover: string;
+  // @IsNotEmpty()
+  // cover: string;
 
   @IsNotEmpty()
   title: string;
