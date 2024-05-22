@@ -120,13 +120,11 @@ export class EventController {
 
   @UseBefore(UserAuthentication)
   @Post()
-  async createEvent(@UploadedFile('image',
-    { options: StorageService.getFileOptions(MediaType.EVENT_COVER) }) file: File,
-    @Body() createEventRequest: CreateEventRequest,
+  async createEvent(@Body() createEventRequest: CreateEventRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateEventResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
-    const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
-    createEventRequest.event.cover = await this.storageService.upload(file, MediaType.EVENT_COVER, fileName);
+    // const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
+    // createEventRequest.event.cover = await this.storageService.upload(file, MediaType.EVENT_COVER, fileName);
     const event = await this.eventService.create(createEventRequest.event);
     return { error: null, event };
   }

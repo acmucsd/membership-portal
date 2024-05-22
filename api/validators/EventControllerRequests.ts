@@ -59,8 +59,8 @@ export class Event extends OptionalEventProperties implements IEvent {
 }
 
 export class EventPatches extends OptionalEventProperties implements IEvent {
-  @IsNotEmpty()
-  cover: string;
+  // @IsNotEmpty()
+  // cover: string;
 
   @IsNotEmpty()
   title: string;
@@ -82,6 +82,9 @@ export class EventPatches extends OptionalEventProperties implements IEvent {
 
   @Allow()
   pointValue: number;
+
+  @Allow()
+  published?: boolean;
 }
 
 export class EventSearchOptions implements IEventSearchOptions {

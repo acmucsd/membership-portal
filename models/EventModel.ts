@@ -49,7 +49,7 @@ export class EventModel extends BaseEntity {
   @Column('integer')
   pointValue: number;
 
-  @Column('boolean', { default: true })
+  @Column('boolean', { default: true }) // default to true for backward compadibility
   published: boolean;
 
   @Column('boolean', { default: false })

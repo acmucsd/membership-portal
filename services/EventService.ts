@@ -30,14 +30,14 @@ export default class EventService {
       const eventRepository = Repositories.event(txn);
       const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(event.attendanceCode);
       if (!isUnusedAttendanceCode) {
-        this.storageService.deleteAtUrl(event.cover);
+        // this.storageService.deleteAtUrl(event.cover);
         throw new UserError('Attendance code has already been used');
       }
       if (event.start > event.end) {
-        this.storageService.deleteAtUrl(event.cover);
+        // this.storageService.deleteAtUrl(event.cover);
         throw new UserError('Start date after end date');
       }
-      return eventRepository.upsertEvent(EventModel.create(event));
+      return eventRepository.upsertEvent(EventModel.create({ ...event, published: false }));
     });
     return eventCreated.getPublicEvent();
   }
