@@ -130,6 +130,7 @@ export class MerchFactory {
       uuid: uuid(),
       title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
+      location: faker.datatype.hexaDecimal(10),
       start,
       end,
       orderLimit: FactoryUtils.getRandomNumber(1, 5),

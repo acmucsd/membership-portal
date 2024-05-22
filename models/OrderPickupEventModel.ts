@@ -20,6 +20,9 @@ export class OrderPickupEventModel extends BaseEntity {
   @Column('text')
   description: string;
 
+  @Column('varchar', { length: 255 })
+  location: string;
+
   @Column('integer')
   orderLimit: number;
 
@@ -41,6 +44,7 @@ export class OrderPickupEventModel extends BaseEntity {
       start: this.start,
       end: this.end,
       description: this.description,
+      location: this.location,
       orderLimit: this.orderLimit,
       status: this.status,
       linkedEvent: this.linkedEvent ? this.linkedEvent.getPublicEvent() : null,

@@ -683,6 +683,7 @@ async function seed(): Promise<void> {
   const PAST_ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
     title: 'ACM Merch Distribution Event 1',
     description: 'This is a test event to pickup orders from. It has already passed :(',
+    location: 'Qualcomm Room',
     orderLimit: 10,
     start: moment().subtract(3, 'days').subtract(2, 'hours').toDate(),
     end: moment().subtract(3, 'days').toDate(),
@@ -690,6 +691,7 @@ async function seed(): Promise<void> {
   const ONGOING_ORDER_PICKUP_EVENT = MerchFactory.fakeOrderPickupEvent({
     title: 'ACM Merch Distribution Event 2',
     description: 'Another test event',
+    location: 'Henry Booker Room',
     orderLimit: 10,
     start: moment().subtract(30, 'minutes').toDate(),
     end: moment().add(90, 'minutes').toDate(),
@@ -697,6 +699,7 @@ async function seed(): Promise<void> {
   const FUTURE_ORDER_PICKUP_EVENT = MerchFactory.fakeFutureOrderPickupEvent({
     title: 'Example Other Order Pickup Event',
     description: 'This is another test event to pickup orders from.',
+    location: 'ASML Room',
     orderLimit: 10,
   });
 

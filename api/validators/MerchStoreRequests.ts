@@ -283,6 +283,9 @@ export class OrderPickupEvent implements IOrderPickupEvent {
   @IsNotEmpty()
   description: string;
 
+  @IsNotEmpty()
+  location: string;
+
   @IsDefined()
   @Min(1)
   orderLimit: number;
