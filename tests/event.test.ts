@@ -178,6 +178,43 @@ describe('event creation', () => {
   });
 });
 
+test('test conflicting event creation with re-used attendance code - 3 days after', async () => {
+  const conn = await DatabaseConnection.get();
+  const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+  const user = UserFactory.fake();
+
+  await new PortalState()
+    .createUsers(admin, user)
+    .write();
+
+  let event = EventFactory.fake({
+    start: new Date('2050-08-20T10:00:00.000Z'),
+    end: new Date('2050-08-20T12:00:00.000Z'),
+    attendanceCode: 'repeated',
+  });
+
+  const createEventRequest: CreateEventRequest = {
+    event,
+  };
+
+  const eventController = ControllerFactory.event(conn);
+  await eventController.createEvent(createEventRequest, admin);
+
+  event = EventFactory.fake({
+    start: new Date('2050-08-20T09:00:00.000Z'),
+    end: new Date('2050-08-22T10:30:00.000Z'),
+    attendanceCode: 'repeated',
+  });
+
+  const createEventRequest2: CreateEventRequest = {
+    event,
+  };
+
+  await expect(eventController.createEvent(createEventRequest2, admin))
+    .rejects.toThrow('There is a conflicting event with the same attendance code');
+});
+
+
 describe('event deletion', () => {
   test('should delete event that has no attendances', async () => {
     // setting up inputs

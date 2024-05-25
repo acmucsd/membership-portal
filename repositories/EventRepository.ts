@@ -69,12 +69,11 @@ export class EventRepository extends BaseRepository<EventModel> {
   }
 
   public async isAvailableAttendanceCode(attendanceCode: string, start: Date, end: Date): Promise<boolean> {
-
     const bufferedStart = new Date(start);
-    bufferedStart.setDate(bufferedStart.getDate() + 3);
+    bufferedStart.setDate(bufferedStart.getDate() - 3);
 
     const bufferedEnd = new Date(end);
-    bufferedEnd.setDate(bufferedEnd.getDate() - 3);
+    bufferedEnd.setDate(bufferedEnd.getDate() + 3);
 
     const hasOverlap = await this.repository.find({
       where: [
