@@ -65,7 +65,8 @@ jobs:
       - image: jdrouet/docker-with-buildx:stable
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: docker24
       # Caching done for docker images and stored for future workflows.
       ## https://circleci.com/docs/caching
       - restore_cache:
