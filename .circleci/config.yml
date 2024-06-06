@@ -66,7 +66,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.2
+          version: docker24
       # Caching done for docker images and stored for future workflows.
       ## https://circleci.com/docs/caching
       - restore_cache:
