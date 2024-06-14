@@ -1,10 +1,23 @@
 import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
-import { UserAccessType } from '../types';
+import { FeedbackStatus, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
 import { EventModel } from '../models/EventModel';
+import { FeedbackFactory } from './data/FeedbackFactory';
+
+function buildFeedbackRequest(feedback) {
+  return {
+    feedback: {
+      event: feedback.event.uuid,
+      source: feedback.source,
+      status: feedback.status,
+      type: feedback.type,
+      description: feedback.description,
+    },
+  };
+}
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -174,5 +187,87 @@ describe('event deletion', () => {
     const repositoryEvent = await repository.findOne({ uuid: event.uuid });
 
     expect(repositoryEvent).toEqual(event);
+  });
+
+  test('admin can view all feedback for any event', async () => {
+    // setting up inputs
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+    const [member1, member2] = UserFactory.create(2);
+    const event1 = EventFactory.fake();
+    const event2 = EventFactory.fake();
+    const feedback1 = FeedbackFactory.fake({ event: event1, user: member1 });
+    const feedback2 = FeedbackFactory.fake({ event: event1, user: member2 });
+    const feedback3 = FeedbackFactory.fake({ event: event2, user: member1 });
+
+    await new PortalState()
+      .createUsers(admin, member1, member2)
+      .createEvents(event1, event2)
+      .write();
+
+    const eventController = ControllerFactory.event(conn);
+    const feedbackController = ControllerFactory.feedback(conn);
+    await feedbackController.submitFeedback(buildFeedbackRequest(feedback1), member1);
+    await feedbackController.submitFeedback(buildFeedbackRequest(feedback2), member2);
+    await feedbackController.submitFeedback(buildFeedbackRequest(feedback3), member1);
+
+    const event1Feedback = await eventController.getFeedbackByEvent({ uuid: event1.uuid }, admin);
+    const event2Feedback = await eventController.getFeedbackByEvent({ uuid: event2.uuid }, admin);
+    const event1Sorted = event1Feedback.feedback.sort();
+
+    expect(event1Feedback.feedback).toHaveLength(2);
+    expect(event2Feedback.feedback).toHaveLength(1);
+
+    expect(event2Feedback.feedback[0]).toMatchObject({
+      ...event2Feedback.feedback[0],
+      user: member1.getPublicProfile(),
+      event: event2.getPublicEvent(),
+      source: feedback3.source,
+      description: feedback3.description,
+      status: FeedbackStatus.SUBMITTED,
+      type: feedback3.type,
+    });
+
+    expect(event1Sorted[1]).toMatchObject({
+      ...event1Sorted[1],
+      user: member1.getPublicProfile(),
+      event: event1.getPublicEvent(),
+      source: feedback1.source,
+      description: feedback1.description,
+      status: FeedbackStatus.SUBMITTED,
+      type: feedback1.type,
+    });
+
+    expect(event1Sorted[0]).toMatchObject({
+      ...event1Sorted[0],
+      user: member2.getPublicProfile(),
+      event: event1.getPublicEvent(),
+      source: feedback2.source,
+      description: feedback2.description,
+      status: FeedbackStatus.SUBMITTED,
+      type: feedback2.type,
+    });
+  });
+
+  test('members cannot view all feedback for event', async () => {
+    // setting up inputs
+    const conn = await DatabaseConnection.get();
+    const [member1, member2] = UserFactory.create(2);
+    const event1 = EventFactory.fake();
+    const feedback1 = FeedbackFactory.fake({ event: event1, user: member1 });
+
+    await new PortalState()
+      .createUsers(member1, member2)
+      .createEvents(event1)
+      .write();
+
+    const eventController = ControllerFactory.event(conn);
+    const feedbackController = ControllerFactory.feedback(conn);
+    await feedbackController.submitFeedback(buildFeedbackRequest(feedback1), member1);
+
+    const errorMessage = 'Incorrect permissions to view event feedback';
+
+    await expect(eventController.getFeedbackByEvent({ uuid: event1.uuid }, member1))
+      .rejects.toThrow(errorMessage);
   });
 });
