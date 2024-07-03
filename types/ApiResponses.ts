@@ -438,6 +438,7 @@ export interface PublicOrderPickupEvent {
   start: Date;
   end: Date;
   description: string;
+  location: string;
   orders?: PublicOrderWithItems[];
   orderLimit?: number;
   status: OrderPickupEventStatus;
