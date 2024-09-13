@@ -1,4 +1,5 @@
 import { MailService, MailDataRequired } from '@sendgrid/mail';
+import { createEvent } from 'ics';
 import * as ejs from 'ejs';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -75,7 +76,8 @@ export default class EmailService {
     }
   }
 
-  public async sendOrderConfirmation(email: string, firstName: string, order: OrderInfo): Promise<void> {
+  public async sendOrderConfirmation(email: string, firstName: string, order: OrderInfo,
+    calendarInfo: OrderPickupEventCalendarInfo): Promise<void> {
     try {
       const data = {
         to: email,
@@ -88,6 +90,14 @@ export default class EmailService {
           pickupEvent: order.pickupEvent,
           link: `${Config.client}/store/orders`,
         }),
+        attachments: [
+          {
+            content: EmailService.createCalendarFile(calendarInfo),
+            filename: 'invite.ics',
+            type: 'text/calendar',
+            disposition: 'attachment',
+          },
+        ],
       };
       await this.sendEmail(data);
     } catch (error) {
@@ -169,7 +179,8 @@ export default class EmailService {
     }
   }
 
-  public async sendOrderPickupUpdated(email: string, firstName: string, order: OrderInfo) {
+  public async sendOrderPickupUpdated(email: string, firstName: string, order: OrderInfo,
+    calendarInfo: OrderPickupEventCalendarInfo) {
     try {
       const data = {
         to: email,
@@ -181,6 +192,14 @@ export default class EmailService {
           orderItems: ejs.render(EmailService.itemDisplayTemplate, { items: order.items, totalCost: order.totalCost }),
           link: `${Config.client}/store/orders`,
         }),
+        attachments: [
+          {
+            content: EmailService.createCalendarFile(calendarInfo),
+            filename: 'invite.ics',
+            type: 'text/calendar',
+            disposition: 'attachment',
+          },
+        ],
       };
       await this.sendEmail(data);
     } catch (error) {
@@ -251,6 +270,14 @@ export default class EmailService {
     return fs.readFileSync(path.join(__dirname, `../templates/${filename}`), 'utf-8');
   }
 
+  private static createCalendarFile(calendarInfo: OrderPickupEventCalendarInfo) {
+    const response = createEvent(calendarInfo);
+    if (response.error) {
+      throw response.error;
+    }
+    return Buffer.from(response.value).toString('base64');
+  }
+
   private sendEmail(data: EmailData) {
     return this.mailer.send(data);
   }
@@ -277,4 +304,12 @@ export interface OrderInfo {
   items: OrderLineItem[];
   totalCost: number;
   pickupEvent: OrderPickupEventInfo;
+}
+
+export interface OrderPickupEventCalendarInfo {
+  start: number;
+  end: number;
+  title: string;
+  description: string;
+  location: string;
 }

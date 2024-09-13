@@ -35,7 +35,7 @@ import { EventModel } from '../models/EventModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
 import { MerchCollectionPhotoModel } from '../models/MerchCollectionPhotoModel';
-import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
+import EmailService, { OrderInfo, OrderPickupEventCalendarInfo, OrderPickupEventInfo } from './EmailService';
 import { UserError } from '../utils/Errors';
 import { OrderItemModel } from '../models/OrderItemModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
@@ -593,7 +593,8 @@ export default class MerchStoreService {
       totalCost: order.totalCost,
       pickupEvent: MerchStoreService.toPickupEventUpdateInfo(order.pickupEvent),
     };
-    this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation);
+    const calendarInfo = MerchStoreService.toEventCalendarInfo(order.pickupEvent);
+    this.emailService.sendOrderConfirmation(user.email, user.firstName, orderConfirmation, calendarInfo);
 
     return order;
   }
@@ -717,7 +718,8 @@ export default class MerchStoreService {
         throw new UserError('This merch pickup event is full! Please choose a different pickup event');
       }
       const orderInfo = await MerchStoreService.buildOrderUpdateInfo(order, newPickupEventForOrder, txn);
-      await this.emailService.sendOrderPickupUpdated(user.email, user.firstName, orderInfo);
+      const calendarInfo = MerchStoreService.toEventCalendarInfo(newPickupEventForOrder);
+      await this.emailService.sendOrderPickupUpdated(user.email, user.firstName, orderInfo, calendarInfo);
       return orderRepository.upsertMerchOrder(order, {
         pickupEvent: newPickupEventForOrder,
         status: OrderStatus.PLACED,
@@ -908,6 +910,16 @@ export default class MerchStoreService {
       ...pickupEvent,
       start: MerchStoreService.humanReadableDateString(pickupEvent.start),
       end: MerchStoreService.humanReadableDateString(pickupEvent.end),
+    };
+  }
+
+  private static toEventCalendarInfo(pickupEvent: OrderPickupEventModel): OrderPickupEventCalendarInfo {
+    return {
+      start: pickupEvent.start.getTime(),
+      end: pickupEvent.end.getTime(),
+      title: pickupEvent.title,
+      description: pickupEvent.description,
+      location: pickupEvent.location,
     };
   }
 
