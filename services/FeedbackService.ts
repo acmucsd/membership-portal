@@ -20,12 +20,12 @@ export default class FeedbackService {
     options: FeedbackSearchOptions): Promise<PublicFeedback[]> {
     return this.transactions.readOnly(async (txn) => {
       const feedbackRepository = Repositories.feedback(txn);
-      if (canSeeAllFeedback) {
-        return (await feedbackRepository.getAllFeedback(options))
-          .map((fb) => fb.getPublicFeedback());
+
+      if (!canSeeAllFeedback) {
+        throw new UserError('Incorrect permissions to view event feedback');
       }
 
-      const userFeedback = await feedbackRepository.getStandardUserFeedback(user, options);
+      const userFeedback = await feedbackRepository.getAllFeedback(options);
       return userFeedback.map((fb) => fb.getPublicFeedback());
     });
   }
