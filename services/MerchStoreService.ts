@@ -467,6 +467,7 @@ export default class MerchStoreService {
     });
   }
 
+>>>>>>> master
   public async getCartItems(options: string[]): Promise<MerchandiseItemOptionModel[]> {
     return this.transactions.readOnly(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
