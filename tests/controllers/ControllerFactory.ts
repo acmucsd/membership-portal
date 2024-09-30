@@ -11,11 +11,12 @@ import { AuthController } from '../../api/controllers/AuthController';
 import { EventController } from '../../api/controllers/EventController';
 import { LeaderboardController } from '../../api/controllers/LeaderboardController';
 import { MerchStoreController } from '../../api/controllers/MerchStoreController';
+import { ResumeController } from '../../api/controllers/ResumeController';
 import UserAuthService from '../../services/UserAuthService';
 import EmailService from '../../services/EmailService';
 import EventService from '../../services/EventService';
 import MerchStoreService from '../../services/MerchStoreService';
-import { ResumeController } from '../../api/controllers/ResumeController';
+import MerchOrderService from '../../services/MerchOrderService';
 import ResumeService from '../../services/ResumeService';
 import UserSocialMediaService from '../../services/UserSocialMediaService';
 
@@ -69,7 +70,8 @@ export class ControllerFactory {
   public static merchStore(conn: Connection,
     emailService = new EmailService(),
     storageService = new StorageService()): MerchStoreController {
-    const merchStoreService = new MerchStoreService(conn.manager, emailService);
-    return new MerchStoreController(merchStoreService, storageService);
+    const merchStoreService = new MerchStoreService(conn.manager);
+    const merchOrderService = new MerchOrderService(conn.manager, emailService);
+    return new MerchStoreController(merchStoreService, merchOrderService, storageService);
   }
 }
