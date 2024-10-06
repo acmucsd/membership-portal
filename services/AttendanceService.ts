@@ -7,12 +7,7 @@ import {
 } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
-import {
-  ActivityType,
-  PublicAttendance,
-  PublicExpressCheckin,
-  Uuid,
-} from '../types';
+import { ActivityType, PublicExpressCheckin, Uuid } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import { EventModel } from '../models/EventModel';
@@ -31,8 +26,7 @@ export default class AttendanceService {
 
   public async getAttendancesForEvent(event: Uuid): Promise<AttendanceModel[]> {
     const attendances = await this.transactions.readOnly(async (txn) =>
-      Repositories.attendance(txn).getAttendancesForEvent(event),
-    );
+      Repositories.attendance(txn).getAttendancesForEvent(event));
     return attendances;
   }
 
@@ -40,8 +34,7 @@ export default class AttendanceService {
     user: UserModel,
   ): Promise<AttendanceModel[]> {
     const attendances = await this.transactions.readOnly(async (txn) =>
-      Repositories.attendance(txn).getAttendancesForUser(user),
-    );
+      Repositories.attendance(txn).getAttendancesForUser(user));
     return attendances;
   }
 
@@ -72,8 +65,7 @@ export default class AttendanceService {
       const hasAlreadyAttended = await Repositories.attendance(
         txn,
       ).hasUserAttendedEvent(user, event);
-      if (hasAlreadyAttended)
-        throw new UserError('You have already attended this event');
+      if (hasAlreadyAttended) throw new UserError('You have already attended this event');
 
       const attendance = await this.writeEventAttendance(
         user,
@@ -141,13 +133,12 @@ export default class AttendanceService {
       const isEmailInUse = await Repositories.user(txn).isEmailInUse(email);
       if (isEmailInUse) {
         throw new UserError(
-          'This email already has an account registered to it. ' +
-            'Please login to your account to check-in to this event!',
+          'This email already has an account registered to it. '
+            + 'Please login to your account to check-in to this event!',
         );
       }
 
-      const pastExpressCheckin =
-        await expressCheckinRepository.getPastExpressCheckin(email);
+      const pastExpressCheckin = await expressCheckinRepository.getPastExpressCheckin(email);
       if (pastExpressCheckin) {
         if (pastExpressCheckin.event.uuid === event.uuid) {
           throw new UserError(
@@ -155,14 +146,13 @@ export default class AttendanceService {
           );
         } else {
           throw new UserError(
-            'You have already done an express check-in before for a previous event. ' +
-              'Please complete your account registration to attend this event!',
+            'You have already done an express check-in before for a previous event. '
+              + 'Please complete your account registration to attend this event!',
           );
         }
       }
 
-      const expressCheckin =
-        await expressCheckinRepository.createExpressCheckin(email, event);
+      const expressCheckin = await expressCheckinRepository.createExpressCheckin(email, event);
       return expressCheckin.getPublicExpressCheckin();
     });
   }
@@ -280,14 +270,16 @@ export default class AttendanceService {
         user,
         event,
       );
-      if (!attendance)
+      if (!attendance) {
         throw new UserError(
           'You must attend this event before submiting feedback',
         );
-      if (attendance.feedback)
+      }
+      if (attendance.feedback) {
         throw new UserError(
           'You cannot submit feedback for this event more than once',
         );
+      }
 
       const twoDaysPastEventEnd = moment(event.end).add(2, 'days').valueOf();
       if (moment.now() > twoDaysPastEventEnd) {
@@ -296,8 +288,7 @@ export default class AttendanceService {
         );
       }
 
-      const attendanceWithFeedback =
-        await attendanceRepository.submitEventFeedback(attendance, feedback);
+      const attendanceWithFeedback = await attendanceRepository.submitEventFeedback(attendance, feedback);
       const pointsEarned = Config.pointReward.EVENT_FEEDBACK_POINT_REWARD;
       await Repositories.activity(txn).logActivity({
         user,

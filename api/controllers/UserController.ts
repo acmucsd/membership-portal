@@ -56,7 +56,7 @@ export class UserController {
   @Get('/:uuid/activity/')
   async getUserActivityStream(
     @Params() params: UuidParam,
-    @AuthenticatedUser() currentUser: UserModel,
+      @AuthenticatedUser() currentUser: UserModel,
   ): Promise<GetUserActivityStreamResponse> {
     if (params.uuid === currentUser.uuid) {
       return this.getCurrentUserActivityStream(currentUser);
@@ -74,8 +74,7 @@ export class UserController {
   async getCurrentUserActivityStream(
     @AuthenticatedUser() user: UserModel,
   ): Promise<GetUserActivityStreamResponse> {
-    const activityStream =
-      await this.userAccountService.getCurrentUserActivityStream(user.uuid);
+    const activityStream = await this.userAccountService.getCurrentUserActivityStream(user.uuid);
     return {
       error: null,
       activity: activityStream.map((activity) => activity.getPublicActivity()),
@@ -87,8 +86,8 @@ export class UserController {
     @UploadedFile('image', {
       options: StorageService.getFileOptions(MediaType.PROFILE_PICTURE),
     })
-    file: File,
-    @AuthenticatedUser() user: UserModel,
+      file: File,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<UpdateProfilePictureResponse> {
     const profilePicture = await this.storageService.upload(
       file,
@@ -105,7 +104,7 @@ export class UserController {
   @Get('/:uuid')
   async getUser(
     @Params() params: UuidParam,
-    @AuthenticatedUser() currentUser: UserModel,
+      @AuthenticatedUser() currentUser: UserModel,
   ): Promise<GetUserResponse> {
     if (params.uuid === currentUser.uuid) {
       return this.getCurrentUser(currentUser);
@@ -118,7 +117,7 @@ export class UserController {
   @Get('/handle/:handle')
   async getUserByHandle(
     @Params() params: UserHandleParam,
-    @AuthenticatedUser() currentUser: UserModel,
+      @AuthenticatedUser() currentUser: UserModel,
   ): Promise<GetUserResponse> {
     if (params.handle === currentUser.handle) {
       return this.getCurrentUser(currentUser);
@@ -139,7 +138,7 @@ export class UserController {
   @Patch()
   async patchCurrentUser(
     @Body() patchUserRequest: PatchUserRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<PatchUserResponse> {
     const patchedUser = await this.userAccountService.update(
       user,
@@ -151,43 +150,37 @@ export class UserController {
   @Post('/socialMedia')
   async insertSocialMediaForUser(
     @Body() insertSocialMediaRequest: InsertSocialMediaRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<InsertSocialMediaResponse> {
-    const userSocialMedia =
-      await this.userSocialMediaService.insertSocialMediaForUser(
-        user,
-        insertSocialMediaRequest.socialMedia,
-      );
+    const userSocialMedia = await this.userSocialMediaService.insertSocialMediaForUser(
+      user,
+      insertSocialMediaRequest.socialMedia,
+    );
     return {
       error: null,
-      userSocialMedia: userSocialMedia.map((socialMedia) =>
-        socialMedia.getPublicSocialMedia(),
-      ),
+      userSocialMedia: userSocialMedia.map((socialMedia) => socialMedia.getPublicSocialMedia()),
     };
   }
 
   @Patch('/socialMedia')
   async updateSocialMediaForUser(
     @Body() updateSocialMediaRequest: UpdateSocialMediaRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<UpdateSocialMediaResponse> {
-    const userSocialMedia =
-      await this.userSocialMediaService.updateSocialMediaByUuid(
-        user,
-        updateSocialMediaRequest.socialMedia,
-      );
+    const userSocialMedia = await this.userSocialMediaService.updateSocialMediaByUuid(
+      user,
+      updateSocialMediaRequest.socialMedia,
+    );
     return {
       error: null,
-      userSocialMedia: userSocialMedia.map((socialMedia) =>
-        socialMedia.getPublicSocialMedia(),
-      ),
+      userSocialMedia: userSocialMedia.map((socialMedia) => socialMedia.getPublicSocialMedia()),
     };
   }
 
   @Delete('/socialMedia/:uuid')
   async deleteSocialMediaForUser(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<DeleteSocialMediaResponse> {
     await this.userSocialMediaService.deleteSocialMediaByUuid(
       user,

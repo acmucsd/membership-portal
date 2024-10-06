@@ -42,18 +42,15 @@ export class AttendanceController {
   @Get('/:uuid')
   async getAttendancesForEvent(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<GetAttendancesForEventResponse> {
-    if (!PermissionsService.canSeeEventAttendances(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canSeeEventAttendances(user)) throw new ForbiddenError();
     const attendances = await this.attendanceService.getAttendancesForEvent(
       params.uuid,
     );
     return {
       error: null,
-      attendances: attendances.map((attendance) =>
-        attendance.getPublicAttendance(),
-      ),
+      attendances: attendances.map((attendance) => attendance.getPublicAttendance()),
     };
   }
 
@@ -62,13 +59,10 @@ export class AttendanceController {
   async getAttendancesForCurrentUser(
     @AuthenticatedUser() user: UserModel,
   ): Promise<GetAttendancesForUserResponse> {
-    const attendances =
-      await this.attendanceService.getAttendancesForCurrentUser(user);
+    const attendances = await this.attendanceService.getAttendancesForCurrentUser(user);
     return {
       error: null,
-      attendances: attendances.map((attendance) =>
-        attendance.getPublicAttendance(),
-      ),
+      attendances: attendances.map((attendance) => attendance.getPublicAttendance()),
     };
   }
 
@@ -76,7 +70,7 @@ export class AttendanceController {
   @Get('/user/:uuid')
   async getAttendancesForUser(
     @Params() params: UuidParam,
-    @AuthenticatedUser() currentUser: UserModel,
+      @AuthenticatedUser() currentUser: UserModel,
   ): Promise<GetAttendancesForEventResponse> {
     if (params.uuid === currentUser.uuid) {
       return this.getAttendancesForCurrentUser(currentUser);
@@ -86,9 +80,7 @@ export class AttendanceController {
     );
     return {
       error: null,
-      attendances: attendances.map((attendance) =>
-        attendance.getPublicAttendance(),
-      ),
+      attendances: attendances.map((attendance) => attendance.getPublicAttendance()),
     };
   }
 
@@ -96,7 +88,7 @@ export class AttendanceController {
   @Post()
   async attendEvent(
     @Body() body: AttendEventRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<AttendEventResponse> {
     const attendance = await this.attendanceService.attendEvent(
       user,

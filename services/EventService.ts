@@ -3,7 +3,7 @@ import { InjectManager } from 'typeorm-typedi-extensions';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { EventModel } from '../models/EventModel';
-import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
+import { Uuid, Event, EventSearchOptions } from '../types';
 import Repositories, { TransactionsManager } from '../repositories';
 import { UserError } from '../utils/Errors';
 
@@ -24,12 +24,9 @@ export default class EventService {
   public async create(event: Event): Promise<EventModel> {
     const eventCreated = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
-      const isUnusedAttendanceCode =
-        await eventRepository.isUnusedAttendanceCode(event.attendanceCode);
-      if (!isUnusedAttendanceCode)
-        throw new UserError('Attendance code has already been used');
-      if (event.start > event.end)
-        throw new UserError('Start date after end date');
+      const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(event.attendanceCode);
+      if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
+      if (event.start > event.end) throw new UserError('Start date after end date');
       return eventRepository.upsertEvent(EventModel.create(event));
     });
     return eventCreated;
@@ -38,9 +35,7 @@ export default class EventService {
   public async getAllEvents(
     options: EventSearchOptions,
   ): Promise<EventModel[]> {
-    const events = await this.transactions.readOnly(async (txn) =>
-      Repositories.event(txn).getAllEvents(options),
-    );
+    const events = await this.transactions.readOnly(async (txn) => Repositories.event(txn).getAllEvents(options));
     return events;
   }
 
@@ -48,25 +43,19 @@ export default class EventService {
     options: EventSearchOptions,
   ): Promise<EventModel[]> {
     options.reverse ??= true;
-    const events = await this.transactions.readOnly(async (txn) =>
-      Repositories.event(txn).getPastEvents(options),
-    );
+    const events = await this.transactions.readOnly(async (txn) => Repositories.event(txn).getPastEvents(options));
     return events;
   }
 
   public async getFutureEvents(
     options: EventSearchOptions,
   ): Promise<EventModel[]> {
-    const events = await this.transactions.readOnly(async (txn) =>
-      Repositories.event(txn).getFutureEvents(options),
-    );
+    const events = await this.transactions.readOnly(async (txn) => Repositories.event(txn).getFutureEvents(options));
     return events;
   }
 
   public async findByUuid(uuid: Uuid): Promise<EventModel> {
-    const event = await this.transactions.readOnly(async (txn) =>
-      Repositories.event(txn).findByUuid(uuid),
-    );
+    const event = await this.transactions.readOnly(async (txn) => Repositories.event(txn).findByUuid(uuid));
     if (!event) throw new NotFoundError('Event not found');
     return event;
   }
@@ -80,10 +69,8 @@ export default class EventService {
       const currentEvent = await eventRepository.findByUuid(uuid);
       if (!currentEvent) throw new NotFoundError('Event not found');
       if (changes.attendanceCode !== currentEvent.attendanceCode) {
-        const isUnusedAttendanceCode =
-          await eventRepository.isUnusedAttendanceCode(changes.attendanceCode);
-        if (!isUnusedAttendanceCode)
-          throw new UserError('Attendance code has already been used');
+        const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(changes.attendanceCode);
+        if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
       }
       return eventRepository.upsertEvent(currentEvent, changes);
     });
@@ -98,8 +85,7 @@ export default class EventService {
       const attendances = await Repositories.attendance(
         txn,
       ).getAttendancesForEvent(uuid);
-      if (attendances.length > 0)
-        throw new ForbiddenError('Cannot delete event that has attendances');
+      if (attendances.length > 0) throw new ForbiddenError('Cannot delete event that has attendances');
       await eventRepository.deleteEvent(event);
     });
   }

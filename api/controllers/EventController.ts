@@ -63,10 +63,9 @@ export class EventController {
   @Get('/past')
   async getPastEvents(
     @QueryParams() options: EventSearchOptions,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<GetPastEventsResponse> {
-    const canSeeAttendanceCode =
-      !!user && PermissionsService.canEditEvents(user);
+    const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const events = await this.eventService.getPastEvents(options);
     return {
       error: null,
@@ -78,10 +77,9 @@ export class EventController {
   @Get('/future')
   async getFutureEvents(
     @QueryParams() options: EventSearchOptions,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<GetFutureEventsResponse> {
-    const canSeeAttendanceCode =
-      !!user && PermissionsService.canEditEvents(user);
+    const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const events = await this.eventService.getFutureEvents(options);
     return {
       error: null,
@@ -95,9 +93,9 @@ export class EventController {
     @UploadedFile('image', {
       options: StorageService.getFileOptions(MediaType.EVENT_COVER),
     })
-    file: File,
-    @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      file: File,
+      @Params() params: UuidParam,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<UpdateEventCoverResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
     const cover = await this.storageService.upload(
@@ -112,7 +110,7 @@ export class EventController {
   @UseBefore(UserAuthentication)
   @Post('/:uuid/feedback')
   async submitEventFeedback(
-    @Params() params: UuidParam,
+  @Params() params: UuidParam,
     @Body() submitEventFeedbackRequest: SubmitEventFeedbackRequest,
     @AuthenticatedUser() user: UserModel,
   ) {
@@ -129,10 +127,9 @@ export class EventController {
   @Get('/:uuid')
   async getOneEvent(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<GetOneEventResponse> {
-    const canSeeAttendanceCode =
-      !!user && PermissionsService.canEditEvents(user);
+    const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const event = await this.eventService.findByUuid(params.uuid);
     return { error: null, event: event.getPublicEvent(canSeeAttendanceCode) };
   }
@@ -141,8 +138,8 @@ export class EventController {
   @Patch('/:uuid')
   async updateEvent(
     @Params() params: UuidParam,
-    @Body() patchEventRequest: PatchEventRequest,
-    @AuthenticatedUser() user: UserModel,
+      @Body() patchEventRequest: PatchEventRequest,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<PatchEventResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
     const event = await this.eventService.updateByUuid(
@@ -156,7 +153,7 @@ export class EventController {
   @Delete('/:uuid')
   async deleteEvent(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<DeleteEventResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
     await this.eventService.deleteByUuid(params.uuid);
@@ -167,10 +164,9 @@ export class EventController {
   @Get()
   async getAllEvents(
     @QueryParams() options: EventSearchOptions,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<GetAllEventsResponse> {
-    const canSeeAttendanceCode =
-      !!user && PermissionsService.canEditEvents(user);
+    const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const events = await this.eventService.getAllEvents(options);
     return {
       error: null,
@@ -182,7 +178,7 @@ export class EventController {
   @Post()
   async createEvent(
     @Body() createEventRequest: CreateEventRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<CreateEventResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
     const event = await this.eventService.create(createEventRequest.event);

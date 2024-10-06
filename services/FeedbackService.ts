@@ -6,7 +6,6 @@ import { FeedbackModel } from '../models/FeedbackModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
-  PublicFeedback,
   Feedback,
   Uuid,
   ActivityType,
@@ -31,7 +30,7 @@ export default class FeedbackService {
     return this.transactions.readOnly(async (txn) => {
       const feedbackRepository = Repositories.feedback(txn);
       if (canSeeAllFeedback) {
-        return await feedbackRepository.getAllFeedback(options);
+        return feedbackRepository.getAllFeedback(options);
       }
 
       const userFeedback = await feedbackRepository.getStandardUserFeedback(
@@ -52,12 +51,12 @@ export default class FeedbackService {
 
       const feedbackRepository = Repositories.feedback(txn);
 
-      const hasAlreadySubmittedFeedback =
-        await feedbackRepository.hasUserSubmittedFeedback(user, event);
-      if (hasAlreadySubmittedFeedback)
+      const hasAlreadySubmittedFeedback = await feedbackRepository.hasUserSubmittedFeedback(user, event);
+      if (hasAlreadySubmittedFeedback) {
         throw new UserError(
           'You have already submitted feedback for this event!',
         );
+      }
 
       await Repositories.activity(txn).logActivity({
         user,

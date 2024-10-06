@@ -97,10 +97,9 @@ export class MerchStoreController {
   @Get('/collection/:uuid')
   async getOneMerchCollection(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<GetOneMerchCollectionResponse> {
-    if (!PermissionsService.canAccessMerchStore(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const canSeeHiddenItems = PermissionsService.canEditMerchStore(user);
     const collection = await this.merchStoreService.findCollectionByUuid(
       params.uuid,
@@ -118,25 +117,21 @@ export class MerchStoreController {
   async getAllMerchCollections(
     @AuthenticatedUser() user: UserModel,
   ): Promise<GetAllMerchCollectionsResponse> {
-    if (!PermissionsService.canAccessMerchStore(user))
-      throw new ForbiddenError();
-    const canSeeInactiveCollections =
-      PermissionsService.canEditMerchStore(user);
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
+    const canSeeInactiveCollections = PermissionsService.canEditMerchStore(user);
     const collections = await this.merchStoreService.getAllCollections(
       canSeeInactiveCollections,
     );
     return {
       error: null,
-      collections: collections.map((c) =>
-        c.getPublicMerchCollection(canSeeInactiveCollections),
-      ),
+      collections: collections.map((c) => c.getPublicMerchCollection(canSeeInactiveCollections)),
     };
   }
 
   @Post('/collection')
   async createMerchCollection(
     @Body() createCollectionRequest: CreateMerchCollectionRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<CreateMerchCollectionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     const collection = await this.merchStoreService.createCollection(
@@ -148,8 +143,8 @@ export class MerchStoreController {
   @Patch('/collection/:uuid')
   async editMerchCollection(
     @Params() params: UuidParam,
-    @Body() editCollectionRequest: EditMerchCollectionRequest,
-    @AuthenticatedUser() user: UserModel,
+      @Body() editCollectionRequest: EditMerchCollectionRequest,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<EditMerchCollectionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     const collection = await this.merchStoreService.editCollection(
@@ -162,7 +157,7 @@ export class MerchStoreController {
   @Delete('/collection/:uuid')
   async deleteMerchCollection(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<DeleteMerchCollectionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     await this.merchStoreService.deleteCollection(params.uuid);
@@ -175,17 +170,16 @@ export class MerchStoreController {
     @UploadedFile('image', {
       options: StorageService.getFileOptions(MediaType.MERCH_PHOTO),
     })
-    file: File,
-    @Params() params: UuidParam,
-    @Body() createCollectionRequest: CreateCollectionPhotoRequest,
-    @AuthenticatedUser() user: UserModel,
+      file: File,
+      @Params() params: UuidParam,
+      @Body() createCollectionRequest: CreateCollectionPhotoRequest,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<CreateCollectionPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
     // generate a random string for the uploaded photo url
     const position = parseInt(createCollectionRequest.position, 10);
-    if (Number.isNaN(position))
-      throw new BadRequestError('Position must be a number');
+    if (Number.isNaN(position)) throw new BadRequestError('Position must be a number');
     const uniqueFileName = uuid();
     const uploadedPhoto = await this.storageService.uploadToFolder(
       file,
@@ -208,11 +202,10 @@ export class MerchStoreController {
   @Delete('/collection/picture/:uuid')
   async deleteMerchCollectionPhoto(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<DeleteCollectionPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
-    const photoToDelete =
-      await this.merchStoreService.getCollectionPhotoForDeletion(params.uuid);
+    const photoToDelete = await this.merchStoreService.getCollectionPhotoForDeletion(params.uuid);
     await this.storageService.deleteAtUrl(photoToDelete.uploadedPhoto);
     await this.merchStoreService.deleteCollectionPhoto(photoToDelete);
     return { error: null };
@@ -221,10 +214,9 @@ export class MerchStoreController {
   @Get('/item/:uuid')
   async getOneMerchItem(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<GetOneMerchItemResponse> {
-    if (!PermissionsService.canAccessMerchStore(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const item = await this.merchStoreService.findItemByUuid(params.uuid, user);
     return { error: null, item };
   }
@@ -232,7 +224,7 @@ export class MerchStoreController {
   @Post('/item')
   async createMerchItem(
     @Body() createItemRequest: CreateMerchItemRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<CreateMerchItemResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     // Default behavior is to have variants disabled if not specified
@@ -246,8 +238,8 @@ export class MerchStoreController {
   @Patch('/item/:uuid')
   async editMerchItem(
     @Params() params: UuidParam,
-    @Body() editItemRequest: EditMerchItemRequest,
-    @AuthenticatedUser() user: UserModel,
+      @Body() editItemRequest: EditMerchItemRequest,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<EditMerchItemResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     const item = await this.merchStoreService.editItem(
@@ -260,7 +252,7 @@ export class MerchStoreController {
   @Delete('/item/:uuid')
   async deleteMerchItem(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<DeleteMerchItemResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     await this.merchStoreService.deleteItem(params.uuid);
@@ -273,17 +265,16 @@ export class MerchStoreController {
     @UploadedFile('image', {
       options: StorageService.getFileOptions(MediaType.MERCH_PHOTO),
     })
-    file: File,
-    @Params() params: UuidParam,
-    @Body() createItemPhotoRequest: CreateMerchItemPhotoRequest,
-    @AuthenticatedUser() user: UserModel,
+      file: File,
+      @Params() params: UuidParam,
+      @Body() createItemPhotoRequest: CreateMerchItemPhotoRequest,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<CreateMerchPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
     // generate a random string for the uploaded photo url
     const position = Number(createItemPhotoRequest.position);
-    if (Number.isNaN(position))
-      throw new BadRequestError('Position is not a number');
+    if (Number.isNaN(position)) throw new BadRequestError('Position is not a number');
     const uniqueFileName = uuid();
     const uploadedPhoto = await this.storageService.uploadToFolder(
       file,
@@ -303,7 +294,7 @@ export class MerchStoreController {
   @Delete('/item/picture/:uuid')
   async deleteMerchItemPhoto(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<DeleteMerchItemPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     const photoToDelete = await this.merchStoreService.getItemPhotoForDeletion(
@@ -317,8 +308,8 @@ export class MerchStoreController {
   @Post('/option/:uuid')
   async createMerchItemOption(
     @Params() params: UuidParam,
-    @Body() createItemOptionRequest: CreateMerchItemOptionRequest,
-    @AuthenticatedUser() user: UserModel,
+      @Body() createItemOptionRequest: CreateMerchItemOptionRequest,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<CreateMerchItemOptionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     const option = await this.merchStoreService.createItemOption(
@@ -331,7 +322,7 @@ export class MerchStoreController {
   @Delete('/option/:uuid')
   async deleteMerchItemOption(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<DeleteMerchItemOptionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     await this.merchStoreService.deleteItemOption(params.uuid);
@@ -341,17 +332,15 @@ export class MerchStoreController {
   @Get('/order/:uuid')
   async getOneMerchOrder(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<GetOneMerchOrderResponse> {
-    if (!PermissionsService.canAccessMerchStore(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     // get "public" order bc canSeeMerchOrder need singular merchPhoto field
     // default order has merchPhotos field, which cause incorrect casting
     const publicOrder = (
       await this.merchOrderService.findOrderByUuid(params.uuid)
     ).getPublicOrderWithItems();
-    if (!PermissionsService.canSeeMerchOrder(user, publicOrder))
-      throw new NotFoundError();
+    if (!PermissionsService.canSeeMerchOrder(user, publicOrder)) throw new NotFoundError();
     return { error: null, order: publicOrder };
   }
 
@@ -361,11 +350,10 @@ export class MerchStoreController {
   ): Promise<GetMerchOrdersResponse> {
     if (
       !(
-        PermissionsService.canAccessMerchStore(user) &&
-        PermissionsService.canSeeAllMerchOrders(user)
+        PermissionsService.canAccessMerchStore(user)
+        && PermissionsService.canSeeAllMerchOrders(user)
       )
-    )
-      throw new ForbiddenError();
+    ) throw new ForbiddenError();
     const orders = await this.merchOrderService.getAllOrdersForAllUsers();
     return { error: null, orders: orders.map((o) => o.getPublicOrder()) };
   }
@@ -374,8 +362,7 @@ export class MerchStoreController {
   async getMerchOrdersForCurrentUser(
     @AuthenticatedUser() user: UserModel,
   ): Promise<GetMerchOrdersResponse> {
-    if (!PermissionsService.canAccessMerchStore(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const orders = await this.merchOrderService.getAllOrdersForUser(user);
     return { error: null, orders: orders.map((o) => o.getPublicOrder()) };
   }
@@ -383,10 +370,9 @@ export class MerchStoreController {
   @Post('/order')
   async placeMerchOrder(
     @Body() placeOrderRequest: PlaceMerchOrderRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<PlaceMerchOrderResponse> {
-    if (!PermissionsService.canAccessMerchStore(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const originalOrder = this.validateMerchOrderRequest(
       placeOrderRequest.order,
     );
@@ -401,7 +387,7 @@ export class MerchStoreController {
   @Post('/order/verification')
   async verifyMerchOrder(
     @Body() verifyOrderRequest: VerifyMerchOrderRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<VerifyMerchOrderResponse> {
     const originalOrder = this.validateMerchOrderRequest(
       verifyOrderRequest.order,
@@ -414,23 +400,20 @@ export class MerchStoreController {
     orderRequest: MerchItemOptionAndQuantity[],
   ): MerchItemOptionAndQuantity[] {
     const originalOrder = orderRequest.filter((oi) => oi.quantity > 0);
-    const orderIsEmpty =
-      originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
+    const orderIsEmpty = originalOrder.reduce((x, n) => x + n.quantity, 0) === 0;
     if (orderIsEmpty) throw new UserError('There are no items in this order');
     const numUniqueUuids = new Set(originalOrder.map((oi) => oi.option)).size;
-    if (originalOrder.length !== numUniqueUuids)
-      throw new BadRequestError('There are duplicate items in this order');
+    if (originalOrder.length !== numUniqueUuids) throw new BadRequestError('There are duplicate items in this order');
     return originalOrder;
   }
 
   @Post('/order/:uuid/reschedule')
   async rescheduleOrderPickup(
     @Params() params: UuidParam,
-    @Body() rescheduleOrderPickupRequest: RescheduleOrderPickupRequest,
-    @AuthenticatedUser() user: UserModel,
+      @Body() rescheduleOrderPickupRequest: RescheduleOrderPickupRequest,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<EditMerchOrderResponse> {
-    if (!PermissionsService.canAccessMerchStore(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     await this.merchOrderService.rescheduleOrderPickup(
       params.uuid,
       rescheduleOrderPickupRequest.pickupEvent,
@@ -442,10 +425,9 @@ export class MerchStoreController {
   @Post('/order/:uuid/cancel')
   async cancelMerchOrder(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<CancelMerchOrderResponse> {
-    if (!PermissionsService.canAccessMerchStore(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const order = await this.merchOrderService.cancelMerchOrder(
       params.uuid,
       user,
@@ -456,11 +438,10 @@ export class MerchStoreController {
   @Post('/order/:uuid/fulfill')
   async fulfillMerchOrderItems(
     @Params() params: UuidParam,
-    @Body() fulfillOrderRequest: FulfillMerchOrderRequest,
-    @AuthenticatedUser() user: UserModel,
+      @Body() fulfillOrderRequest: FulfillMerchOrderRequest,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<FulfillMerchOrderResponse> {
-    if (!PermissionsService.canManageMerchOrders(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canManageMerchOrders(user)) throw new ForbiddenError();
     const numUniqueUuids = new Set(
       fulfillOrderRequest.items.map((oi) => oi.uuid),
     ).size;
@@ -479,8 +460,7 @@ export class MerchStoreController {
   async cancelAllPendingMerchOrders(
     @AuthenticatedUser() user: UserModel,
   ): Promise<CancelAllPendingOrdersResponse> {
-    if (!PermissionsService.canCancelAllPendingOrders(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canCancelAllPendingOrders(user)) throw new ForbiddenError();
     await this.merchOrderService.cancelAllPendingOrders(user);
     return { error: null };
   }
@@ -490,11 +470,9 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel,
   ): Promise<GetOrderPickupEventsResponse> {
     const pickupEvents = await this.merchOrderService.getPastPickupEvents();
-    const canSeePickupEventOrders =
-      PermissionsService.canSeePickupEventOrders(user);
+    const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
     const publicPickupEvents = pickupEvents.map((pickupEvent) =>
-      pickupEvent.getPublicOrderPickupEvent(canSeePickupEventOrders),
-    );
+      pickupEvent.getPublicOrderPickupEvent(canSeePickupEventOrders));
     return { error: null, pickupEvents: publicPickupEvents };
   }
 
@@ -503,21 +481,18 @@ export class MerchStoreController {
     @AuthenticatedUser() user: UserModel,
   ): Promise<GetOrderPickupEventsResponse> {
     const pickupEvents = await this.merchOrderService.getFuturePickupEvents();
-    const canSeePickupEventOrders =
-      PermissionsService.canSeePickupEventOrders(user);
+    const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
     const publicPickupEvents = pickupEvents.map((pickupEvent) =>
-      pickupEvent.getPublicOrderPickupEvent(canSeePickupEventOrders),
-    );
+      pickupEvent.getPublicOrderPickupEvent(canSeePickupEventOrders));
     return { error: null, pickupEvents: publicPickupEvents };
   }
 
   @Get('/order/pickup/:uuid')
   async getOnePickupEvent(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<GetOrderPickupEventResponse> {
-    if (!PermissionsService.canManagePickupEvents(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     const pickupEvent = await this.merchOrderService.getPickupEvent(
       params.uuid,
     );
@@ -530,10 +505,9 @@ export class MerchStoreController {
   @Post('/order/pickup')
   async createPickupEvent(
     @Body() createOrderPickupEventRequest: CreateOrderPickupEventRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<CreateOrderPickupEventResponse> {
-    if (!PermissionsService.canManagePickupEvents(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     const pickupEvent = await this.merchOrderService.createPickupEvent(
       createOrderPickupEventRequest.pickupEvent,
     );
@@ -546,11 +520,10 @@ export class MerchStoreController {
   @Patch('/order/pickup/:uuid')
   async editPickupEvent(
     @Params() params: UuidParam,
-    @Body() editOrderPickupEventRequest: EditOrderPickupEventRequest,
-    @AuthenticatedUser() user: UserModel,
+      @Body() editOrderPickupEventRequest: EditOrderPickupEventRequest,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<EditOrderPickupEventResponse> {
-    if (!PermissionsService.canManagePickupEvents(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     const pickupEvent = await this.merchOrderService.editPickupEvent(
       params.uuid,
       editOrderPickupEventRequest.pickupEvent,
@@ -564,10 +537,9 @@ export class MerchStoreController {
   @Delete('/order/pickup/:uuid')
   async deletePickupEvent(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<DeleteOrderPickupEventResponse> {
-    if (!PermissionsService.canManagePickupEvents(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     await this.merchOrderService.deletePickupEvent(params.uuid);
     return { error: null };
   }
@@ -575,10 +547,9 @@ export class MerchStoreController {
   @Post('/order/pickup/:uuid/cancel')
   async cancelPickupEvent(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<CancelOrderPickupEventResponse> {
-    if (!PermissionsService.canManagePickupEvents(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
     await this.merchOrderService.cancelPickupEvent(params.uuid);
     return { error: null };
   }
@@ -586,12 +557,10 @@ export class MerchStoreController {
   @Post('/order/pickup/:uuid/complete')
   async completePickupEvent(
     @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<CompleteOrderPickupEventResponse> {
-    if (!PermissionsService.canManagePickupEvents(user))
-      throw new ForbiddenError();
-    const ordersMarkedAsMissed =
-      await this.merchOrderService.completePickupEvent(params.uuid);
+    if (!PermissionsService.canManagePickupEvents(user)) throw new ForbiddenError();
+    const ordersMarkedAsMissed = await this.merchOrderService.completePickupEvent(params.uuid);
     return {
       error: null,
       orders: ordersMarkedAsMissed.map((order) => order.getPublicOrder()),
@@ -601,10 +570,9 @@ export class MerchStoreController {
   @Get('/cart')
   async getCartItems(
     @Body() getCartRequest: GetCartRequest,
-    @AuthenticatedUser() user: UserModel,
+      @AuthenticatedUser() user: UserModel,
   ): Promise<GetCartResponse> {
-    if (!PermissionsService.canAccessMerchStore(user))
-      throw new ForbiddenError();
+    if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const cartItems = await this.merchStoreService.getCartItems(
       getCartRequest.items,
     );

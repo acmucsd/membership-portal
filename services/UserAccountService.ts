@@ -14,12 +14,12 @@ import {
   englishDataset,
   englishRecommendedTransformers,
 } from 'obscenity';
+import { ActivityModel } from 'models/ActivityModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
   PublicProfile,
   ActivityType,
-  PublicActivity,
   Milestone,
   UserPatches,
   UserState,
@@ -28,7 +28,6 @@ import {
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
-import { ActivityModel } from 'models/ActivityModel';
 
 @Service()
 export default class UserAccountService {
@@ -45,20 +44,14 @@ export default class UserAccountService {
   }
 
   public async findByUuid(uuid: Uuid): Promise<UserModel> {
-    const user = await this.transactions.readOnly(async (txn) =>
-      Repositories.user(txn).findByUuid(uuid),
-    );
-    if (!user)
-      throw new NotFoundError('No user associated with this handle was found');
+    const user = await this.transactions.readOnly(async (txn) => Repositories.user(txn).findByUuid(uuid));
+    if (!user) throw new NotFoundError('No user associated with this handle was found');
     return user;
   }
 
   public async findByHandle(handle: string): Promise<UserModel> {
-    const user = await this.transactions.readOnly(async (txn) =>
-      Repositories.user(txn).findByHandle(handle),
-    );
-    if (!user)
-      throw new NotFoundError('No user associated with this handle was found');
+    const user = await this.transactions.readOnly(async (txn) => Repositories.user(txn).findByHandle(handle));
+    if (!user) throw new NotFoundError('No user associated with this handle was found');
     return user;
   }
 
@@ -100,14 +93,13 @@ export default class UserAccountService {
       // where the possible range is from the earliest recorded points to the current day
       const earliest = await Repositories.activity(txn).getEarliestTimestamp();
       // if left bound is after the earliest recorded points, round to the start of the day
-      if (from)
-        from = from > earliest ? moment(from).startOf('day').valueOf() : null;
+      if (from) from = from > earliest ? moment(from).startOf('day').valueOf() : null;
       // if right bound is before the current day, round to the end of the day
-      if (to)
-        to =
-          to <= moment().startOf('day').valueOf()
-            ? moment(to).endOf('day').valueOf()
-            : null;
+      if (to) {
+        to = to <= moment().startOf('day').valueOf()
+          ? moment(to).endOf('day').valueOf()
+          : null;
+      }
       const leaderboardRepository = Repositories.leaderboard(txn);
 
       // if unbounded, i.e. all-time
@@ -133,8 +125,7 @@ export default class UserAccountService {
   ): Promise<UserModel> {
     const changes: Partial<UserModel> = userPatches;
     if (userPatches.passwordChange) {
-      const { password: currentPassword, newPassword } =
-        userPatches.passwordChange;
+      const { password: currentPassword, newPassword } = userPatches.passwordChange;
       if (!(await user.verifyPass(currentPassword))) {
         throw new BadRequestError('Incorrect password');
       }
@@ -149,8 +140,7 @@ export default class UserAccountService {
         const isHandleTaken = await userRepository.isHandleTaken(
           userPatches.handle,
         );
-        if (isHandleTaken)
-          throw new BadRequestError('This handle is already in use.');
+        if (isHandleTaken) throw new BadRequestError('This handle is already in use.');
       }
       const updatedFields = Object.keys(userPatches).join(', ');
       const activity = {
@@ -167,17 +157,14 @@ export default class UserAccountService {
     user: UserModel,
     profilePicture: string,
   ): Promise<UserModel> {
-    return this.transactions.readWrite(async (txn) =>
-      Repositories.user(txn).upsertUser(user, { profilePicture }),
-    );
+    return this.transactions.readWrite(async (txn) => Repositories.user(txn).upsertUser(user, { profilePicture }));
   }
 
   public async getCurrentUserActivityStream(
     uuid: Uuid,
   ): Promise<ActivityModel[]> {
     const stream = await this.transactions.readOnly(async (txn) =>
-      Repositories.activity(txn).getCurrentUserActivityStream(uuid),
-    );
+      Repositories.activity(txn).getCurrentUserActivityStream(uuid));
     return stream;
   }
 
@@ -226,9 +213,7 @@ export default class UserAccountService {
   }
 
   public async getAllNamesAndEmails(): Promise<NameAndEmail[]> {
-    return this.transactions.readOnly(async (txn) =>
-      Repositories.user(txn).getAllNamesAndEmails(),
-    );
+    return this.transactions.readOnly(async (txn) => Repositories.user(txn).getAllNamesAndEmails());
   }
 
   /**
@@ -335,9 +320,7 @@ export default class UserAccountService {
   }
 
   public async getAllFullUserProfiles(): Promise<UserModel[]> {
-    const users = await this.transactions.readOnly(async (txn) =>
-      Repositories.user(txn).findAll(),
-    );
+    const users = await this.transactions.readOnly(async (txn) => Repositories.user(txn).findAll());
     return users;
   }
 }
