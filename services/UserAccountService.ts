@@ -163,8 +163,9 @@ export default class UserAccountService {
   public async getCurrentUserActivityStream(
     uuid: Uuid,
   ): Promise<ActivityModel[]> {
-    const stream = await this.transactions.readOnly(async (txn) =>
-      Repositories.activity(txn).getCurrentUserActivityStream(uuid));
+    const stream = await this.transactions.readOnly(async (txn) => Repositories
+      .activity(txn)
+      .getCurrentUserActivityStream(uuid));
     return stream;
   }
 

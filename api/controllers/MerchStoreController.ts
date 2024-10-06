@@ -471,8 +471,8 @@ export class MerchStoreController {
   ): Promise<GetOrderPickupEventsResponse> {
     const pickupEvents = await this.merchOrderService.getPastPickupEvents();
     const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
-    const publicPickupEvents = pickupEvents.map((pickupEvent) =>
-      pickupEvent.getPublicOrderPickupEvent(canSeePickupEventOrders));
+    const publicPickupEvents = pickupEvents.map((pickupEvent) => pickupEvent
+      .getPublicOrderPickupEvent(canSeePickupEventOrders));
     return { error: null, pickupEvents: publicPickupEvents };
   }
 
@@ -482,8 +482,8 @@ export class MerchStoreController {
   ): Promise<GetOrderPickupEventsResponse> {
     const pickupEvents = await this.merchOrderService.getFuturePickupEvents();
     const canSeePickupEventOrders = PermissionsService.canSeePickupEventOrders(user);
-    const publicPickupEvents = pickupEvents.map((pickupEvent) =>
-      pickupEvent.getPublicOrderPickupEvent(canSeePickupEventOrders));
+    const publicPickupEvents = pickupEvents.map((pickupEvent) => pickupEvent
+      .getPublicOrderPickupEvent(canSeePickupEventOrders));
     return { error: null, pickupEvents: publicPickupEvents };
   }
 

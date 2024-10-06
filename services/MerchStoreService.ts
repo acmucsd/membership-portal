@@ -77,8 +77,9 @@ export default class MerchStoreService {
     uuid: Uuid,
     canSeeInactiveCollections = false,
   ): Promise<MerchandiseCollectionModel> {
-    const collection = await this.transactions.readOnly(async (txn) =>
-      Repositories.merchStoreCollection(txn).findByUuid(uuid));
+    const collection = await this.transactions.readOnly(async (txn) => Repositories
+      .merchStoreCollection(txn)
+      .findByUuid(uuid));
     if (!collection) throw new NotFoundError('Merch collection not found');
     if (collection.archived && !canSeeInactiveCollections) throw new ForbiddenError();
     collection.collectionPhotos = collection.collectionPhotos.sort(

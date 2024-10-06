@@ -25,16 +25,18 @@ export default class AttendanceService {
   }
 
   public async getAttendancesForEvent(event: Uuid): Promise<AttendanceModel[]> {
-    const attendances = await this.transactions.readOnly(async (txn) =>
-      Repositories.attendance(txn).getAttendancesForEvent(event));
+    const attendances = await this.transactions.readOnly(async (txn) => Repositories
+      .attendance(txn)
+      .getAttendancesForEvent(event));
     return attendances;
   }
 
   public async getAttendancesForCurrentUser(
     user: UserModel,
   ): Promise<AttendanceModel[]> {
-    const attendances = await this.transactions.readOnly(async (txn) =>
-      Repositories.attendance(txn).getAttendancesForUser(user));
+    const attendances = await this.transactions.readOnly(async (txn) => Repositories
+      .attendance(txn)
+      .getAttendancesForUser(user));
     return attendances;
   }
 
