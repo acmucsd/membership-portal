@@ -98,11 +98,12 @@ export class AttendanceController {
     @Body() body: AttendEventRequest,
     @AuthenticatedUser() user: UserModel,
   ): Promise<AttendEventResponse> {
-    const { event } = await this.attendanceService.attendEvent(
+    const attendance = await this.attendanceService.attendEvent(
       user,
       body.attendanceCode,
       body.asStaff,
     );
+    const { event } = attendance.getPublicAttendance();
     return { error: null, event };
   }
 

@@ -61,7 +61,7 @@ export default class AttendanceService {
     user: UserModel,
     attendanceCode: string,
     asStaff = false,
-  ): Promise<PublicAttendance> {
+  ): Promise<AttendanceModel> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByAttendanceCode(
         attendanceCode,
@@ -81,7 +81,7 @@ export default class AttendanceService {
         asStaff,
         txn,
       );
-      return attendance.getPublicAttendance();
+      return attendance;
     });
   }
 
@@ -172,7 +172,7 @@ export default class AttendanceService {
     eventUuid: Uuid,
     asStaff = false,
     proxyUser: UserModel,
-  ): Promise<PublicAttendance[]> {
+  ): Promise<AttendanceModel[]> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByUuid(eventUuid);
       if (!event) throw new NotFoundError("This event doesn't exist");
@@ -269,7 +269,7 @@ export default class AttendanceService {
     feedback: string[],
     eventUuid: Uuid,
     user: UserModel,
-  ): Promise<PublicAttendance> {
+  ): Promise<AttendanceModel> {
     return this.transactions.readWrite(async (txn) => {
       const attendanceRepository = Repositories.attendance(txn);
 
@@ -306,7 +306,7 @@ export default class AttendanceService {
       });
       await Repositories.user(txn).addPoints(user, pointsEarned);
 
-      return attendanceWithFeedback.getPublicAttendance();
+      return attendanceWithFeedback;
     });
   }
 }
