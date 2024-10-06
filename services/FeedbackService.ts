@@ -5,7 +5,14 @@ import { NotFoundError } from 'routing-controllers';
 import { FeedbackModel } from '../models/FeedbackModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
-import { PublicFeedback, Feedback, Uuid, ActivityType, FeedbackStatus, FeedbackSearchOptions } from '../types';
+import {
+  PublicFeedback,
+  Feedback,
+  Uuid,
+  ActivityType,
+  FeedbackStatus,
+  FeedbackSearchOptions,
+} from '../types';
 import { UserError } from '../utils/Errors';
 
 @Service()
@@ -16,36 +23,50 @@ export default class FeedbackService {
     this.transactions = new TransactionsManager(entityManager);
   }
 
-  public async getFeedback(canSeeAllFeedback = false, user: UserModel,
-    options: FeedbackSearchOptions): Promise<PublicFeedback[]> {
+  public async getFeedback(
+    canSeeAllFeedback = false,
+    user: UserModel,
+    options: FeedbackSearchOptions,
+  ): Promise<FeedbackModel[]> {
     return this.transactions.readOnly(async (txn) => {
       const feedbackRepository = Repositories.feedback(txn);
       if (canSeeAllFeedback) {
-        return (await feedbackRepository.getAllFeedback(options))
-          .map((fb) => fb.getPublicFeedback());
+        return await feedbackRepository.getAllFeedback(options);
       }
 
-      const userFeedback = await feedbackRepository.getStandardUserFeedback(user, options);
-      return userFeedback.map((fb) => fb.getPublicFeedback());
+      const userFeedback = await feedbackRepository.getStandardUserFeedback(
+        user,
+        options,
+      );
+      return userFeedback;
     });
   }
 
-  public async submitFeedback(user: UserModel, feedback: Feedback): Promise<PublicFeedback> {
+  public async submitFeedback(
+    user: UserModel,
+    feedback: Feedback,
+  ): Promise<FeedbackModel> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByUuid(feedback.event);
       if (!event) throw new NotFoundError('Event not found!');
 
       const feedbackRepository = Repositories.feedback(txn);
 
-      const hasAlreadySubmittedFeedback = await feedbackRepository.hasUserSubmittedFeedback(user, event);
-      if (hasAlreadySubmittedFeedback) throw new UserError('You have already submitted feedback for this event!');
+      const hasAlreadySubmittedFeedback =
+        await feedbackRepository.hasUserSubmittedFeedback(user, event);
+      if (hasAlreadySubmittedFeedback)
+        throw new UserError(
+          'You have already submitted feedback for this event!',
+        );
 
       await Repositories.activity(txn).logActivity({
         user,
         type: ActivityType.SUBMIT_FEEDBACK,
       });
-      const addedFeedback = await feedbackRepository.upsertFeedback(FeedbackModel.create({ ...feedback, user, event }));
-      return addedFeedback.getPublicFeedback();
+      const addedFeedback = await feedbackRepository.upsertFeedback(
+        FeedbackModel.create({ ...feedback, user, event }),
+      );
+      return addedFeedback;
     });
   }
 
@@ -63,8 +84,11 @@ export default class FeedbackService {
         user,
         type: ActivityType.FEEDBACK_ACKNOWLEDGED,
       });
-      const updatedFeedback = await feedbackRepository.upsertFeedback(feedback, { status });
-      return updatedFeedback.getPublicFeedback();
+      const updatedFeedback = await feedbackRepository.upsertFeedback(
+        feedback,
+        { status },
+      );
+      return updatedFeedback;
     });
   }
 }

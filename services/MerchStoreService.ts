@@ -41,7 +41,10 @@ export default class MerchStoreService {
     this.transactions = new TransactionsManager(entityManager);
   }
 
-  public async findItemByUuid(uuid: Uuid, user: UserModel): Promise<PublicMerchItemWithPurchaseLimits> {
+  public async findItemByUuid(
+    uuid: Uuid,
+    user: UserModel,
+  ): Promise<PublicMerchItemWithPurchaseLimits> {
     return this.transactions.readOnly(async (txn) => {
       const item = await Repositories.merchStoreItem(txn).findByUuid(uuid);
 
@@ -49,15 +52,22 @@ export default class MerchStoreService {
 
       // calculate monthly and lifetime remaining purchases for this item
       const merchOrderItemRepository = Repositories.merchOrderItem(txn);
-      const lifetimePurchaseHistory = await merchOrderItemRepository.getPastItemOrdersByUser(user, item);
+      const lifetimePurchaseHistory =
+        await merchOrderItemRepository.getPastItemOrdersByUser(user, item);
       const oneMonthAgo = new Date(moment().subtract(1, 'month').unix());
-      const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter((oi) => oi.order.orderedAt > oneMonthAgo);
-      const lifetimeCancelledItems = lifetimePurchaseHistory
-        .filter((oi) => oi.order.status === OrderStatus.CANCELLED);
-      const pastMonthCancelledItems = pastMonthPurchaseHistory
-        .filter((oi) => oi.order.status === OrderStatus.CANCELLED);
-      const lifetimeItemOrderCounts = lifetimePurchaseHistory.length - lifetimeCancelledItems.length;
-      const pastMonthItemOrderCounts = pastMonthPurchaseHistory.length - pastMonthCancelledItems.length;
+      const pastMonthPurchaseHistory = lifetimePurchaseHistory.filter(
+        (oi) => oi.order.orderedAt > oneMonthAgo,
+      );
+      const lifetimeCancelledItems = lifetimePurchaseHistory.filter(
+        (oi) => oi.order.status === OrderStatus.CANCELLED,
+      );
+      const pastMonthCancelledItems = pastMonthPurchaseHistory.filter(
+        (oi) => oi.order.status === OrderStatus.CANCELLED,
+      );
+      const lifetimeItemOrderCounts =
+        lifetimePurchaseHistory.length - lifetimeCancelledItems.length;
+      const pastMonthItemOrderCounts =
+        pastMonthPurchaseHistory.length - pastMonthCancelledItems.length;
 
       const monthlyRemaining = item.monthlyLimit - pastMonthItemOrderCounts;
       const lifetimeRemaining = item.lifetimeLimit - lifetimeItemOrderCounts;
@@ -70,51 +80,71 @@ export default class MerchStoreService {
     });
   }
 
-  public async findCollectionByUuid(uuid: Uuid, canSeeInactiveCollections = false): Promise<PublicMerchCollection> {
-    const collection = await this.transactions.readOnly(async (txn) => Repositories
-      .merchStoreCollection(txn)
-      .findByUuid(uuid));
+  public async findCollectionByUuid(
+    uuid: Uuid,
+    canSeeInactiveCollections = false,
+  ): Promise<MerchandiseCollectionModel> {
+    const collection = await this.transactions.readOnly(async (txn) =>
+      Repositories.merchStoreCollection(txn).findByUuid(uuid),
+    );
     if (!collection) throw new NotFoundError('Merch collection not found');
-    if (collection.archived && !canSeeInactiveCollections) throw new ForbiddenError();
-    collection.collectionPhotos = collection.collectionPhotos.sort((a, b) => a.position - b.position);
-    return canSeeInactiveCollections ? collection : collection.getPublicMerchCollection();
+    if (collection.archived && !canSeeInactiveCollections)
+      throw new ForbiddenError();
+    collection.collectionPhotos = collection.collectionPhotos.sort(
+      (a, b) => a.position - b.position,
+    );
+    return collection;
   }
 
-  public async getAllCollections(canSeeInactiveCollections = false, canSeeHiddenItems = canSeeInactiveCollections):
-  Promise<PublicMerchCollection[]> {
+  public async getAllCollections(
+    canSeeInactiveCollections = false,
+  ): Promise<MerchandiseCollectionModel[]> {
     return this.transactions.readOnly(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       if (canSeeInactiveCollections) {
         return merchCollectionRepository.getAllCollections();
       }
-      const collections = await merchCollectionRepository.getAllActiveCollections();
-      return collections.map((c) => c.getPublicMerchCollection(canSeeHiddenItems));
+      const collections =
+        await merchCollectionRepository.getAllActiveCollections();
+      return collections;
     });
   }
 
-  public async createCollection(collection: MerchCollection): Promise<PublicMerchCollection> {
-    return this.transactions.readWrite(async (txn) => Repositories
-      .merchStoreCollection(txn)
-      .upsertMerchCollection(MerchandiseCollectionModel.create(collection)));
+  public async createCollection(
+    collection: MerchCollection,
+  ): Promise<MerchandiseCollectionModel> {
+    return this.transactions.readWrite(async (txn) =>
+      Repositories.merchStoreCollection(txn).upsertMerchCollection(
+        MerchandiseCollectionModel.create(collection),
+      ),
+    );
   }
 
-  public async editCollection(uuid: Uuid, collectionEdit: MerchCollectionEdit): Promise<PublicMerchCollection> {
+  public async editCollection(
+    uuid: Uuid,
+    collectionEdit: MerchCollectionEdit,
+  ): Promise<MerchandiseCollectionModel> {
     return this.transactions.readWrite(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
-      const currentCollection = await merchCollectionRepository.findByUuid(uuid);
-      if (!currentCollection) throw new NotFoundError('Merch collection not found');
+      const currentCollection = await merchCollectionRepository.findByUuid(
+        uuid,
+      );
+      if (!currentCollection)
+        throw new NotFoundError('Merch collection not found');
 
-      const { discountPercentage, collectionPhotos, ...changes } = collectionEdit;
+      const { discountPercentage, collectionPhotos, ...changes } =
+        collectionEdit;
 
       if (discountPercentage !== undefined) {
-        await Repositories
-          .merchStoreItemOption(txn)
-          .updateMerchItemOptionsInCollection(uuid, discountPercentage);
+        await Repositories.merchStoreItemOption(
+          txn,
+        ).updateMerchItemOptionsInCollection(uuid, discountPercentage);
       }
       if (changes.archived !== undefined) {
-        await Repositories
-          .merchStoreItem(txn)
-          .updateMerchItemsInCollection(uuid, { hidden: changes.archived });
+        await Repositories.merchStoreItem(txn).updateMerchItemsInCollection(
+          uuid,
+          { hidden: changes.archived },
+        );
       }
 
       // this part only handles updating the positions of the pictures
@@ -123,12 +153,16 @@ export default class MerchStoreService {
         const dupSet = new Set();
         collectionPhotos.forEach((merchPhoto) => {
           if (dupSet.has(merchPhoto.uuid)) {
-            throw new UserError(`Multiple edits is made to photo: ${merchPhoto.uuid}`);
+            throw new UserError(
+              `Multiple edits is made to photo: ${merchPhoto.uuid}`,
+            );
           }
           dupSet.add(merchPhoto.uuid);
         });
 
-        const photoUpdatesByUuid = new Map(collectionPhotos.map((merchPhoto) => [merchPhoto.uuid, merchPhoto]));
+        const photoUpdatesByUuid = new Map(
+          collectionPhotos.map((merchPhoto) => [merchPhoto.uuid, merchPhoto]),
+        );
 
         currentCollection.collectionPhotos.map((currentPhoto) => {
           if (!photoUpdatesByUuid.has(currentPhoto.uuid)) return;
@@ -137,7 +171,11 @@ export default class MerchStoreService {
         });
       }
 
-      let updatedCollection = await merchCollectionRepository.upsertMerchCollection(currentCollection, changes);
+      let updatedCollection =
+        await merchCollectionRepository.upsertMerchCollection(
+          currentCollection,
+          changes,
+        );
 
       if (discountPercentage !== undefined || changes.archived !== undefined) {
         updatedCollection = await merchCollectionRepository.findByUuid(uuid);
@@ -152,18 +190,23 @@ export default class MerchStoreService {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       const collection = await merchCollectionRepository.findByUuid(uuid);
       if (!collection) throw new NotFoundError('Merch collection not found');
-      const hasBeenOrderedFrom = await Repositories
-        .merchOrderItem(txn)
-        .hasCollectionBeenOrderedFrom(uuid);
-      if (hasBeenOrderedFrom) throw new UserError('This collection has been ordered from and cannot be deleted');
+      const hasBeenOrderedFrom = await Repositories.merchOrderItem(
+        txn,
+      ).hasCollectionBeenOrderedFrom(uuid);
+      if (hasBeenOrderedFrom)
+        throw new UserError(
+          'This collection has been ordered from and cannot be deleted',
+        );
       return merchCollectionRepository.deleteMerchCollection(collection);
     });
   }
 
   /**
- * Verify that collections have valid photots.
- */
-  private static verifyCollectionHasValidPhotos(collection: MerchCollection | MerchandiseCollectionModel) {
+   * Verify that collections have valid photots.
+   */
+  private static verifyCollectionHasValidPhotos(
+    collection: MerchCollection | MerchandiseCollectionModel,
+  ) {
     if (collection.collectionPhotos.length > this.MAX_COLLECTION_PHOTO_COUNT) {
       throw new UserError('Collections cannot have more than 5 pictures');
     }
@@ -175,22 +218,33 @@ export default class MerchStoreService {
    * @param collection merch collection uuid
    * @param properties merch collection photo picture url and position
    * @returns created collection photo
-  */
-  public async createCollectionPhoto(collection: Uuid, properties: MerchCollectionPhoto):
-  Promise<PublicMerchCollectionPhoto> {
+   */
+  public async createCollectionPhoto(
+    collection: Uuid,
+    properties: MerchCollectionPhoto,
+  ): Promise<MerchCollectionPhotoModel> {
     return this.transactions.readWrite(async (txn) => {
-      const merchCollection = await Repositories.merchStoreCollection(txn).findByUuid(collection);
+      const merchCollection = await Repositories.merchStoreCollection(
+        txn,
+      ).findByUuid(collection);
       if (!merchCollection) throw new NotFoundError('Collection not found');
 
-      const createdPhoto = MerchCollectionPhotoModel.create({ ...properties, merchCollection });
-      const merchStoreCollectionPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
+      const createdPhoto = MerchCollectionPhotoModel.create({
+        ...properties,
+        merchCollection,
+      });
+      const merchStoreCollectionPhotoRepository =
+        Repositories.merchStoreCollectionPhoto(txn);
 
       // verify the result photos array
       merchCollection.collectionPhotos.push(createdPhoto);
       MerchStoreService.verifyCollectionHasValidPhotos(merchCollection);
 
-      const upsertedPhoto = await merchStoreCollectionPhotoRepository.upsertCollectionPhoto(createdPhoto);
-      return upsertedPhoto.getPublicMerchCollectionPhoto();
+      const upsertedPhoto =
+        await merchStoreCollectionPhotoRepository.upsertCollectionPhoto(
+          createdPhoto,
+        );
+      return upsertedPhoto;
     });
   }
 
@@ -200,14 +254,22 @@ export default class MerchStoreService {
    *
    * @param uuid the uuid of photo to be deleted
    * @returns the photo object to be removed from database
-  */
-  public async getCollectionPhotoForDeletion(uuid: Uuid): Promise<MerchCollectionPhotoModel> {
+   */
+  public async getCollectionPhotoForDeletion(
+    uuid: Uuid,
+  ): Promise<MerchCollectionPhotoModel> {
     return this.transactions.readWrite(async (txn) => {
-      const merchCollectionPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
-      const collectionPhoto = await merchCollectionPhotoRepository.findByUuid(uuid);
-      if (!collectionPhoto) throw new NotFoundError('Merch collection photo not found');
+      const merchCollectionPhotoRepository =
+        Repositories.merchStoreCollectionPhoto(txn);
+      const collectionPhoto = await merchCollectionPhotoRepository.findByUuid(
+        uuid,
+      );
+      if (!collectionPhoto)
+        throw new NotFoundError('Merch collection photo not found');
 
-      const collection = await Repositories.merchStoreCollection(txn).findByUuid(collectionPhoto.merchCollection.uuid);
+      const collection = await Repositories.merchStoreCollection(
+        txn,
+      ).findByUuid(collectionPhoto.merchCollection.uuid);
       if (collection.collectionPhotos.length === 1) {
         throw new UserError('Cannot delete the only photo for a collection');
       }
@@ -222,10 +284,15 @@ export default class MerchStoreService {
    * @param merchPhoto the photo object to be removed
    * @returns the photo object removed from database
    */
-  public async deleteCollectionPhoto(collectionPhoto: MerchCollectionPhotoModel): Promise<MerchCollectionPhoto> {
+  public async deleteCollectionPhoto(
+    collectionPhoto: MerchCollectionPhotoModel,
+  ): Promise<MerchCollectionPhoto> {
     return this.transactions.readWrite(async (txn) => {
-      const merchStoreItemPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
-      await merchStoreItemPhotoRepository.deleteCollectionPhoto(collectionPhoto);
+      const merchStoreItemPhotoRepository =
+        Repositories.merchStoreCollectionPhoto(txn);
+      await merchStoreItemPhotoRepository.deleteCollectionPhoto(
+        collectionPhoto,
+      );
       return collectionPhoto;
     });
   }
@@ -234,7 +301,9 @@ export default class MerchStoreService {
     return this.transactions.readWrite(async (txn) => {
       MerchStoreService.verifyItemHasValidOptions(item);
 
-      const collection = await Repositories.merchStoreCollection(txn).findByUuid(item.collection);
+      const collection = await Repositories.merchStoreCollection(
+        txn,
+      ).findByUuid(item.collection);
       if (!collection) throw new NotFoundError('Merch collection not found');
 
       const merchItemRepository = Repositories.merchStoreItem(txn);
@@ -248,19 +317,33 @@ export default class MerchStoreService {
    * Verify that items have valid options. An item with variants disabled cannot have multiple
    * options, and an item with variants enabled cannot have multiple option types.
    */
-  private static verifyItemHasValidOptions(item: MerchItem | MerchandiseItemModel) {
+  private static verifyItemHasValidOptions(
+    item: MerchItem | MerchandiseItemModel,
+  ) {
     if (!item.hasVariantsEnabled && item.options.length > 1) {
-      throw new UserError('Merch items with variants disabled cannot have multiple options');
+      throw new UserError(
+        'Merch items with variants disabled cannot have multiple options',
+      );
     }
-    if (item.hasVariantsEnabled && !MerchStoreService.allOptionsHaveValidMetadata(item.options)) {
-      throw new UserError('Merch options for items with variants enabled must have valid metadata');
+    if (
+      item.hasVariantsEnabled &&
+      !MerchStoreService.allOptionsHaveValidMetadata(item.options)
+    ) {
+      throw new UserError(
+        'Merch options for items with variants enabled must have valid metadata',
+      );
     }
-    if (item.hasVariantsEnabled && MerchStoreService.hasMultipleOptionTypes(item.options)) {
+    if (
+      item.hasVariantsEnabled &&
+      MerchStoreService.hasMultipleOptionTypes(item.options)
+    ) {
       throw new UserError('Merch items cannot have multiple option types');
     }
   }
 
-  private static allOptionsHaveValidMetadata(options: MerchItemOption[]): boolean {
+  private static allOptionsHaveValidMetadata(
+    options: MerchItemOption[],
+  ): boolean {
     return options.every((o) => !!o.metadata);
   }
 
@@ -275,18 +358,30 @@ export default class MerchStoreService {
    * If the visibility of the item is set to visible, then the item cannot have 0 options.
    * @returns edited item
    */
-  public async editItem(uuid: Uuid, itemEdit: MerchItemEdit): Promise<MerchandiseItemModel> {
+  public async editItem(
+    uuid: Uuid,
+    itemEdit: MerchItemEdit,
+  ): Promise<MerchandiseItemModel> {
     return this.transactions.readWrite(async (txn) => {
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
 
       if (itemEdit.hidden === false && item.options.length === 0) {
-        throw new UserError('Item cannot be set to visible if it has 0 options.');
+        throw new UserError(
+          'Item cannot be set to visible if it has 0 options.',
+        );
       }
-      const { options, merchPhotos, collection: updatedCollection, ...changes } = itemEdit;
+      const {
+        options,
+        merchPhotos,
+        collection: updatedCollection,
+        ...changes
+      } = itemEdit;
       if (options) {
-        const optionUpdatesByUuid = new Map(options.map((option) => [option.uuid, option]));
+        const optionUpdatesByUuid = new Map(
+          options.map((option) => [option.uuid, option]),
+        );
         item.options.map((currentOption) => {
           if (!optionUpdatesByUuid.has(currentOption.uuid)) return;
           const optionUpdate = optionUpdatesByUuid.get(currentOption.uuid);
@@ -296,7 +391,9 @@ export default class MerchStoreService {
           if (optionUpdate.quantityToAdd) {
             currentOption.quantity += optionUpdate.quantityToAdd;
             if (currentOption.quantity < 0) {
-              throw new UserError(`Cannot decrement option quantity below 0 for option: ${currentOption.uuid}`);
+              throw new UserError(
+                `Cannot decrement option quantity below 0 for option: ${currentOption.uuid}`,
+              );
             }
           }
           return MerchandiseItemOptionModel.merge(currentOption, optionUpdate);
@@ -309,12 +406,16 @@ export default class MerchStoreService {
         const dupSet = new Set();
         merchPhotos.forEach((merchPhoto) => {
           if (dupSet.has(merchPhoto.uuid)) {
-            throw new UserError(`Multiple edits is made to photo: ${merchPhoto.uuid}`);
+            throw new UserError(
+              `Multiple edits is made to photo: ${merchPhoto.uuid}`,
+            );
           }
           dupSet.add(merchPhoto.uuid);
         });
 
-        const photoUpdatesByUuid = new Map(merchPhotos.map((merchPhoto) => [merchPhoto.uuid, merchPhoto]));
+        const photoUpdatesByUuid = new Map(
+          merchPhotos.map((merchPhoto) => [merchPhoto.uuid, merchPhoto]),
+        );
 
         item.merchPhotos.map((currentPhoto) => {
           if (!photoUpdatesByUuid.has(currentPhoto.uuid)) return;
@@ -327,9 +428,9 @@ export default class MerchStoreService {
       MerchStoreService.verifyItemHasValidOptions(updatedItem);
 
       if (updatedCollection) {
-        const collection = await Repositories
-          .merchStoreCollection(txn)
-          .findByUuid(updatedCollection);
+        const collection = await Repositories.merchStoreCollection(
+          txn,
+        ).findByUuid(updatedCollection);
         if (!collection) throw new NotFoundError('Merch collection not found');
 
         updatedItem.collection = collection;
@@ -344,8 +445,11 @@ export default class MerchStoreService {
       const merchItemRepository = Repositories.merchStoreItem(txn);
       const item = await merchItemRepository.findByUuid(uuid);
       if (!item) throw new NotFoundError();
-      const hasBeenOrdered = await Repositories.merchOrderItem(txn).hasItemBeenOrdered(uuid);
-      if (hasBeenOrdered) throw new UserError('This item has been ordered and cannot be deleted');
+      const hasBeenOrdered = await Repositories.merchOrderItem(
+        txn,
+      ).hasItemBeenOrdered(uuid);
+      if (hasBeenOrdered)
+        throw new UserError('This item has been ordered and cannot be deleted');
       return merchItemRepository.deleteMerchItem(item);
     });
   }
@@ -358,18 +462,25 @@ export default class MerchStoreService {
    * @param option merch item option
    * @returns created item option
    */
-  public async createItemOption(item: Uuid, option: MerchItemOption): Promise<PublicMerchItemOption> {
+  public async createItemOption(
+    item: Uuid,
+    option: MerchItemOption,
+  ): Promise<MerchandiseItemOptionModel> {
     return this.transactions.readWrite(async (txn) => {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Merch item not found');
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-      const createdOption = MerchandiseItemOptionModel.create({ ...option, item: merchItem });
+      const createdOption = MerchandiseItemOptionModel.create({
+        ...option,
+        item: merchItem,
+      });
       merchItem.options.push(createdOption);
       MerchStoreService.verifyItemHasValidOptions(merchItem);
 
-      const upsertedOption = await merchItemOptionRepository.upsertMerchItemOption(createdOption);
-      return upsertedOption.getPublicMerchItemOption();
+      const upsertedOption =
+        await merchItemOptionRepository.upsertMerchItemOption(createdOption);
+      return upsertedOption;
     });
   }
 
@@ -385,12 +496,21 @@ export default class MerchStoreService {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
       const option = await merchItemOptionRepository.findByUuid(uuid);
       if (!option) throw new NotFoundError();
-      const hasBeenOrdered = await Repositories.merchOrderItem(txn).hasOptionBeenOrdered(uuid);
-      if (hasBeenOrdered) throw new UserError('This item option has been ordered and cannot be deleted');
+      const hasBeenOrdered = await Repositories.merchOrderItem(
+        txn,
+      ).hasOptionBeenOrdered(uuid);
+      if (hasBeenOrdered)
+        throw new UserError(
+          'This item option has been ordered and cannot be deleted',
+        );
 
-      const item = await Repositories.merchStoreItem(txn).findByUuid(option.item.uuid);
+      const item = await Repositories.merchStoreItem(txn).findByUuid(
+        option.item.uuid,
+      );
       if (item.options.length === 1 && !option.item.hidden) {
-        throw new UserError('Cannot delete the only option for a visible merch item');
+        throw new UserError(
+          'Cannot delete the only option for a visible merch item',
+        );
       }
 
       return merchItemOptionRepository.deleteMerchItemOption(option);
@@ -401,7 +521,9 @@ export default class MerchStoreService {
    * Verify that items have valid options. An item with variants disabled cannot have multiple
    * options, and an item with variants enabled cannot have multiple option types.
    */
-  private static verifyItemHasValidPhotos(item: MerchItem | MerchandiseItemModel) {
+  private static verifyItemHasValidPhotos(
+    item: MerchItem | MerchandiseItemModel,
+  ) {
     if (item.merchPhotos.length > MerchStoreService.MAX_MERCH_PHOTO_COUNT) {
       throw new UserError('Merch items cannot have more than 5 pictures');
     }
@@ -414,20 +536,28 @@ export default class MerchStoreService {
    * @param properties merch item photo picture url and position
    * @returns created item photo
    */
-  public async createItemPhoto(item: Uuid, properties: MerchItemPhoto): Promise<PublicMerchItemPhoto> {
+  public async createItemPhoto(
+    item: Uuid,
+    properties: MerchItemPhoto,
+  ): Promise<MerchandiseItemPhotoModel> {
     return this.transactions.readWrite(async (txn) => {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Merch item not found');
 
-      const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, merchItem });
-      const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
+      const createdPhoto = MerchandiseItemPhotoModel.create({
+        ...properties,
+        merchItem,
+      });
+      const merchStoreItemPhotoRepository =
+        Repositories.merchStoreItemPhoto(txn);
 
       // verify the result photos array
       merchItem.merchPhotos.push(createdPhoto);
       MerchStoreService.verifyItemHasValidPhotos(merchItem);
 
-      const upsertedPhoto = await merchStoreItemPhotoRepository.upsertMerchItemPhoto(createdPhoto);
-      return upsertedPhoto.getPublicMerchItemPhoto();
+      const upsertedPhoto =
+        await merchStoreItemPhotoRepository.upsertMerchItemPhoto(createdPhoto);
+      return upsertedPhoto;
     });
   }
 
@@ -438,15 +568,22 @@ export default class MerchStoreService {
    * @param uuid the uuid of photo to be deleted
    * @returns the photo object to be removed from database
    */
-  public async getItemPhotoForDeletion(uuid: Uuid): Promise<MerchandiseItemPhotoModel> {
+  public async getItemPhotoForDeletion(
+    uuid: Uuid,
+  ): Promise<MerchandiseItemPhotoModel> {
     return this.transactions.readWrite(async (txn) => {
-      const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
+      const merchStoreItemPhotoRepository =
+        Repositories.merchStoreItemPhoto(txn);
       const merchPhoto = await merchStoreItemPhotoRepository.findByUuid(uuid);
       if (!merchPhoto) throw new NotFoundError('Merch item photo not found');
 
-      const merchItem = await Repositories.merchStoreItem(txn).findByUuid(merchPhoto.merchItem.uuid);
+      const merchItem = await Repositories.merchStoreItem(txn).findByUuid(
+        merchPhoto.merchItem.uuid,
+      );
       if (merchItem.merchPhotos.length === 1 && !merchItem.hidden) {
-        throw new UserError('Cannot delete the only photo for a visible merch item');
+        throw new UserError(
+          'Cannot delete the only photo for a visible merch item',
+        );
       }
 
       return merchPhoto;
@@ -459,22 +596,31 @@ export default class MerchStoreService {
    * @param merchPhoto the photo object to be removed
    * @returns the photo object removed from database
    */
-  public async deleteItemPhoto(merchPhoto: MerchandiseItemPhotoModel): Promise<MerchItemPhoto> {
+  public async deleteItemPhoto(
+    merchPhoto: MerchandiseItemPhotoModel,
+  ): Promise<MerchItemPhoto> {
     return this.transactions.readWrite(async (txn) => {
-      const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
+      const merchStoreItemPhotoRepository =
+        Repositories.merchStoreItemPhoto(txn);
       await merchStoreItemPhotoRepository.deleteMerchItemPhoto(merchPhoto);
       return merchPhoto;
     });
   }
 
-  public async getCartItems(options: string[]): Promise<MerchandiseItemOptionModel[]> {
+  public async getCartItems(
+    options: string[],
+  ): Promise<MerchandiseItemOptionModel[]> {
     return this.transactions.readOnly(async (txn) => {
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-      const itemOptionsByUuid = await merchItemOptionRepository.batchFindByUuid(options);
+      const itemOptionsByUuid = await merchItemOptionRepository.batchFindByUuid(
+        options,
+      );
       const itemOptionUuidsFound = Array.from(itemOptionsByUuid.keys());
       const missingItems = difference(options, itemOptionUuidsFound);
       if (missingItems.length > 0) {
-        throw new NotFoundError(`The following items were not found: ${missingItems}`);
+        throw new NotFoundError(
+          `The following items were not found: ${missingItems}`,
+        );
       }
       return options.map((option) => itemOptionsByUuid.get(option));
     });

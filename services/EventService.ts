@@ -21,59 +21,73 @@ export default class EventService {
    * @param event object with all the properties of the event
    * @returns The event that was created
    */
-  public async create(event: Event): Promise<PublicEvent> {
+  public async create(event: Event): Promise<EventModel> {
     const eventCreated = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
-      const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(event.attendanceCode);
-      if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
-      if (event.start > event.end) throw new UserError('Start date after end date');
+      const isUnusedAttendanceCode =
+        await eventRepository.isUnusedAttendanceCode(event.attendanceCode);
+      if (!isUnusedAttendanceCode)
+        throw new UserError('Attendance code has already been used');
+      if (event.start > event.end)
+        throw new UserError('Start date after end date');
       return eventRepository.upsertEvent(EventModel.create(event));
     });
-    return eventCreated.getPublicEvent();
+    return eventCreated;
   }
 
-  public async getAllEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
-    const events = await this.transactions.readOnly(async (txn) => Repositories
-      .event(txn)
-      .getAllEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
+  public async getAllEvents(
+    options: EventSearchOptions,
+  ): Promise<EventModel[]> {
+    const events = await this.transactions.readOnly(async (txn) =>
+      Repositories.event(txn).getAllEvents(options),
+    );
+    return events;
   }
 
-  public async getPastEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
+  public async getPastEvents(
+    options: EventSearchOptions,
+  ): Promise<EventModel[]> {
     options.reverse ??= true;
-    const events = await this.transactions.readOnly(async (txn) => Repositories
-      .event(txn)
-      .getPastEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
+    const events = await this.transactions.readOnly(async (txn) =>
+      Repositories.event(txn).getPastEvents(options),
+    );
+    return events;
   }
 
-  public async getFutureEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
-    const events = await this.transactions.readOnly(async (txn) => Repositories
-      .event(txn)
-      .getFutureEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
+  public async getFutureEvents(
+    options: EventSearchOptions,
+  ): Promise<EventModel[]> {
+    const events = await this.transactions.readOnly(async (txn) =>
+      Repositories.event(txn).getFutureEvents(options),
+    );
+    return events;
   }
 
-  public async findByUuid(uuid: Uuid, canSeeAttendanceCode = false): Promise<PublicEvent> {
-    const event = await this.transactions.readOnly(async (txn) => Repositories
-      .event(txn)
-      .findByUuid(uuid));
+  public async findByUuid(uuid: Uuid): Promise<EventModel> {
+    const event = await this.transactions.readOnly(async (txn) =>
+      Repositories.event(txn).findByUuid(uuid),
+    );
     if (!event) throw new NotFoundError('Event not found');
-    return event.getPublicEvent(canSeeAttendanceCode);
+    return event;
   }
 
-  public async updateByUuid(uuid: Uuid, changes: Partial<EventModel>): Promise<PublicEvent> {
+  public async updateByUuid(
+    uuid: Uuid,
+    changes: Partial<EventModel>,
+  ): Promise<EventModel> {
     const updatedEvent = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const currentEvent = await eventRepository.findByUuid(uuid);
       if (!currentEvent) throw new NotFoundError('Event not found');
       if (changes.attendanceCode !== currentEvent.attendanceCode) {
-        const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(changes.attendanceCode);
-        if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
+        const isUnusedAttendanceCode =
+          await eventRepository.isUnusedAttendanceCode(changes.attendanceCode);
+        if (!isUnusedAttendanceCode)
+          throw new UserError('Attendance code has already been used');
       }
       return eventRepository.upsertEvent(currentEvent, changes);
     });
-    return updatedEvent.getPublicEvent(true);
+    return updatedEvent;
   }
 
   public async deleteByUuid(uuid: Uuid): Promise<void> {
@@ -81,8 +95,11 @@ export default class EventService {
       const eventRepository = Repositories.event(txn);
       const event = await eventRepository.findByUuid(uuid);
       if (!event) throw new NotFoundError('Event not found');
-      const attendances = await Repositories.attendance(txn).getAttendancesForEvent(uuid);
-      if (attendances.length > 0) throw new ForbiddenError('Cannot delete event that has attendances');
+      const attendances = await Repositories.attendance(
+        txn,
+      ).getAttendancesForEvent(uuid);
+      if (attendances.length > 0)
+        throw new ForbiddenError('Cannot delete event that has attendances');
       await eventRepository.deleteEvent(event);
     });
   }
