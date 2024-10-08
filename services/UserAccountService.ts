@@ -188,6 +188,10 @@ export default class UserAccountService {
       .getAllNamesAndEmails());
   }
 
+  public async checkOnboarding(user: UserModel) : Promise<void> {
+
+  }
+
   /**
    * UserAccountService::getFullUserProfile() differs from UserModel::getFullUserProfile() in that it also returns any
    * user data that needs to be joined from other tables (e.g. resumes and social media URLs)
@@ -269,7 +273,7 @@ export default class UserAccountService {
           .activity(txn)
           .logActivity(activity);
 
-        return updatedUser;
+        return updatedUser.getFullUserProfile();
       }));
 
       return updatedUsers;

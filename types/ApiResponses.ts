@@ -358,6 +358,8 @@ export interface PrivateProfile extends PublicProfile {
   state: string,
   credits: number,
   resumes?: PublicResume[],
+  attendanceCount: number,
+  onboardingCompleted: boolean,
 }
 
 export interface PublicFeedback {
