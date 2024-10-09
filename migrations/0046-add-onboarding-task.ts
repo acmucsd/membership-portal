@@ -4,26 +4,36 @@ const TABLE_NAME = 'Users';
 
 export class AddOnboardingTask1727933494169 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.addColumn(
-      TABLE_NAME,
+    await queryRunner.addColumns(TABLE_NAME, [
       new TableColumn({
-        name: 'onboardingComplete',
+        name: 'onboardingSeen',
         type: 'boolean',
+        isNullable: true,
         default: false,
-        isNullable: false,
       }),
-    );
+      new TableColumn({
+        name: 'onboardingCollected',
+        type: 'boolean',
+        isNullable: true,
+        default: true,
+      }),
+    ]);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropColumn(
-      TABLE_NAME,
+    await queryRunner.dropColumns(TABLE_NAME, [
       new TableColumn({
-        name: 'onboardingComplete',
+        name: 'onboardingSeen',
+        type: 'boolean',
+        isNullable: true,
+        default: false,
+      }),
+      new TableColumn({
+        name: 'onboardingRewarded',
         type: 'boolean',
         default: false,
         isNullable: false,
       }),
-    );
+    ]);
   }
 }
