@@ -57,7 +57,7 @@ export class EventController {
     @AuthenticatedUser() user: UserModel): Promise<GetFutureEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const events = await this.eventService.getFutureEvents(canSeeAttendanceCode, options);
-    return { error: null, events: events.map((e) => e.getPublicEvent(canSeeAttendanceCode))};
+    return { error: null, events: events.map((e) => e.getPublicEvent(canSeeAttendanceCode)) };
   }
 
   @UseBefore(UserAuthentication)

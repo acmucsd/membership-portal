@@ -10,12 +10,12 @@ import {
   englishDataset,
   englishRecommendedTransformers,
 } from 'obscenity';
+import { ActivityModel } from 'models/ActivityModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
   PublicProfile,
   ActivityType,
-  PublicActivity,
   Milestone,
   UserPatches,
   UserState,
@@ -24,7 +24,6 @@ import {
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
-import { ActivityModel } from 'models/ActivityModel';
 
 @Service()
 export default class UserAccountService {

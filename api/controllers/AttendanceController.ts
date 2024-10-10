@@ -26,7 +26,7 @@ export class AttendanceController {
     @AuthenticatedUser() user: UserModel): Promise<GetAttendancesForEventResponse> {
     if (!PermissionsService.canSeeEventAttendances(user)) throw new ForbiddenError();
     const attendances = await this.attendanceService.getAttendancesForEvent(params.uuid);
-    return { error: null, attendances: attendances.map((attendance) => attendance.getPublicAttendance())};
+    return { error: null, attendances: attendances.map((attendance) => attendance.getPublicAttendance()) };
   }
 
   @UseBefore(UserAuthentication)

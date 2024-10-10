@@ -5,7 +5,7 @@ import { NotFoundError } from 'routing-controllers';
 import { FeedbackModel } from '../models/FeedbackModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
-import { PublicFeedback, Feedback, Uuid, ActivityType, FeedbackStatus, FeedbackSearchOptions } from '../types';
+import { Feedback, Uuid, ActivityType, FeedbackStatus, FeedbackSearchOptions } from '../types';
 import { UserError } from '../utils/Errors';
 
 @Service()
@@ -21,7 +21,7 @@ export default class FeedbackService {
     return this.transactions.readOnly(async (txn) => {
       const feedbackRepository = Repositories.feedback(txn);
       if (canSeeAllFeedback) {
-        return (await feedbackRepository.getAllFeedback(options));
+        return (feedbackRepository.getAllFeedback(options));
       }
 
       const userFeedback = await feedbackRepository.getStandardUserFeedback(user, options);
