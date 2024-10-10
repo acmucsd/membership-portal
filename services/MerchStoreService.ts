@@ -13,12 +13,9 @@ import {
   MerchItem,
   MerchItemOption,
   MerchItemEdit,
-  PublicMerchItemOption,
   OrderStatus,
   PublicMerchItemWithPurchaseLimits,
-  PublicMerchItemPhoto,
   MerchItemPhoto,
-  PublicMerchCollectionPhoto,
   MerchCollectionPhoto,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
@@ -70,25 +67,26 @@ export default class MerchStoreService {
     });
   }
 
-  public async findCollectionByUuid(uuid: Uuid, canSeeInactiveCollections = false): Promise<PublicMerchCollection> {
+  public async findCollectionByUuid(uuid: Uuid, canSeeInactiveCollections = false):
+  Promise<MerchandiseCollectionModel> {
     const collection = await this.transactions.readOnly(async (txn) => Repositories
       .merchStoreCollection(txn)
       .findByUuid(uuid));
     if (!collection) throw new NotFoundError('Merch collection not found');
     if (collection.archived && !canSeeInactiveCollections) throw new ForbiddenError();
     collection.collectionPhotos = collection.collectionPhotos.sort((a, b) => a.position - b.position);
-    return canSeeInactiveCollections ? collection : collection.getPublicMerchCollection();
+    return collection;
   }
 
-  public async getAllCollections(canSeeInactiveCollections = false, canSeeHiddenItems = canSeeInactiveCollections):
-  Promise<PublicMerchCollection[]> {
+  public async getAllCollections(canSeeInactiveCollections = false):
+  Promise<MerchandiseCollectionModel[]> {
     return this.transactions.readOnly(async (txn) => {
       const merchCollectionRepository = Repositories.merchStoreCollection(txn);
       if (canSeeInactiveCollections) {
         return merchCollectionRepository.getAllCollections();
       }
       const collections = await merchCollectionRepository.getAllActiveCollections();
-      return collections.map((c) => c.getPublicMerchCollection(canSeeHiddenItems));
+      return collections;
     });
   }
 
@@ -177,7 +175,7 @@ export default class MerchStoreService {
    * @returns created collection photo
   */
   public async createCollectionPhoto(collection: Uuid, properties: MerchCollectionPhoto):
-  Promise<PublicMerchCollectionPhoto> {
+  Promise<MerchCollectionPhotoModel> {
     return this.transactions.readWrite(async (txn) => {
       const merchCollection = await Repositories.merchStoreCollection(txn).findByUuid(collection);
       if (!merchCollection) throw new NotFoundError('Collection not found');
@@ -190,7 +188,7 @@ export default class MerchStoreService {
       MerchStoreService.verifyCollectionHasValidPhotos(merchCollection);
 
       const upsertedPhoto = await merchStoreCollectionPhotoRepository.upsertCollectionPhoto(createdPhoto);
-      return upsertedPhoto.getPublicMerchCollectionPhoto();
+      return upsertedPhoto;
     });
   }
 
@@ -358,7 +356,7 @@ export default class MerchStoreService {
    * @param option merch item option
    * @returns created item option
    */
-  public async createItemOption(item: Uuid, option: MerchItemOption): Promise<PublicMerchItemOption> {
+  public async createItemOption(item: Uuid, option: MerchItemOption): Promise<MerchandiseItemOptionModel> {
     return this.transactions.readWrite(async (txn) => {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Merch item not found');
@@ -369,7 +367,7 @@ export default class MerchStoreService {
       MerchStoreService.verifyItemHasValidOptions(merchItem);
 
       const upsertedOption = await merchItemOptionRepository.upsertMerchItemOption(createdOption);
-      return upsertedOption.getPublicMerchItemOption();
+      return upsertedOption;
     });
   }
 
@@ -414,7 +412,7 @@ export default class MerchStoreService {
    * @param properties merch item photo picture url and position
    * @returns created item photo
    */
-  public async createItemPhoto(item: Uuid, properties: MerchItemPhoto): Promise<PublicMerchItemPhoto> {
+  public async createItemPhoto(item: Uuid, properties: MerchItemPhoto): Promise<MerchandiseItemPhotoModel> {
     return this.transactions.readWrite(async (txn) => {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Merch item not found');
@@ -427,7 +425,7 @@ export default class MerchStoreService {
       MerchStoreService.verifyItemHasValidPhotos(merchItem);
 
       const upsertedPhoto = await merchStoreItemPhotoRepository.upsertMerchItemPhoto(createdPhoto);
-      return upsertedPhoto.getPublicMerchItemPhoto();
+      return upsertedPhoto;
     });
   }
 
