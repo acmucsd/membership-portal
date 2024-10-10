@@ -21,7 +21,7 @@ export default class EventService {
    * @param event object with all the properties of the event
    * @returns The event that was created
    */
-  public async create(event: Event): Promise<PublicEvent> {
+  public async create(event: Event): Promise<EventModel> {
     const eventCreated = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(event.attendanceCode);
@@ -29,40 +29,40 @@ export default class EventService {
       if (event.start > event.end) throw new UserError('Start date after end date');
       return eventRepository.upsertEvent(EventModel.create(event));
     });
-    return eventCreated.getPublicEvent();
+    return eventCreated;
   }
 
-  public async getAllEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
+  public async getAllEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<EventModel[]> {
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getAllEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
+    return events;
   }
 
-  public async getPastEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
+  public async getPastEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<EventModel[]> {
     options.reverse ??= true;
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getPastEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
+    return events;
   }
 
-  public async getFutureEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<PublicEvent[]> {
+  public async getFutureEvents(canSeeAttendanceCode = false, options: EventSearchOptions): Promise<EventModel[]> {
     const events = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .getFutureEvents(options));
-    return events.map((e) => e.getPublicEvent(canSeeAttendanceCode));
+    return events;
   }
 
-  public async findByUuid(uuid: Uuid, canSeeAttendanceCode = false): Promise<PublicEvent> {
+  public async findByUuid(uuid: Uuid, canSeeAttendanceCode = false): Promise<EventModel> {
     const event = await this.transactions.readOnly(async (txn) => Repositories
       .event(txn)
       .findByUuid(uuid));
     if (!event) throw new NotFoundError('Event not found');
-    return event.getPublicEvent(canSeeAttendanceCode);
+    return event;
   }
 
-  public async updateByUuid(uuid: Uuid, changes: Partial<EventModel>): Promise<PublicEvent> {
+  public async updateByUuid(uuid: Uuid, changes: Partial<EventModel>): Promise<EventModel> {
     const updatedEvent = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const currentEvent = await eventRepository.findByUuid(uuid);
@@ -73,7 +73,7 @@ export default class EventService {
       }
       return eventRepository.upsertEvent(currentEvent, changes);
     });
-    return updatedEvent.getPublicEvent(true);
+    return updatedEvent;
   }
 
   public async deleteByUuid(uuid: Uuid): Promise<void> {

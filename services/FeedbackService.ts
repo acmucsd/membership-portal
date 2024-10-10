@@ -17,20 +17,19 @@ export default class FeedbackService {
   }
 
   public async getFeedback(canSeeAllFeedback = false, user: UserModel,
-    options: FeedbackSearchOptions): Promise<PublicFeedback[]> {
+    options: FeedbackSearchOptions): Promise<FeedbackModel[]> {
     return this.transactions.readOnly(async (txn) => {
       const feedbackRepository = Repositories.feedback(txn);
       if (canSeeAllFeedback) {
-        return (await feedbackRepository.getAllFeedback(options))
-          .map((fb) => fb.getPublicFeedback());
+        return (await feedbackRepository.getAllFeedback(options));
       }
 
       const userFeedback = await feedbackRepository.getStandardUserFeedback(user, options);
-      return userFeedback.map((fb) => fb.getPublicFeedback());
+      return userFeedback;
     });
   }
 
-  public async submitFeedback(user: UserModel, feedback: Feedback): Promise<PublicFeedback> {
+  public async submitFeedback(user: UserModel, feedback: Feedback): Promise<FeedbackModel> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByUuid(feedback.event);
       if (!event) throw new NotFoundError('Event not found!');
@@ -45,11 +44,11 @@ export default class FeedbackService {
         type: ActivityType.SUBMIT_FEEDBACK,
       });
       const addedFeedback = await feedbackRepository.upsertFeedback(FeedbackModel.create({ ...feedback, user, event }));
-      return addedFeedback.getPublicFeedback();
+      return addedFeedback;
     });
   }
 
-  public async updateFeedbackStatus(uuid: Uuid, status: FeedbackStatus) {
+  public async updateFeedbackStatus(uuid: Uuid, status: FeedbackStatus): Promise<FeedbackModel> {
     return this.transactions.readWrite(async (txn) => {
       const feedbackRepository = Repositories.feedback(txn);
       const feedback = await feedbackRepository.findByUuid(uuid);
@@ -64,7 +63,7 @@ export default class FeedbackService {
         type: ActivityType.FEEDBACK_ACKNOWLEDGED,
       });
       const updatedFeedback = await feedbackRepository.upsertFeedback(feedback, { status });
-      return updatedFeedback.getPublicFeedback();
+      return updatedFeedback;
     });
   }
 }

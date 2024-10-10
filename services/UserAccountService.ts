@@ -24,6 +24,7 @@ import {
 } from '../types';
 import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
+import { ActivityModel } from 'models/ActivityModel';
 
 @Service()
 export default class UserAccountService {
@@ -75,7 +76,7 @@ export default class UserAccountService {
     });
   }
 
-  public async getLeaderboard(from?: number, to?: number, offset = 0, limit = 100): Promise<PublicProfile[]> {
+  public async getLeaderboard(from?: number, to?: number, offset = 0, limit = 100): Promise<UserModel[]> {
     // convert timestamps from seconds to milliseconds
     if (from) from *= 1000;
     if (to) to *= 1000;
@@ -104,7 +105,7 @@ export default class UserAccountService {
       if (!from) from = moment(earliest).startOf('day').valueOf();
       return leaderboardRepository.getLeaderboardUntil(from, to, offset, limit);
     });
-    return users.map((u) => u.getPublicProfile());
+    return users;
   }
 
   public async update(user: UserModel, userPatches: UserPatches): Promise<UserModel> {
@@ -144,19 +145,19 @@ export default class UserAccountService {
       .upsertUser(user, { profilePicture }));
   }
 
-  public async getCurrentUserActivityStream(uuid: Uuid): Promise<PublicActivity[]> {
+  public async getCurrentUserActivityStream(uuid: Uuid): Promise<ActivityModel[]> {
     const stream = await this.transactions.readOnly(async (txn) => Repositories
       .activity(txn)
       .getCurrentUserActivityStream(uuid));
-    return stream.map((activity) => activity.getPublicActivity());
+    return stream;
   }
 
-  public async getUserActivityStream(uuid: Uuid): Promise<PublicActivity[]> {
+  public async getUserActivityStream(uuid: Uuid): Promise<ActivityModel[]> {
     const activityStream = await this.transactions.readOnly(async (txn) => {
       const user = await this.findByUuid(uuid);
       return Repositories.activity(txn).getUserActivityStream(user.uuid);
     });
-    return activityStream.map((activity) => activity.getPublicActivity());
+    return activityStream;
   }
 
   public async createMilestone(milestone: Milestone): Promise<void> {
@@ -276,10 +277,10 @@ export default class UserAccountService {
     });
   }
 
-  public async getAllFullUserProfiles(): Promise<PrivateProfile[]> {
+  public async getAllFullUserProfiles(): Promise<UserModel[]> {
     const users = await this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .findAll());
-    return users.map((user) => user.getFullUserProfile());
+    return users;
   }
 }

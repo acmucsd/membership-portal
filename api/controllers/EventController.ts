@@ -48,7 +48,7 @@ export class EventController {
     @AuthenticatedUser() user: UserModel): Promise<GetPastEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const events = await this.eventService.getPastEvents(canSeeAttendanceCode, options);
-    return { error: null, events };
+    return { error: null, events: events.map((e) => e.getPublicEvent(canSeeAttendanceCode)) };
   }
 
   @UseBefore(OptionalUserAuthentication)
@@ -57,7 +57,7 @@ export class EventController {
     @AuthenticatedUser() user: UserModel): Promise<GetFutureEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const events = await this.eventService.getFutureEvents(canSeeAttendanceCode, options);
-    return { error: null, events };
+    return { error: null, events: events.map((e) => e.getPublicEvent(canSeeAttendanceCode))};
   }
 
   @UseBefore(UserAuthentication)
@@ -69,7 +69,7 @@ export class EventController {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
     const cover = await this.storageService.upload(file, MediaType.EVENT_COVER, params.uuid);
     const event = await this.eventService.updateByUuid(params.uuid, { cover });
-    return { error: null, event };
+    return { error: null, event: event.getPublicEvent(true) };
   }
 
   @UseBefore(UserAuthentication)
@@ -87,7 +87,7 @@ export class EventController {
     @AuthenticatedUser() user: UserModel): Promise<GetOneEventResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const event = await this.eventService.findByUuid(params.uuid, canSeeAttendanceCode);
-    return { error: null, event };
+    return { error: null, event: event.getPublicEvent(canSeeAttendanceCode) };
   }
 
   @UseBefore(UserAuthentication)
@@ -97,7 +97,7 @@ export class EventController {
     @AuthenticatedUser() user: UserModel): Promise<PatchEventResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
     const event = await this.eventService.updateByUuid(params.uuid, patchEventRequest.event);
-    return { error: null, event };
+    return { error: null, event: event.getPublicEvent(true) };
   }
 
   @UseBefore(UserAuthentication)
@@ -115,7 +115,7 @@ export class EventController {
   Promise<GetAllEventsResponse> {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const events = await this.eventService.getAllEvents(canSeeAttendanceCode, options);
-    return { error: null, events };
+    return { error: null, events: events.map((e) => e.getPublicEvent(canSeeAttendanceCode)) };
   }
 
   @UseBefore(UserAuthentication)
@@ -124,6 +124,6 @@ export class EventController {
     @AuthenticatedUser() user: UserModel): Promise<CreateEventResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
     const event = await this.eventService.create(createEventRequest.event);
-    return { error: null, event };
+    return { error: null, event: event.getPublicEvent() };
   }
 }

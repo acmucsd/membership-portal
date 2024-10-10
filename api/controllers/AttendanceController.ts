@@ -26,14 +26,14 @@ export class AttendanceController {
     @AuthenticatedUser() user: UserModel): Promise<GetAttendancesForEventResponse> {
     if (!PermissionsService.canSeeEventAttendances(user)) throw new ForbiddenError();
     const attendances = await this.attendanceService.getAttendancesForEvent(params.uuid);
-    return { error: null, attendances };
+    return { error: null, attendances: attendances.map((attendance) => attendance.getPublicAttendance())};
   }
 
   @UseBefore(UserAuthentication)
   @Get()
   async getAttendancesForCurrentUser(@AuthenticatedUser() user: UserModel): Promise<GetAttendancesForUserResponse> {
     const attendances = await this.attendanceService.getAttendancesForCurrentUser(user);
-    return { error: null, attendances };
+    return { error: null, attendances: attendances.map((attendance) => attendance.getPublicAttendance()) };
   }
 
   @UseBefore(UserAuthentication)
@@ -44,14 +44,15 @@ export class AttendanceController {
       return this.getAttendancesForCurrentUser(currentUser);
     }
     const attendances = await this.attendanceService.getAttendancesForUser(params.uuid);
-    return { error: null, attendances };
+    return { error: null, attendances: attendances.map((attendance) => attendance.getPublicAttendance()) };
   }
 
   @UseBefore(UserAuthentication)
   @Post()
   async attendEvent(@Body() body: AttendEventRequest,
     @AuthenticatedUser() user: UserModel): Promise<AttendEventResponse> {
-    const { event } = await this.attendanceService.attendEvent(user, body.attendanceCode, body.asStaff);
+    const attendance = await this.attendanceService.attendEvent(user, body.attendanceCode, body.asStaff);
+    const { event } = attendance.getPublicAttendance();
     return { error: null, event };
   }
 
