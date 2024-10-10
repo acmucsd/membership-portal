@@ -1,9 +1,4 @@
-import {
-  UseBefore,
-  JsonController,
-  Get,
-  QueryParams,
-} from 'routing-controllers';
+import { UseBefore, JsonController, Get, QueryParams } from 'routing-controllers';
 import { GetLeaderboardResponse } from '../../types';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import UserAccountService from '../../services/UserAccountService';
@@ -19,16 +14,9 @@ export class LeaderboardController {
   }
 
   @Get()
-  async getLeaderboard(
-    @QueryParams() filters: SlidingLeaderboardQueryParams,
-  ): Promise<GetLeaderboardResponse> {
+  async getLeaderboard(@QueryParams() filters: SlidingLeaderboardQueryParams): Promise<GetLeaderboardResponse> {
     const { from, to, offset, limit } = filters;
-    const leaderboard = await this.userAccountService.getLeaderboard(
-      from,
-      to,
-      offset,
-      limit,
-    );
+    const leaderboard = await this.userAccountService.getLeaderboard(from, to, offset, limit);
     return {
       error: null,
       leaderboard: leaderboard.map((u) => u.getPublicProfile()),

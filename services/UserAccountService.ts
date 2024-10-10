@@ -1,19 +1,11 @@
-import {
-  BadRequestError,
-  ForbiddenError,
-  NotFoundError,
-} from 'routing-controllers';
+import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import * as faker from 'faker';
 import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
-import {
-  RegExpMatcher,
-  englishDataset,
-  englishRecommendedTransformers,
-} from 'obscenity';
+import { RegExpMatcher, englishDataset, englishRecommendedTransformers } from 'obscenity';
 import { ActivityModel } from 'models/ActivityModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
@@ -58,10 +50,7 @@ export default class UserAccountService {
   /**
    * Generate a default user handle in the format of "[firstName]-[lastName]-[6 digit has]" truncated to 32 characters
    */
-  public static generateDefaultHandle(
-    firstName: string,
-    lastName: string,
-  ): string {
+  public static generateDefaultHandle(firstName: string, lastName: string): string {
     const nameString = `${firstName}-${lastName}`.slice(0, 25);
     // Hexadecimals look like 0x1b9Dle so we have to truncate the fixed '0x'.
     const hashValue = faker.datatype.hexaDecimal(6).slice(2);
@@ -78,12 +67,7 @@ export default class UserAccountService {
     });
   }
 
-  public async getLeaderboard(
-    from?: number,
-    to?: number,
-    offset = 0,
-    limit = 100,
-  ): Promise<UserModel[]> {
+  public async getLeaderboard(from?: number, to?: number, offset = 0, limit = 100): Promise<UserModel[]> {
     // convert timestamps from seconds to milliseconds
     if (from) from *= 1000;
     if (to) to *= 1000;
@@ -96,9 +80,7 @@ export default class UserAccountService {
       if (from) from = from > earliest ? moment(from).startOf('day').valueOf() : null;
       // if right bound is before the current day, round to the end of the day
       if (to) {
-        to = to <= moment().startOf('day').valueOf()
-          ? moment(to).endOf('day').valueOf()
-          : null;
+        to = to <= moment().startOf('day').valueOf() ? moment(to).endOf('day').valueOf() : null;
       }
       const leaderboardRepository = Repositories.leaderboard(txn);
 
@@ -119,10 +101,7 @@ export default class UserAccountService {
     return users;
   }
 
-  public async update(
-    user: UserModel,
-    userPatches: UserPatches,
-  ): Promise<UserModel> {
+  public async update(user: UserModel, userPatches: UserPatches): Promise<UserModel> {
     const changes: Partial<UserModel> = userPatches;
     if (userPatches.passwordChange) {
       const { password: currentPassword, newPassword } = userPatches.passwordChange;
@@ -137,9 +116,7 @@ export default class UserAccountService {
     return this.transactions.readWrite(async (txn) => {
       if (userPatches.handle) {
         const userRepository = Repositories.user(txn);
-        const isHandleTaken = await userRepository.isHandleTaken(
-          userPatches.handle,
-        );
+        const isHandleTaken = await userRepository.isHandleTaken(userPatches.handle);
         if (isHandleTaken) throw new BadRequestError('This handle is already in use.');
       }
       const updatedFields = Object.keys(userPatches).join(', ');
@@ -153,19 +130,14 @@ export default class UserAccountService {
     });
   }
 
-  public async updateProfilePicture(
-    user: UserModel,
-    profilePicture: string,
-  ): Promise<UserModel> {
+  public async updateProfilePicture(user: UserModel, profilePicture: string): Promise<UserModel> {
     return this.transactions.readWrite(async (txn) => Repositories.user(txn).upsertUser(user, { profilePicture }));
   }
 
-  public async getCurrentUserActivityStream(
-    uuid: Uuid,
-  ): Promise<ActivityModel[]> {
-    const stream = await this.transactions.readOnly(async (txn) => Repositories
-      .activity(txn)
-      .getCurrentUserActivityStream(uuid));
+  public async getCurrentUserActivityStream(uuid: Uuid): Promise<ActivityModel[]> {
+    const stream = await this.transactions.readOnly(async (txn) =>
+      Repositories.activity(txn).getCurrentUserActivityStream(uuid),
+    );
     return stream;
   }
 
@@ -180,32 +152,19 @@ export default class UserAccountService {
   public async createMilestone(milestone: Milestone): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       await Repositories.user(txn).addPointsToAll(milestone.points);
-      await Repositories.activity(txn).logMilestone(
-        milestone.name,
-        milestone.points,
-      );
+      await Repositories.activity(txn).logMilestone(milestone.name, milestone.points);
     });
   }
 
-  public async grantBonusPoints(
-    emails: string[],
-    description: string,
-    points: number,
-  ) {
+  public async grantBonusPoints(emails: string[], description: string, points: number) {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       const users = await userRepository.findByEmails(emails);
       const emailsFound = users.map((user) => user.email);
-      const emailsNotFound = emails.filter(
-        (email) => !emailsFound.includes(email),
-      );
+      const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
 
       if (emailsNotFound.length > 0) {
-        throw new BadRequestError(
-          `Couldn't find accounts matching these emails: ${JSON.stringify(
-            emailsNotFound,
-          )}`,
-        );
+        throw new BadRequestError(`Couldn't find accounts matching these emails: ${JSON.stringify(emailsNotFound)}`);
       }
 
       await userRepository.addPointsToMany(users, points);
@@ -225,9 +184,7 @@ export default class UserAccountService {
     return this.transactions.readOnly(async (txn) => {
       const userProfile = user.getFullUserProfile();
       userProfile.resumes = await Repositories.resume(txn).findAllByUser(user);
-      userProfile.userSocialMedia = await Repositories.userSocialMedia(
-        txn,
-      ).getSocialMediaForUser(user);
+      userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
       return userProfile;
     });
   }
@@ -235,9 +192,7 @@ export default class UserAccountService {
   public async getPublicProfile(user: UserModel): Promise<PublicProfile> {
     return this.transactions.readOnly(async (txn) => {
       const userProfile = user.getPublicProfile();
-      userProfile.userSocialMedia = await Repositories.userSocialMedia(
-        txn,
-      ).getSocialMediaForUser(user);
+      userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
       return userProfile;
     });
   }
@@ -265,14 +220,10 @@ export default class UserAccountService {
       const userRepository = Repositories.user(txn);
       const users = await userRepository.findByEmails(emails);
       const emailsFound = users.map((user) => user.email);
-      const emailsNotFound = emails.filter(
-        (email) => !emailsFound.includes(email),
-      );
+      const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
 
       if (emailsNotFound.length > 0) {
-        throw new BadRequestError(
-          `Couldn't find accounts matching these emails: ${emailsNotFound}`,
-        );
+        throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
       }
 
       const emailToUserMap = users.reduce((map, user) => {
@@ -294,9 +245,7 @@ export default class UserAccountService {
 
           // Prevent users from promoting to admin or demoting from admin
           if (oldAccess === 'ADMIN' || accessType === 'ADMIN') {
-            throw new ForbiddenError(
-              'Cannot alter access level of admin users',
-            );
+            throw new ForbiddenError('Cannot alter access level of admin users');
           }
 
           const updatedUser = await userRepository.upsertUser(userToUpdate, {

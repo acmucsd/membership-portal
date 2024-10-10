@@ -13,11 +13,7 @@ import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
 import FeedbackService from '../../services/FeedbackService';
-import {
-  GetFeedbackResponse,
-  SubmitFeedbackResponse,
-  UpdateFeedbackStatusResponse,
-} from '../../types';
+import { GetFeedbackResponse, SubmitFeedbackResponse, UpdateFeedbackStatusResponse } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
@@ -38,14 +34,10 @@ export class FeedbackController {
   @Get()
   async getFeedback(
     @QueryParams() options: FeedbackSearchOptions,
-      @AuthenticatedUser() user: UserModel,
+    @AuthenticatedUser() user: UserModel,
   ): Promise<GetFeedbackResponse> {
     const canSeeAllFeedback = PermissionsService.canSeeAllFeedback(user);
-    const feedback = await this.feedbackService.getFeedback(
-      canSeeAllFeedback,
-      user,
-      options,
-    );
+    const feedback = await this.feedbackService.getFeedback(canSeeAllFeedback, user, options);
     return {
       error: null,
       feedback: feedback.map((fb) => fb.getPublicFeedback()),
@@ -55,27 +47,21 @@ export class FeedbackController {
   @Post()
   async submitFeedback(
     @Body() submitFeedbackRequest: SubmitFeedbackRequest,
-      @AuthenticatedUser() user: UserModel,
+    @AuthenticatedUser() user: UserModel,
   ): Promise<SubmitFeedbackResponse> {
     if (!PermissionsService.canSubmitFeedback(user)) throw new ForbiddenError();
-    const feedback = await this.feedbackService.submitFeedback(
-      user,
-      submitFeedbackRequest.feedback,
-    );
+    const feedback = await this.feedbackService.submitFeedback(user, submitFeedbackRequest.feedback);
     return { error: null, feedback: feedback.getPublicFeedback() };
   }
 
   @Patch('/:uuid')
   async updateFeedbackStatus(
     @Params() params: UuidParam,
-      @Body() updateFeedbackStatusRequest: UpdateFeedbackStatusRequest,
-      @AuthenticatedUser() user: UserModel,
+    @Body() updateFeedbackStatusRequest: UpdateFeedbackStatusRequest,
+    @AuthenticatedUser() user: UserModel,
   ): Promise<UpdateFeedbackStatusResponse> {
     if (!PermissionsService.canSeeAllFeedback(user)) throw new ForbiddenError();
-    const feedback = await this.feedbackService.updateFeedbackStatus(
-      params.uuid,
-      updateFeedbackStatusRequest.status,
-    );
+    const feedback = await this.feedbackService.updateFeedbackStatus(params.uuid, updateFeedbackStatusRequest.status);
     return { error: null, feedback: feedback.getPublicFeedback() };
   }
 }

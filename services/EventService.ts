@@ -32,24 +32,18 @@ export default class EventService {
     return eventCreated;
   }
 
-  public async getAllEvents(
-    options: EventSearchOptions,
-  ): Promise<EventModel[]> {
+  public async getAllEvents(options: EventSearchOptions): Promise<EventModel[]> {
     const events = await this.transactions.readOnly(async (txn) => Repositories.event(txn).getAllEvents(options));
     return events;
   }
 
-  public async getPastEvents(
-    options: EventSearchOptions,
-  ): Promise<EventModel[]> {
+  public async getPastEvents(options: EventSearchOptions): Promise<EventModel[]> {
     options.reverse ??= true;
     const events = await this.transactions.readOnly(async (txn) => Repositories.event(txn).getPastEvents(options));
     return events;
   }
 
-  public async getFutureEvents(
-    options: EventSearchOptions,
-  ): Promise<EventModel[]> {
+  public async getFutureEvents(options: EventSearchOptions): Promise<EventModel[]> {
     const events = await this.transactions.readOnly(async (txn) => Repositories.event(txn).getFutureEvents(options));
     return events;
   }
@@ -60,10 +54,7 @@ export default class EventService {
     return event;
   }
 
-  public async updateByUuid(
-    uuid: Uuid,
-    changes: Partial<EventModel>,
-  ): Promise<EventModel> {
+  public async updateByUuid(uuid: Uuid, changes: Partial<EventModel>): Promise<EventModel> {
     const updatedEvent = await this.transactions.readWrite(async (txn) => {
       const eventRepository = Repositories.event(txn);
       const currentEvent = await eventRepository.findByUuid(uuid);
@@ -82,9 +73,7 @@ export default class EventService {
       const eventRepository = Repositories.event(txn);
       const event = await eventRepository.findByUuid(uuid);
       if (!event) throw new NotFoundError('Event not found');
-      const attendances = await Repositories.attendance(
-        txn,
-      ).getAttendancesForEvent(uuid);
+      const attendances = await Repositories.attendance(txn).getAttendancesForEvent(uuid);
       if (attendances.length > 0) throw new ForbiddenError('Cannot delete event that has attendances');
       await eventRepository.deleteEvent(event);
     });

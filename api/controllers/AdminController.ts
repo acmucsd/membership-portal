@@ -1,13 +1,4 @@
-import {
-  JsonController,
-  Post,
-  Patch,
-  UploadedFile,
-  UseBefore,
-  ForbiddenError,
-  Body,
-  Get,
-} from 'routing-controllers';
+import { JsonController, Post, Patch, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   CreateBonusRequest,
@@ -53,9 +44,7 @@ export class AdminController {
   }
 
   @Get('/email')
-  async getAllNamesAndEmails(
-    @AuthenticatedUser() user: UserModel,
-  ): Promise<GetAllNamesAndEmailsResponse> {
+  async getAllNamesAndEmails(@AuthenticatedUser() user: UserModel): Promise<GetAllNamesAndEmailsResponse> {
     if (!PermissionsService.canSeeAllUserEmails(user)) throw new ForbiddenError();
     const namesAndEmails = await this.userAccountService.getAllNamesAndEmails();
     return { error: null, namesAndEmails };
@@ -67,9 +56,7 @@ export class AdminController {
       @AuthenticatedUser() user: UserModel,
   ): Promise<CreateMilestoneResponse> {
     if (!PermissionsService.canCreateMilestones(user)) throw new ForbiddenError();
-    await this.userAccountService.createMilestone(
-      createMilestoneRequest.milestone,
-    );
+    await this.userAccountService.createMilestone(createMilestoneRequest.milestone);
     return { error: null };
   }
 
@@ -81,11 +68,7 @@ export class AdminController {
     if (!PermissionsService.canGrantPointBonuses(user)) throw new ForbiddenError();
     const { bonus } = createBonusRequest;
     const emails = bonus.users.map((e) => e.toLowerCase());
-    await this.userAccountService.grantBonusPoints(
-      emails,
-      bonus.description,
-      bonus.points,
-    );
+    await this.userAccountService.grantBonusPoints(emails, bonus.description, bonus.points);
     return { error: null, emails };
   }
 
@@ -96,11 +79,7 @@ export class AdminController {
     })
       file: File,
   ): Promise<UploadBannerResponse> {
-    const banner = await this.storageService.upload(
-      file,
-      MediaType.BANNER,
-      'banner',
-    );
+    const banner = await this.storageService.upload(file, MediaType.BANNER, 'banner');
     return { error: null, banner };
   }
 
@@ -112,12 +91,7 @@ export class AdminController {
     if (!PermissionsService.canSubmitAttendanceForUsers(currentUser)) throw new ForbiddenError();
     const { users, event, asStaff } = submitAttendanceForUsersRequest;
     const emails = users.map((e) => e.toLowerCase());
-    const attendances = await this.attendanceService.submitAttendanceForUsers(
-      emails,
-      event,
-      asStaff,
-      currentUser,
-    );
+    const attendances = await this.attendanceService.submitAttendanceForUsers(emails, event, asStaff, currentUser);
     return { error: null, attendances };
   }
 
@@ -129,18 +103,12 @@ export class AdminController {
     if (!PermissionsService.canModifyUserAccessLevel(currentUser)) throw new ForbiddenError();
     const { accessUpdates } = modifyUserAccessLevelRequest;
     const emails = accessUpdates.map((e) => e.user.toLowerCase());
-    const updatedUsers = await this.userAccountService.updateUserAccessLevels(
-      accessUpdates,
-      emails,
-      currentUser,
-    );
+    const updatedUsers = await this.userAccountService.updateUserAccessLevels(accessUpdates, emails, currentUser);
     return { error: null, updatedUsers };
   }
 
   @Get('/access')
-  async getAllUsersWithAccessLevels(
-    @AuthenticatedUser() user: UserModel,
-  ): Promise<GetAllUserAccessLevelsResponse> {
+  async getAllUsersWithAccessLevels(@AuthenticatedUser() user: UserModel): Promise<GetAllUserAccessLevelsResponse> {
     if (!PermissionsService.canSeeAllUserAccessLevels(user)) throw new ForbiddenError();
     const users = await this.userAccountService.getAllFullUserProfiles();
     return {

@@ -5,13 +5,7 @@ import { NotFoundError } from 'routing-controllers';
 import { FeedbackModel } from '../models/FeedbackModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
-import {
-  Feedback,
-  Uuid,
-  ActivityType,
-  FeedbackStatus,
-  FeedbackSearchOptions,
-} from '../types';
+import { Feedback, Uuid, ActivityType, FeedbackStatus, FeedbackSearchOptions } from '../types';
 import { UserError } from '../utils/Errors';
 
 @Service()
@@ -33,18 +27,12 @@ export default class FeedbackService {
         return feedbackRepository.getAllFeedback(options);
       }
 
-      const userFeedback = await feedbackRepository.getStandardUserFeedback(
-        user,
-        options,
-      );
+      const userFeedback = await feedbackRepository.getStandardUserFeedback(user, options);
       return userFeedback;
     });
   }
 
-  public async submitFeedback(
-    user: UserModel,
-    feedback: Feedback,
-  ): Promise<FeedbackModel> {
+  public async submitFeedback(user: UserModel, feedback: Feedback): Promise<FeedbackModel> {
     return this.transactions.readWrite(async (txn) => {
       const event = await Repositories.event(txn).findByUuid(feedback.event);
       if (!event) throw new NotFoundError('Event not found!');
@@ -53,18 +41,14 @@ export default class FeedbackService {
 
       const hasAlreadySubmittedFeedback = await feedbackRepository.hasUserSubmittedFeedback(user, event);
       if (hasAlreadySubmittedFeedback) {
-        throw new UserError(
-          'You have already submitted feedback for this event!',
-        );
+        throw new UserError('You have already submitted feedback for this event!');
       }
 
       await Repositories.activity(txn).logActivity({
         user,
         type: ActivityType.SUBMIT_FEEDBACK,
       });
-      const addedFeedback = await feedbackRepository.upsertFeedback(
-        FeedbackModel.create({ ...feedback, user, event }),
-      );
+      const addedFeedback = await feedbackRepository.upsertFeedback(FeedbackModel.create({ ...feedback, user, event }));
       return addedFeedback;
     });
   }
@@ -83,10 +67,7 @@ export default class FeedbackService {
         user,
         type: ActivityType.FEEDBACK_ACKNOWLEDGED,
       });
-      const updatedFeedback = await feedbackRepository.upsertFeedback(
-        feedback,
-        { status },
-      );
+      const updatedFeedback = await feedbackRepository.upsertFeedback(feedback, { status });
       return updatedFeedback;
     });
   }
