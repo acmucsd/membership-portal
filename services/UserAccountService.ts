@@ -10,6 +10,7 @@ import {
   englishDataset,
   englishRecommendedTransformers,
 } from 'obscenity';
+import { UserError } from 'utils/Errors';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
@@ -166,6 +167,23 @@ export default class UserAccountService {
     });
   }
 
+  public async collectOnboarding(user: UserModel): Promise<UserModel> {
+    if (user.attendances.length < 5
+      || user.resumes.length < 1
+      || user.profilePicture == null
+      || user.bio == null) {
+      throw new UserError('Onboarding tasks not completed');
+    }
+    if (user.onboardingCollected) {
+      throw new UserError('Onboarding reward already collected');
+    }
+    return this.transactions.readWrite(async (txn) => {
+      const userRepository = Repositories.user(txn);
+      await userRepository.addPoints(user, 10);
+      return userRepository.upsertUser(user, { onboardingCollected: true });
+    });
+  }
+
   public async grantBonusPoints(emails: string[], description: string, points: number) {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
@@ -186,10 +204,6 @@ export default class UserAccountService {
     return this.transactions.readOnly(async (txn) => Repositories
       .user(txn)
       .getAllNamesAndEmails());
-  }
-
-  public async checkOnboarding(user: UserModel) : Promise<void> {
-
   }
 
   /**
