@@ -201,6 +201,7 @@ export default class UserAccountService {
       const userProfile = user.getFullUserProfile();
       userProfile.resumes = await Repositories.resume(txn).findAllByUser(user);
       userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
+      userProfile.attendanceCount = (await Repositories.attendance(txn).getAttendancesForUser(user)).length;
       return userProfile;
     });
   }

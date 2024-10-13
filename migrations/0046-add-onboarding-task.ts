@@ -15,7 +15,7 @@ export class AddOnboardingTask1727933494169 implements MigrationInterface {
         name: 'onboardingCollected',
         type: 'boolean',
         isNullable: true,
-        default: true,
+        default: false,
       }),
     ]);
   }
@@ -25,7 +25,7 @@ export class AddOnboardingTask1727933494169 implements MigrationInterface {
       new TableColumn({
         name: 'onboardingSeen',
         type: 'boolean',
-        isNullable: true,
+        isNullable: false,
         default: false,
       }),
       new TableColumn({
