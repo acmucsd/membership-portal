@@ -10,7 +10,6 @@ import {
   englishDataset,
   englishRecommendedTransformers,
 } from 'obscenity';
-import { UserError } from 'utils/Errors';
 import Repositories, { TransactionsManager } from '../repositories';
 import {
   Uuid,
