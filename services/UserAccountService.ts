@@ -167,14 +167,15 @@ export default class UserAccountService {
   }
 
   public async collectOnboarding(user: UserModel): Promise<UserModel> {
-    if (user.attendances.length < 5
-      || user.resumes.length < 1
-      || user.profilePicture == null
-      || user.bio == null) {
-      throw new BadRequestError('Onboarding tasks not completed');
+    const userProfile = await this.getFullUserProfile(user);
+    if (userProfile.attendanceCount < 5
+      || userProfile.resumes.length < 1
+      || userProfile.profilePicture == null
+      || userProfile.bio == null) {
+      throw new BadRequestError('Onboarding tasks not completed!');
     }
-    if (user.onboardingCollected) {
-      throw new BadRequestError('Onboarding reward already collected');
+    if (userProfile.onboardingCollected) {
+      throw new BadRequestError('Onboarding reward already collected!');
     }
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
