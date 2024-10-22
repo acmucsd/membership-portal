@@ -73,6 +73,9 @@ export class EventModel extends BaseEntity {
   @Column('varchar', { nullable: true })
   googleCalendarEvent: Uuid;
 
+  @Column('varchar', { nullable: true })
+  food: string;
+
   public getPublicEvent(canSeeAttendanceCode = false): PublicEvent {
     const publicEvent: PublicEvent = {
       uuid: this.uuid,
@@ -91,6 +94,7 @@ export class EventModel extends BaseEntity {
       staffPointBonus: this.staffPointBonus,
       discordEvent: this.discordEvent,
       googleCalendarEvent: this.googleCalendarEvent,
+      food: this.food,
     };
     if (canSeeAttendanceCode) publicEvent.attendanceCode = this.attendanceCode;
     return publicEvent;
