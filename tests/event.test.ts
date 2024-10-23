@@ -39,6 +39,7 @@ describe('event creation', () => {
       start: moment().subtract(2, 'hour').toDate(),
       end: moment().subtract(1, 'hour').toDate(),
       attendanceCode: 'p4rty',
+      foodItems: 'Boba',
       pointValue: 10,
     };
 
@@ -57,6 +58,7 @@ describe('event creation', () => {
     expect(eventResponse.event.committee).toEqual(event.committee);
     expect(eventResponse.event.start).toEqual(event.start);
     expect(eventResponse.event.end).toEqual(event.end);
+    expect(eventResponse.event.foodItems).toEqual(event.foodItems);
     expect(eventResponse.event.pointValue).toEqual(event.pointValue);
 
     // verifying response from event lookup
@@ -83,6 +85,7 @@ describe('event creation', () => {
       start: moment().subtract(2, 'hour').toDate(),
       end: moment().subtract(1, 'hour').toDate(),
       attendanceCode: 'p4rty',
+      foodItems: '',
       pointValue: 10,
     };
 
@@ -114,6 +117,7 @@ describe('event creation', () => {
       start: moment().subtract(1, 'hour').toDate(),
       end: moment().subtract(2, 'hour').toDate(),
       attendanceCode: 'p4rty',
+      foodItems: null,
       pointValue: 10,
     };
 
