@@ -9,8 +9,7 @@ export class AddFoodItemsColumn1728959627663 implements MigrationInterface {
         name: 'foodItems',
         type: 'varchar(255)',
         isNullable: true,
-      }),
-    );
+      }));
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -18,7 +17,6 @@ export class AddFoodItemsColumn1728959627663 implements MigrationInterface {
       new TableColumn({
         name: 'foodItems',
         type: 'varchar(255)',
-      }),
-    );
+      }));
   }
 }
