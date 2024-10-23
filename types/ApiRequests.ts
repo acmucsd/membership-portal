@@ -157,7 +157,7 @@ export interface OptionalEventProperties {
   staffPointBonus?: number;
   discordEvent?: Uuid;
   googleCalendarEvent?: Uuid;
-  food?: string;
+  foodItems?: string;
 }
 
 export interface Event extends OptionalEventProperties {

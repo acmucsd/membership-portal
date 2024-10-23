@@ -37,7 +37,7 @@ export class OptionalEventProperties implements IOptionalEventProperties {
   googleCalendarEvent?: Uuid;
 
   @Allow()
-  food?: string;
+  foodItems?: string;
 }
 
 export class Event extends OptionalEventProperties implements IEvent {

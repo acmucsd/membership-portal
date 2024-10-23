@@ -43,7 +43,7 @@ export class EventFactory {
       thumbnail: FactoryUtils.getRandomImageUrl(),
       discordEvent: faker.datatype.hexaDecimal(10),
       googleCalendarEvent: faker.datatype.hexaDecimal(10),
-      food: null,
+      foodItems: null,
     });
     return EventModel.merge(fake, substitute);
   }
