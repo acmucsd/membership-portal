@@ -47,6 +47,9 @@ export class UserPatches implements IUserPatches {
   @Allow()
   isAttendancePublic?: boolean;
 
+  @Allow()
+  onboardingSeen?: boolean;
+
   @Type(() => PasswordUpdate)
   @ValidateNested()
   @HasMatchingPasswords()

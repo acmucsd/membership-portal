@@ -166,6 +166,25 @@ export default class UserAccountService {
     });
   }
 
+  public async collectOnboarding(user: UserModel): Promise<UserModel> {
+    const userProfile = await this.getFullUserProfile(user);
+    if (userProfile.attendanceCount < 5
+      || userProfile.resumes.length < 1
+      || userProfile.profilePicture == null
+      || userProfile.bio == null) {
+      throw new BadRequestError('Onboarding tasks not completed!');
+    }
+    if (userProfile.firstTasksCompleted) {
+      throw new BadRequestError('Onboarding reward already collected!');
+    }
+    return this.transactions.readWrite(async (txn) => {
+      const userRepository = Repositories.user(txn);
+      await userRepository.addPoints(user, 10);
+      Repositories.activity(txn).logBonus([user], 'First tasks reward', 10);
+      return userRepository.upsertUser(user, { firstTasksCompleted: true });
+    });
+  }
+
   public async grantBonusPoints(emails: string[], description: string, points: number) {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
@@ -197,6 +216,7 @@ export default class UserAccountService {
       const userProfile = user.getFullUserProfile();
       userProfile.resumes = await Repositories.resume(txn).findAllByUser(user);
       userProfile.userSocialMedia = await Repositories.userSocialMedia(txn).getSocialMediaForUser(user);
+      userProfile.attendanceCount = (await Repositories.attendance(txn).getAttendancesForUser(user)).length;
       return userProfile;
     });
   }
