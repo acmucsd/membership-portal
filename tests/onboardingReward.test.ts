@@ -40,7 +40,7 @@ describe('collect onboarding reward', () => {
     const response = await userController.collectOnboarding(member);
     const userProfile = response.user;
 
-    expect(userProfile.onboardingCollected).toBe(true);
+    expect(userProfile.firstTasksCompleted).toBe(true);
     expect(userProfile.points).toBe(60);
   });
 
@@ -63,7 +63,7 @@ describe('collect onboarding reward', () => {
     const member = UserFactory.fake({
       bio: 'this is a bio',
       profilePicture: 'https://pfp.com',
-      onboardingCollected: true,
+      firstTasksCompleted: true,
     });
     const resume = ResumeFactory.fake({ user: member, isResumeVisible: true });
 
