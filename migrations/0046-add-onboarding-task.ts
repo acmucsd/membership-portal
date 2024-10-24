@@ -12,7 +12,7 @@ export class AddOnboardingTask1727933494169 implements MigrationInterface {
         default: false,
       }),
       new TableColumn({
-        name: 'onboardingCollected',
+        name: 'firstTasksCompleted',
         type: 'boolean',
         isNullable: true,
         default: false,
@@ -29,7 +29,7 @@ export class AddOnboardingTask1727933494169 implements MigrationInterface {
         default: false,
       }),
       new TableColumn({
-        name: 'onboardingRewarded',
+        name: 'firstTasksCompleted',
         type: 'boolean',
         default: false,
         isNullable: false,

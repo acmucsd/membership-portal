@@ -180,6 +180,7 @@ export default class UserAccountService {
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       await userRepository.addPoints(user, 10);
+      Repositories.activity(txn).logBonus([user], 'First tasks reward', 10);
       return userRepository.upsertUser(user, { onboardingCollected: true });
     });
   }
