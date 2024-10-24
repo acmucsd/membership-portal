@@ -69,7 +69,7 @@ export class UserModel extends BaseEntity {
   onboardingSeen: boolean;
 
   @Column('boolean', { default: false })
-  onboardingCollected: boolean;
+  firstTasksCompleted: boolean;
 
   @OneToMany((type) => ActivityModel, (activity) => activity.user, { cascade: true })
   activities: ActivityModel[];
@@ -161,7 +161,7 @@ export class UserModel extends BaseEntity {
       credits: this.credits,
       isAttendancePublic: this.isAttendancePublic,
       onboardingSeen: this.onboardingSeen,
-      onboardingCollected: this.onboardingCollected,
+      firstTasksCompleted: this.firstTasksCompleted,
     };
     if (this.attendances) {
       fullUserProfile.attendanceCount = this.attendances.length;

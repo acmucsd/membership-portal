@@ -174,14 +174,14 @@ export default class UserAccountService {
       || userProfile.bio == null) {
       throw new BadRequestError('Onboarding tasks not completed!');
     }
-    if (userProfile.onboardingCollected) {
+    if (userProfile.firstTasksCompleted) {
       throw new BadRequestError('Onboarding reward already collected!');
     }
     return this.transactions.readWrite(async (txn) => {
       const userRepository = Repositories.user(txn);
       await userRepository.addPoints(user, 10);
       Repositories.activity(txn).logBonus([user], 'First tasks reward', 10);
-      return userRepository.upsertUser(user, { onboardingCollected: true });
+      return userRepository.upsertUser(user, { firstTasksCompleted: true });
     });
   }
 

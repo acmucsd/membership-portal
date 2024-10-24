@@ -360,7 +360,7 @@ export interface PrivateProfile extends PublicProfile {
   resumes?: PublicResume[],
   attendanceCount?: number,
   onboardingSeen: boolean,
-  onboardingCollected: boolean,
+  firstTasksCompleted: boolean,
 }
 
 export interface PublicFeedback {
