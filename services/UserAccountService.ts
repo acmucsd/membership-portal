@@ -289,7 +289,7 @@ export default class UserAccountService {
           .activity(txn)
           .logActivity(activity);
 
-        return updatedUser.getFullUserProfile();
+        return updatedUser;
       }));
 
       return updatedUsers;
