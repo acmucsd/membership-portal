@@ -994,6 +994,7 @@ describe('merch order pickup events', () => {
 
     const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
       { relations: ['orders', 'linkedEvent'] });
+
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
 
     // edit a linked event

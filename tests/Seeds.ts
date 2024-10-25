@@ -209,6 +209,7 @@ async function seed(): Promise<void> {
     ...EventFactory.daysBefore(6),
     attendanceCode: 'galaxybrain',
     ...staffed,
+    foodItems: 'Boba',
   });
   const PAST_HACK_WORKSHOP = EventFactory.fake({
     title: 'Hack: Intro to Rust',
