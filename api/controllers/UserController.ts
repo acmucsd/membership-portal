@@ -96,6 +96,12 @@ export class UserController {
     return { error: null, user: userProfile };
   }
 
+  @Patch('/onboarding/collect')
+  async collectOnboarding(@AuthenticatedUser() user: UserModel): Promise<GetCurrentUserResponse> {
+    const userProfile = await this.userAccountService.collectOnboarding(user);
+    return { error: null, user: userProfile };
+  }
+
   @Patch()
   async patchCurrentUser(@Body() patchUserRequest: PatchUserRequest,
     @AuthenticatedUser() user: UserModel): Promise<PatchUserResponse> {
