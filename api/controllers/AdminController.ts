@@ -97,6 +97,6 @@ export class AdminController {
   async getAllUsersWithAccessLevels(@AuthenticatedUser() user: UserModel): Promise<GetAllUserAccessLevelsResponse> {
     if (!PermissionsService.canSeeAllUserAccessLevels(user)) throw new ForbiddenError();
     const users = await this.userAccountService.getAllFullUserProfiles();
-    return { error: null, users };
+    return { error: null, users: users.map((u) => u.getFullUserProfile()) };
   }
 }

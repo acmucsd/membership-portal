@@ -17,6 +17,6 @@ export class LeaderboardController {
   async getLeaderboard(@QueryParams() filters: SlidingLeaderboardQueryParams): Promise<GetLeaderboardResponse> {
     const { from, to, offset, limit } = filters;
     const leaderboard = await this.userAccountService.getLeaderboard(from, to, offset, limit);
-    return { error: null, leaderboard };
+    return { error: null, leaderboard: leaderboard.map((u) => u.getPublicProfile()) };
   }
 }

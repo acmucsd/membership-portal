@@ -50,14 +50,14 @@ export class UserController {
       return this.getCurrentUserActivityStream(currentUser);
     }
     const activityStream = await this.userAccountService.getUserActivityStream(params.uuid);
-    return { error: null, activity: activityStream };
+    return { error: null, activity: activityStream.map((activity) => activity.getPublicActivity()) };
   }
 
   @Get('/activity')
   async getCurrentUserActivityStream(@AuthenticatedUser() user: UserModel):
   Promise<GetUserActivityStreamResponse> {
     const activityStream = await this.userAccountService.getCurrentUserActivityStream(user.uuid);
-    return { error: null, activity: activityStream };
+    return { error: null, activity: activityStream.map((activity) => activity.getPublicActivity()) };
   }
 
   @Post('/picture')
