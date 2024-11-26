@@ -65,6 +65,9 @@ export class UserModel extends BaseEntity {
   @Column('integer', { default: 0 })
   credits: number;
 
+  @Column('boolean', { default: false })
+  onboardingSeen: boolean;
+
   @OneToMany((type) => ActivityModel, (activity) => activity.user, { cascade: true })
   activities: ActivityModel[];
 
@@ -154,9 +157,13 @@ export class UserModel extends BaseEntity {
       points: this.points,
       credits: this.credits,
       isAttendancePublic: this.isAttendancePublic,
+      onboardingSeen: this.onboardingSeen,
     };
     if (this.userSocialMedia) {
       fullUserProfile.userSocialMedia = this.userSocialMedia.map((sm) => sm.getPublicSocialMedia());
+    }
+    if (this.resumes) {
+      fullUserProfile.resumes = this.resumes.map((rm) => rm.getPublicResume());
     }
     return fullUserProfile;
   }

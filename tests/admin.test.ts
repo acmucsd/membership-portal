@@ -1,6 +1,6 @@
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
 import { In } from 'typeorm';
-import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType } from '../types';
+import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType, NameAndEmail } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { UserModel } from '../models/UserModel';
@@ -131,19 +131,24 @@ describe('retroactive attendance submission', () => {
   });
 });
 
-describe('email retrieval', () => {
+describe('names and emails retrieval', () => {
   test('gets all the emails of stored users', async () => {
     const conn = await DatabaseConnection.get();
     const users = UserFactory.create(5);
-    const emails = users.map((user) => user.email.toLowerCase());
+    const namesAndEmails: NameAndEmail[] = users.map((user) => ({ firstName: user.firstName,
+      lastName: user.lastName,
+      email:
+      user.email.toLowerCase() }));
     const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
 
     await new PortalState()
       .createUsers(...users, admin)
       .write();
 
-    const response = await ControllerFactory.admin(conn).getAllEmails(admin);
-    expect(expect.arrayContaining(response.emails)).toEqual([...emails, admin.email]);
+    const response = await ControllerFactory.admin(conn).getAllNamesAndEmails(admin);
+    const expected: NameAndEmail = { firstName: admin.firstName, lastName: admin.lastName, email: admin.email };
+    expect(expect.arrayContaining(response.namesAndEmails)).toEqual([...namesAndEmails,
+      expected]);
   });
 });
 

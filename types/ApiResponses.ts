@@ -6,7 +6,6 @@ import {
 import { MerchItemOptionMetadata, Uuid } from '.';
 
 // RESPONSE TYPES
-
 export interface CustomErrorBody {
   name: string;
   message: string;
@@ -31,8 +30,8 @@ export interface UploadBannerResponse extends ApiResponse {
   banner: string;
 }
 
-export interface GetAllEmailsResponse extends ApiResponse {
-  emails: string[];
+export interface GetAllNamesAndEmailsResponse extends ApiResponse {
+  namesAndEmails: NameAndEmail[];
 }
 
 export interface SubmitAttendanceForUsersResponse extends ApiResponse {
@@ -119,6 +118,7 @@ export interface PublicEvent {
   staffPointBonus: number;
   discordEvent: Uuid;
   googleCalendarEvent: Uuid;
+  foodItems: string;
 }
 
 export interface GetPastEventsResponse extends ApiResponse {
@@ -325,6 +325,11 @@ export interface FulfillMerchOrderResponse extends ApiResponse {
 }
 
 // USER
+export interface NameAndEmail {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 export interface PublicActivity {
   type: ActivityType,
@@ -354,6 +359,7 @@ export interface PrivateProfile extends PublicProfile {
   state: string,
   credits: number,
   resumes?: PublicResume[],
+  onboardingSeen: boolean,
 }
 
 export interface PublicFeedback {

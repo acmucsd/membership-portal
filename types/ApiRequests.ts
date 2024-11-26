@@ -68,6 +68,7 @@ export interface UserPatches {
   graduationYear?: number;
   bio?: string;
   isAttendancePublic?: boolean;
+  onboardingSeen?: boolean;
   passwordChange?: PasswordUpdate;
 }
 
@@ -157,6 +158,7 @@ export interface OptionalEventProperties {
   staffPointBonus?: number;
   discordEvent?: Uuid;
   googleCalendarEvent?: Uuid;
+  foodItems?: string;
 }
 
 export interface Event extends OptionalEventProperties {
