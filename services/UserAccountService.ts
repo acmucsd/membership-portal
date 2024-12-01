@@ -31,8 +31,8 @@ export default class UserAccountService {
 
   private matcher: RegExpMatcher;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactionsManager: TransactionsManager) {
+    this.transactions = transactionsManager;
     this.matcher = new RegExpMatcher({
       ...englishDataset.build(),
       ...englishRecommendedTransformers,

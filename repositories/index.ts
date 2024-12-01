@@ -1,5 +1,5 @@
-import { EntityManager } from 'typeorm';
-import AsyncRetry = require('async-retry');
+import { Service } from 'typedi';
+import { DataSource, EntityManager } from 'typeorm';
 import { UserRepository } from './UserRepository';
 import { FeedbackRepository } from './FeedbackRepository';
 import { AttendanceRepository, ExpressCheckinRepository } from './AttendanceRepository';
@@ -17,114 +17,86 @@ import { LeaderboardRepository } from './LeaderboardRepository';
 import { ResumeRepository } from './ResumeRepository';
 import { UserSocialMediaRepository } from './UserSocialMediaRepository';
 
-const HINT_FOR_RETRIABLE_TRANSACTIONS : string = 'The transaction might succeed if retried.';
-const AMOUNT_OF_RETRIES : number = 10;
-
 export default class Repositories {
-  public static activity(transactionalEntityManager: EntityManager): ActivityRepository {
-    return transactionalEntityManager.getCustomRepository(ActivityRepository);
+  public static activity(entityManager: EntityManager) {
+    return entityManager.withRepository(ActivityRepository);
   }
 
-  public static attendance(transactionalEntityManager: EntityManager): AttendanceRepository {
-    return transactionalEntityManager.getCustomRepository(AttendanceRepository);
+  public static attendance(entityManager: EntityManager) {
+    return entityManager.withRepository(AttendanceRepository);
   }
 
-  public static event(transactionalEntityManager: EntityManager): EventRepository {
-    return transactionalEntityManager.getCustomRepository(EventRepository);
+  public static event(entityManager: EntityManager) {
+    return entityManager.withRepository(EventRepository);
   }
 
-  public static leaderboard(transactionalEntityManager: EntityManager): LeaderboardRepository {
-    return transactionalEntityManager.getCustomRepository(LeaderboardRepository);
+  public static feedback(entityManager: EntityManager) {
+    return entityManager.withRepository(FeedbackRepository);
   }
 
-  public static merchOrder(transactionalEntityManager: EntityManager): MerchOrderRepository {
-    return transactionalEntityManager.getCustomRepository(MerchOrderRepository);
+  public static leaderboard(entityManager: EntityManager) {
+    return entityManager.withRepository(LeaderboardRepository);
   }
 
-  public static merchOrderItem(transactionalEntityManager: EntityManager): OrderItemRepository {
-    return transactionalEntityManager.getCustomRepository(OrderItemRepository);
+  public static merchStoreCollection(entityManager: EntityManager) {
+    return entityManager.withRepository(MerchCollectionRepository);
   }
 
-  public static merchOrderPickupEvent(transactionalEntityManager: EntityManager): OrderPickupEventRepository {
-    return transactionalEntityManager.getCustomRepository(OrderPickupEventRepository);
+  public static merchStoreCollectionPhoto(entityManager: EntityManager) {
+    return entityManager.withRepository(MerchCollectionPhotoRepository);
   }
 
-  public static merchStoreCollection(transactionalEntityManager: EntityManager): MerchCollectionRepository {
-    return transactionalEntityManager.getCustomRepository(MerchCollectionRepository);
+  public static merchStoreItem(entityManager: EntityManager) {
+    return entityManager.withRepository(MerchItemRepository);
   }
 
-  public static merchStoreCollectionPhoto(transactionalEntityManager: EntityManager): MerchCollectionPhotoRepository {
-    return transactionalEntityManager.getCustomRepository(MerchCollectionPhotoRepository);
+  public static merchStoreItemOption(entityManager: EntityManager) {
+    return entityManager.withRepository(MerchItemOptionRepository);
   }
 
-  public static merchStoreItem(transactionalEntityManager: EntityManager): MerchItemRepository {
-    return transactionalEntityManager.getCustomRepository(MerchItemRepository);
+  public static merchStoreItemPhoto(entityManager: EntityManager) {
+    return entityManager.withRepository(MerchItemPhotoRepository);
   }
 
-  public static merchStoreItemPhoto(transactionalEntityManager: EntityManager): MerchItemPhotoRepository {
-    return transactionalEntityManager.getCustomRepository(MerchItemPhotoRepository);
+  public static merchOrder(entityManager: EntityManager) {
+    return entityManager.withRepository(MerchOrderRepository);
   }
 
-  public static merchStoreItemOption(transactionalEntityManager: EntityManager): MerchItemOptionRepository {
-    return transactionalEntityManager.getCustomRepository(MerchItemOptionRepository);
+  public static merchOrderItem(entityManager: EntityManager) {
+    return entityManager.withRepository(OrderItemRepository);
   }
 
-  public static user(transactionalEntityManager: EntityManager): UserRepository {
-    return transactionalEntityManager.getCustomRepository(UserRepository);
+  public static merchOrderPickupEvent(entityManager: EntityManager) {
+    return entityManager.withRepository(OrderPickupEventRepository);
   }
 
-  public static resume(transactionalEntityManager: EntityManager): ResumeRepository {
-    return transactionalEntityManager.getCustomRepository(ResumeRepository);
+  public static resume(entityManager: EntityManager) {
+    return entityManager.withRepository(ResumeRepository);
   }
 
-  public static feedback(transactionalEntityManager: EntityManager): FeedbackRepository {
-    return transactionalEntityManager.getCustomRepository(FeedbackRepository);
+  public static user(entityManager: EntityManager) {
+    return entityManager.withRepository(UserRepository);
   }
 
-  public static userSocialMedia(transactionalEntityManager: EntityManager): UserSocialMediaRepository {
-    return transactionalEntityManager.getCustomRepository(UserSocialMediaRepository);
-  }
-
-  public static expressCheckin(transactionalEntityManager: EntityManager): ExpressCheckinRepository {
-    return transactionalEntityManager.getCustomRepository(ExpressCheckinRepository);
+  public static userSocialMedia(entityManager: EntityManager) {
+    return entityManager.withRepository(UserSocialMediaRepository);
   }
 }
 
+@Service()
 export class TransactionsManager {
-  private transactionalEntityManager: EntityManager;
+  private dataSource: DataSource;
 
-  constructor(transactionalEntityManager: EntityManager) {
-    this.transactionalEntityManager = transactionalEntityManager;
+  constructor(dataSource: DataSource) {
+    this.dataSource = dataSource;
   }
 
-  // used async-retry library to handle automatic retries under transaction failure due to concurrent transactions
-  public readOnly<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    return AsyncRetry(async (bail, attemptNum) => {
-      try {
-        const res = await this.transactionalEntityManager.transaction('REPEATABLE READ', fn);
-        return res;
-      } catch (e) {
-        if (e.hint !== HINT_FOR_RETRIABLE_TRANSACTIONS) bail(e);
-        else throw e;
-      }
-    },
-    {
-      retries: AMOUNT_OF_RETRIES,
-    });
+  // add automatic retries if transaction failing often - see membership portal
+  public readOnly<T>(fn: (entityManager: EntityManager) => Promise<T>) {
+    return this.dataSource.transaction('REPEATABLE READ', fn);
   }
 
-  public readWrite<T>(fn: (transactionalEntityManager: EntityManager) => Promise<T>): Promise<T> {
-    return AsyncRetry(async (bail, attemptNum) => {
-      try {
-        const res = await this.transactionalEntityManager.transaction('SERIALIZABLE', fn);
-        return res;
-      } catch (e) {
-        if (e.hint !== HINT_FOR_RETRIABLE_TRANSACTIONS) bail(e);
-        else throw e;
-      }
-    },
-    {
-      retries: AMOUNT_OF_RETRIES,
-    });
+  public readWrite<T>(fn: (entityManager: EntityManager) => Promise<T>) {
+    return this.dataSource.transaction('SERIALIZABLE', fn);
   }
 }

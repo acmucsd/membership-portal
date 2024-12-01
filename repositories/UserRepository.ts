@@ -1,111 +1,113 @@
-import { EntityRepository, In } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import Container from 'typedi';
 import { Activity } from '../types/internal';
 import { UserModel } from '../models/UserModel';
 import { Uuid, NameAndEmail } from '../types';
-import { BaseRepository } from './BaseRepository';
 
-@EntityRepository(UserModel)
-export class UserRepository extends BaseRepository<UserModel> {
-  private static readonly SALT_ROUNDS = 10;
+const SALT_ROUNDS = 10;
 
-  public async upsertUser(user: UserModel, changes?: Partial<UserModel>): Promise<UserModel> {
-    if (changes) user = UserModel.merge(user, changes);
-    return this.repository.save(user);
-  }
+export const UserRepository = Container.get(DataSource)
+  .getRepository(UserModel)
+  .extend({
+    async upsertUser(user: UserModel, changes?: Partial<UserModel>): Promise<UserModel> {
+      if (changes) user = UserModel.merge(user, changes) as UserModel;
+      return this.repository.save(user);
+    },
 
-  public async findAll(): Promise<UserModel[]> {
-    return this.repository.find();
-  }
+    async findAll(): Promise<UserModel[]> {
+      return this.repository.find();
+    },
 
-  public async findByUuid(uuid: Uuid): Promise<UserModel> {
-    return this.repository.findOne({ uuid });
-  }
+    async findByUuid(uuid: Uuid): Promise<UserModel> {
+      return this.repository.findOne({ uuid });
+    },
 
-  public async findByHandle(handle: string): Promise<UserModel> {
-    return this.repository.findOne({ handle });
-  }
+    async findByHandle(handle: string): Promise<UserModel> {
+      return this.repository.findOne({ handle });
+    },
 
-  public async isHandleTaken(handle: string): Promise<boolean> {
-    const profile = await this.findByHandle(handle);
-    return profile !== undefined;
-  }
+    async isHandleTaken(handle: string): Promise<boolean> {
+      const profile = await this.findByHandle(handle);
+      return profile !== undefined;
+    },
 
-  public async findByEmail(email: string): Promise<UserModel> {
-    return this.repository.findOne({ email });
-  }
+    async findByEmail(email: string): Promise<UserModel> {
+      return this.repository.findOne({ email });
+    },
 
-  public async findByEmails(emails: string[]): Promise<UserModel[]> {
-    return this.repository.find({
-      email: In(emails),
-    });
-  }
+    async findByEmails(emails: string[]): Promise<UserModel[]> {
+      return this.repository.find({
+        email: In(emails),
+      });
+    },
 
-  public async isEmailInUse(email: string): Promise<boolean> {
-    const user = await this.findByEmail(email);
-    return user !== undefined;
-  }
+    async isEmailInUse(email: string): Promise<boolean> {
+      const user = await this.findByEmail(email);
+      return user !== undefined;
+    },
 
-  public async findByAccessCode(accessCode: string): Promise<UserModel> {
-    return this.repository.findOne({ accessCode });
-  }
+    async findByAccessCode(accessCode: string): Promise<UserModel> {
+      return this.repository.findOne({ accessCode });
+    },
 
-  public async getAllNamesAndEmails(): Promise<NameAndEmail[]> {
-    const namesAndEmailsRaw = await this.repository
-      .createQueryBuilder()
-      .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
-      .getRawMany();
-    const namesAndEmailsFormatted: NameAndEmail[] = namesAndEmailsRaw.map((nameAndEmailRaw) => ({ firstName:
-      nameAndEmailRaw.UserModel_firstName,
-    lastName: nameAndEmailRaw.UserModel_lastName,
-    email: nameAndEmailRaw.email }));
-    return namesAndEmailsFormatted;
-  }
+    async getAllNamesAndEmails(): Promise<NameAndEmail[]> {
+      const namesAndEmailsRaw = await this.repository
+        .createQueryBuilder()
+        .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
+        .getRawMany();
+      const namesAndEmailsFormatted: NameAndEmail[] = namesAndEmailsRaw.map((nameAndEmailRaw) => ({ firstName:
+        nameAndEmailRaw.UserModel_firstName,
+      lastName: nameAndEmailRaw.UserModel_lastName,
+      email: nameAndEmailRaw.email }));
+      return namesAndEmailsFormatted;
+    },
 
-  public static async generateHash(pass: string): Promise<string> {
-    return bcrypt.hash(pass, this.SALT_ROUNDS);
-  }
+    async generateHash(pass: string): Promise<string> {
+      return bcrypt.hash(pass, SALT_ROUNDS);
+    },
 
-  public async addPoints(user: UserModel, points: number) {
-    user.points += points;
-    user.credits += points * 100;
-    return this.repository.save(user);
-  }
-
-  public async addPointsToMany(users: UserModel[], points: number) {
-    users.forEach((user) => {
+    async addPoints(user: UserModel, points: number) {
       user.points += points;
       user.credits += points * 100;
-    });
-    return this.repository.save(users);
-  }
+      return this.repository.save(user);
+    },
 
-  public async addPointsByActivities(activities: Activity[]) {
-    const users: UserModel[] = [];
-    activities.forEach((activity) => {
-      const { user, pointsEarned } = activity;
-      user.points += pointsEarned;
-      user.credits += pointsEarned * 100;
-      users.push(user);
-    });
-    return this.repository.save(users);
-  }
+    async addPointsToMany(users: UserModel[], points: number) {
+      users.forEach((user) => {
+        user.points += points;
+        user.credits += points * 100;
+      });
+      return this.repository.save(users);
+    },
 
-  public async addPointsToAll(points: number) {
-    return this.repository.createQueryBuilder()
-      .update()
-      .set({
-        points: () => `points + ${points}`,
-        credits: () => `credits + ${points * 100}`,
-      })
-      .execute();
-  }
+    async addPointsByActivities(activities: Activity[]) {
+      const users: UserModel[] = [];
+      activities.forEach((activity) => {
+        const { user, pointsEarned } = activity;
+        user.points += pointsEarned;
+        user.credits += pointsEarned * 100;
+        users.push(user);
+      });
+      return this.repository.save(users);
+    },
 
-  public async getUserInfoAndAccessTypes() {
-    const profiles = await this.repository
-      .createQueryBuilder()
-      .select(['uuid', 'handle', 'email', 'UserModel.firstName', 'UserModel.lastName', 'UserModel.accessType'])
-      .getRawMany();
-    return profiles;
-  }
-}
+    async addPointsToAll(points: number) {
+      return this.repository.createQueryBuilder()
+        .update()
+        .set({
+          points: () => `points + ${points}`,
+          credits: () => `credits + ${points * 100}`,
+        })
+        .execute();
+    },
+
+    async getUserInfoAndAccessTypes() {
+      const profiles = await this.repository
+        .createQueryBuilder()
+        .select(['uuid', 'handle', 'email', 'UserModel.firstName', 'UserModel.lastName', 'UserModel.accessType'])
+        .getRawMany();
+      return profiles;
+    },
+
+  });

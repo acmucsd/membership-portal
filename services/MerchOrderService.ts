@@ -33,8 +33,8 @@ export default class MerchOrderService {
 
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager, emailService: EmailService) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactions: TransactionsManager, emailService: EmailService) {
+    this.transactions = transactions;
     this.emailService = emailService;
   }
 

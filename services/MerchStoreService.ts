@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError, ForbiddenError } from 'routing-controllers';
-import { EntityManager } from 'typeorm';
+import { DeepPartial, EntityManager } from 'typeorm';
 import { difference } from 'underscore';
 import * as moment from 'moment-timezone';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
@@ -37,8 +37,8 @@ export default class MerchStoreService {
 
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactionsManager: TransactionsManager) {
+    this.transactions = transactionsManager;
   }
 
   public async findItemByUuid(uuid: Uuid, user: UserModel): Promise<PublicMerchItemWithPurchaseLimits> {
