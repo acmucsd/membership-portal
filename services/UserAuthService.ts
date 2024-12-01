@@ -3,7 +3,7 @@ import { ForbiddenError, NotFoundError, BadRequestError } from 'routing-controll
 import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { InjectManager } from 'typeorm-typedi-extensions';
-import { EntityManager } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { ExpressCheckinModel } from 'models/ExpressCheckinModel';
 import { UserRepository } from '../repositories/UserRepository';
 import { Uuid, ActivityType, UserState, UserRegistration, UserAccessType } from '../types';
@@ -21,8 +21,8 @@ interface AuthToken {
 export default class UserAuthService {
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(dataSource: DataSource) {
+    this.transactions = new TransactionsManager(dataSource);
   }
 
   public async registerUser(registration: UserRegistration): Promise<UserModel> {

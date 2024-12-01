@@ -1,4 +1,4 @@
-import { Connection } from 'typeorm';
+import { DataSource } from 'typeorm';
 import FeedbackService from '../../services/FeedbackService';
 import { FeedbackController } from '../../api/controllers/FeedbackController';
 import { UserController } from '../../api/controllers/UserController';
@@ -19,59 +19,63 @@ import MerchStoreService from '../../services/MerchStoreService';
 import MerchOrderService from '../../services/MerchOrderService';
 import ResumeService from '../../services/ResumeService';
 import UserSocialMediaService from '../../services/UserSocialMediaService';
+import { TransactionsManager } from '../../repositories';
 
 export class ControllerFactory {
-  public static user(conn: Connection, storageService = new StorageService()): UserController {
-    const userAccountService = new UserAccountService(conn.manager);
-    const userSocialMediaService = new UserSocialMediaService(conn.manager);
+  public static user(dataSource: DataSource, storageService = new StorageService()): UserController {
+    const transactionsManager = new TransactionsManager(dataSource);
+    const userAccountService = new UserAccountService(transactionsManager);
+    const userSocialMediaService = new UserSocialMediaService(transactionsManager);
     return new UserController(userAccountService, storageService, userSocialMediaService);
   }
 
-  public static resume(conn: Connection, storageService = new StorageService()): ResumeController {
-    const resumeService = new ResumeService(conn.manager);
-    return new ResumeController(resumeService, storageService);
-  }
-
-  public static feedback(conn: Connection): FeedbackController {
-    const feedbackService = new FeedbackService(conn.manager);
+  public static feedback(dataSource: DataSource): FeedbackController {
+    const transactionsManager = new TransactionsManager(dataSource);
+    const feedbackService = new FeedbackService(transactionsManager);
     return new FeedbackController(feedbackService);
   }
 
-  public static admin(conn: Connection): AdminController {
-    const userAccountService = new UserAccountService(conn.manager);
+  public static admin(dataSource: DataSource): AdminController {
+    const transactionsManager = new TransactionsManager(dataSource);
+    const userAccountService = new UserAccountService(transactionsManager);
     const storageService = new StorageService();
-    const attendanceService = new AttendanceService(conn.manager);
+    const attendanceService = new AttendanceService(transactionsManager);
     return new AdminController(storageService, userAccountService, attendanceService);
   }
 
-  public static attendance(conn: Connection, emailService = new EmailService()): AttendanceController {
-    const attendanceService = new AttendanceService(conn.manager);
+  public static attendance(dataSource: DataSource, emailService = new EmailService()): AttendanceController {
+    const transactionsManager = new TransactionsManager(dataSource);
+    const attendanceService = new AttendanceService(transactionsManager);
     return new AttendanceController(attendanceService, emailService);
   }
 
-  public static auth(conn: Connection, emailService: EmailService): AuthController {
-    const userAccountService = new UserAccountService(conn.manager);
-    const userAuthService = new UserAuthService(conn.manager);
+  public static auth(dataSource: DataSource, emailService: EmailService): AuthController {
+    const transactionsManager = new TransactionsManager(dataSource);
+    const userAccountService = new UserAccountService(transactionsManager);
+    const userAuthService = new UserAuthService(transactionsManager);
     return new AuthController(userAccountService, userAuthService, emailService);
   }
 
-  public static event(conn: Connection): EventController {
-    const eventService = new EventService(conn.manager);
+  public static event(dataSource: DataSource): EventController {
+    const transactionsManager = new TransactionsManager(dataSource);
+    const eventService = new EventService(transactionsManager);
     const storageService = new StorageService();
-    const attendanceService = new AttendanceService(conn.manager);
+    const attendanceService = new AttendanceService(transactionsManager);
     return new EventController(eventService, storageService, attendanceService);
   }
 
-  public static leaderboard(conn: Connection): LeaderboardController {
-    const userAccountService = new UserAccountService(conn.manager);
+  public static leaderboard(dataSource: DataSource): LeaderboardController {
+    const transactionsManager = new TransactionsManager(dataSource);
+    const userAccountService = new UserAccountService(transactionsManager);
     return new LeaderboardController(userAccountService);
   }
 
-  public static merchStore(conn: Connection,
+  public static merchStore(dataSource: DataSource,
     emailService = new EmailService(),
     storageService = new StorageService()): MerchStoreController {
-    const merchStoreService = new MerchStoreService(conn.manager);
-    const merchOrderService = new MerchOrderService(conn.manager, emailService);
+    const transactionsManager = new TransactionsManager(dataSource);
+    const merchStoreService = new MerchStoreService(transactionsManager);
+    const merchOrderService = new MerchOrderService(transactionsManager, emailService);
     return new MerchStoreController(merchStoreService, merchOrderService, storageService);
   }
 }

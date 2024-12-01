@@ -7,33 +7,20 @@ import { Container } from 'typedi';
 import { models as entities } from './models';
 
 import { Config } from './config';
-import { InMemoryDatabaseCache } from './utils/InMemoryDatabaseCache';
-import { logger as log } from './utils/Logger';
 import { controllers } from './api/controllers';
 import { middlewares } from './api/middleware';
+import { dataSource } from './DataSource';
 
 routingUseContainer(Container);
-ormUseContainer(Container);
 
-createConnection({
-  type: 'postgres',
-  host: Config.database.host,
-  port: Config.database.port,
-  username: Config.database.user,
-  password: Config.database.pass,
-  database: Config.database.name,
-  entities,
-  logging: Config.isDevelopment,
-  cache: {
-    provider(_connection) {
-      return new InMemoryDatabaseCache();
-    },
-  },
-}).then(() => {
-  log.info('created connection');
-}).catch((error) => {
-  log.error(error);
-});
+dataSource
+  .initialize()
+  .then(() => {
+    console.log('created connection');
+  })
+  .catch((error) => {
+    console.log(error);
+  });
 
 const app = createExpressServer({
   cors: true,

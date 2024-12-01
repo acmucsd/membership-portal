@@ -12,8 +12,8 @@ import { UserError } from '../utils/Errors';
 export default class FeedbackService {
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactionsManager: TransactionsManager) {
+    this.transactions = transactionsManager;
   }
 
   public async getFeedback(canSeeAllFeedback = false, user: UserModel,

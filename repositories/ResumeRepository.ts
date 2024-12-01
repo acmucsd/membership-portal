@@ -1,45 +1,46 @@
-import { EntityRepository } from 'typeorm';
+import { DataSource, In } from 'typeorm';
+import Container from 'typedi';
 import { ResumeModel } from '../models/ResumeModel';
-import { BaseRepository } from './BaseRepository';
 import { UserModel } from '../models/UserModel';
 
-@EntityRepository(ResumeModel)
-export class ResumeRepository extends BaseRepository<ResumeModel> {
-  public async findVisibleResumes(): Promise<ResumeModel[]> {
-    return this.repository.find({
-      relations: ['user'],
-      where: {
-        isResumeVisible: true,
-      },
-    });
-  }
-
-  public async findAllByUser(user: UserModel): Promise<ResumeModel[]> {
-    return this.repository.find({ user });
-  }
-
-  public async deleteResume(resume: ResumeModel) : Promise<ResumeModel> {
-    return this.repository.remove(resume);
-  }
-
-  public async findByUuid(uuid: string): Promise<ResumeModel> {
-    return this.repository.findOne({ uuid }, { relations: ['user'] });
-  }
-
-  public async findByUserUuid(user: string): Promise<ResumeModel> {
-    const resume = await this.repository.findOne({
-      where: {
-        user: {
-          uuid: user,
+export const ResumeRepository = Container.get(DataSource)
+  .getRepository(ResumeModel)
+  .extend({
+    async findVisibleResumes(): Promise<ResumeModel[]> {
+      return this.repository.find({
+        relations: ['user'],
+        where: {
+          isResumeVisible: true,
         },
-      },
-    });
+      });
+    },
 
-    return resume;
-  }
+    async findAllByUser(user: UserModel): Promise<ResumeModel[]> {
+      return this.repository.find({ user });
+    },
 
-  public async upsertResume(resume: ResumeModel, changes?: Partial<ResumeModel>): Promise<ResumeModel> {
-    if (changes) resume = ResumeModel.merge(resume, changes);
-    return this.repository.save(resume);
-  }
-}
+    async deleteResume(resume: ResumeModel) : Promise<ResumeModel> {
+      return this.repository.remove(resume);
+    },
+
+    async findByUuid(uuid: string): Promise<ResumeModel> {
+      return this.repository.findOne({ uuid }, { relations: ['user'] });
+    },
+
+    async findByUserUuid(user: string): Promise<ResumeModel> {
+      const resume = await this.repository.findOne({
+        where: {
+          user: {
+            uuid: user,
+          },
+        },
+      });
+
+      return resume;
+    },
+
+    async upsertResume(resume: ResumeModel, changes?: Partial<ResumeModel>): Promise<ResumeModel> {
+      if (changes) resume = ResumeModel.merge(resume, changes) as ResumeModel;
+      return this.repository.save(resume);
+    },
+  });
