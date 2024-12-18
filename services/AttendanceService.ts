@@ -16,8 +16,8 @@ import { Activity, Attendance } from '../types/internal';
 export default class AttendanceService {
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactions: TransactionsManager) {
+    this.transactions = transactions;
   }
 
   public async getAttendancesForEvent(event: Uuid): Promise<PublicAttendance[]> {

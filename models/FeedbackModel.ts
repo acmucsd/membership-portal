@@ -1,10 +1,10 @@
-import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { FeedbackStatus, FeedbackType, PublicFeedback, Uuid } from '../types';
 import { UserModel } from './UserModel';
 import { EventModel } from './EventModel';
 
 @Entity('Feedback')
-export class FeedbackModel extends BaseEntity {
+export class FeedbackModel {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

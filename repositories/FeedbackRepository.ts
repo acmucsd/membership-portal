@@ -29,19 +29,19 @@ export const FeedbackRepository = Container.get(DataSource)
 
     async upsertFeedback(feedback: FeedbackModel,
       changes?: Partial<FeedbackModel>): Promise<FeedbackModel> {
-      if (changes) feedback = FeedbackModel.merge(feedback, changes) as FeedbackModel;
-      return this.repository.save(feedback);
+      if (changes) feedback = FeedbackRepository.merge(feedback, changes);
+      return this.save(feedback);
     },
 
     async hasUserSubmittedFeedback(user: UserModel, event: EventModel): Promise<boolean> {
-      const count = await this.repository.count({
+      const count = await this.count({
         where: { user, event },
       });
       return count > 0;
     },
 
     getBaseFindQuery(options: FeedbackSearchOptions): SelectQueryBuilder<FeedbackModel> {
-      let query = this.repository.createQueryBuilder('feedback')
+      let query = this.createQueryBuilder('feedback')
         .leftJoinAndSelect('feedback.user', 'user')
         .leftJoinAndSelect('feedback.event', 'event')
         .orderBy('timestamp', 'DESC');

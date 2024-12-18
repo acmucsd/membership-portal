@@ -32,7 +32,7 @@ export const MerchCollectionRepository = Container.get(DataSource)
 
     async upsertMerchCollection(collection: MerchandiseCollectionModel,
       changes?: Partial<MerchandiseCollectionModel>): Promise<MerchandiseCollectionModel> {
-      if (changes) collection = MerchandiseCollectionModel.merge(collection, changes) as MerchandiseCollectionModel;
+      if (changes) collection = this.repository.merge(collection, changes) as MerchandiseCollectionModel;
       return this.repository.save(collection);
     },
 
@@ -63,7 +63,7 @@ export const MerchCollectionPhotoRepository = Container.get(DataSource)
 
     async upsertCollectionPhoto(photo: MerchCollectionPhotoModel,
       changes?: Partial<MerchCollectionPhotoModel>): Promise<MerchCollectionPhotoModel> {
-      if (changes) photo = MerchCollectionPhotoModel.merge(photo, changes) as MerchCollectionPhotoModel;
+      if (changes) photo = this.repository.merge(photo, changes) as MerchCollectionPhotoModel;
       return this.repository.save(photo);
     },
 
@@ -80,7 +80,7 @@ export const MerchItemRepository = Container.get(DataSource)
     },
 
     async upsertMerchItem(item: MerchandiseItemModel, changes?: Partial<MerchandiseItemModel>): Promise<MerchandiseItemModel> {
-      if (changes) item = MerchandiseItemModel.merge(item, changes) as MerchandiseItemModel;
+      if (changes) item = this.repository.merge(item, changes) as MerchandiseItemModel;
       return this.repository.save(item);
     },
 
@@ -114,7 +114,7 @@ export const MerchItemOptionRepository = Container.get(DataSource)
 
     async upsertMerchItemOption(option: MerchandiseItemOptionModel,
       changes?: Partial<MerchandiseItemOptionModel>): Promise<MerchandiseItemOptionModel> {
-      if (changes) option = MerchandiseItemOptionModel.merge(option, changes) as MerchandiseItemOptionModel;
+      if (changes) option = this.repository.merge(option, changes) as MerchandiseItemOptionModel;
       return this.repository.save(option);
     },
 
@@ -151,7 +151,7 @@ export const MerchItemPhotoRepository = Container.get(DataSource)
 
     async upsertMerchItemPhoto(merchPhoto: MerchandiseItemPhotoModel,
       changes?: Partial<MerchandiseItemPhotoModel>): Promise<MerchandiseItemPhotoModel> {
-      if (changes) merchPhoto = MerchandiseItemPhotoModel.merge(merchPhoto, changes) as MerchandiseItemPhotoModel;
+      if (changes) merchPhoto = this.repository.merge(merchPhoto, changes) as MerchandiseItemPhotoModel;
       return this.repository.save(merchPhoto);
     },
 

@@ -19,7 +19,7 @@ export const UserSocialMediaRepository = Container.get(DataSource)
 
     async upsertSocialMedia(userSocialMedia: UserSocialMediaModel,
       changes?: Partial<UserSocialMediaModel>): Promise<UserSocialMediaModel> {
-      if (changes) userSocialMedia = UserSocialMediaModel.merge(userSocialMedia, changes) as UserSocialMediaModel;
+      if (changes) userSocialMedia = this.repository.merge(userSocialMedia, changes) as UserSocialMediaModel;
       return this.repository.save(userSocialMedia);
     },
 

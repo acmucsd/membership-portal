@@ -11,7 +11,7 @@ export const UserRepository = Container.get(DataSource)
   .getRepository(UserModel)
   .extend({
     async upsertUser(user: UserModel, changes?: Partial<UserModel>): Promise<UserModel> {
-      if (changes) user = UserModel.merge(user, changes) as UserModel;
+      if (changes) user = this.repository.merge(user, changes) as UserModel;
       return this.repository.save(user);
     },
 

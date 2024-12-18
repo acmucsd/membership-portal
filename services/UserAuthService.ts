@@ -40,7 +40,7 @@ export default class UserAuthService {
       const userHandle = registration.handle
          ?? UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName);
 
-      const user = await userRepository.upsertUser(UserModel.create({
+      const user = await userRepository.upsertUser(userRepository.create({
         ...registration,
         hash: await UserRepository.generateHash(registration.password),
         accessCode: UserAuthService.generateAccessCode(),

@@ -1,4 +1,4 @@
-import { BaseEntity, DataSource, DeepPartial } from 'typeorm';
+import { DataSource, DeepPartial } from 'typeorm';
 import Container from 'typedi';
 import { ExpressCheckinModel } from '../models/ExpressCheckinModel';
 import { Uuid } from '../types';
@@ -33,11 +33,11 @@ export const AttendanceRepository = Container.get(DataSource)
     },
 
     async writeAttendance(attendance: Attendance): Promise<AttendanceModel> {
-      return this.repository.save(AttendanceModel.create(attendance as DeepPartial<AttendanceModel>));
+      return this.repository.save(this.repository.create(attendance));
     },
 
     async writeAttendanceBatch(attendances: Attendance[]) {
-      const attendanceModels = attendances.map((attendance) => AttendanceModel.create(attendance as DeepPartial<AttendanceModel>));
+      const attendanceModels = attendances.map((attendance) => this.repository.create(attendance));
       return this.repository.save(attendanceModels);
     },
 
@@ -59,6 +59,6 @@ export const ExpressCheckinRepository = Container.get(DataSource)
     },
 
     async createExpressCheckin(email: string, event: EventModel): Promise<ExpressCheckinModel> {
-      return this.repository.save(ExpressCheckinModel.create({ email, event }));
+      return this.repository.save(this.repository.create({ email, event }));
     },
   });

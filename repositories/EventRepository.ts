@@ -7,7 +7,7 @@ export const EventRepository = Container.get(DataSource)
   .getRepository(EventModel)
   .extend({
     async upsertEvent(event: EventModel, changes?: Partial<EventModel>): Promise<EventModel> {
-      if (changes) event = EventModel.merge(event, changes) as EventModel;
+      if (changes) event = this.repository.merge(event, changes);
       return this.repository.save(event);
     },
 

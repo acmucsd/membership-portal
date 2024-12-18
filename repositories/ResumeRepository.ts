@@ -40,7 +40,7 @@ export const ResumeRepository = Container.get(DataSource)
     },
 
     async upsertResume(resume: ResumeModel, changes?: Partial<ResumeModel>): Promise<ResumeModel> {
-      if (changes) resume = ResumeModel.merge(resume, changes) as ResumeModel;
+      if (changes) resume = this.repository.merge(resume, changes) as ResumeModel;
       return this.repository.save(resume);
     },
   });

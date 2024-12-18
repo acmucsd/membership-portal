@@ -12,8 +12,8 @@ import { Uuid, SocialMedia, SocialMediaPatches } from '../types';
 export default class UserSocialMediaService {
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactions: TransactionsManager) {
+    this.transactions = transactions;
   }
 
   public async getSocialMediaForUser(user: UserModel): Promise<UserSocialMediaModel[]> {
@@ -42,7 +42,7 @@ export default class UserSocialMediaService {
         if (!isNewSocialMediaType) {
           throw new UserError(`Social media URL of type "${socialMedia.type}" has already been created for this user`);
         }
-        return userSocialMediaRepository.upsertSocialMedia(UserSocialMediaModel.create({ ...socialMedia, user }));
+        return userSocialMediaRepository.upsertSocialMedia(userSocialMediaRepository.create({ ...socialMedia, user }));
       }));
       return upsertedSocialMedias;
     });

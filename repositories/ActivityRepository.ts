@@ -11,13 +11,13 @@ export const ActivityRepository = Container.get(DataSource)
   .extend({
     async logActivity(activity: Activity): Promise<ActivityModel> {
       activity.scope = ActivityTypeToScope[activity.type];
-      return this.repository.save(ActivityModel.create(activity as ActivityModel));
+      return this.repository.save(this.repository.create(activity));
     },
 
     async logActivityBatch(activities: Activity[]): Promise<ActivityModel[]> {
       const activityModels = activities.map((activity) => {
         activity.scope = ActivityTypeToScope[activity.type];
-        return ActivityModel.create(activity as ActivityModel);
+        return this.repository.create(activity);
       });
       return this.repository.save(activityModels);
     },

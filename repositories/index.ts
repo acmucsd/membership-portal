@@ -34,6 +34,10 @@ export default class Repositories {
     return entityManager.withRepository(FeedbackRepository);
   }
 
+  public static expressCheckin(entityManager: EntityManager) {
+    return entityManager.withRepository(ExpressCheckinRepository);
+  }
+
   public static leaderboard(entityManager: EntityManager) {
     return entityManager.withRepository(LeaderboardRepository);
   }

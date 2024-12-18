@@ -82,7 +82,7 @@ export const MerchOrderRepository = Container.get(DataSource)
     },
 
     async upsertMerchOrder(order: OrderModel, changes?: Partial<OrderModel>): Promise<OrderModel> {
-      if (changes) order = OrderModel.merge(order, changes) as OrderModel;
+      if (changes) order = this.repository.merge(order, changes);
       return this.repository.save(order);
     },
   });
@@ -176,7 +176,7 @@ export const OrderPickupEventRepository = Container.get(DataSource)
      */
     async upsertPickupEvent(pickupEvent: OrderPickupEventModel, changes?: Partial<OrderPickupEventModel>):
     Promise<OrderPickupEventModel> {
-      if (changes) pickupEvent = OrderPickupEventModel.merge(pickupEvent, changes) as OrderPickupEventModel;
+      if (changes) pickupEvent = this.repository.merge(pickupEvent, changes);
       return this.repository.save(pickupEvent);
     },
 
