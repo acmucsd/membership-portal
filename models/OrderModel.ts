@@ -1,6 +1,5 @@
 import {
   Entity,
-  BaseEntity,
   Column,
   PrimaryGeneratedColumn,
   Index,
@@ -14,7 +13,7 @@ import { OrderItemModel } from './OrderItemModel';
 import { OrderPickupEventModel } from './OrderPickupEventModel';
 
 @Entity('Orders')
-export class OrderModel extends BaseEntity {
+export class OrderModel {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

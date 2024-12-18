@@ -1,9 +1,9 @@
-import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { PublicExpressCheckin, Uuid } from '../types';
 import { EventModel } from './EventModel';
 
 @Entity('ExpressCheckins')
-export class ExpressCheckinModel extends BaseEntity {
+export class ExpressCheckinModel {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

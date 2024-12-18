@@ -1,19 +1,17 @@
 import { Service } from 'typedi';
-import { EntityManager } from 'typeorm';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError } from 'routing-controllers';
-import { FeedbackModel } from '../models/FeedbackModel';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import { PublicFeedback, Feedback, Uuid, ActivityType, FeedbackStatus, FeedbackSearchOptions } from '../types';
 import { UserError } from '../utils/Errors';
+import { FeedbackRepository } from 'repositories/FeedbackRepository';
 
 @Service()
 export default class FeedbackService {
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactionsManager: TransactionsManager) {
+    this.transactions = transactionsManager;
   }
 
   public async getFeedback(canSeeAllFeedback = false, user: UserModel,
@@ -44,7 +42,7 @@ export default class FeedbackService {
         user,
         type: ActivityType.SUBMIT_FEEDBACK,
       });
-      const addedFeedback = await feedbackRepository.upsertFeedback(FeedbackModel.create({ ...feedback, user, event }));
+      const addedFeedback = await feedbackRepository.upsertFeedback(FeedbackRepository.create({ ...feedback, user, event }));
       return addedFeedback.getPublicFeedback();
     });
   }

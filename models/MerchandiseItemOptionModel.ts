@@ -1,12 +1,12 @@
 import {
-  Entity, BaseEntity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, Index,
+  Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, Index,
 } from 'typeorm';
 import { Uuid, PublicMerchItemOption, MerchItemOptionMetadata, PublicOrderMerchItemOption } from '../types';
 import { OrderItemModel } from './OrderItemModel';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
 
 @Entity('MerchandiseItemOptions')
-export class MerchandiseItemOptionModel extends BaseEntity {
+export class MerchandiseItemOptionModel {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

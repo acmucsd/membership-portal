@@ -1,11 +1,11 @@
-import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm';
 import { ActivityScope, ActivityType, PublicActivity, Uuid } from '../types';
 import { UserModel } from './UserModel';
 
 @Entity('Activities')
 @Index('sliding_leaderboard_index', ['timestamp', 'pointsEarned'], { where: '"pointsEarned" > 0' })
 @Index('visible_activities_by_user_index', ['user', 'scope'], { where: 'scope = \'PUBLIC\' OR scope = \'PRIVATE\'' })
-export class ActivityModel extends BaseEntity {
+export class ActivityModel {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

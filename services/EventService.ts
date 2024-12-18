@@ -1,18 +1,18 @@
 import { Service } from 'typedi';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
-import { EntityManager } from 'typeorm';
+import { DeepPartial } from 'typeorm';
 import { EventModel } from '../models/EventModel';
 import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
 import Repositories, { TransactionsManager } from '../repositories';
 import { UserError } from '../utils/Errors';
+import { EventRepository } from 'repositories/EventRepository';
 
 @Service()
 export default class EventService {
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactions: TransactionsManager) {
+    this.transactions = transactions;
   }
 
   /**
@@ -27,7 +27,7 @@ export default class EventService {
       const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(event.attendanceCode);
       if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
       if (event.start > event.end) throw new UserError('Start date after end date');
-      return eventRepository.upsertEvent(EventModel.create(event));
+      return eventRepository.upsertEvent(EventRepository.create(event as DeepPartial<EventModel>)[0]);
     });
     return eventCreated.getPublicEvent();
   }
