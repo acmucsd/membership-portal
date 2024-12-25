@@ -1,7 +1,5 @@
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
-import { EntityManager } from 'typeorm';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { ActivityType, ResumePatches } from '../types';
 import { ResumeModel } from '../models/ResumeModel';
 import { UserModel } from '../models/UserModel';

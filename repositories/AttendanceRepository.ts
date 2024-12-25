@@ -1,4 +1,4 @@
-import { DataSource, DeepPartial } from 'typeorm';
+import { DataSource } from 'typeorm';
 import Container from 'typedi';
 import { ExpressCheckinModel } from '../models/ExpressCheckinModel';
 import { Uuid } from '../types';

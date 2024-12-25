@@ -1,11 +1,11 @@
 import { Service } from 'typedi';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { DeepPartial } from 'typeorm';
+import { EventRepository } from 'repositories/EventRepository';
 import { EventModel } from '../models/EventModel';
 import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
 import Repositories, { TransactionsManager } from '../repositories';
 import { UserError } from '../utils/Errors';
-import { EventRepository } from 'repositories/EventRepository';
 
 @Service()
 export default class EventService {

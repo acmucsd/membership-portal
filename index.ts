@@ -1,11 +1,6 @@
 import 'reflect-metadata'; // this shim is required
-
 import { createExpressServer, useContainer as routingUseContainer } from 'routing-controllers';
-
-import { createConnection, useContainer as ormUseContainer } from 'typeorm';
 import { Container } from 'typedi';
-import { models as entities } from './models';
-
 import { Config } from './config';
 import { controllers } from './api/controllers';
 import { middlewares } from './api/middleware';

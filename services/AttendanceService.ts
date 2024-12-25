@@ -1,5 +1,4 @@
 import { Service } from 'typedi';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';

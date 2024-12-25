@@ -2,8 +2,7 @@ import { Service } from 'typedi';
 import { ForbiddenError, NotFoundError, BadRequestError } from 'routing-controllers';
 import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
-import { InjectManager } from 'typeorm-typedi-extensions';
-import { DataSource, EntityManager } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { ExpressCheckinModel } from 'models/ExpressCheckinModel';
 import { UserRepository } from '../repositories/UserRepository';
 import { Uuid, ActivityType, UserState, UserRegistration, UserAccessType } from '../types';
@@ -21,8 +20,8 @@ interface AuthToken {
 export default class UserAuthService {
   private transactions: TransactionsManager;
 
-  constructor(dataSource: DataSource) {
-    this.transactions = new TransactionsManager(dataSource);
+  constructor(transactions: TransactionsManager) {
+    this.transactions = transactions;
   }
 
   public async registerUser(registration: UserRegistration): Promise<UserModel> {

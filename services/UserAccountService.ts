@@ -1,7 +1,5 @@
 import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
-import { InjectManager } from 'typeorm-typedi-extensions';
-import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
 import * as faker from 'faker';
 import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';

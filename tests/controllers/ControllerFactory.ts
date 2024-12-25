@@ -1,4 +1,6 @@
 import { DataSource } from 'typeorm';
+import ResumeService from 'services/ResumeService';
+import { ResumeController } from 'api/controllers/ResumeController';
 import FeedbackService from '../../services/FeedbackService';
 import { FeedbackController } from '../../api/controllers/FeedbackController';
 import { UserController } from '../../api/controllers/UserController';
@@ -11,13 +13,11 @@ import { AuthController } from '../../api/controllers/AuthController';
 import { EventController } from '../../api/controllers/EventController';
 import { LeaderboardController } from '../../api/controllers/LeaderboardController';
 import { MerchStoreController } from '../../api/controllers/MerchStoreController';
-import { ResumeController } from '../../api/controllers/ResumeController';
 import UserAuthService from '../../services/UserAuthService';
 import EmailService from '../../services/EmailService';
 import EventService from '../../services/EventService';
 import MerchStoreService from '../../services/MerchStoreService';
 import MerchOrderService from '../../services/MerchOrderService';
-import ResumeService from '../../services/ResumeService';
 import UserSocialMediaService from '../../services/UserSocialMediaService';
 import { TransactionsManager } from '../../repositories';
 
@@ -77,5 +77,12 @@ export class ControllerFactory {
     const merchStoreService = new MerchStoreService(transactionsManager);
     const merchOrderService = new MerchOrderService(transactionsManager, emailService);
     return new MerchStoreController(merchStoreService, merchOrderService, storageService);
+  }
+
+  public static resume(dataSource: DataSource): ResumeController {
+    const transactionsManager = new TransactionsManager(dataSource);
+    const resumeService = new ResumeService(transactionsManager);
+    const storageService = new StorageService();
+    return new ResumeController(resumeService, storageService);
   }
 }

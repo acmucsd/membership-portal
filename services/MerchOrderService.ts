@@ -1,10 +1,10 @@
 import { Service } from 'typedi';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
 import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
+import { MerchOrderRepository, OrderItemRepository } from 'repositories/MerchOrderRepository';
 import {
   Uuid,
   ActivityType,
@@ -26,8 +26,6 @@ import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel
 import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
 
 import Repositories, { TransactionsManager } from '../repositories';
-import { MerchOrderRepository, OrderItemRepository } from 'repositories/MerchOrderRepository';
-import { UserRepository } from 'repositories/UserRepository';
 
 @Service()
 export default class MerchOrderService {
@@ -186,7 +184,7 @@ export default class MerchOrderService {
   private async validateOrderInTransaction(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
     txn: EntityManager): Promise<void> {
-    await user.reload();
+    user = await Repositories.user(txn).findByUuid(user.uuid);
     const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
     const itemOptionsToOrder = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
     if (itemOptionsToOrder.size !== originalOrder.length) {

@@ -1,6 +1,4 @@
 import { Service } from 'typedi';
-import { EntityManager } from 'typeorm';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { UserError } from '../utils/Errors';
 import { UserSocialMediaModel } from '../models/UserSocialMediaModel';

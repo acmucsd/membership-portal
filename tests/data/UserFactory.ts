@@ -5,6 +5,7 @@ import UserAccountService from '../../services/UserAccountService';
 import { UserAccessType, UserState } from '../../types';
 import { UserModel } from '../../models/UserModel';
 import FactoryUtils from './FactoryUtils';
+import { UserRepository } from 'repositories/UserRepository';
 
 export class UserFactory {
   public static readonly PASSWORD_RAW = 'password';
@@ -30,7 +31,7 @@ export class UserFactory {
   public static fake(substitute?: Partial<UserModel>): UserModel {
     const firstName = faker.name.firstName();
     const lastName = faker.name.lastName();
-    const fake = UserModel.create({
+    const fake = UserRepository.create({
       uuid: uuid(),
       email: faker.internet.email(firstName, lastName, 'ucsd.edu'),
       firstName,
@@ -45,7 +46,7 @@ export class UserFactory {
       handle: UserAccountService.generateDefaultHandle(firstName, lastName),
       isAttendancePublic: true,
     });
-    return UserModel.merge(fake, substitute);
+    return UserRepository.merge(fake, substitute);
   }
 
   public static graduationYear(): number {

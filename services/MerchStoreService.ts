@@ -1,7 +1,5 @@
 import { Service } from 'typedi';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError, ForbiddenError } from 'routing-controllers';
-import { DeepPartial, EntityManager } from 'typeorm';
 import { difference } from 'underscore';
 import * as moment from 'moment-timezone';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
@@ -96,7 +94,7 @@ export default class MerchStoreService {
     return this.transactions.readWrite(async (txn) => {
       const merchStoreCollectionRepository = Repositories.merchStoreCollection(txn);
       return merchStoreCollectionRepository.upsertMerchCollection(
-        merchStoreCollectionRepository.create(collection)
+        merchStoreCollectionRepository.create(collection),
       );
     });
   }

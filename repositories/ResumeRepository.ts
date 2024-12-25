@@ -1,4 +1,4 @@
-import { DataSource, In } from 'typeorm';
+import { DataSource } from 'typeorm';
 import Container from 'typedi';
 import { ResumeModel } from '../models/ResumeModel';
 import { UserModel } from '../models/UserModel';

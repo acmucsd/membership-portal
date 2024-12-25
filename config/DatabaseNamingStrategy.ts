@@ -1,7 +1,7 @@
 import { DefaultNamingStrategy, NamingStrategyInterface, Table } from 'typeorm';
 
 export class DatabaseNamingStrategy extends DefaultNamingStrategy implements NamingStrategyInterface {
-  private getTableName(tableOrName: string | Table) {
+  protected getTableName(tableOrName: string | Table) {
     const tableName = typeof tableOrName === 'string' ? tableOrName : tableOrName.name;
     return tableName;
   }

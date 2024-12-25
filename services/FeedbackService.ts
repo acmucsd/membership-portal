@@ -1,10 +1,10 @@
 import { Service } from 'typedi';
 import { NotFoundError } from 'routing-controllers';
+import { FeedbackRepository } from 'repositories/FeedbackRepository';
 import { UserModel } from '../models/UserModel';
 import Repositories, { TransactionsManager } from '../repositories';
 import { PublicFeedback, Feedback, Uuid, ActivityType, FeedbackStatus, FeedbackSearchOptions } from '../types';
 import { UserError } from '../utils/Errors';
-import { FeedbackRepository } from 'repositories/FeedbackRepository';
 
 @Service()
 export default class FeedbackService {
@@ -42,7 +42,9 @@ export default class FeedbackService {
         user,
         type: ActivityType.SUBMIT_FEEDBACK,
       });
-      const addedFeedback = await feedbackRepository.upsertFeedback(FeedbackRepository.create({ ...feedback, user, event }));
+      const addedFeedback = await feedbackRepository.upsertFeedback(
+        FeedbackRepository.create({ ...feedback, user, event }),
+      );
       return addedFeedback.getPublicFeedback();
     });
   }

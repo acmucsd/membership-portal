@@ -1,6 +1,5 @@
 import { DataSource, SelectQueryBuilder } from 'typeorm';
 import Container from 'typedi';
-import e = require('express');
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchandiseItemPhotoModel } from '../models/MerchandiseItemPhotoModel';
 import { MerchandiseCollectionModel } from '../models/MerchandiseCollectionModel';
@@ -76,10 +75,17 @@ export const MerchItemRepository = Container.get(DataSource)
   .getRepository(MerchandiseItemModel)
   .extend({
     async findByUuid(uuid: Uuid): Promise<MerchandiseItemModel> {
-      return this.repository.findOne(uuid, { relations: ['collection', 'options', 'merchPhotos', 'collection.collectionPhotos'] });
+      return this.repository.findOne(
+        uuid,
+        { relations: ['collection', 'options', 'merchPhotos', 'collection.collectionPhotos'] },
+      );
     },
 
-    async upsertMerchItem(item: MerchandiseItemModel, changes?: Partial<MerchandiseItemModel>): Promise<MerchandiseItemModel> {
+    async upsertMerchItem(
+      item: MerchandiseItemModel,
+      changes?: Partial<MerchandiseItemModel>,
+    ):
+      Promise<MerchandiseItemModel> {
       if (changes) item = this.repository.merge(item, changes) as MerchandiseItemModel;
       return this.repository.save(item);
     },
