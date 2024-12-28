@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { ResumeModel } from '../../models/ResumeModel';
 import FactoryUtils from './FactoryUtils';
 import { UserFactory } from './UserFactory';
+import { ResumeRepository } from '../../repositories';
 
 export class ResumeFactory {
   public static create(n: number) {
@@ -10,13 +11,13 @@ export class ResumeFactory {
   }
 
   public static fake(substitute?: Partial<ResumeModel>): ResumeModel {
-    const fake = ResumeModel.create({
+    const fake = ResumeRepository.create({
       uuid: uuid(),
       user: UserFactory.fake(),
       isResumeVisible: false,
       url: faker.internet.url(),
       lastUpdated: new Date(),
     });
-    return ResumeModel.merge(fake, substitute);
+    return ResumeRepository.merge(fake, substitute);
   }
 }

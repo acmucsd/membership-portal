@@ -3,7 +3,7 @@ import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { EventModel } from '../../models/EventModel';
 import FactoryUtils from './FactoryUtils';
-import { EventRepository } from 'repositories/EventRepository';
+import { EventRepository } from '../../repositories';
 
 export class EventFactory {
   private static readonly ORGS = [

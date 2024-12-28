@@ -15,16 +15,19 @@ import { ActivityScope, ActivityType } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
 import { UserSocialMediaModel } from '../../models/UserSocialMediaModel';
-import { DatabaseConnection } from './DatabaseConnection';
 import { MerchFactory } from '.';
 import { ResumeModel } from '../../models/ResumeModel';
 import { ExpressCheckinModel } from '../../models/ExpressCheckinModel';
-import { ActivityRepository } from 'repositories/ActivityRepository';
-import { UserSocialMediaRepository } from 'repositories/UserSocialMediaRepository';
-import { FeedbackRepository } from 'repositories/FeedbackRepository';
-import { AttendanceRepository, ExpressCheckinRepository } from 'repositories/AttendanceRepository';
-import { MerchOrderRepository, OrderItemRepository } from 'repositories/MerchOrderRepository';
-import { ResumeRepository } from 'repositories/ResumeRepository';
+import {
+  ActivityRepository,
+  AttendanceRepository,
+  FeedbackRepository,
+  MerchOrderRepository,
+  OrderItemRepository,
+  ResumeRepository,
+  UserSocialMediaRepository,
+  ExpressCheckinRepository,
+} from '../../repositories';
 
 export class PortalState {
   users: UserModel[] = [];

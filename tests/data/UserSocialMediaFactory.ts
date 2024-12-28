@@ -4,7 +4,7 @@ import { UserSocialMediaModel } from '../../models/UserSocialMediaModel';
 import { SocialMediaType } from '../../types';
 import FactoryUtils from './FactoryUtils';
 import { UserFactory } from './UserFactory';
-import { UserSocialMediaRepository } from 'repositories/UserSocialMediaRepository';
+import { UserSocialMediaRepository } from '../../repositories';
 
 export class UserSocialMediaFactory {
   public static create(n: number): UserSocialMediaModel[] {

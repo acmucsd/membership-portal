@@ -1,11 +1,10 @@
+import { dataSource } from './DataSource';
 import 'reflect-metadata'; // this shim is required
 import { createExpressServer, useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
 import { Config } from './config';
 import { controllers } from './api/controllers';
 import { middlewares } from './api/middleware';
-import { dataSource } from './DataSource';
-
 routingUseContainer(Container);
 
 dataSource

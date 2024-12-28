@@ -104,3 +104,23 @@ export class TransactionsManager {
     return this.dataSource.transaction('SERIALIZABLE', fn);
   }
 }
+
+export {
+  UserRepository,
+  FeedbackRepository,
+  AttendanceRepository,
+  EventRepository,
+  ExpressCheckinRepository,
+  MerchOrderRepository,
+  OrderItemRepository,
+  OrderPickupEventRepository,
+  MerchCollectionRepository,
+  MerchItemRepository,
+  MerchItemOptionRepository,
+  MerchCollectionPhotoRepository,
+  MerchItemPhotoRepository,
+  ActivityRepository,
+  LeaderboardRepository,
+  ResumeRepository,
+  UserSocialMediaRepository
+};

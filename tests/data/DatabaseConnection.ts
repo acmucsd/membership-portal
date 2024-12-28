@@ -1,22 +1,12 @@
 import { DataSource } from 'typeorm';
-import { Config } from '../../config';
-import { models as entities } from '../../models';
+import { dataSource } from '../../DataSource';
 
 export class DatabaseConnection {
   private static dataSource: DataSource = null;
 
   public static async connect(): Promise<DataSource> {
     if (!DatabaseConnection.dataSource) {
-      DatabaseConnection.dataSource = new DataSource({
-        type: 'postgres',
-        host: Config.database.host,
-        port: Config.database.port,
-        username: Config.database.user,
-        password: Config.database.pass,
-        database: Config.database.name,
-        entities,
-        logging: false,
-      });
+      DatabaseConnection.dataSource = dataSource;
 
       await DatabaseConnection.dataSource.initialize();
     }

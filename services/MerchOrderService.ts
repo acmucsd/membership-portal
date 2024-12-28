@@ -4,7 +4,6 @@ import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
 import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
-import { MerchOrderRepository, OrderItemRepository } from 'repositories/MerchOrderRepository';
 import {
   Uuid,
   ActivityType,
@@ -25,7 +24,7 @@ import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel
 
 import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
 
-import Repositories, { TransactionsManager } from '../repositories';
+import Repositories, { TransactionsManager, MerchOrderRepository, OrderItemRepository } from '../repositories';
 
 @Service()
 export default class MerchOrderService {

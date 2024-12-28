@@ -1,8 +1,7 @@
 import { Service } from 'typedi';
 import { NotFoundError } from 'routing-controllers';
-import { FeedbackRepository } from 'repositories/FeedbackRepository';
 import { UserModel } from '../models/UserModel';
-import Repositories, { TransactionsManager } from '../repositories';
+import Repositories, { TransactionsManager, FeedbackRepository } from '../repositories';
 import { PublicFeedback, Feedback, Uuid, ActivityType, FeedbackStatus, FeedbackSearchOptions } from '../types';
 import { UserError } from '../utils/Errors';
 

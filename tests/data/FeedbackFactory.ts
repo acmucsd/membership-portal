@@ -5,7 +5,7 @@ import FactoryUtils from './FactoryUtils';
 import { UserFactory } from './UserFactory';
 import { EventFactory } from './EventFactory';
 import { FeedbackModel } from '../../models/FeedbackModel';
-import { FeedbackRepository } from 'repositories/FeedbackRepository';
+import { FeedbackRepository } from '../../repositories';
 
 export class FeedbackFactory {
   public static create(n: number): FeedbackModel[] {

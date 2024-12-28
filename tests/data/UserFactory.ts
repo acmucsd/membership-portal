@@ -5,7 +5,7 @@ import UserAccountService from '../../services/UserAccountService';
 import { UserAccessType, UserState } from '../../types';
 import { UserModel } from '../../models/UserModel';
 import FactoryUtils from './FactoryUtils';
-import { UserRepository } from 'repositories/UserRepository';
+import { UserRepository } from '../../repositories';
 
 export class UserFactory {
   public static readonly PASSWORD_RAW = 'password';

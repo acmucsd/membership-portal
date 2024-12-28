@@ -9,8 +9,14 @@ import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { MerchandiseItemPhotoModel } from '../../models/MerchandiseItemPhotoModel';
 import FactoryUtils from './FactoryUtils';
-import { MerchCollectionPhotoRepository, MerchCollectionRepository, MerchItemOptionRepository, MerchItemPhotoRepository, MerchItemRepository } from 'repositories/MerchStoreRepository';
-import { OrderPickupEventRepository } from 'repositories/MerchOrderRepository';
+import {
+  MerchCollectionPhotoRepository,
+  MerchCollectionRepository,
+  MerchItemOptionRepository,
+  MerchItemPhotoRepository,
+  MerchItemRepository,
+  OrderPickupEventRepository
+} from '../../repositories';
 
 export class MerchFactory {
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {

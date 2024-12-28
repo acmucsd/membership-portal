@@ -4,11 +4,10 @@ import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { EntityManager } from 'typeorm';
 import { ExpressCheckinModel } from 'models/ExpressCheckinModel';
-import { UserRepository } from '../repositories/UserRepository';
 import { Uuid, ActivityType, UserState, UserRegistration, UserAccessType } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
-import Repositories, { TransactionsManager } from '../repositories';
+import Repositories, { TransactionsManager, UserRepository } from '../repositories';
 import UserAccountService from './UserAccountService';
 
 interface AuthToken {

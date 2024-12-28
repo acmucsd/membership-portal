@@ -8,7 +8,7 @@ import {
   englishDataset,
   englishRecommendedTransformers,
 } from 'obscenity';
-import Repositories, { TransactionsManager } from '../repositories';
+import Repositories, { TransactionsManager, UserRepository } from '../repositories';
 import {
   Uuid,
   PublicProfile,
@@ -20,7 +20,6 @@ import {
   PrivateProfile,
   NameAndEmail,
 } from '../types';
-import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
 
 @Service()
