@@ -3,6 +3,7 @@ import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { EventModel } from '../../models/EventModel';
 import FactoryUtils from './FactoryUtils';
+import { EventRepository } from 'repositories/EventRepository';
 
 export class EventFactory {
   private static readonly ORGS = [
@@ -19,12 +20,12 @@ export class EventFactory {
   }
 
   public static with(...substitutes: Partial<EventModel>[]): EventModel[] {
-    return substitutes.map((sub) => EventModel.merge(EventFactory.fake(), sub));
+    return substitutes.map((sub) => EventRepository.merge(EventFactory.fake(), sub));
   }
 
   public static fake(substitute?: Partial<EventModel>): EventModel {
     const [start, end] = FactoryUtils.getRandomTimeInterval();
-    const fake = EventModel.create({
+    const fake = EventRepository.create({
       uuid: uuid(),
       organization: FactoryUtils.pickRandomValue(EventFactory.ORGS),
       title: faker.datatype.hexaDecimal(10),
@@ -45,7 +46,7 @@ export class EventFactory {
       googleCalendarEvent: faker.datatype.hexaDecimal(10),
       foodItems: null,
     });
-    return EventModel.merge(fake, substitute);
+    return EventRepository.merge(fake, substitute);
   }
 
   public static ongoing(start = 45, end = 45): Partial<EventModel> {

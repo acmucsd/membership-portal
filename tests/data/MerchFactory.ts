@@ -9,10 +9,12 @@ import { MerchandiseItemModel } from '../../models/MerchandiseItemModel';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
 import { MerchandiseItemPhotoModel } from '../../models/MerchandiseItemPhotoModel';
 import FactoryUtils from './FactoryUtils';
+import { MerchCollectionPhotoRepository, MerchCollectionRepository, MerchItemOptionRepository, MerchItemPhotoRepository, MerchItemRepository } from 'repositories/MerchStoreRepository';
+import { OrderPickupEventRepository } from 'repositories/MerchOrderRepository';
 
 export class MerchFactory {
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
-    const fake = MerchandiseCollectionModel.create({
+    const fake = MerchCollectionRepository.create({
       uuid: uuid(),
       title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
@@ -34,15 +36,15 @@ export class MerchFactory {
       const numPhotos = FactoryUtils.getRandomNumber(1, 5);
       fake.collectionPhotos = MerchFactory
         .createCollectionPhotos(numPhotos)
-        .map((collectionPhoto) => MerchCollectionPhotoModel.merge(collectionPhoto, { merchCollection: fake }));
+        .map((collectionPhoto) => MerchCollectionPhotoRepository.merge(collectionPhoto, { merchCollection: fake }));
     }
 
-    return MerchandiseCollectionModel.merge(fake, substitute);
+    return MerchCollectionRepository.merge(fake, substitute);
   }
 
   public static fakeItem(substitute?: Partial<MerchandiseItemModel>): MerchandiseItemModel {
     const hasVariantsEnabled = substitute?.hasVariantsEnabled ?? FactoryUtils.getRandomBoolean();
-    const fake = MerchandiseItemModel.create({
+    const fake = MerchItemRepository.create({
       uuid: uuid(),
       itemName: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
@@ -57,52 +59,52 @@ export class MerchFactory {
       const numOptions = hasVariantsEnabled ? FactoryUtils.getRandomNumber(3, 5) : 1;
       fake.options = MerchFactory
         .createOptions(numOptions)
-        .map((option) => MerchandiseItemOptionModel.merge(option, { item: fake }));
+        .map((option) => MerchItemOptionRepository.merge(option, { item: fake }));
     }
     if (!substitute?.merchPhotos) {
       const numPhotos = FactoryUtils.getRandomNumber(1, 5);
       fake.merchPhotos = MerchFactory
         .createPhotos(numPhotos)
-        .map((merchPhoto) => MerchandiseItemPhotoModel.merge(merchPhoto, { merchItem: fake }));
+        .map((merchPhoto) => MerchItemPhotoRepository.merge(merchPhoto, { merchItem: fake }));
     }
-    return MerchandiseItemModel.merge(fake, substitute);
+    return MerchItemRepository.merge(fake, substitute);
   }
 
   public static fakePhoto(substitute?: Partial<MerchandiseItemPhotoModel>): MerchandiseItemPhotoModel {
-    const fake = MerchandiseItemPhotoModel.create({
+    const fake = MerchItemPhotoRepository.create({
       uuid: uuid(),
       position: 0,
       uploadedPhoto: FactoryUtils.getRandomImageUrl(),
       uploadedAt: faker.date.recent(),
     });
-    return MerchandiseItemPhotoModel.merge(fake, substitute);
+    return MerchItemPhotoRepository.merge(fake, substitute);
   }
 
   public static fakeCollectionPhoto(substitute?: Partial<MerchCollectionPhotoModel>): MerchCollectionPhotoModel {
-    const fake = MerchCollectionPhotoModel.create({
+    const fake = MerchCollectionPhotoRepository.create({
       uuid: uuid(),
       position: 0,
       uploadedPhoto: 'https://www.fakepicture.com/',
       uploadedAt: faker.date.recent(),
     });
-    return MerchCollectionPhotoModel.merge(fake, substitute);
+    return MerchCollectionPhotoRepository.merge(fake, substitute);
   }
 
   private static createCollectionPhotos(n: number): MerchCollectionPhotoModel[] {
     return FactoryUtils
       .create(n, () => MerchFactory.fakeCollectionPhoto())
-      .map((collectionPhoto, i) => MerchCollectionPhotoModel.merge(collectionPhoto, { position: i }));
+      .map((collectionPhoto, i) => MerchCollectionPhotoRepository.merge(collectionPhoto, { position: i }));
   }
 
   public static fakeOption(substitute?: Partial<MerchandiseItemOptionModel>): MerchandiseItemOptionModel {
-    const fake = MerchandiseItemOptionModel.create({
+    const fake = MerchItemOptionRepository.create({
       uuid: uuid(),
       quantity: FactoryUtils.getRandomNumber(1, 25),
       price: MerchFactory.randomPrice(),
       discountPercentage: MerchFactory.randomDiscountPercentage(),
       metadata: null,
     });
-    return MerchandiseItemOptionModel.merge(fake, substitute);
+    return MerchItemOptionRepository.merge(fake, substitute);
   }
 
   public static fakeOptionWithType(type: string) {
@@ -126,7 +128,7 @@ export class MerchFactory {
 
   public static fakeOrderPickupEvent(substitute?: Partial<OrderPickupEventModel>): OrderPickupEventModel {
     const [start, end] = FactoryUtils.getRandomTimeInterval();
-    const fake = OrderPickupEventModel.create({
+    const fake = OrderPickupEventRepository.create({
       uuid: uuid(),
       title: faker.datatype.hexaDecimal(10),
       description: faker.lorem.sentences(2),
@@ -137,7 +139,7 @@ export class MerchFactory {
       orders: [],
       linkedEvent: null,
     });
-    return OrderPickupEventModel.merge(fake, substitute);
+    return OrderPickupEventRepository.merge(fake, substitute);
   }
 
   public static fakeFutureOrderPickupEvent(substitute?: Partial<OrderPickupEventModel>): OrderPickupEventModel {
@@ -176,7 +178,7 @@ export class MerchFactory {
   private static createPhotos(n: number): MerchandiseItemPhotoModel[] {
     return FactoryUtils
       .create(n, () => MerchFactory.fakePhoto())
-      .map((merchPhoto, i) => MerchandiseItemPhotoModel.merge(merchPhoto, { position: i }));
+      .map((merchPhoto, i) => MerchItemPhotoRepository.merge(merchPhoto, { position: i }));
   }
 
   private static randomPrice(): number {

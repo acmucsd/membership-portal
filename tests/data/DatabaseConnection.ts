@@ -1,13 +1,13 @@
-import { Connection, createConnection } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Config } from '../../config';
 import { models as entities } from '../../models';
 
 export class DatabaseConnection {
-  private static conn: Connection = null;
+  private static dataSource: DataSource = null;
 
-  public static async connect(): Promise<Connection> {
-    if (!DatabaseConnection.conn) {
-      DatabaseConnection.conn = await createConnection({
+  public static async connect(): Promise<DataSource> {
+    if (!DatabaseConnection.dataSource) {
+      DatabaseConnection.dataSource = new DataSource({
         type: 'postgres',
         host: Config.database.host,
         port: Config.database.port,
@@ -17,17 +17,19 @@ export class DatabaseConnection {
         entities,
         logging: false,
       });
+
+      await DatabaseConnection.dataSource.initialize();
     }
-    return DatabaseConnection.conn;
+    return DatabaseConnection.dataSource;
   }
 
-  public static async get(): Promise<Connection> {
+  public static async get(): Promise<DataSource> {
     return DatabaseConnection.connect();
   }
 
   public static async clear(): Promise<void> {
-    const conn = await DatabaseConnection.get();
-    await conn.transaction(async (txn) => {
+    const dataSource = await DatabaseConnection.get();
+    await dataSource.transaction(async (txn) => {
       // the order of elements matters here, since this will be the order of deletion.
       // if a table (A) exists with an fkey to another table (B), make sure B is listed higher than A.
       const tableNames = [
@@ -53,7 +55,7 @@ export class DatabaseConnection {
   }
 
   public static async close(): Promise<void> {
-    if (!DatabaseConnection.conn) return;
-    await DatabaseConnection.conn.close();
+    if (!DatabaseConnection.dataSource) return;
+    await DatabaseConnection.dataSource.destroy();
   }
 }
