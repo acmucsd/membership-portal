@@ -7,8 +7,8 @@ export const EventRepository = Container.get(DataSource)
   .getRepository(EventModel)
   .extend({
     async upsertEvent(event: EventModel, changes?: Partial<EventModel>): Promise<EventModel> {
-      if (changes) event = this.repository.merge(event, changes);
-      return this.repository.save(event);
+      if (changes) event = this.merge(event, changes);
+      return this.save(event);
     },
 
     async getAllEvents(options: EventSearchOptions): Promise<EventModel[]> {
@@ -30,24 +30,24 @@ export const EventRepository = Container.get(DataSource)
     },
 
     async findByUuid(uuid: Uuid): Promise<EventModel> {
-      return this.repository.findOne({ uuid });
+      return this.findOne({ where: { uuid } });
     },
 
     async findByAttendanceCode(attendanceCode: string): Promise<EventModel> {
-      return this.repository.findOne({ attendanceCode });
+      return this.findOne({ where: { attendanceCode } });
     },
 
     async deleteEvent(event: EventModel): Promise<EventModel> {
-      return this.repository.remove(event);
+      return this.remove(event);
     },
 
     async isUnusedAttendanceCode(attendanceCode: string): Promise<boolean> {
-      const count = await this.repository.count({ attendanceCode });
+      const count = await this.count({ where: { attendanceCode } });
       return count === 0;
     },
 
     getBaseEventSearchQuery(options: EventSearchOptions): SelectQueryBuilder<EventModel> {
-      let query = this.repository.createQueryBuilder()
+      let query = this.createQueryBuilder()
         .skip(options.offset)
         .take(options.limit)
         .orderBy('start', options.reverse ? 'DESC' : 'ASC');

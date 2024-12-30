@@ -55,10 +55,10 @@ describe('sample test', () => {
 
     await state.write();
 
-    const persistedUser = await conn.manager.findOne(UserModel, user2.uuid);
+    const persistedUser = await conn.manager.findOne(UserModel, { where: { uuid: user2.uuid } });
     expect(persistedUser).toStrictEqual(user2);
 
-    const persistedEvent = await conn.manager.findOne(EventModel, { attendanceCode: 'attend-me' });
+    const persistedEvent = await conn.manager.findOne(EventModel, { where: { attendanceCode: 'attend-me' } });
     expect(persistedEvent).toStrictEqual(event);
 
     const [attendance] = await conn.manager.find(AttendanceModel, { relations: ['user', 'event'] });

@@ -1,16 +1,16 @@
 import * as faker from 'faker';
+import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { zip } from 'underscore';
 import { anything, instance, verify, mock, when } from 'ts-mockito';
 import { OrderModel } from '../models/OrderModel';
-import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MediaType, MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import EmailService from '../services/EmailService';
 import { FileFactory } from './data/FileFactory';
 import { Config } from '../config';
 import Mocks from './mocks/MockFactory';
+import { MerchItemOptionRepository } from '../repositories';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -462,7 +462,7 @@ describe('merch items with options', () => {
     expect(updatedItem.lifetimeRemaining).toEqual(9);
 
     // cancel order
-    const order = await conn.manager.findOne(OrderModel, { user: member });
+    const order = await conn.manager.findOne(OrderModel, { where: { user: member } });
     const cancelOrderParams = { uuid: order.uuid };
     await merchStoreController.cancelMerchOrder(cancelOrderParams, member);
 
@@ -807,7 +807,7 @@ describe('merch item edits', () => {
 
     // change every option's type to a different but consistent one
     const type = faker.datatype.hexaDecimal(10);
-    const updatedOptions = item.options.map((o) => MerchandiseItemOptionModel.merge(o, {
+    const updatedOptions = item.options.map((o) => MerchItemOptionRepository.merge(o, {
       metadata: {
         type,
         position: o.metadata.position,
