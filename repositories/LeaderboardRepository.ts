@@ -10,7 +10,7 @@ export const LeaderboardRepository = Container.get(DataSource)
   .getRepository(UserModel)
   .extend({
     async getLeaderboard(offset: number, limit: number): Promise<UserModel[]> {
-      return this.repository.find({
+      return this.find({
         skip: offset,
         take: limit,
         where: {
@@ -22,7 +22,7 @@ export const LeaderboardRepository = Container.get(DataSource)
     },
 
     async getLeaderboardSince(from: number, offset: number, limit: number) {
-      const users = await this.repository.createQueryBuilder('usr')
+      const users = await this.createQueryBuilder('usr')
         // subquery that returns a users' UUIDs and point totals for the timeframe
         .innerJoinAndMapMany(
           'usr.total',
@@ -46,11 +46,11 @@ export const LeaderboardRepository = Container.get(DataSource)
         .orderBy('points', 'DESC')
         .getRawAndEntities();
       const userPoints = new Map(users.raw.map((u) => [u.usr_uuid, Number(u.points)]));
-      return users.entities.map((u) => this.repository.merge(u, { points: userPoints.get(u.uuid) }));
+      return users.entities.map((u) => this.merge(u, { points: userPoints.get(u.uuid) }));
     },
 
     async getLeaderboardUntil(from: number, to: number, offset: number, limit: number) {
-      const users = await this.repository.createQueryBuilder('usr')
+      const users = await this.createQueryBuilder('usr')
       // subquery that returns a users' UUIDs and point totals for the timeframe
         .innerJoinAndMapMany(
           'usr.total',
@@ -77,6 +77,6 @@ export const LeaderboardRepository = Container.get(DataSource)
         .cache(`leaderboard_${from}_${to}_${offset}_${limit}`, moment.duration(1, 'hour').asMilliseconds())
         .getRawAndEntities();
       const userPoints = new Map(users.raw.map((u) => [u.usr_uuid, Number(u.points)]));
-      return users.entities.map((u) => this.repository.merge(u, { points: userPoints.get(u.uuid) }));
+      return users.entities.map((u) => this.merge(u, { points: userPoints.get(u.uuid) }));
     },
   });

@@ -19,12 +19,12 @@ export const UserSocialMediaRepository = Container.get(DataSource)
 
     async upsertSocialMedia(userSocialMedia: UserSocialMediaModel,
       changes?: Partial<UserSocialMediaModel>): Promise<UserSocialMediaModel> {
-      if (changes) userSocialMedia = this.repository.merge(userSocialMedia, changes) as UserSocialMediaModel;
-      return this.repository.save(userSocialMedia);
+      if (changes) userSocialMedia = this.merge(userSocialMedia, changes) as UserSocialMediaModel;
+      return this.save(userSocialMedia);
     },
 
     async deleteSocialMedia(userSocialMedia: UserSocialMediaModel): Promise<UserSocialMediaModel> {
-      return this.repository.remove(userSocialMedia);
+      return this.remove(userSocialMedia);
     },
 
     async isNewSocialMediaTypeForUser(user: UserModel, type: SocialMediaType): Promise<boolean> {
@@ -33,6 +33,6 @@ export const UserSocialMediaRepository = Container.get(DataSource)
     },
 
     getBaseFindQuery() {
-      return this.repository.createQueryBuilder('userSocialMedia');
+      return this.createQueryBuilder('userSocialMedia');
     },
   });

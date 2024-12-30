@@ -9,8 +9,7 @@ import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } from '../types';
 import { ControllerFactory } from './controllers';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
-import { UserModel } from '../models/UserModel';
-import { UserRepository } from 'repositories';
+import { UserRepository } from '../repositories';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();

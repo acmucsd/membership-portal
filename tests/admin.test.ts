@@ -1,8 +1,8 @@
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { In } from 'typeorm';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType, NameAndEmail } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { UserModel } from '../models/UserModel';
 
 beforeAll(async () => {
@@ -34,7 +34,7 @@ describe('retroactive attendance submission', () => {
     const userController = ControllerFactory.user(conn);
     const adminController = ControllerFactory.admin(conn);
     const attendanceController = ControllerFactory.attendance(conn);
-
+    console.log(emails);
     await adminController.submitAttendanceForUsers({ users: emails, event: event.uuid }, admin);
 
     for (let u = 0; u < users.length; u += 1) {
@@ -220,7 +220,7 @@ describe('updating user access level', () => {
 
     const repository = conn.getRepository(UserModel);
     const updatedUsers = await repository.find({
-      email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]),
+      where: { email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]) } ,
     });
     // sorting to guarantee order
     updatedUsers.sort((a, b) => a.email.localeCompare(b.email));
@@ -264,7 +264,7 @@ describe('updating user access level', () => {
 
     const repository = conn.getRepository(UserModel);
     const updatedUsers = await repository.find({
-      email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]),
+      where: { email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]) },
     });
     // sorting to guarantee order
     updatedUsers.sort((a, b) => a.email.localeCompare(b.email));
@@ -297,7 +297,7 @@ describe('updating user access level', () => {
     }).rejects.toThrow(BadRequestError);
 
     const repository = conn.getRepository(UserModel);
-    const updatedUsers = await repository.findOne({ email: userOne.email });
+    const updatedUsers = await repository.findOne({ where: { email: userOne.email } });
 
     expect(updatedUsers.email).toEqual(userOne.email);
     expect(updatedUsers.accessType).toEqual(UserAccessType.STAFF);
@@ -326,7 +326,7 @@ describe('updating user access level', () => {
     }).rejects.toThrow(ForbiddenError);
 
     const repository = conn.getRepository(UserModel);
-    const secondAdminFromDatabase = await repository.findOne({ email: secondAdmin.email });
+    const secondAdminFromDatabase = await repository.findOne({ where: { email: secondAdmin.email } });
 
     expect(secondAdminFromDatabase.email).toEqual(secondAdmin.email);
     expect(secondAdminFromDatabase.accessType).toEqual(UserAccessType.ADMIN);
@@ -340,7 +340,7 @@ describe('updating user access level', () => {
       }, admin);
     }).rejects.toThrow(ForbiddenError);
 
-    const regularUserFromDatabase = await repository.findOne({ email: regularUser.email });
+    const regularUserFromDatabase = await repository.findOne({ where: { email: regularUser.email } });
 
     expect(regularUserFromDatabase.email).toEqual(regularUser.email);
     expect(regularUserFromDatabase.accessType).toEqual(UserAccessType.STANDARD);
@@ -360,7 +360,6 @@ describe('updating user access level', () => {
       .write();
 
     const adminController = ControllerFactory.admin(conn);
-
     await adminController.updateUserAccessLevel({
       accessUpdates: [
         { user: staffUser.email, accessType: UserAccessType.MERCH_STORE_MANAGER },
@@ -372,7 +371,7 @@ describe('updating user access level', () => {
 
     const repository = conn.getRepository(UserModel);
     const existingAdmin = await repository.find({
-      email: admin.email,
+      where: { email: admin.email },
     });
 
     expect(existingAdmin[0].email).toEqual(admin.email);
@@ -409,7 +408,7 @@ describe('updating user access level', () => {
 
     const repository = conn.getRepository(UserModel);
     const existingAdmin = await repository.find({
-      email: admin.email,
+      where: { email: admin.email },
     });
 
     expect(existingAdmin[0].email).toEqual(admin.email);

@@ -11,48 +11,48 @@ export const UserRepository = Container.get(DataSource)
   .getRepository(UserModel)
   .extend({
     async upsertUser(user: UserModel, changes?: Partial<UserModel>): Promise<UserModel> {
-      if (changes) user = this.repository.merge(user, changes) as UserModel;
-      return this.repository.save(user);
+      if (changes) user = this.merge(user, changes) as UserModel;
+      return this.save(user);
     },
 
     async findAll(): Promise<UserModel[]> {
-      return this.repository.find();
+      return this.find();
     },
 
     async findByUuid(uuid: Uuid): Promise<UserModel> {
-      return this.repository.findOne({ uuid });
+      return this.findOne({ where: { uuid } });
     },
 
     async findByHandle(handle: string): Promise<UserModel> {
-      return this.repository.findOne({ handle });
+      return this.findOne({ where: { handle } });
     },
 
     async isHandleTaken(handle: string): Promise<boolean> {
       const profile = await this.findByHandle(handle);
-      return profile !== undefined;
-    },
-
-    async findByEmail(email: string): Promise<UserModel> {
-      return this.repository.findOne({ email });
-    },
-
-    async findByEmails(emails: string[]): Promise<UserModel[]> {
-      return this.repository.find({
-        email: In(emails),
-      });
+      return profile !== null;
     },
 
     async isEmailInUse(email: string): Promise<boolean> {
       const user = await this.findByEmail(email);
-      return user !== undefined;
+      return user !== null;
+    },
+
+    async findByEmail(email: string): Promise<UserModel> {
+      return this.findOne({ where: { email: email } });
+    },
+
+    async findByEmails(emails: string[]): Promise<UserModel[]> {
+      return this.find({
+        where: { email: In(emails) },
+      });
     },
 
     async findByAccessCode(accessCode: string): Promise<UserModel> {
-      return this.repository.findOne({ accessCode });
+      return this.findOne({ where: { accessCode } });
     },
 
     async getAllNamesAndEmails(): Promise<NameAndEmail[]> {
-      const namesAndEmailsRaw = await this.repository
+      const namesAndEmailsRaw = await this
         .createQueryBuilder()
         .select(['email', 'UserModel.firstName', 'UserModel.lastName'])
         .getRawMany();
@@ -70,7 +70,7 @@ export const UserRepository = Container.get(DataSource)
     async addPoints(user: UserModel, points: number) {
       user.points += points;
       user.credits += points * 100;
-      return this.repository.save(user);
+      return this.save(user);
     },
 
     async addPointsToMany(users: UserModel[], points: number) {
@@ -78,7 +78,7 @@ export const UserRepository = Container.get(DataSource)
         user.points += points;
         user.credits += points * 100;
       });
-      return this.repository.save(users);
+      return this.save(users);
     },
 
     async addPointsByActivities(activities: Activity[]) {
@@ -89,11 +89,11 @@ export const UserRepository = Container.get(DataSource)
         user.credits += pointsEarned * 100;
         users.push(user);
       });
-      return this.repository.save(users);
+      return this.save(users);
     },
 
     async addPointsToAll(points: number) {
-      return this.repository.createQueryBuilder()
+      return this.createQueryBuilder()
         .update()
         .set({
           points: () => `points + ${points}`,
@@ -103,7 +103,7 @@ export const UserRepository = Container.get(DataSource)
     },
 
     async getUserInfoAndAccessTypes() {
-      const profiles = await this.repository
+      const profiles = await this
         .createQueryBuilder()
         .select(['uuid', 'handle', 'email', 'UserModel.firstName', 'UserModel.lastName', 'UserModel.accessType'])
         .getRawMany();

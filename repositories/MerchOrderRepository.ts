@@ -18,7 +18,7 @@ export const MerchOrderRepository = Container.get(DataSource)
      * This is the same set of joins that gets executed for OrderPickupEventRepository::findByUuid()
      */
     async findByUuid(uuid: Uuid): Promise<OrderModel> {
-      return this.repository
+      return this
         .createQueryBuilder('order')
         .leftJoinAndSelect('order.pickupEvent', 'orderPickupEvent')
         .leftJoinAndSelect('order.items', 'orderItem')
@@ -37,13 +37,13 @@ export const MerchOrderRepository = Container.get(DataSource)
      */
     async getAllOrdersForAllUsers(...statuses: OrderStatus[]): Promise<OrderModel[]> {
       if (statuses.length > 0) {
-        return this.repository.find({
+        return this.find({
           where: {
             status: In(statuses),
           },
         });
       }
-      return this.repository
+      return this
         .createQueryBuilder('order')
         .leftJoinAndSelect('order.pickupEvent', 'orderPickupEvent')
         .leftJoinAndSelect('order.user', 'user')
@@ -55,7 +55,7 @@ export const MerchOrderRepository = Container.get(DataSource)
      * Gets all orders for a given user. Returns the order joined with its pickup event, linked event, and user.
      */
     async getAllOrdersForUser(user: UserModel): Promise<OrderModel[]> {
-      return this.repository
+      return this
         .createQueryBuilder('order')
         .leftJoinAndSelect('order.pickupEvent', 'orderPickupEvent')
         .leftJoinAndSelect('order.user', 'user')
@@ -69,7 +69,7 @@ export const MerchOrderRepository = Container.get(DataSource)
      * merch item options, merch items, and merch item photos.
      */
     async getAllOrdersWithItemsForUser(user: UserModel): Promise<OrderModel[]> {
-      return this.repository
+      return this
         .createQueryBuilder('order')
         .leftJoinAndSelect('order.pickupEvent', 'orderPickupEvent')
         .leftJoinAndSelect('order.items', 'orderItem')
@@ -82,8 +82,8 @@ export const MerchOrderRepository = Container.get(DataSource)
     },
 
     async upsertMerchOrder(order: OrderModel, changes?: Partial<OrderModel>): Promise<OrderModel> {
-      if (changes) order = this.repository.merge(order, changes);
-      return this.repository.save(order);
+      if (changes) order = this.merge(order, changes);
+      return this.save(order);
     },
   });
 
@@ -91,7 +91,7 @@ export const OrderItemRepository = Container.get(DataSource)
   .getRepository(OrderItemModel)
   .extend({
     async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, OrderItemModel>> {
-      const items = await this.repository.findByIds(uuids);
+      const items = await this.findByIds(uuids);
       return new Map(items.map((i) => [i.uuid, i]));
     },
 
@@ -99,11 +99,11 @@ export const OrderItemRepository = Container.get(DataSource)
       orderItem.fulfilled = true;
       orderItem.fulfilledAt = new Date();
       if (notes) orderItem.notes = notes;
-      return this.repository.save(orderItem);
+      return this.save(orderItem);
     },
 
     async hasCollectionBeenOrderedFrom(collection: Uuid): Promise<boolean> {
-      const count = await this.repository.createQueryBuilder('item')
+      const count = await this.createQueryBuilder('item')
         .innerJoinAndSelect('item.option', 'option')
         .innerJoin('option.item', 'merch')
         .where('merch.collection = :collection', { collection })
@@ -112,7 +112,7 @@ export const OrderItemRepository = Container.get(DataSource)
     },
 
     async hasItemBeenOrdered(item: Uuid): Promise<boolean> {
-      const count = await this.repository.createQueryBuilder('oi')
+      const count = await this.createQueryBuilder('oi')
         .innerJoinAndSelect('oi.option', 'option')
         .where('option.item = :item', { item })
         .getCount();
@@ -120,12 +120,12 @@ export const OrderItemRepository = Container.get(DataSource)
     },
 
     async hasOptionBeenOrdered(option: Uuid): Promise<boolean> {
-      const count = await this.repository.count({ where: { option: { uuid: option } } });
+      const count = await this.count({ where: { option: { uuid: option } } });
       return count > 0;
     },
 
     async getPastItemOrdersByUser(user: UserModel, item: MerchandiseItemModel): Promise<OrderItemModel[]> {
-      return this.repository.createQueryBuilder('oi')
+      return this.createQueryBuilder('oi')
         .innerJoinAndSelect('oi.option', 'option')
         .innerJoinAndSelect('oi.order', 'order')
         .innerJoinAndSelect('order.user', 'user')
@@ -176,16 +176,16 @@ export const OrderPickupEventRepository = Container.get(DataSource)
      */
     async upsertPickupEvent(pickupEvent: OrderPickupEventModel, changes?: Partial<OrderPickupEventModel>):
     Promise<OrderPickupEventModel> {
-      if (changes) pickupEvent = this.repository.merge(pickupEvent, changes);
-      return this.repository.save(pickupEvent);
+      if (changes) pickupEvent = this.merge(pickupEvent, changes);
+      return this.save(pickupEvent);
     },
 
     async deletePickupEvent(pickupEvent: OrderPickupEventModel): Promise<OrderPickupEventModel> {
-      return this.repository.remove(pickupEvent);
+      return this.remove(pickupEvent);
     },
 
     getBaseFindOneQuery(): SelectQueryBuilder<OrderPickupEventModel> {
-      return this.repository
+      return this
         .createQueryBuilder('orderPickupEvent')
         .leftJoinAndSelect('orderPickupEvent.orders', 'order')
         .leftJoinAndSelect('order.items', 'item')
@@ -197,7 +197,7 @@ export const OrderPickupEventRepository = Container.get(DataSource)
     },
 
     getBaseFindManyQuery(): SelectQueryBuilder<OrderPickupEventModel> {
-      return this.repository
+      return this
         .createQueryBuilder('orderPickupEvent')
         .leftJoinAndSelect('orderPickupEvent.orders', 'order')
         .leftJoinAndSelect('order.user', 'user')

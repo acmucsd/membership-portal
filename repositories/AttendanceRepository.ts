@@ -13,7 +13,7 @@ export const AttendanceRepository = Container.get(DataSource)
     async getAttendancesForUser(user: UserModel): Promise<AttendanceModel[]> {
       return this.find({
         relations: ['user', 'event'],
-        where: { user },
+        where: { user: { uuid: user.uuid } },
         order: { timestamp: 'ASC' },
       });
     },
@@ -26,9 +26,8 @@ export const AttendanceRepository = Container.get(DataSource)
     },
 
     async hasUserAttendedEvent(user: UserModel, event: EventModel): Promise<boolean> {
-      console.log('Checking if user has attended event', user, event);
       const count = await this.count({
-        where: { user: user, event: event },
+        where: { user: { uuid: user.uuid }, event: event },
       });
       return count > 0;
     },

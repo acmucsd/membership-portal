@@ -11,20 +11,20 @@ export const ActivityRepository = Container.get(DataSource)
   .extend({
     async logActivity(activity: Activity): Promise<ActivityModel> {
       activity.scope = ActivityTypeToScope[activity.type];
-      return this.repository.save(this.repository.create(activity));
+      return this.save(this.create(activity));
     },
 
     async logActivityBatch(activities: Activity[]): Promise<ActivityModel[]> {
       const activityModels = activities.map((activity) => {
         activity.scope = ActivityTypeToScope[activity.type];
-        return this.repository.create(activity);
+        return this.create(activity);
       });
-      return this.repository.save(activityModels);
+      return this.save(activityModels);
     },
 
     async logMilestone(description: string, pointsEarned: number): Promise<void> {
       const scope = ActivityTypeToScope[ActivityType.MILESTONE];
-      return this.repository.query(
+      return this.query(
         'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "scope") '
         + `SELECT uuid, '${ActivityType.MILESTONE}', '${description}', '${pointsEarned}', '${scope}' `
         + 'FROM "Users"',
@@ -34,7 +34,7 @@ export const ActivityRepository = Container.get(DataSource)
     async logBonus(users: UserModel[], description: string, pointsEarned: number): Promise<void> {
       const scope = ActivityTypeToScope[ActivityType.BONUS_POINTS];
       const uuids = users.map((user) => `'${user.uuid}'`);
-      return this.repository.query(
+      return this.query(
         'INSERT INTO "Activities" ("user", "type", "description", "pointsEarned", "scope") '
         + `SELECT uuid, '${ActivityType.BONUS_POINTS}', '${description}', '${pointsEarned}', '${scope}' `
         + `FROM "Users" WHERE uuid IN (${uuids})`,
@@ -42,9 +42,9 @@ export const ActivityRepository = Container.get(DataSource)
     },
 
     async getCurrentUserActivityStream(user: Uuid): Promise<ActivityModel[]> {
-      return this.repository.find({
+      return this.find({
         where: {
-          user,
+          user: { uuid: user },
           scope: Raw((scope) => `${scope} = '${ActivityScope.PUBLIC}' OR ${scope} = '${ActivityScope.PRIVATE}'`),
         },
         order: { timestamp: 'ASC' },
@@ -52,9 +52,9 @@ export const ActivityRepository = Container.get(DataSource)
     },
 
     async getUserActivityStream(user: Uuid): Promise<ActivityModel[]> {
-      return this.repository.find({
+      return this.find({
         where: {
-          user,
+          user: { uuid: user },
           scope: ActivityScope.PUBLIC,
         },
         order: { timestamp: 'ASC' },
@@ -62,7 +62,7 @@ export const ActivityRepository = Container.get(DataSource)
     },
 
     async getEarliestTimestamp(): Promise<number> {
-      const earliestPointsRecord = await this.repository.createQueryBuilder()
+      const earliestPointsRecord = await this.createQueryBuilder()
         .select('MIN("timestamp")', 'timestamp')
         .where('"pointsEarned" > 0')
         .cache('earliest_recorded_points', moment.duration(1, 'day').asMilliseconds())

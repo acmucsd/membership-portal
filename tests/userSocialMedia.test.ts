@@ -1,11 +1,11 @@
 import faker = require('faker');
-import { Connection } from 'typeorm';
+import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { UserModel } from '../models/UserModel';
 import { SocialMediaType } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { UserSocialMediaFactory } from './data/UserSocialMediaFactory';
 import { UserController } from '../api/controllers/UserController';
+import { DataSource } from 'typeorm';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -38,7 +38,7 @@ describe('social media URL submission', () => {
     const userController = ControllerFactory.user(conn);
 
     await userController.insertSocialMediaForUser({ socialMedia: userSocialMediaList }, member1);
-    member1 = await conn.manager.findOne(UserModel, { uuid: member1.uuid }, { relations: ['userSocialMedia'] });
+    member1 = await conn.manager.findOne(UserModel, { where: { uuid: member1.uuid }, relations: ['userSocialMedia'] });
 
     expect(member1.userSocialMedia).toHaveLength(3);
     const userSocialMediaQuery = member1.userSocialMedia.sort((a, b) => a.type.localeCompare(b.type));
@@ -92,7 +92,7 @@ describe('social media URL update', () => {
     const userController = ControllerFactory.user(conn);
 
     await userController.insertSocialMediaForUser({ socialMedia: userSocialMediaList }, member1);
-    member1 = await conn.manager.findOne(UserModel, { uuid: member1.uuid }, { relations: ['userSocialMedia'] });
+    member1 = await conn.manager.findOne(UserModel, { where: { uuid: member1.uuid }, relations: ['userSocialMedia'] });
 
     expect(member1.userSocialMedia).toHaveLength(3);
     const errorMessage = 'User cannot update a social media URL of another user';
@@ -141,7 +141,7 @@ describe('social media URL delete', () => {
       .write();
 
     const userController = ControllerFactory.user(conn);
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] });
+    member = await conn.manager.findOne(UserModel,  { where: { uuid: member.uuid }, relations: ['userSocialMedia'] });
 
     const errorMessage = 'User cannot delete a social media URL of another user';
     const uuidParams = { uuid: member.userSocialMedia[0].uuid };
@@ -150,7 +150,7 @@ describe('social media URL delete', () => {
 });
 
 describe('social media URL update concurrency', () => {
-  let conn : Connection;
+  let conn : DataSource;
   let member : UserModel;
   let userController : UserController;
 
@@ -194,7 +194,7 @@ describe('social media URL update concurrency', () => {
     userController = ControllerFactory.user(conn);
 
     // refreshes member to have the userSocialMedia field
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid }, relations: ['userSocialMedia'] });
 
     flag = true;
   });
@@ -214,7 +214,7 @@ describe('social media URL update concurrency', () => {
       uuid: socialMediaParams.socialMedia[0].uuid,
     };
     const updatedMember = await conn.manager.findOne(
-      UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] },
+      UserModel, { where: { uuid: member.uuid }, relations: ['userSocialMedia'] },
     );
 
     expect(updatedMember.userSocialMedia).toHaveLength(5);
@@ -240,7 +240,7 @@ describe('social media URL update concurrency', () => {
       uuid: socialMediaParams.socialMedia[0].uuid,
     };
     const updatedMember = await conn.manager.findOne(
-      UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] },
+      UserModel, { where: { uuid: member.uuid }, relations: ['userSocialMedia'] },
     );
 
     expect(updatedMember.userSocialMedia).toHaveLength(5);
@@ -266,7 +266,7 @@ describe('social media URL update concurrency', () => {
       uuid: socialMediaParams.socialMedia[0].uuid,
     };
     const updatedMember = await conn.manager.findOne(
-      UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] },
+      UserModel, { where: { uuid: member.uuid }, relations: ['userSocialMedia'] },
     );
 
     expect(updatedMember.userSocialMedia).toHaveLength(5);
@@ -292,7 +292,7 @@ describe('social media URL update concurrency', () => {
       uuid: socialMediaParams.socialMedia[0].uuid,
     };
     const updatedMember = await conn.manager.findOne(
-      UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] },
+      UserModel, { where: { uuid: member.uuid }, relations: ['userSocialMedia'] },
     );
 
     expect(updatedMember.userSocialMedia).toHaveLength(5);
@@ -318,7 +318,7 @@ describe('social media URL update concurrency', () => {
       uuid: socialMediaParams.socialMedia[0].uuid,
     };
     const updatedMember = await conn.manager.findOne(
-      UserModel, { uuid: member.uuid }, { relations: ['userSocialMedia'] },
+      UserModel, { where: { uuid: member.uuid }, relations: ['userSocialMedia'] },
     );
 
     expect(updatedMember.userSocialMedia).toHaveLength(5);

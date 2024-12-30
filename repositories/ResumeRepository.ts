@@ -7,7 +7,7 @@ export const ResumeRepository = Container.get(DataSource)
   .getRepository(ResumeModel)
   .extend({
     async findVisibleResumes(): Promise<ResumeModel[]> {
-      return this.repository.find({
+      return this.find({
         relations: ['user'],
         where: {
           isResumeVisible: true,
@@ -16,19 +16,19 @@ export const ResumeRepository = Container.get(DataSource)
     },
 
     async findAllByUser(user: UserModel): Promise<ResumeModel[]> {
-      return this.repository.find({ user });
+      return this.find({ where: { user } });
     },
 
     async deleteResume(resume: ResumeModel) : Promise<ResumeModel> {
-      return this.repository.remove(resume);
+      return this.remove(resume);
     },
 
     async findByUuid(uuid: string): Promise<ResumeModel> {
-      return this.repository.findOne({ uuid }, { relations: ['user'] });
+      return this.findOne({where: { uuid }, relations: ['user'] });
     },
 
     async findByUserUuid(user: string): Promise<ResumeModel> {
-      const resume = await this.repository.findOne({
+      const resume = await this.findOne({
         where: {
           user: {
             uuid: user,
@@ -40,7 +40,7 @@ export const ResumeRepository = Container.get(DataSource)
     },
 
     async upsertResume(resume: ResumeModel, changes?: Partial<ResumeModel>): Promise<ResumeModel> {
-      if (changes) resume = this.repository.merge(resume, changes) as ResumeModel;
-      return this.repository.save(resume);
+      if (changes) resume = this.merge(resume, changes) as ResumeModel;
+      return this.save(resume);
     },
   });

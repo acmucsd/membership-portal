@@ -10,6 +10,7 @@ import { AttendanceModel } from '../models/AttendanceModel';
 import { UserError } from '../utils/Errors';
 import Repositories, { TransactionsManager } from '../repositories';
 import { Activity, Attendance } from '../types/internal';
+import e = require('express');
 
 @Service()
 export default class AttendanceService {
@@ -129,7 +130,6 @@ export default class AttendanceService {
       const users = await Repositories.user(txn).findByEmails(emails);
       const emailsFound = users.map((user) => user.email);
       const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
-
       if (emailsNotFound.length > 0) {
         throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
       }
@@ -154,11 +154,9 @@ export default class AttendanceService {
     proxyUser: UserModel, txn: EntityManager): Promise<AttendanceModel[]> {
     const attendances: Attendance[] = [];
     const activities: Activity[] = [];
-
     users.forEach((user) => {
       const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
       const description = `Attendance submitted on behalf of user by ${proxyUser.uuid}`;
-
       const attendance = {
         user,
         event,
