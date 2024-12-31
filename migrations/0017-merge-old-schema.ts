@@ -123,6 +123,7 @@ export class MergeOldSchema1598743920351 implements MigrationInterface {
       columnNames: ['item'],
       referencedColumnNames: ['uuid'],
       referencedTableName: 'Merchandise',
+      name: "OrderItems_item_Merchandise_uuid_fkey",
     }));
   }
 
