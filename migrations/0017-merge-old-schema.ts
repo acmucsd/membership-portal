@@ -3,15 +3,15 @@ import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 't
 export class MergeOldSchema1598743920351 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     /* Change primary keys of all tables from id to uuid */
-    await queryRunner.query('ALTER TABLE "Users" DROP CONSTRAINT "Users_pkey"');
-    await queryRunner.query('ALTER TABLE "Events" DROP CONSTRAINT "Events_pkey"');
-    await queryRunner.query('ALTER TABLE "Attendances" DROP CONSTRAINT "Attendances_pkey"');
-    await queryRunner.query('ALTER TABLE "Activities" DROP CONSTRAINT "Activities_pkey"');
-    await queryRunner
-      .query('ALTER TABLE "MerchandiseCollections" DROP CONSTRAINT "MerchandiseCollections_pkey"');
-    await queryRunner.query('ALTER TABLE "Merchandise" DROP CONSTRAINT "Merchandise_pkey"');
-    await queryRunner.query('ALTER TABLE "Orders" DROP CONSTRAINT "Orders_pkey"');
-    await queryRunner.query('ALTER TABLE "OrderItems" DROP CONSTRAINT "OrderItems_pkey"');
+    await queryRunner.dropPrimaryKey('Users');
+    await queryRunner.dropPrimaryKey('Events');
+    await queryRunner.dropPrimaryKey('Attendances');
+    await queryRunner.dropPrimaryKey('Activities');
+    await queryRunner.dropPrimaryKey('MerchandiseCollections');
+    await queryRunner.dropPrimaryKey('Merchandise');
+    await queryRunner.dropPrimaryKey('Orders');
+    await queryRunner.dropPrimaryKey('OrderItems');
+
     /* Now, create them via API */
     await queryRunner.createPrimaryKey('Users', ['uuid']);
     await queryRunner.createPrimaryKey('Events', ['uuid']);
