@@ -59,7 +59,8 @@ export class ControllerFactory {
     const eventService = new EventService(conn.manager);
     const storageService = new StorageService();
     const attendanceService = new AttendanceService(conn.manager);
-    return new EventController(eventService, storageService, attendanceService);
+    const feedbackService = new FeedbackService(conn.manager);
+    return new EventController(eventService, storageService, attendanceService, feedbackService);
   }
 
   public static leaderboard(conn: Connection): LeaderboardController {

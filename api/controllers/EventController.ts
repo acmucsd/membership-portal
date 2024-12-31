@@ -19,6 +19,7 @@ import {
   GetFutureEventsResponse,
   GetAllEventsResponse,
   GetPastEventsResponse,
+  GetFeedbackForEventResponse,
 } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
 import {
@@ -27,18 +28,23 @@ import {
   CreateEventRequest,
   SubmitEventFeedbackRequest,
 } from '../validators/EventControllerRequests';
+import FeedbackService from '../../services/FeedbackService';
 
 @JsonController('/event')
 export class EventController {
   private eventService: EventService;
 
+  private feedbackService: FeedbackService;
+
   private storageService: StorageService;
 
   private attendanceService: AttendanceService;
 
-  constructor(eventService: EventService, storageService: StorageService, attendanceService: AttendanceService) {
+  constructor(eventService: EventService, storageService: StorageService,
+    attendanceService: AttendanceService, feedbackService: FeedbackService) {
     this.eventService = eventService;
     this.storageService = storageService;
+    this.feedbackService = feedbackService;
     this.attendanceService = attendanceService;
   }
 
@@ -58,6 +64,19 @@ export class EventController {
     const canSeeAttendanceCode = !!user && PermissionsService.canEditEvents(user);
     const events = await this.eventService.getFutureEvents(canSeeAttendanceCode, options);
     return { error: null, events };
+  }
+
+  @UseBefore(OptionalUserAuthentication)
+  @Get('/:uuid/feedback')
+  async getFeedbackByEvent(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
+  Promise<GetFeedbackForEventResponse> {
+    const options = {
+      event: params.uuid,
+    };
+    const canSeeAllFeedback = PermissionsService.canSeeAllFeedback(user);
+
+    const feedback = await this.feedbackService.getFeedback(canSeeAllFeedback, user, options);
+    return { error: null, feedback };
   }
 
   @UseBefore(UserAuthentication)

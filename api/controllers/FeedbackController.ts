@@ -1,5 +1,5 @@
 import { Body, ForbiddenError, Get, JsonController, Params,
-  Patch, Post, UseBefore, QueryParams } from 'routing-controllers';
+  Patch, Post, UseBefore } from 'routing-controllers';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
@@ -10,7 +10,6 @@ import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   SubmitFeedbackRequest,
   UpdateFeedbackStatusRequest,
-  FeedbackSearchOptions,
 } from '../validators/FeedbackControllerRequests';
 
 @UseBefore(UserAuthentication)
@@ -22,11 +21,14 @@ export class FeedbackController {
     this.feedbackService = feedbackService;
   }
 
-  @Get()
-  async getFeedback(@QueryParams() options: FeedbackSearchOptions,
-    @AuthenticatedUser() user: UserModel): Promise<GetFeedbackResponse> {
-    const canSeeAllFeedback = PermissionsService.canSeeAllFeedback(user);
-    const feedback = await this.feedbackService.getFeedback(canSeeAllFeedback, user, options);
+  @Get('/event/:uuid')
+  async getEventFeedback(@Params() params: UuidParam, @AuthenticatedUser() user: UserModel):
+  Promise<GetFeedbackResponse> {
+    const options = {
+      user: user.uuid,
+      event: params.uuid,
+    };
+    const feedback = await this.feedbackService.getFeedback(true, user, options);
     return { error: null, feedback };
   }
 
