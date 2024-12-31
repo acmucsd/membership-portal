@@ -12,6 +12,7 @@ export const dataSource = new DataSource({
   password: process.env.RDS_PASSWORD,
   database: process.env.RDS_DATABASE,
   entities: models,
+  migrations: ['migrations/*.ts'],
   // synchronize: true, // DO NOT USE IN PRODUCTION, make migrations
 });
 
