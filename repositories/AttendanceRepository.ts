@@ -27,7 +27,7 @@ export const AttendanceRepository = Container.get(DataSource)
 
     async hasUserAttendedEvent(user: UserModel, event: EventModel): Promise<boolean> {
       const count = await this.count({
-        where: { user: { uuid: user.uuid }, event: event },
+        where: { user: { uuid: user.uuid }, event },
       });
       return count > 0;
     },

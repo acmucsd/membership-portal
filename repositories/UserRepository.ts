@@ -38,7 +38,7 @@ export const UserRepository = Container.get(DataSource)
     },
 
     async findByEmail(email: string): Promise<UserModel> {
-      return this.findOne({ where: { email: email } });
+      return this.findOne({ where: { email } });
     },
 
     async findByEmails(emails: string[]): Promise<UserModel[]> {

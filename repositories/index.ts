@@ -122,5 +122,5 @@ export {
   ActivityRepository,
   LeaderboardRepository,
   ResumeRepository,
-  UserSocialMediaRepository
+  UserSocialMediaRepository,
 };

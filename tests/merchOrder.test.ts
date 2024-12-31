@@ -1,8 +1,8 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
-import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
 import { mock, when, anything, instance, verify, anyString } from 'ts-mockito';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
+import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
 import EmailService from '../services/EmailService';
 import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
@@ -193,11 +193,11 @@ describe('merch orders', () => {
 
     const pastOrder = await conn.manager.findOne(OrderModel, {
       where: { pickupEvent: pastPickupEvent },
-      relations: ['items']
+      relations: ['items'],
     });
     const ongoingOrder = await conn.manager.findOne(OrderModel, {
       where: { pickupEvent: ongoingPickupEvent },
-      relations: ['items']
+      relations: ['items'],
     });
 
     // fulfill past order
@@ -778,7 +778,10 @@ describe('merch orders', () => {
       const updatedMember = await UserRepository.findByUuid(member.uuid);
       // members whose orders were previously fulfilled, cancelled, or placed shouldn't get refunded,
       // whereas all other members should
-      if (updatedMember === fulfilledOrderMember || updatedMember === cancelledOrderMember || updatedMember === placedOrderMember) {
+
+      if (updatedMember.uuid === fulfilledOrderMember.uuid
+            || updatedMember.uuid === cancelledOrderMember.uuid
+            || updatedMember.uuid === placedOrderMember.uuid) {
         expect(updatedMember.credits).toEqual(8000);
       } else {
         expect(updatedMember.credits).toEqual(10000);
@@ -787,9 +790,9 @@ describe('merch orders', () => {
       // placed orders should remain placed,
       // and all other orders should be cancelled
       const updatedOrder = await conn.manager.findOne(OrderModel, { where: { user: updatedMember } });
-      if (updatedMember === fulfilledOrderMember) {
+      if (updatedMember.uuid === fulfilledOrderMember.uuid) {
         expect(updatedOrder.status).toEqual(OrderStatus.FULFILLED);
-      } else if (updatedMember === placedOrderMember) {
+      } else if (updatedMember.uuid === placedOrderMember.uuid) {
         expect(updatedOrder.status).toEqual(OrderStatus.PLACED);
       } else {
         expect(updatedOrder.status).toEqual(OrderStatus.CANCELLED);
@@ -797,7 +800,7 @@ describe('merch orders', () => {
     }));
 
     // check pending order cancellation activity
-    const adminActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(merchDistributor);
+    const adminActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(storeManager);
     const orderPlacedActivity = adminActivityStream.activity[adminActivityStream.activity.length - 1];
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.PENDING_ORDERS_CANCELLED);
   });
@@ -968,7 +971,7 @@ describe('merch order pickup events', () => {
     await merchController.createPickupEvent({ pickupEvent }, merchDistributor);
 
     const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
-      { relations: ['orders', 'linkedEvent'] });
+      { where: {}, relations: ['orders', 'linkedEvent'] });
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
   });
 
@@ -995,7 +998,7 @@ describe('merch order pickup events', () => {
     await merchController.createPickupEvent(createPickupEventRequest, merchDistributor);
 
     const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
-      { relations: ['orders', 'linkedEvent'] });
+      { where: {}, relations: ['orders', 'linkedEvent'] });
 
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
 
@@ -1009,7 +1012,7 @@ describe('merch order pickup events', () => {
     await merchController.editPickupEvent(params, editPickupEventRequest, merchDistributor);
 
     const editedPersistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
-      { relations: ['orders', 'linkedEvent'] });
+      { where: {}, relations: ['orders', 'linkedEvent'] });
     expect(editedPersistedPickupEvent.uuid).toEqual(pickupEvent.uuid);
     expect(editedPersistedPickupEvent.linkedEvent.uuid).toEqual(editPickupEventRequest.pickupEvent.linkedEventUuid);
   });
@@ -1045,7 +1048,10 @@ describe('merch order pickup events', () => {
     const params = { uuid: pickupEvent.uuid };
     await ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, merchDistributor);
 
-    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, {
+      where: {},
+      relations: ['orders'],
+    });
     expect(persistedPickupEvent.uuid).toEqual(pickupEvent.uuid);
     expect(persistedPickupEvent.title).toEqual(editPickupEventRequest.pickupEvent.title);
   });
@@ -1137,8 +1143,11 @@ describe('merch order pickup events', () => {
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
-    const persistedOrder = await conn.manager.findOne(OrderModel, {});
-    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
+    const persistedOrder = await conn.manager.findOne(OrderModel, { where: {} });
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, {
+      where: {},
+      relations: ['orders', 'orders.items'],
+    });
     expect(persistedPickupEvent.orders).toHaveLength(1);
     expect(persistedPickupEvent.orders[0]).toStrictEqual(persistedOrder);
   });
@@ -1374,7 +1383,9 @@ describe('merch order pickup events', () => {
     const pastPickupEventUuid = { uuid: pastPickupEvent.uuid };
     await merchController.completePickupEvent(pastPickupEventUuid, merchDistributor);
 
-    const completedPastPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { where: { uuid: pastPickupEvent.uuid } });
+    const completedPastPickupEvent = await conn.manager.findOne(OrderPickupEventModel, {
+      where: { uuid: pastPickupEvent.uuid },
+    });
     expect(completedPastPickupEvent.status).toEqual(OrderPickupEventStatus.COMPLETED);
   });
 

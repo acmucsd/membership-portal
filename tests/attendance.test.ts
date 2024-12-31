@@ -1,7 +1,7 @@
 import * as faker from 'faker';
 import * as moment from 'moment';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { ForbiddenError } from 'routing-controllers';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { ActivityType, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 

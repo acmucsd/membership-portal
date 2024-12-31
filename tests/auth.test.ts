@@ -1,9 +1,9 @@
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { NotFoundError } from 'routing-controllers';
 import { anyString, instance, mock, verify, when } from 'ts-mockito';
 import * as faker from 'faker';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import EmailService from '../services/EmailService';

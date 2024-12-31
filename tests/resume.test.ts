@@ -1,6 +1,6 @@
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
-import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { anything, instance, verify } from 'ts-mockito';
+import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { ActivityType, UserAccessType, MediaType } from '../types';
 import { ResumeModel } from '../models/ResumeModel';
 import { Config } from '../config';

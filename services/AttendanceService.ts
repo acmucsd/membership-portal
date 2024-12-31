@@ -10,7 +10,6 @@ import { AttendanceModel } from '../models/AttendanceModel';
 import { UserError } from '../utils/Errors';
 import Repositories, { TransactionsManager } from '../repositories';
 import { Activity, Attendance } from '../types/internal';
-import e = require('express');
 
 @Service()
 export default class AttendanceService {

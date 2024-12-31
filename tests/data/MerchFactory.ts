@@ -15,7 +15,7 @@ import {
   MerchItemOptionRepository,
   MerchItemPhotoRepository,
   MerchItemRepository,
-  OrderPickupEventRepository
+  OrderPickupEventRepository,
 } from '../../repositories';
 
 export class MerchFactory {

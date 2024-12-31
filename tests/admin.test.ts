@@ -1,6 +1,6 @@
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { In } from 'typeorm';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { ActivityScope, ActivityType, SubmitAttendanceForUsersRequest, UserAccessType, NameAndEmail } from '../types';
 import { ControllerFactory } from './controllers';
 import { UserModel } from '../models/UserModel';
@@ -34,7 +34,6 @@ describe('retroactive attendance submission', () => {
     const userController = ControllerFactory.user(conn);
     const adminController = ControllerFactory.admin(conn);
     const attendanceController = ControllerFactory.attendance(conn);
-    console.log(emails);
     await adminController.submitAttendanceForUsers({ users: emails, event: event.uuid }, admin);
 
     for (let u = 0; u < users.length; u += 1) {
@@ -220,7 +219,7 @@ describe('updating user access level', () => {
 
     const repository = conn.getRepository(UserModel);
     const updatedUsers = await repository.find({
-      where: { email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]) } ,
+      where: { email: In([staffUser.email, standardUser.email, marketingUser.email, merchStoreDistributorUser.email]) },
     });
     // sorting to guarantee order
     updatedUsers.sort((a, b) => a.email.localeCompare(b.email));

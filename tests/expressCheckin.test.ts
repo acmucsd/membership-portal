@@ -1,6 +1,6 @@
 import * as faker from 'faker';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { anything, instance, mock, verify, when } from 'ts-mockito';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { ControllerFactory } from './controllers';
 import EmailService from '../services/EmailService';
 import { ExpressCheckinModel } from '../models/ExpressCheckinModel';

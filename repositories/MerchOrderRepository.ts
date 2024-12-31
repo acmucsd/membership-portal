@@ -91,7 +91,7 @@ export const OrderItemRepository = Container.get(DataSource)
   .getRepository(OrderItemModel)
   .extend({
     async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, OrderItemModel>> {
-      const items = await this.findByIds(uuids);
+      const items = await this.find({ where: { uuid: In(uuids) } });
       return new Map(items.map((i) => [i.uuid, i]));
     },
 

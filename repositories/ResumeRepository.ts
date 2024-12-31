@@ -24,7 +24,7 @@ export const ResumeRepository = Container.get(DataSource)
     },
 
     async findByUuid(uuid: string): Promise<ResumeModel> {
-      return this.findOne({where: { uuid }, relations: ['user'] });
+      return this.findOne({ where: { uuid }, relations: ['user'] });
     },
 
     async findByUserUuid(user: string): Promise<ResumeModel> {

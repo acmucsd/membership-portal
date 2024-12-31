@@ -1,6 +1,6 @@
 import * as moment from 'moment';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { ForbiddenError } from 'routing-controllers';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
@@ -150,7 +150,7 @@ describe('event deletion', () => {
 
     // verifying event deleted
     const repository = conn.getRepository(EventModel);
-    const repositoryEvent = await repository.find({ where: { uuid: event.uuid }});
+    const repositoryEvent = await repository.find({ where: { uuid: event.uuid } });
 
     expect(repositoryEvent).toHaveLength(0);
   });

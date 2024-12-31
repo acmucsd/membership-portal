@@ -1,11 +1,11 @@
 import faker = require('faker');
+import { DataSource } from 'typeorm';
 import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { UserModel } from '../models/UserModel';
 import { SocialMediaType } from '../types';
 import { ControllerFactory } from './controllers';
 import { UserSocialMediaFactory } from './data/UserSocialMediaFactory';
 import { UserController } from '../api/controllers/UserController';
-import { DataSource } from 'typeorm';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -141,7 +141,7 @@ describe('social media URL delete', () => {
       .write();
 
     const userController = ControllerFactory.user(conn);
-    member = await conn.manager.findOne(UserModel,  { where: { uuid: member.uuid }, relations: ['userSocialMedia'] });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid }, relations: ['userSocialMedia'] });
 
     const errorMessage = 'User cannot delete a social media URL of another user';
     const uuidParams = { uuid: member.userSocialMedia[0].uuid };

@@ -1,4 +1,4 @@
-import { DataSource, SelectQueryBuilder } from 'typeorm';
+import { DataSource, In, SelectQueryBuilder } from 'typeorm';
 import Container from 'typedi';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MerchandiseItemPhotoModel } from '../models/MerchandiseItemPhotoModel';
@@ -56,7 +56,7 @@ export const MerchCollectionPhotoRepository = Container.get(DataSource)
     },
 
     async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchCollectionPhotoModel>> {
-      const photos = await this.findByIds(uuids, { relations: ['merchCollection'] });
+      const photos = await this.find({ where: { uuid: In(uuids) }, relations: ['merchCollection'] });
       return new Map(photos.map((o) => [o.uuid, o]));
     },
 
@@ -77,7 +77,7 @@ export const MerchItemRepository = Container.get(DataSource)
     async findByUuid(uuid: Uuid): Promise<MerchandiseItemModel> {
       return this.findOne({
         where: { uuid },
-        relations: ['collection', 'options', 'merchPhotos', 'collection.collectionPhotos']
+        relations: ['collection', 'options', 'merchPhotos', 'collection.collectionPhotos'],
       });
     },
 
@@ -114,7 +114,7 @@ export const MerchItemOptionRepository = Container.get(DataSource)
     },
 
     async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchandiseItemOptionModel>> {
-      const options = await this.findByIds(uuids, { relations: ['item', 'item.merchPhotos'] });
+      const options = await this.find({ where: { uuid: In(uuids) }, relations: ['item', 'item.merchPhotos'] });
       return new Map(options.map((o) => [o.uuid, o]));
     },
 
@@ -151,7 +151,7 @@ export const MerchItemPhotoRepository = Container.get(DataSource)
     },
 
     async batchFindByUuid(uuids: Uuid[]): Promise<Map<Uuid, MerchandiseItemPhotoModel>> {
-      const merchPhotos = await this.findByIds(uuids, { relations: ['merchItem'] });
+      const merchPhotos = await this.find({ where: { uuid: In(uuids) }, relations: ['merchItem'] });
       return new Map(merchPhotos.map((o) => [o.uuid, o]));
     },
 

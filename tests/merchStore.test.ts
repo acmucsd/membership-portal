@@ -1,8 +1,8 @@
 import * as faker from 'faker';
-import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { zip } from 'underscore';
 import { anything, instance, verify, mock, when } from 'ts-mockito';
+import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { OrderModel } from '../models/OrderModel';
 import { MediaType, MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
