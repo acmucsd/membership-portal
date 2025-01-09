@@ -22,8 +22,10 @@ import { File, MediaType, GetVisibleResumesResponse,
   PatchResumeResponse, UpdateResumeResponse, DeleteResumeResponse } from '../../types';
 import { PatchResumeRequest, UploadResumeRequest } from '../validators/ResumeControllerRequests';
 import { UuidParam } from '../validators/GenericRequests';
+import { Service } from 'typedi';
 
 @UseBefore(UserAuthentication)
+@Service()
 @JsonController('/resume')
 export class ResumeController {
   private resumeService: ResumeService;

@@ -8,7 +8,9 @@ import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
 import { GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
+import { Service } from 'typedi';
 
+@Service()
 @JsonController('/attendance')
 export class AttendanceController {
   private attendanceService: AttendanceService;

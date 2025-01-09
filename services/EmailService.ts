@@ -5,9 +5,11 @@ import * as path from 'path';
 import { logger as log } from '../utils/Logger';
 import { Config } from '../config';
 import { Uuid } from '../types';
+import { Service } from 'typedi';
 
 type EmailData = MailDataRequired;
 
+@Service()
 export default class EmailService {
   private readonly mailer = new MailService();
 

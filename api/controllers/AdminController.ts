@@ -23,8 +23,10 @@ import StorageService from '../../services/StorageService';
 import PermissionsService from '../../services/PermissionsService';
 import { UserModel } from '../../models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
+import { Service } from 'typedi';
 
 @UseBefore(UserAuthentication)
+@Service()
 @JsonController('/admin')
 export class AdminController {
   private storageService: StorageService;

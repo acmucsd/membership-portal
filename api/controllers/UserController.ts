@@ -25,8 +25,10 @@ import {
   InsertSocialMediaRequest,
   UpdateSocialMediaRequest,
 } from '../validators/UserSocialMediaControllerRequests';
+import { Service } from 'typedi';
 
 @UseBefore(UserAuthentication)
+@Service()
 @JsonController('/user')
 export class UserController {
   private userAccountService: UserAccountService;

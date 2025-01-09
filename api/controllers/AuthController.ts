@@ -25,7 +25,9 @@ import { OptionalUserAuthentication, UserAuthentication } from '../middleware/Us
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import { EmailParam, AccessCodeParam } from '../validators/GenericRequests';
+import { Service } from 'typedi';
 
+@Service()
 @JsonController('/auth')
 export class AuthController {
   private userAccountService: UserAccountService;

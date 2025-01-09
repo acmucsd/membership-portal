@@ -74,8 +74,10 @@ import {
 } from '../validators/MerchStoreRequests';
 import { UserError } from '../../utils/Errors';
 import StorageService from '../../services/StorageService';
+import { Service } from 'typedi';
 
 @UseBefore(UserAuthentication)
+@Service()
 @JsonController('/merch')
 export class MerchStoreController {
   private merchStoreService: MerchStoreService;

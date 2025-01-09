@@ -3,8 +3,10 @@ import { GetLeaderboardResponse } from '../../types';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import UserAccountService from '../../services/UserAccountService';
 import { SlidingLeaderboardQueryParams } from '../validators/LeaderboardControllerRequests';
+import { Service } from 'typedi';
 
 @UseBefore(UserAuthentication)
+@Service()
 @JsonController('/leaderboard')
 export class LeaderboardController {
   private userAccountService: UserAccountService;

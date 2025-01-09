@@ -27,7 +27,9 @@ import {
   CreateEventRequest,
   SubmitEventFeedbackRequest,
 } from '../validators/EventControllerRequests';
+import { Service } from 'typedi';
 
+@Service()
 @JsonController('/event')
 export class EventController {
   private eventService: EventService;

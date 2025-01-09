@@ -12,8 +12,10 @@ import {
   UpdateFeedbackStatusRequest,
   FeedbackSearchOptions,
 } from '../validators/FeedbackControllerRequests';
+import { Service } from 'typedi';
 
 @UseBefore(UserAuthentication)
+@Service()
 @JsonController('/feedback')
 export class FeedbackController {
   private feedbackService: FeedbackService;
