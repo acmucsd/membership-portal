@@ -1,6 +1,7 @@
 import {
   JsonController, Get, Patch, Delete, Post, UseBefore, Params, ForbiddenError, QueryParams, UploadedFile, Body,
 } from 'routing-controllers';
+import { Service } from 'typedi';
 import EventService from '../../services/EventService';
 import { UserAuthentication, OptionalUserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -27,7 +28,6 @@ import {
   CreateEventRequest,
   SubmitEventFeedbackRequest,
 } from '../validators/EventControllerRequests';
-import { Service } from 'typedi';
 
 @Service()
 @JsonController('/event')
@@ -66,8 +66,8 @@ export class EventController {
   @Post('/picture/:uuid')
   async updateEventCover(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.EVENT_COVER) }) file: File,
-    @Params() params: UuidParam,
-    @AuthenticatedUser() user: UserModel): Promise<UpdateEventCoverResponse> {
+  @Params() params: UuidParam,
+  @AuthenticatedUser() user: UserModel): Promise<UpdateEventCoverResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
     const cover = await this.storageService.upload(file, MediaType.EVENT_COVER, params.uuid);
     const event = await this.eventService.updateByUuid(params.uuid, { cover });

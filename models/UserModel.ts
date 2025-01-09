@@ -52,7 +52,7 @@ export class UserModel {
   @Column({
     type: 'text',
     nullable: true,
-  })
+    })
   bio: string;
 
   @Column('boolean', { default: true })

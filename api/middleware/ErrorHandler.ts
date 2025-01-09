@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { ExpressErrorMiddlewareInterface, Middleware } from 'routing-controllers';
-import { handleError } from '../../error';
 import { Service } from 'typedi';
+import { handleError } from '../../error';
 
 @Service()
 @Middleware({ type: 'after' })

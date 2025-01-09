@@ -1,4 +1,5 @@
 import { JsonController, Get, Post, UseBefore, Params, ForbiddenError, Body } from 'routing-controllers';
+import { Service } from 'typedi';
 import EmailService from '../../services/EmailService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -8,7 +9,6 @@ import AttendanceService from '../../services/AttendanceService';
 import PermissionsService from '../../services/PermissionsService';
 import { GetAttendancesForEventResponse, GetAttendancesForUserResponse, AttendEventResponse } from '../../types';
 import { UuidParam } from '../validators/GenericRequests';
-import { Service } from 'typedi';
 
 @Service()
 @JsonController('/attendance')

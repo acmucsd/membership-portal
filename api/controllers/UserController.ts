@@ -1,6 +1,7 @@
 import {
   JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body, Delete,
 } from 'routing-controllers';
+import { Service } from 'typedi';
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
 import UserSocialMediaService from '../../services/UserSocialMediaService';
@@ -25,7 +26,6 @@ import {
   InsertSocialMediaRequest,
   UpdateSocialMediaRequest,
 } from '../validators/UserSocialMediaControllerRequests';
-import { Service } from 'typedi';
 
 @UseBefore(UserAuthentication)
 @Service()
@@ -65,7 +65,7 @@ export class UserController {
   @Post('/picture')
   async updateProfilePicture(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.PROFILE_PICTURE) }) file: File,
-    @AuthenticatedUser() user: UserModel): Promise<UpdateProfilePictureResponse> {
+  @AuthenticatedUser() user: UserModel): Promise<UpdateProfilePictureResponse> {
     const profilePicture = await this.storageService.upload(file, MediaType.PROFILE_PICTURE, user.uuid);
     const updatedUser = await this.userAccountService.updateProfilePicture(user, profilePicture);
     return { error: null, user: updatedUser.getFullUserProfile() };

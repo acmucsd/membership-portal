@@ -27,15 +27,15 @@ export class AttendanceModel {
   @Column({
     type: 'text',
     transformer: {
-      to(value: string[]) {
-        return JSON.stringify(value);
-      },
-      from(value: string) {
-        return JSON.parse(value);
-      },
+    to(value: string[]) {
+    return JSON.stringify(value);
+    },
+    from(value: string) {
+    return JSON.parse(value);
+    },
     },
     nullable: true,
-  })
+    })
   feedback: string[];
 
   public getPublicAttendance(): PublicAttendance {

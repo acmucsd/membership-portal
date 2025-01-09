@@ -2,10 +2,10 @@ import { MailService, MailDataRequired } from '@sendgrid/mail';
 import * as ejs from 'ejs';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Service } from 'typedi';
 import { logger as log } from '../utils/Logger';
 import { Config } from '../config';
 import { Uuid } from '../types';
-import { Service } from 'typedi';
 
 type EmailData = MailDataRequired;
 

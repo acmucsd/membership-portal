@@ -12,6 +12,7 @@ import {
   Delete,
 } from 'routing-controllers';
 import * as path from 'path';
+import { Service } from 'typedi';
 import PermissionsService from '../../services/PermissionsService';
 import StorageService from '../../services/StorageService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
@@ -22,7 +23,6 @@ import { File, MediaType, GetVisibleResumesResponse,
   PatchResumeResponse, UpdateResumeResponse, DeleteResumeResponse } from '../../types';
 import { PatchResumeRequest, UploadResumeRequest } from '../validators/ResumeControllerRequests';
 import { UuidParam } from '../validators/GenericRequests';
-import { Service } from 'typedi';
 
 @UseBefore(UserAuthentication)
 @Service()
@@ -40,8 +40,8 @@ export class ResumeController {
   @Post()
   async uploadResume(@UploadedFile('file',
     { options: StorageService.getFileOptions(MediaType.RESUME) }) file: File,
-    @Body() uploadResumeRequest: UploadResumeRequest,
-    @AuthenticatedUser() user: UserModel): Promise<UpdateResumeResponse> {
+  @Body() uploadResumeRequest: UploadResumeRequest,
+  @AuthenticatedUser() user: UserModel): Promise<UpdateResumeResponse> {
     if (path.extname(file.originalname) !== '.pdf') throw new BadRequestError('Filetype must be \'.pdf\'');
 
     const oldResume = await this.resumeService.getUserResume(user);

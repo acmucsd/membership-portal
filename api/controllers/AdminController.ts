@@ -1,4 +1,5 @@
 import { JsonController, Post, Patch, UploadedFile, UseBefore, ForbiddenError, Body, Get } from 'routing-controllers';
+import { Service } from 'typedi';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
   CreateBonusRequest,
@@ -23,7 +24,6 @@ import StorageService from '../../services/StorageService';
 import PermissionsService from '../../services/PermissionsService';
 import { UserModel } from '../../models/UserModel';
 import AttendanceService from '../../services/AttendanceService';
-import { Service } from 'typedi';
 
 @UseBefore(UserAuthentication)
 @Service()
