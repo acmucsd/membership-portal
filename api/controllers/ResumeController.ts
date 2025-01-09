@@ -40,8 +40,8 @@ export class ResumeController {
   @Post()
   async uploadResume(@UploadedFile('file',
     { options: StorageService.getFileOptions(MediaType.RESUME) }) file: File,
-  @Body() uploadResumeRequest: UploadResumeRequest,
-  @AuthenticatedUser() user: UserModel): Promise<UpdateResumeResponse> {
+    @Body() uploadResumeRequest: UploadResumeRequest,
+    @AuthenticatedUser() user: UserModel): Promise<UpdateResumeResponse> {
     if (path.extname(file.originalname) !== '.pdf') throw new BadRequestError('Filetype must be \'.pdf\'');
 
     const oldResume = await this.resumeService.getUserResume(user);

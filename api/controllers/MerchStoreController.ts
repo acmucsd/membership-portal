@@ -139,9 +139,9 @@ export class MerchStoreController {
   @Post('/collection/picture/:uuid')
   async createMerchCollectionPhoto(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
-  @Params() params: UuidParam,
-  @Body() createCollectionRequest: CreateCollectionPhotoRequest,
-  @AuthenticatedUser() user: UserModel): Promise<CreateCollectionPhotoResponse> {
+    @Params() params: UuidParam,
+    @Body() createCollectionRequest: CreateCollectionPhotoRequest,
+    @AuthenticatedUser() user: UserModel): Promise<CreateCollectionPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
     // generate a random string for the uploaded photo url
@@ -208,9 +208,9 @@ export class MerchStoreController {
   @Post('/item/picture/:uuid')
   async createMerchItemPhoto(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.MERCH_PHOTO) }) file: File,
-  @Params() params: UuidParam,
-  @Body() createItemPhotoRequest: CreateMerchItemPhotoRequest,
-  @AuthenticatedUser() user: UserModel): Promise<CreateMerchPhotoResponse> {
+    @Params() params: UuidParam,
+    @Body() createItemPhotoRequest: CreateMerchItemPhotoRequest,
+    @AuthenticatedUser() user: UserModel): Promise<CreateMerchPhotoResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
 
     // generate a random string for the uploaded photo url

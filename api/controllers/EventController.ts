@@ -66,8 +66,8 @@ export class EventController {
   @Post('/picture/:uuid')
   async updateEventCover(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.EVENT_COVER) }) file: File,
-  @Params() params: UuidParam,
-  @AuthenticatedUser() user: UserModel): Promise<UpdateEventCoverResponse> {
+    @Params() params: UuidParam,
+    @AuthenticatedUser() user: UserModel): Promise<UpdateEventCoverResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
     const cover = await this.storageService.upload(file, MediaType.EVENT_COVER, params.uuid);
     const event = await this.eventService.updateByUuid(params.uuid, { cover });

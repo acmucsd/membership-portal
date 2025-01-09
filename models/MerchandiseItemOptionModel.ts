@@ -28,14 +28,14 @@ export class MerchandiseItemOptionModel {
     type: 'text',
     nullable: true,
     transformer: {
-    to(value: MerchItemOptionMetadata): string {
-    return JSON.stringify(value);
+      to(value: MerchItemOptionMetadata): string {
+        return JSON.stringify(value);
+      },
+      from(value: string): MerchItemOptionMetadata {
+        return value ? JSON.parse(value) : null;
+      },
     },
-    from(value: string): MerchItemOptionMetadata {
-    return value ? JSON.parse(value) : null;
-    },
-    },
-    })
+  })
   metadata: MerchItemOptionMetadata;
 
   @OneToMany((type) => OrderItemModel, (orderItem) => orderItem.option)

@@ -65,7 +65,7 @@ export class UserController {
   @Post('/picture')
   async updateProfilePicture(@UploadedFile('image',
     { options: StorageService.getFileOptions(MediaType.PROFILE_PICTURE) }) file: File,
-  @AuthenticatedUser() user: UserModel): Promise<UpdateProfilePictureResponse> {
+    @AuthenticatedUser() user: UserModel): Promise<UpdateProfilePictureResponse> {
     const profilePicture = await this.storageService.upload(file, MediaType.PROFILE_PICTURE, user.uuid);
     const updatedUser = await this.userAccountService.updateProfilePicture(user, profilePicture);
     return { error: null, user: updatedUser.getFullUserProfile() };
