@@ -1,12 +1,10 @@
 import 'reflect-metadata'; // this shim is required
-import { createExpressServer, useContainer as routingUseContainer } from 'routing-controllers';
-import { Container } from 'typedi';
+import Container from 'typedi';
+import { createExpressServer, useContainer } from 'routing-controllers';
 import { dataSource } from './DataSource';
 import { Config } from './config';
 import { controllers } from './api/controllers';
 import { middlewares } from './api/middleware';
-
-routingUseContainer(Container);
 
 dataSource
   .initialize()
@@ -16,6 +14,8 @@ dataSource
   .catch((error) => {
     console.log(error);
   });
+
+useContainer(Container);
 
 const app = createExpressServer({
   cors: true,
