@@ -33,7 +33,7 @@
     "url": "https://github.com/acmucsd/membership-portal/issues"
   },
   "engines": {
-    "node": "^20.0.0",
+    "node": "^20.12.2",
     "yarn": "^1.22.0"
   },
   "homepage": "https://github.com/acmucsd/membership-portal#readme",
