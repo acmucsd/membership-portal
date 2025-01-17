@@ -933,13 +933,6 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
-"@types/faker@^6.6.11":
-  version "6.6.11"
-  resolved "https://registry.yarnpkg.com/@types/faker/-/faker-6.6.11.tgz#ef9e9490c96522c7c36f90f00b17a88d78a1bd84"
-  integrity sha512-/m/YZdfPXeM3dnSBz4JDbbYXelBm+onjsX2+LZV1XPJjIOpdhoc8ngws67iyXdLJwLiigOcejBufaDdjuVWy3Q==
-  dependencies:
-    faker "*"
-
 "@types/graceful-fs@^4.1.3":
   version "4.1.9"
   resolved "https://registry.yarnpkg.com/@types/graceful-fs/-/graceful-fs-4.1.9.tgz#2a06bc0f68a20ab37b3e36aa238be6abdf49e8b4"
@@ -2688,11 +2681,6 @@ express@^4.18.2, express@^4.21.2:
     type-is "~1.6.18"
     utils-merge "1.0.1"
     vary "~1.1.2"
-
-faker@*:
-  version "6.6.6"
-  resolved "https://registry.yarnpkg.com/faker/-/faker-6.6.6.tgz#e9529da0109dca4c7c5dbfeaadbd9234af943033"
-  integrity sha512-9tCqYEDHI5RYFQigXFwF1hnCwcWCOJl/hmll0lr5D2Ljjb0o4wphb69wikeJDz5qCEzXCoPvG6ss5SDP6IfOdg==
 
 fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"

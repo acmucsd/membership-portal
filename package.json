@@ -85,7 +85,6 @@
     "@types/datadog-metrics": "^0.6.4",
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.0",
-    "@types/faker": "^6.6.11",
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/morgan": "^1.9.9",
