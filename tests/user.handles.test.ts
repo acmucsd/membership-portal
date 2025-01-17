@@ -1,7 +1,7 @@
 import 'reflect-metadata'; // this shim is required
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { UserPatches } from '../api/validators/UserControllerRequests';
 import { ControllerFactory } from './controllers';
@@ -107,7 +107,7 @@ describe('Update to Invalid User Handle', () => {
 
   test('Update handle error: too long', async () => {
     const MAX_LEN = 32;
-    const user = UserFactory.fake({ handle: faker.datatype.hexaDecimal(2 * MAX_LEN).toLowerCase() });
+    const user = UserFactory.fake({ handle: faker.string.hexadecimal({ length: 2 * MAX_LEN }).toLowerCase() });
 
     const errors = await validate(plainToClass(UserPatches, { ...user,
       passwordChange }));

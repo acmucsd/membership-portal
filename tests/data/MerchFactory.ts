@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { MerchItemOptionMetadata, OrderPickupEventStatus } from '../../types';
@@ -22,7 +22,7 @@ export class MerchFactory {
   public static fakeCollection(substitute?: Partial<MerchandiseCollectionModel>): MerchandiseCollectionModel {
     const fake = MerchCollectionRepository.create({
       uuid: uuid(),
-      title: faker.datatype.hexaDecimal(10),
+      title: faker.string.hexadecimal({ length: 10 }),
       description: faker.lorem.sentences(2),
       themeColorHex: faker.internet.color(),
       createdAt: faker.date.recent(),
@@ -52,7 +52,7 @@ export class MerchFactory {
     const hasVariantsEnabled = substitute?.hasVariantsEnabled ?? FactoryUtils.getRandomBoolean();
     const fake = MerchItemRepository.create({
       uuid: uuid(),
-      itemName: faker.datatype.hexaDecimal(10),
+      itemName: faker.string.hexadecimal({ length: 10}),
       description: faker.lorem.sentences(2),
       hasVariantsEnabled,
       monthlyLimit: FactoryUtils.getRandomNumber(1, 5),
@@ -121,8 +121,8 @@ export class MerchFactory {
 
   public static fakeOptionMetadata(substitute?: Partial<MerchItemOptionMetadata>): MerchItemOptionMetadata {
     const fake = {
-      type: faker.datatype.hexaDecimal(10),
-      value: faker.datatype.hexaDecimal(10),
+      type: faker.string.hexadecimal({ length: 10 }),
+      value: faker.string.hexadecimal({ length: 10 }),
       position: FactoryUtils.getRandomNumber(1, 10),
     };
     const sub = substitute ?? {};
@@ -136,7 +136,7 @@ export class MerchFactory {
     const [start, end] = FactoryUtils.getRandomTimeInterval();
     const fake = OrderPickupEventRepository.create({
       uuid: uuid(),
-      title: faker.datatype.hexaDecimal(10),
+      title: faker.string.hexadecimal({ length: 10 }),
       description: faker.lorem.sentences(2),
       start,
       end,
@@ -177,7 +177,7 @@ export class MerchFactory {
     if (n === 1) return [MerchFactory.fakeOption()];
 
     // create multiple options with consistent types
-    const type = faker.datatype.hexaDecimal(10);
+    const type = faker.string.hexadecimal({ length: 10 });
     return FactoryUtils.create(n, () => MerchFactory.fakeOptionWithType(type));
   }
 

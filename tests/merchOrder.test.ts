@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import * as moment from 'moment';
 import { mock, when, anything, instance, verify, anyString } from 'ts-mockito';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
@@ -514,7 +514,7 @@ describe('merch orders', () => {
     const order = placedOrderResponse.order.uuid;
     const fulfillOrderParams = { uuid: order };
     const orderItem = placedOrderResponse.order.items[0].uuid;
-    const fulfillmentUpdate = { uuid: orderItem, notes: faker.datatype.hexaDecimal(10) };
+    const fulfillmentUpdate = { uuid: orderItem, notes: faker.string.hexadecimal({ length: 10}) };
     const itemsToFulfill = { items: [fulfillmentUpdate] };
     await MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, fulfillOrderParams,
       itemsToFulfill, merchDistributor, conn, pickupEvent);
@@ -664,7 +664,7 @@ describe('merch orders', () => {
 
   test('order route accurately verifies monthly and lifetime limits', async () => {
     const conn = await DatabaseConnection.get();
-    const optionMetadataType = faker.datatype.hexaDecimal(10);
+    const optionMetadataType = faker.string.hexadecimal({ length: 10});
     const option1 = MerchFactory.fakeOptionWithType(optionMetadataType);
     const option2 = MerchFactory.fakeOptionWithType(optionMetadataType);
     const option3 = MerchFactory.fakeOptionWithType(optionMetadataType);
@@ -1044,7 +1044,7 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const editPickupEventRequest = { pickupEvent: { title: faker.datatype.hexaDecimal(10) } };
+    const editPickupEventRequest = { pickupEvent: { title: faker.string.hexadecimal({ length: 10}) } };
     const params = { uuid: pickupEvent.uuid };
     await ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, merchDistributor);
 

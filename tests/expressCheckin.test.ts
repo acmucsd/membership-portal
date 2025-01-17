@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { anything, instance, mock, verify, when } from 'ts-mockito';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { ControllerFactory } from './controllers';

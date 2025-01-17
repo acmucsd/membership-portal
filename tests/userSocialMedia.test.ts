@@ -1,4 +1,4 @@
-import faker = require('faker');
+import { faker } from '@faker-js/faker';
 import { DataSource } from 'typeorm';
 import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { UserModel } from '../models/UserModel';
@@ -116,7 +116,7 @@ describe('social media URL update', () => {
 
     const socialMediaParams = { socialMedia: [{
       url: faker.internet.url(),
-      uuid: faker.datatype.uuid(),
+      uuid: faker.string.uuid(),
     }] };
     const errorMessage = `Social media of UUID "${socialMediaParams.socialMedia[0].uuid}" not found`;
     await expect(userController.updateSocialMediaForUser(socialMediaParams, member))

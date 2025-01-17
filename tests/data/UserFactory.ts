@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import UserAccountService from '../../services/UserAccountService';
@@ -29,11 +29,11 @@ export class UserFactory {
   }
 
   public static fake(substitute?: Partial<UserModel>): UserModel {
-    const firstName = faker.name.firstName();
-    const lastName = faker.name.lastName();
+    const firstName = faker.person.firstName();
+    const lastName = faker.person.lastName();
     const fake = UserRepository.create({
       uuid: uuid(),
-      email: faker.internet.email(firstName, lastName, 'ucsd.edu'),
+      email: faker.internet.email({ firstName, lastName, provider: 'ucsd.edu' }),
       firstName,
       lastName,
       hash: UserFactory.PASSWORD_HASH,

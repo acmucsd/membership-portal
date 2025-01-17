@@ -1,7 +1,7 @@
 import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 import * as moment from 'moment';
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
 import {
   RegExpMatcher,
@@ -58,7 +58,7 @@ export default class UserAccountService {
   public static generateDefaultHandle(firstName: string, lastName: string): string {
     const nameString = `${firstName}-${lastName}`.slice(0, 25);
     // Hexadecimals look like 0x1b9Dle so we have to truncate the fixed '0x'.
-    const hashValue = faker.datatype.hexaDecimal(6).slice(2);
+    const hashValue = faker.string.hexadecimal({ length:6 }).slice(2);
     const handle = `${nameString}-${hashValue}`.toLowerCase();
     return handle;
   }

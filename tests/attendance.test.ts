@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
@@ -147,7 +147,7 @@ describe('attendance', () => {
       .createEvents(event)
       .write();
 
-    const attendEventRequest = { attendanceCode: faker.datatype.hexaDecimal(10) };
+    const attendEventRequest = { attendanceCode: faker.string.hexadecimal({ length: 10 }) };
     await expect(ControllerFactory.attendance(conn).attendEvent(attendEventRequest, member))
       .rejects.toThrow('Oh no! That code didn\'t work.');
   });

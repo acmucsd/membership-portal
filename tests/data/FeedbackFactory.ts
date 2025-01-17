@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { v4 as uuid } from 'uuid';
 import { FeedbackStatus, FeedbackType } from '../../types';
 import FactoryUtils from './FactoryUtils';

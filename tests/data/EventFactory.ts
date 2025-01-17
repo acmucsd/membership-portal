@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { EventModel } from '../../models/EventModel';
@@ -28,12 +28,12 @@ export class EventFactory {
     const fake = EventRepository.create({
       uuid: uuid(),
       organization: FactoryUtils.pickRandomValue(EventFactory.ORGS),
-      title: faker.datatype.hexaDecimal(10),
+      title: faker.string.hexadecimal({ length: 10 }),
       description: faker.lorem.sentences(2),
-      location: faker.datatype.hexaDecimal(10),
+      location: faker.string.hexadecimal({ length: 10 }),
       start,
       end,
-      attendanceCode: faker.datatype.hexaDecimal(10),
+      attendanceCode: faker.string.hexadecimal({ length: 10 }),
       pointValue: EventFactory.randomPointValue(),
       requiresStaff: FactoryUtils.getRandomBoolean(),
       staffPointBonus: EventFactory.randomPointValue(),
@@ -42,8 +42,8 @@ export class EventFactory {
       deleted: false,
       eventLink: faker.internet.url(),
       thumbnail: FactoryUtils.getRandomImageUrl(),
-      discordEvent: faker.datatype.hexaDecimal(10),
-      googleCalendarEvent: faker.datatype.hexaDecimal(10),
+      discordEvent: faker.string.hexadecimal({ length: 10 }),
+      googleCalendarEvent: faker.string.hexadecimal({ length: 10 }),
       foodItems: null,
     });
     return EventRepository.merge(fake, substitute);

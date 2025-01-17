@@ -2,7 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import { NotFoundError } from 'routing-controllers';
 import { anyString, instance, mock, verify, when } from 'ts-mockito';
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
@@ -134,8 +134,8 @@ describe('account registration', () => {
         .write();
 
       const user = UserRegistrationFactory.fake({
-        firstName: faker.datatype.string(40),
-        lastName: faker.datatype.string(40),
+        firstName: faker.string.alpha({ length: 40 }),
+        lastName: faker.string.alpha({ length: 40 }),
       });
 
       // register member
