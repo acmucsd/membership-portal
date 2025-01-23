@@ -4,7 +4,7 @@ module.exports = [
   {
     // Apply to all files
     files: ['**/*.ts', '**/*.tsx'],
-    ignores: ['node_modules/**'],
+    ignores: ['node_modules/**', 'build/**', 'logs/**', '.env'],
     languageOptions: {
       parser: eslintParser,
       parserOptions: {
