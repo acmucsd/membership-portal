@@ -1,39 +1,21 @@
 import 'reflect-metadata'; // this shim is required
-
-import { createExpressServer, useContainer as routingUseContainer } from 'routing-controllers';
-
-import { createConnection, useContainer as ormUseContainer } from 'typeorm';
-import { Container } from 'typedi';
-import { models as entities } from './models';
-
+import Container from 'typedi';
+import { createExpressServer, useContainer } from 'routing-controllers';
+import { dataSource } from './DataSource';
 import { Config } from './config';
-import { InMemoryDatabaseCache } from './utils/InMemoryDatabaseCache';
-import { logger as log } from './utils/Logger';
 import { controllers } from './api/controllers';
 import { middlewares } from './api/middleware';
 
-routingUseContainer(Container);
-ormUseContainer(Container);
+dataSource
+  .initialize()
+  .then(() => {
+    console.log('created connection');
+  })
+  .catch((error) => {
+    console.log(error);
+  });
 
-createConnection({
-  type: 'postgres',
-  host: Config.database.host,
-  port: Config.database.port,
-  username: Config.database.user,
-  password: Config.database.pass,
-  database: Config.database.name,
-  entities,
-  logging: Config.isDevelopment,
-  cache: {
-    provider(_connection) {
-      return new InMemoryDatabaseCache();
-    },
-  },
-}).then(() => {
-  log.info('created connection');
-}).catch((error) => {
-  log.error(error);
-});
+useContainer(Container);
 
 const app = createExpressServer({
   cors: true,

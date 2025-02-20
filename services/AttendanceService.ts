@@ -1,5 +1,4 @@
 import { Service } from 'typedi';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
@@ -16,8 +15,8 @@ import { Activity, Attendance } from '../types/internal';
 export default class AttendanceService {
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactions: TransactionsManager) {
+    this.transactions = transactions;
   }
 
   public async getAttendancesForEvent(event: Uuid): Promise<PublicAttendance[]> {
@@ -130,7 +129,6 @@ export default class AttendanceService {
       const users = await Repositories.user(txn).findByEmails(emails);
       const emailsFound = users.map((user) => user.email);
       const emailsNotFound = emails.filter((email) => !emailsFound.includes(email));
-
       if (emailsNotFound.length > 0) {
         throw new BadRequestError(`Couldn't find accounts matching these emails: ${emailsNotFound}`);
       }
@@ -155,11 +153,9 @@ export default class AttendanceService {
     proxyUser: UserModel, txn: EntityManager): Promise<AttendanceModel[]> {
     const attendances: Attendance[] = [];
     const activities: Activity[] = [];
-
     users.forEach((user) => {
       const attendedAsStaff = asStaff && user.isStaff() && event.requiresStaff;
       const description = `Attendance submitted on behalf of user by ${proxyUser.uuid}`;
-
       const attendance = {
         user,
         event,

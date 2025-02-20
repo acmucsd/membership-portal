@@ -12,6 +12,7 @@ import {
   Delete,
 } from 'routing-controllers';
 import * as path from 'path';
+import { Service } from 'typedi';
 import PermissionsService from '../../services/PermissionsService';
 import StorageService from '../../services/StorageService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
@@ -24,6 +25,7 @@ import { PatchResumeRequest, UploadResumeRequest } from '../validators/ResumeCon
 import { UuidParam } from '../validators/GenericRequests';
 
 @UseBefore(UserAuthentication)
+@Service()
 @JsonController('/resume')
 export class ResumeController {
   private resumeService: ResumeService;

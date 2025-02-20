@@ -3,7 +3,9 @@ import * as crypto from 'crypto';
 import * as express from 'express';
 import * as moment from 'moment';
 import * as morgan from 'morgan';
+import { Service } from 'typedi';
 
+@Service()
 @Middleware({ type: 'before' })
 export class RequestLogger implements ExpressMiddlewareInterface {
   async use(request: express.Request, response: express.Response, next?: express.NextFunction) {

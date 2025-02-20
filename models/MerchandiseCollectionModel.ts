@@ -1,10 +1,10 @@
-import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn } from 'typeorm';
 import { Uuid, PublicMerchCollection } from '../types';
 import { MerchandiseItemModel } from './MerchandiseItemModel';
 import { MerchCollectionPhotoModel } from './MerchCollectionPhotoModel';
 
 @Entity('MerchandiseCollections')
-export class MerchandiseCollectionModel extends BaseEntity {
+export class MerchandiseCollectionModel {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

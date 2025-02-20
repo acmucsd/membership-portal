@@ -1,9 +1,9 @@
-import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { PublicMerchCollectionPhoto, Uuid } from '../types';
 import { MerchandiseCollectionModel } from './MerchandiseCollectionModel';
 
 @Entity('MerchCollectionPhotos')
-export class MerchCollectionPhotoModel extends BaseEntity {
+export class MerchCollectionPhotoModel {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

@@ -1,6 +1,7 @@
 import {
   JsonController, Get, Patch, Delete, Post, UseBefore, Params, ForbiddenError, QueryParams, UploadedFile, Body,
 } from 'routing-controllers';
+import { Service } from 'typedi';
 import EventService from '../../services/EventService';
 import { UserAuthentication, OptionalUserAuthentication } from '../middleware/UserAuthentication';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
@@ -28,6 +29,7 @@ import {
   SubmitEventFeedbackRequest,
 } from '../validators/EventControllerRequests';
 
+@Service()
 @JsonController('/event')
 export class EventController {
   private eventService: EventService;

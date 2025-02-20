@@ -1,9 +1,9 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
 import { UserModel } from './UserModel';
 import { Uuid, SocialMediaType, PublicUserSocialMedia } from '../types';
 
 @Entity('UserSocialMedia')
-export class UserSocialMediaModel extends BaseEntity {
+export class UserSocialMediaModel {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

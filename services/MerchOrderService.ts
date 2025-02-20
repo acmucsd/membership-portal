@@ -1,10 +1,9 @@
 import { Service } from 'typedi';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
-import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
+import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from '../types/internal';
 import {
   Uuid,
   ActivityType,
@@ -25,7 +24,7 @@ import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel
 
 import EmailService, { OrderInfo, OrderPickupEventInfo } from './EmailService';
 
-import Repositories, { TransactionsManager } from '../repositories';
+import Repositories, { TransactionsManager, MerchOrderRepository, OrderItemRepository } from '../repositories';
 
 @Service()
 export default class MerchOrderService {
@@ -33,8 +32,8 @@ export default class MerchOrderService {
 
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager, emailService: EmailService) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactions: TransactionsManager, emailService: EmailService) {
+    this.transactions = transactions;
     this.emailService = emailService;
   }
 
@@ -103,13 +102,13 @@ export default class MerchOrderService {
       const merchOrderRepository = Repositories.merchOrder(txn);
 
       // if all checks pass, the order is placed
-      const createdOrder = await merchOrderRepository.upsertMerchOrder(OrderModel.create({
+      const createdOrder = await merchOrderRepository.upsertMerchOrder(MerchOrderRepository.create({
         user,
         totalCost,
         items: flatten(originalOrder.map((optionAndQuantity) => {
           const option = itemOptions.get(optionAndQuantity.option);
           const quantityRequested = optionAndQuantity.quantity;
-          return Array(quantityRequested).fill(OrderItemModel.create({
+          return Array(quantityRequested).fill(OrderItemRepository.create({
             option,
             salePriceAtPurchase: option.getPrice(),
             discountPercentageAtPurchase: option.discountPercentage,
@@ -184,7 +183,7 @@ export default class MerchOrderService {
   private async validateOrderInTransaction(originalOrder: MerchItemOptionAndQuantity[],
     user: UserModel,
     txn: EntityManager): Promise<void> {
-    await user.reload();
+    user = await Repositories.user(txn).findByUuid(user.uuid);
     const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
     const itemOptionsToOrder = await merchItemOptionRepository.batchFindByUuid(originalOrder.map((oi) => oi.option));
     if (itemOptionsToOrder.size !== originalOrder.length) {
@@ -386,7 +385,7 @@ export default class MerchOrderService {
     txn: EntityManager): Promise<OrderInfo> {
     const orderRepository = Repositories.merchOrder(txn);
     const upsertedOrder = await orderRepository.upsertMerchOrder(order, { status: OrderStatus.CANCELLED });
-    const orderWithOnlyUnfulfilledItems = OrderModel.merge(upsertedOrder, { items: refundedItems });
+    const orderWithOnlyUnfulfilledItems = orderRepository.merge(upsertedOrder, { items: refundedItems });
     return MerchOrderService.buildOrderUpdateInfo(orderWithOnlyUnfulfilledItems, upsertedOrder.pickupEvent, txn);
   }
 
@@ -469,14 +468,14 @@ export default class MerchOrderService {
         // so convert order into fulfilled and unfulfilled item sets
         const fulfilledItems = order.items.filter((item) => item.fulfilled);
         const fulfilledItemsCost = fulfilledItems.reduce((cost, curr) => cost + curr.salePriceAtPurchase, 0);
-        const orderWithFulfilledItems = OrderModel.create({
+        const orderWithFulfilledItems = orderRepository.create({
           ...order,
           items: fulfilledItems,
           totalCost: fulfilledItemsCost,
         });
         const unfulfilledItems = order.items.filter((item) => !item.fulfilled);
         const unfulfilledItemsCost = unfulfilledItems.reduce((cost, curr) => cost + curr.salePriceAtPurchase, 0);
-        const orderWithUnfulfilledItems = OrderModel.create({
+        const orderWithUnfulfilledItems = orderRepository.create({
           ...order,
           items: unfulfilledItems,
           totalCost: unfulfilledItemsCost,
@@ -747,7 +746,7 @@ export default class MerchOrderService {
         throw new UserError('Order pickup event start time must come before the end time');
       }
 
-      const pickupEventModel = OrderPickupEventModel.create(pickupEvent);
+      const pickupEventModel = orderPickupEventRepository.create(pickupEvent);
 
       if (pickupEvent.linkedEventUuid) {
         const linkedRegularEvent = await this.getLinkedRegularEvent(pickupEvent.linkedEventUuid);
@@ -766,7 +765,7 @@ export default class MerchOrderService {
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       const pickupEvent = await orderPickupEventRepository.findByUuid(uuid);
-      const updatedPickupEvent = OrderPickupEventModel.merge(pickupEvent, changes);
+      const updatedPickupEvent = orderPickupEventRepository.merge(pickupEvent, changes);
 
       if (changes.linkedEventUuid) {
         const linkedRegularEvent = await this.getLinkedRegularEvent(changes.linkedEventUuid);
@@ -821,7 +820,7 @@ export default class MerchOrderService {
         const { user } = order;
         await this.emailService.sendOrderPickupCancelled(user.email, user.firstName, orderUpdateInfo);
         await orderRepository.upsertMerchOrder(order, { status: OrderStatus.PICKUP_CANCELLED, pickupEvent: null });
-        return OrderModel.merge(order, { pickupEvent: null });
+        return orderRepository.merge(order, { pickupEvent: null });
       }));
       await orderPickupEventRepository.upsertPickupEvent(pickupEvent, { status: OrderPickupEventStatus.CANCELLED });
     });

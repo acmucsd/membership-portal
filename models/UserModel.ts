@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { PrivateProfile, PublicProfile, Uuid, UserAccessType, UserState } from '../types';
 import { ActivityModel } from './ActivityModel';
@@ -9,7 +9,7 @@ import { ResumeModel } from './ResumeModel';
 import { UserSocialMediaModel } from './UserSocialMediaModel';
 
 @Entity('Users')
-export class UserModel extends BaseEntity {
+export class UserModel {
   @PrimaryGeneratedColumn('uuid')
   uuid: Uuid;
 

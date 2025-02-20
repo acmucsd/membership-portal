@@ -1,7 +1,9 @@
 import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
 import * as express from 'express';
 import * as metrics from 'datadog-metrics';
+import { Service } from 'typedi';
 
+@Service()
 @Middleware({ type: 'after', priority: 1 })
 export class MetricsRecorder implements ExpressMiddlewareInterface {
   async use(request: express.Request, response: express.Response, next?: express.NextFunction) {

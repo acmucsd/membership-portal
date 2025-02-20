@@ -2,14 +2,12 @@ import { Service } from 'typedi';
 import { ForbiddenError, NotFoundError, BadRequestError } from 'routing-controllers';
 import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { EntityManager } from 'typeorm';
-import { ExpressCheckinModel } from 'models/ExpressCheckinModel';
-import { UserRepository } from '../repositories/UserRepository';
+import { ExpressCheckinModel } from '../models/ExpressCheckinModel';
 import { Uuid, ActivityType, UserState, UserRegistration, UserAccessType } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
-import Repositories, { TransactionsManager } from '../repositories';
+import Repositories, { TransactionsManager, UserRepository } from '../repositories';
 import UserAccountService from './UserAccountService';
 
 interface AuthToken {
@@ -21,8 +19,8 @@ interface AuthToken {
 export default class UserAuthService {
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactions: TransactionsManager) {
+    this.transactions = transactions;
   }
 
   public async registerUser(registration: UserRegistration): Promise<UserModel> {
@@ -40,7 +38,7 @@ export default class UserAuthService {
       const userHandle = registration.handle
          ?? UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName);
 
-      const user = await userRepository.upsertUser(UserModel.create({
+      const user = await userRepository.upsertUser(userRepository.create({
         ...registration,
         hash: await UserRepository.generateHash(registration.password),
         accessCode: UserAuthService.generateAccessCode(),

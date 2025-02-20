@@ -1,8 +1,8 @@
 import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
 import { EventModel } from '../models/EventModel';
 
@@ -150,7 +150,7 @@ describe('event deletion', () => {
 
     // verifying event deleted
     const repository = conn.getRepository(EventModel);
-    const repositoryEvent = await repository.find({ uuid: event.uuid });
+    const repositoryEvent = await repository.find({ where: { uuid: event.uuid } });
 
     expect(repositoryEvent).toHaveLength(0);
   });
@@ -175,7 +175,7 @@ describe('event deletion', () => {
 
     // verifying event not deleted
     const repository = conn.getRepository(EventModel);
-    const repositoryEvent = await repository.findOne({ uuid: event.uuid });
+    const repositoryEvent = await repository.findOne({ where: { uuid: event.uuid } });
 
     expect(repositoryEvent).toEqual(event);
   });

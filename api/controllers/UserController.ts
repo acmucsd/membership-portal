@@ -1,6 +1,7 @@
 import {
   JsonController, Params, Get, Post, Patch, UseBefore, UploadedFile, Body, Delete,
 } from 'routing-controllers';
+import { Service } from 'typedi';
 import { UserModel } from '../../models/UserModel';
 import UserAccountService from '../../services/UserAccountService';
 import UserSocialMediaService from '../../services/UserSocialMediaService';
@@ -27,6 +28,7 @@ import {
 } from '../validators/UserSocialMediaControllerRequests';
 
 @UseBefore(UserAuthentication)
+@Service()
 @JsonController('/user')
 export class UserController {
   private userAccountService: UserAccountService;
