@@ -1,5 +1,6 @@
 import { Body, ForbiddenError, Get, JsonController, Params,
   Patch, Post, UseBefore, QueryParams } from 'routing-controllers';
+import { Service } from 'typedi';
 import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import PermissionsService from '../../services/PermissionsService';
@@ -14,6 +15,7 @@ import {
 } from '../validators/FeedbackControllerRequests';
 
 @UseBefore(UserAuthentication)
+@Service()
 @JsonController('/feedback')
 export class FeedbackController {
   private feedbackService: FeedbackService;

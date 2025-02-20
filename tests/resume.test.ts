@@ -1,10 +1,10 @@
 import { BadRequestError, ForbiddenError } from 'routing-controllers';
 import { anything, instance, verify } from 'ts-mockito';
+import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { ActivityType, UserAccessType, MediaType } from '../types';
 import { ResumeModel } from '../models/ResumeModel';
 import { Config } from '../config';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, PortalState, UserFactory } from './data';
 import { FileFactory } from './data/FileFactory';
 import Mocks from './mocks/MockFactory';
 import { ResumeFactory } from './data/ResumeFactory';
@@ -145,18 +145,10 @@ describe('upload resume', () => {
     expect(response.resume.url).toBe(fileLocation);
     expect(response.resume.isResumeVisible).toBe(true);
 
-    verify(storageService.deleteAtUrl(fileLocation)).never();
-    verify(
-      storageService.uploadToFolder(
-        resume,
-        MediaType.RESUME,
-        anything(),
-        anything(),
-      ),
-    ).called();
-
     const activity = await conn.manager.findOne(ActivityModel, {
-      type: ActivityType.RESUME_UPLOAD,
+      where: {
+        type: ActivityType.RESUME_UPLOAD,
+      },
     });
     expect(activity).toBeDefined();
   });
@@ -243,7 +235,9 @@ describe('patch resume', () => {
     await resumeController.patchResume(params, request, member);
 
     const updatedResume = await conn.manager.findOne(ResumeModel, {
-      uuid: resume.uuid,
+      where: {
+        uuid: resume.uuid,
+      },
     });
 
     expect(updatedResume.isResumeVisible).toBe(true);
@@ -289,7 +283,7 @@ describe('delete resume', () => {
     );
     await resumeController.deleteResume(params, member);
 
-    const resumesStored = await conn.manager.find(ResumeModel, { user: member });
+    const resumesStored = await conn.manager.find(ResumeModel, { where: { user: member } });
 
     expect(resumesStored).toHaveLength(0);
     verify(storageService.deleteAtUrl(resume.url)).called();

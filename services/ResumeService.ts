@@ -1,7 +1,5 @@
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
-import { EntityManager } from 'typeorm';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { ActivityType, ResumePatches } from '../types';
 import { ResumeModel } from '../models/ResumeModel';
 import { UserModel } from '../models/UserModel';
@@ -11,8 +9,8 @@ import Repositories, { TransactionsManager } from '../repositories';
 export default class ResumeService {
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactions: TransactionsManager) {
+    this.transactions = transactions;
   }
 
   public async getVisibleResumes() : Promise<ResumeModel[]> {
@@ -28,7 +26,7 @@ export default class ResumeService {
       const oldResume = await resumeRepository.findByUserUuid(user.uuid);
       if (oldResume) await resumeRepository.deleteResume(oldResume);
 
-      const resume = await resumeRepository.upsertResume(ResumeModel.create({
+      const resume = await resumeRepository.upsertResume(resumeRepository.create({
         user,
         isResumeVisible,
         url: resumeURL,

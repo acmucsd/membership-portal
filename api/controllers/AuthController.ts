@@ -1,4 +1,5 @@
 import { JsonController, Params, Body, Get, Post, UseBefore } from 'routing-controllers';
+import { Service } from 'typedi';
 import {
   RegistrationResponse,
   LoginResponse,
@@ -26,6 +27,7 @@ import { AuthenticatedUser } from '../decorators/AuthenticatedUser';
 import { UserModel } from '../../models/UserModel';
 import { EmailParam, AccessCodeParam } from '../validators/GenericRequests';
 
+@Service()
 @JsonController('/auth')
 export class AuthController {
   private userAccountService: UserAccountService;

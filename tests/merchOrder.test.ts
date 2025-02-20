@@ -1,15 +1,15 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import * as moment from 'moment';
 import { mock, when, anything, instance, verify, anyString } from 'ts-mockito';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
+import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
 import EmailService from '../services/EmailService';
 import { OrderModel } from '../models/OrderModel';
 import { OrderPickupEventModel } from '../models/OrderPickupEventModel';
 import { UserAccessType, OrderStatus, ActivityType, OrderPickupEventStatus } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, MerchFactory, PortalState, UserFactory } from './data';
 import { MerchStoreControllerWrapper } from './controllers/MerchStoreControllerWrapper';
-import { UserModel } from '../models/UserModel';
+import { UserRepository } from '../repositories';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -73,8 +73,8 @@ describe('merch orders', () => {
     expect(placedOrder.status).toStrictEqual(OrderStatus.PLACED);
 
     // check credits have been deducted
-    await member.reload();
-    expect(member.credits).toEqual(5000);
+    const updatedMember = await UserRepository.findByUuid(member.uuid);
+    expect(updatedMember.credits).toEqual(5000);
 
     // check order activity has been logged
     const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
@@ -82,7 +82,7 @@ describe('merch orders', () => {
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_PLACED);
 
     // check order confirmation email has been sent
-    verify(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
+    verify(emailService.sendOrderConfirmation(updatedMember.email, updatedMember.firstName, anything()))
       .called();
   });
 
@@ -191,12 +191,14 @@ describe('merch orders', () => {
     when(emailService.sendOrderFulfillment(member.email, member.firstName, anything()))
       .thenResolve();
 
-    const pastOrder = await conn.manager.findOne(OrderModel,
-      { pickupEvent: pastPickupEvent },
-      { relations: ['items'] });
-    const ongoingOrder = await conn.manager.findOne(OrderModel,
-      { pickupEvent: ongoingPickupEvent },
-      { relations: ['items'] });
+    const pastOrder = await conn.manager.findOne(OrderModel, {
+      where: { pickupEvent: pastPickupEvent },
+      relations: ['items'],
+    });
+    const ongoingOrder = await conn.manager.findOne(OrderModel, {
+      where: { pickupEvent: ongoingPickupEvent },
+      relations: ['items'],
+    });
 
     // fulfill past order
     const pastOrderUuid = { uuid: pastOrder.uuid };
@@ -211,8 +213,8 @@ describe('merch orders', () => {
     const merchStoreController = ControllerFactory.merchStore(conn, emailService);
     await merchStoreController.fulfillMerchOrderItems(pastOrderUuid, fulfillPastOrderItemsRequest, merchDistributor);
 
-    await pastOrder.reload();
-    expect(pastOrder.status).toEqual(OrderStatus.FULFILLED);
+    const updatedPastOrder = await conn.manager.findOne(OrderModel, { where: { uuid: pastOrder.uuid } });
+    expect(updatedPastOrder.status).toEqual(OrderStatus.FULFILLED);
 
     // fulfill ongoing order
     const ongoingOrderUuid = { uuid: ongoingOrder.uuid };
@@ -228,8 +230,8 @@ describe('merch orders', () => {
       fulfillOngoingOrderItemsRequest,
       merchDistributor);
 
-    await ongoingOrder.reload();
-    expect(ongoingOrder.status).toEqual(OrderStatus.FULFILLED);
+    const updatedOngoingOrder = await conn.manager.findOne(OrderModel, { where: { uuid: ongoingOrder.uuid } });
+    expect(updatedOngoingOrder.status).toEqual(OrderStatus.FULFILLED);
   });
 
   test('members can have orders partially fulfilled by store distributors', async () => {
@@ -456,9 +458,9 @@ describe('merch orders', () => {
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_CANCELLED);
 
     // check credits
-    await member.reload();
-    expect(member.credits).toEqual(10000);
-    verify(emailService.sendOrderCancellation(member.email, member.firstName, anything()))
+    const updatedMember = await UserRepository.findByUuid(member.uuid);
+    expect(updatedMember.credits).toEqual(10000);
+    verify(emailService.sendOrderCancellation(updatedMember.email, updatedMember.firstName, anything()))
       .called();
   });
 
@@ -512,7 +514,7 @@ describe('merch orders', () => {
     const order = placedOrderResponse.order.uuid;
     const fulfillOrderParams = { uuid: order };
     const orderItem = placedOrderResponse.order.items[0].uuid;
-    const fulfillmentUpdate = { uuid: orderItem, notes: faker.datatype.hexaDecimal(10) };
+    const fulfillmentUpdate = { uuid: orderItem, notes: faker.string.hexadecimal({ length: 10}) };
     const itemsToFulfill = { items: [fulfillmentUpdate] };
     await MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, fulfillOrderParams,
       itemsToFulfill, merchDistributor, conn, pickupEvent);
@@ -523,11 +525,11 @@ describe('merch orders', () => {
     expect(cancelOrderResponse.order.uuid).toEqual(uuid);
 
     // make sure user has only been refunded 1 option worth of points
-    await member.reload();
-    expect(member.credits).toEqual(8000);
+    const updatedMember = await UserRepository.findByUuid(member.uuid);
+    expect(updatedMember.credits).toEqual(8000);
 
     // check cancelled activity
-    const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(member);
+    const memberActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(updatedMember);
     const orderPlacedActivity = memberActivityStream.activity[memberActivityStream.activity.length - 1];
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_CANCELLED);
   });
@@ -662,7 +664,7 @@ describe('merch orders', () => {
 
   test('order route accurately verifies monthly and lifetime limits', async () => {
     const conn = await DatabaseConnection.get();
-    const optionMetadataType = faker.datatype.hexaDecimal(10);
+    const optionMetadataType = faker.string.hexadecimal({ length: 10});
     const option1 = MerchFactory.fakeOptionWithType(optionMetadataType);
     const option2 = MerchFactory.fakeOptionWithType(optionMetadataType);
     const option3 = MerchFactory.fakeOptionWithType(optionMetadataType);
@@ -692,7 +694,7 @@ describe('merch orders', () => {
       .createMerchItem(item2)
       .write();
 
-    await member.reload();
+    const updatedMember = await UserRepository.findByUuid(member.uuid);
 
     const emailService = mock(EmailService);
     when(emailService.sendOrderConfirmation(anything(), anything(), anything()))
@@ -705,7 +707,7 @@ describe('merch orders', () => {
       pickupEvent: orderPickupEvent.uuid,
     };
 
-    await expect(merchController.placeMerchOrder(placeMerchOrderRequest, member)).rejects.toThrowError(
+    await expect(merchController.placeMerchOrder(placeMerchOrderRequest, updatedMember)).rejects.toThrowError(
       `This order exceeds the lifetime limit for ${item.itemName}`,
     );
 
@@ -715,14 +717,14 @@ describe('merch orders', () => {
       pickupEvent: orderPickupEvent.uuid,
     };
 
-    await expect(merchController.placeMerchOrder(placeMerchOrderRequest2, member)).rejects.toThrowError(
+    await expect(merchController.placeMerchOrder(placeMerchOrderRequest2, updatedMember)).rejects.toThrowError(
       `This order exceeds the monthly limit for ${item2.itemName}`,
     );
   });
 
   test('store managers, but not store distributors, can cancel all pending orders for all users', async () => {
     const conn = await DatabaseConnection.get();
-    const members = UserFactory.create(6).map((member) => UserModel.merge(member, { credits: 10000 }));
+    const members = UserFactory.create(6).map((member) => UserRepository.merge(member, { credits: 10000 }));
     const [placedOrderMember, cancelledOrderMember, fulfilledOrderMember,
       partiallyFulfilledOrderMember, pickupCancelledMember, pickupMissedMember] = members;
     const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
@@ -773,21 +775,24 @@ describe('merch orders', () => {
       .rejects.toThrow(ForbiddenError);
 
     await Promise.all(members.map(async (member) => {
-      await member.reload();
+      const updatedMember = await UserRepository.findByUuid(member.uuid);
       // members whose orders were previously fulfilled, cancelled, or placed shouldn't get refunded,
       // whereas all other members should
-      if (member === fulfilledOrderMember || member === cancelledOrderMember || member === placedOrderMember) {
-        expect(member.credits).toEqual(8000);
+
+      if (updatedMember.uuid === fulfilledOrderMember.uuid
+            || updatedMember.uuid === cancelledOrderMember.uuid
+            || updatedMember.uuid === placedOrderMember.uuid) {
+        expect(updatedMember.credits).toEqual(8000);
       } else {
-        expect(member.credits).toEqual(10000);
+        expect(updatedMember.credits).toEqual(10000);
       }
       // orders that were fulfilled should remain fulfilled,
       // placed orders should remain placed,
       // and all other orders should be cancelled
-      const updatedOrder = await conn.manager.findOne(OrderModel, { user: member });
-      if (member === fulfilledOrderMember) {
+      const updatedOrder = await conn.manager.findOne(OrderModel, { where: { user: updatedMember } });
+      if (updatedMember.uuid === fulfilledOrderMember.uuid) {
         expect(updatedOrder.status).toEqual(OrderStatus.FULFILLED);
-      } else if (member === placedOrderMember) {
+      } else if (updatedMember.uuid === placedOrderMember.uuid) {
         expect(updatedOrder.status).toEqual(OrderStatus.PLACED);
       } else {
         expect(updatedOrder.status).toEqual(OrderStatus.CANCELLED);
@@ -795,7 +800,7 @@ describe('merch orders', () => {
     }));
 
     // check pending order cancellation activity
-    const adminActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(merchDistributor);
+    const adminActivityStream = await ControllerFactory.user(conn).getCurrentUserActivityStream(storeManager);
     const orderPlacedActivity = adminActivityStream.activity[adminActivityStream.activity.length - 1];
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.PENDING_ORDERS_CANCELLED);
   });
@@ -890,7 +895,7 @@ describe('merch orders', () => {
 
     // cancel order
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
-    const placedOrder = await conn.manager.findOne(OrderModel, { user: member }, { relations: ['items'] });
+    const placedOrder = await conn.manager.findOne(OrderModel, { where: { user: member }, relations: ['items'] });
     const cancelOrderParams = { uuid: placedOrder.uuid };
     const cancelOrderResponse = await merchController.cancelMerchOrder(cancelOrderParams, member);
     expect(cancelOrderResponse.order.uuid).toEqual(cancelOrderParams.uuid);
@@ -966,7 +971,7 @@ describe('merch order pickup events', () => {
     await merchController.createPickupEvent({ pickupEvent }, merchDistributor);
 
     const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
-      { relations: ['orders', 'linkedEvent'] });
+      { where: {}, relations: ['orders', 'linkedEvent'] });
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
   });
 
@@ -993,7 +998,7 @@ describe('merch order pickup events', () => {
     await merchController.createPickupEvent(createPickupEventRequest, merchDistributor);
 
     const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
-      { relations: ['orders', 'linkedEvent'] });
+      { where: {}, relations: ['orders', 'linkedEvent'] });
 
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
 
@@ -1007,7 +1012,7 @@ describe('merch order pickup events', () => {
     await merchController.editPickupEvent(params, editPickupEventRequest, merchDistributor);
 
     const editedPersistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
-      { relations: ['orders', 'linkedEvent'] });
+      { where: {}, relations: ['orders', 'linkedEvent'] });
     expect(editedPersistedPickupEvent.uuid).toEqual(pickupEvent.uuid);
     expect(editedPersistedPickupEvent.linkedEvent.uuid).toEqual(editPickupEventRequest.pickupEvent.linkedEventUuid);
   });
@@ -1039,11 +1044,14 @@ describe('merch order pickup events', () => {
       .createOrderPickupEvents(pickupEvent)
       .write();
 
-    const editPickupEventRequest = { pickupEvent: { title: faker.datatype.hexaDecimal(10) } };
+    const editPickupEventRequest = { pickupEvent: { title: faker.string.hexadecimal({ length: 10}) } };
     const params = { uuid: pickupEvent.uuid };
     await ControllerFactory.merchStore(conn).editPickupEvent(params, editPickupEventRequest, merchDistributor);
 
-    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, {
+      where: {},
+      relations: ['orders'],
+    });
     expect(persistedPickupEvent.uuid).toEqual(pickupEvent.uuid);
     expect(persistedPickupEvent.title).toEqual(editPickupEventRequest.pickupEvent.title);
   });
@@ -1135,8 +1143,11 @@ describe('merch order pickup events', () => {
       .orderMerch(member, [{ option, quantity: 1 }], pickupEvent)
       .write();
 
-    const persistedOrder = await conn.manager.findOne(OrderModel);
-    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { relations: ['orders'] });
+    const persistedOrder = await conn.manager.findOne(OrderModel, { where: {} });
+    const persistedPickupEvent = await conn.manager.findOne(OrderPickupEventModel, {
+      where: {},
+      relations: ['orders', 'orders.items'],
+    });
     expect(persistedPickupEvent.orders).toHaveLength(1);
     expect(persistedPickupEvent.orders[0]).toStrictEqual(persistedOrder);
   });
@@ -1366,13 +1377,15 @@ describe('merch order pickup events', () => {
     await merchController.completePickupEvent(ongoingPickupEventUuid, merchDistributor);
 
     const completedOngoingPickupEvent = await conn.manager.findOne(OrderPickupEventModel,
-      { uuid: ongoingPickupEvent.uuid });
+      { where: { uuid: ongoingPickupEvent.uuid } });
     expect(completedOngoingPickupEvent.status).toEqual(OrderPickupEventStatus.COMPLETED);
 
     const pastPickupEventUuid = { uuid: pastPickupEvent.uuid };
     await merchController.completePickupEvent(pastPickupEventUuid, merchDistributor);
 
-    const completedPastPickupEvent = await conn.manager.findOne(OrderPickupEventModel, { uuid: pastPickupEvent.uuid });
+    const completedPastPickupEvent = await conn.manager.findOne(OrderPickupEventModel, {
+      where: { uuid: pastPickupEvent.uuid },
+    });
     expect(completedPastPickupEvent.status).toEqual(OrderPickupEventStatus.COMPLETED);
   });
 
@@ -1915,7 +1928,7 @@ describe('merch order pickup events', () => {
       .thenResolve();
 
     // cancel order
-    const order = await conn.manager.findOne(OrderModel, { user: member });
+    const order = await conn.manager.findOne(OrderModel, { where: { user: member } });
     const cancelOrderParams = { uuid: order.uuid };
     const merchController = ControllerFactory.merchStore(conn, instance(emailService));
     await merchController.cancelMerchOrder(cancelOrderParams, member);

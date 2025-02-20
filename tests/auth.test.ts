@@ -2,14 +2,14 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import { NotFoundError } from 'routing-controllers';
 import { anyString, instance, mock, verify, when } from 'ts-mockito';
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
+import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import EmailService from '../services/EmailService';
 import UserAuthService from '../services/UserAuthService';
 import { ActivityType, UserAccessType, UserState } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import FactoryUtils from './data/FactoryUtils';
 import { UserRegistrationFactory } from './data/UserRegistrationFactory';
 import { AttendanceModel } from '../models/AttendanceModel';
@@ -134,8 +134,8 @@ describe('account registration', () => {
         .write();
 
       const user = UserRegistrationFactory.fake({
-        firstName: faker.datatype.string(40),
-        lastName: faker.datatype.string(40),
+        firstName: faker.string.alpha({ length: 40 }),
+        lastName: faker.string.alpha({ length: 40 }),
       });
 
       // register member
@@ -288,7 +288,7 @@ describe('verifying email', () => {
     const authController = ControllerFactory.auth(conn, instance(emailService));
     await authController.verifyEmail({ accessCode });
 
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid } });
     expect(member.state).toEqual(UserState.ACTIVE);
   });
 
@@ -311,7 +311,7 @@ describe('verifying email', () => {
     await expect(authController.verifyEmail({ accessCode: FactoryUtils.randomHexString() }))
       .rejects.toThrow(NotFoundError);
 
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid } });
     expect(member.state).toEqual(UserState.PENDING);
   });
 });
@@ -332,7 +332,7 @@ describe('resending email verification', () => {
     const params = { email: member.email };
     await authController.resendEmailVerification(params);
 
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid } });
     verify(emailService.sendEmailVerification(member.email, member.firstName, member.accessCode))
       .called();
   });
@@ -372,14 +372,14 @@ describe('email modification', () => {
     const response = await authController.modifyEmail(request, member);
     expect(response.error).toBeNull();
 
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid } });
     expect(member.state).toEqual(UserState.PENDING);
     expect(member.email).toEqual(request.email);
 
     // confirm the email
     await authController.verifyEmail({ accessCode: member.accessCode });
 
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid } });
     expect(member.state).toEqual(UserState.ACTIVE);
   });
 
@@ -402,7 +402,7 @@ describe('email modification', () => {
     await expect(authController.modifyEmail(request, member))
       .rejects.toThrow('Email already in use');
 
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid } });
     expect(member.state).toEqual(UserState.ACTIVE);
     expect(member.email).toEqual(member.email);
   });
@@ -431,7 +431,7 @@ describe('password reset', () => {
     } };
     await authController.resetPassword(params, passwordResetRequest, FactoryUtils.randomHexString());
 
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid } });
     expect(member.state).toEqual(UserState.ACTIVE);
     const passwordMatches = await bcrypt.compare(newPassword, member.hash);
     expect(passwordMatches).toBeTruthy();
@@ -460,7 +460,7 @@ describe('password reset', () => {
     } };
     await authController.resetPassword(params, passwordResetRequest, FactoryUtils.randomHexString());
 
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid } });
     expect(member.state).toEqual(UserState.ACTIVE);
     const passwordMatches = await bcrypt.compare(newPassword, member.hash);
     expect(passwordMatches).toBeTruthy();
@@ -483,7 +483,7 @@ describe('resending password reset email', () => {
     const params = { email: member.email };
     await authController.sendPasswordResetEmail(params, FactoryUtils.randomHexString());
 
-    member = await conn.manager.findOne(UserModel, { uuid: member.uuid });
+    member = await conn.manager.findOne(UserModel, { where: { uuid: member.uuid } });
     expect(member.state).toEqual(UserState.PASSWORD_RESET);
 
     verify(emailService.sendPasswordReset(member.email, member.firstName, member.accessCode))

@@ -1,27 +1,19 @@
-import { Connection, createConnection } from 'typeorm';
-import { Config } from '../../config';
-import { models as entities } from '../../models';
+import { DataSource } from 'typeorm';
+import { dataSource } from '../../DataSource';
 
 export class DatabaseConnection {
-  private static conn: Connection = null;
+  private static dataSource: DataSource = null;
 
-  public static async connect(): Promise<Connection> {
-    if (!DatabaseConnection.conn) {
-      DatabaseConnection.conn = await createConnection({
-        type: 'postgres',
-        host: Config.database.host,
-        port: Config.database.port,
-        username: Config.database.user,
-        password: Config.database.pass,
-        database: Config.database.name,
-        entities,
-        logging: false,
-      });
+  public static async connect(): Promise<DataSource> {
+    if (!DatabaseConnection.dataSource) {
+      DatabaseConnection.dataSource = dataSource;
+
+      await DatabaseConnection.dataSource.initialize();
     }
-    return DatabaseConnection.conn;
+    return DatabaseConnection.dataSource;
   }
 
-  public static async get(): Promise<Connection> {
+  public static async get(): Promise<DataSource> {
     return DatabaseConnection.connect();
   }
 
@@ -53,7 +45,7 @@ export class DatabaseConnection {
   }
 
   public static async close(): Promise<void> {
-    if (!DatabaseConnection.conn) return;
-    await DatabaseConnection.conn.close();
+    if (!DatabaseConnection.dataSource) return;
+    await DatabaseConnection.dataSource.destroy();
   }
 }

@@ -1,16 +1,16 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { zip } from 'underscore';
 import { anything, instance, verify, mock, when } from 'ts-mockito';
+import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import { OrderModel } from '../models/OrderModel';
-import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
 import { MediaType, MerchItemEdit, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
-import { DatabaseConnection, MerchFactory, PortalState, UserFactory } from './data';
 import EmailService from '../services/EmailService';
 import { FileFactory } from './data/FileFactory';
 import { Config } from '../config';
 import Mocks from './mocks/MockFactory';
+import { MerchItemOptionRepository } from '../repositories';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -176,7 +176,7 @@ describe('editing merch collections', () => {
 
     const merchStoreController = ControllerFactory.merchStore(conn);
     const params = { uuid: collection.uuid };
-    const editMerchCollectionRequest = { collection: { title: faker.datatype.hexaDecimal(10) } };
+    const editMerchCollectionRequest = { collection: { title: faker.string.hexadecimal({ length: 10}) } };
 
     await expect(merchStoreController.editMerchCollection(params, editMerchCollectionRequest, member))
       .rejects.toThrow(ForbiddenError);
@@ -381,7 +381,7 @@ describe('merch items with options', () => {
   test('monthly and lifetime remaining values are properly set when ordering different item options', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake();
-    const optionMetadataType = faker.datatype.hexaDecimal(10);
+    const optionMetadataType = faker.string.hexadecimal({ length: 10});
     const option1 = MerchFactory.fakeOptionWithType(optionMetadataType);
     const option2 = MerchFactory.fakeOptionWithType(optionMetadataType);
     const option3 = MerchFactory.fakeOptionWithType(optionMetadataType);
@@ -462,7 +462,7 @@ describe('merch items with options', () => {
     expect(updatedItem.lifetimeRemaining).toEqual(9);
 
     // cancel order
-    const order = await conn.manager.findOne(OrderModel, { user: member });
+    const order = await conn.manager.findOne(OrderModel, { where: { user: member } });
     const cancelOrderParams = { uuid: order.uuid };
     await merchStoreController.cancelMerchOrder(cancelOrderParams, member);
 
@@ -606,7 +606,7 @@ describe('merch item edits', () => {
 
     // update the description and increment the purchase limits
     const merchItemEdits: MerchItemEdit = {
-      description: faker.datatype.hexaDecimal(10),
+      description: faker.string.hexadecimal({ length: 10}),
       monthlyLimit: item.monthlyLimit + 1,
       lifetimeLimit: item.lifetimeLimit + 1,
     };
@@ -639,7 +639,7 @@ describe('merch item edits', () => {
 
     // update the description and increment the purchase limits
     const merchItemEdits: MerchItemEdit = {
-      description: faker.datatype.hexaDecimal(10),
+      description: faker.string.hexadecimal({ length: 10}),
       collection: collection.uuid,
     };
     const editMerchItemRequest = { merchandise: merchItemEdits };
@@ -784,7 +784,7 @@ describe('merch item edits', () => {
       .write();
 
     // change only one option's type to a different one
-    item.options[0].metadata.type = faker.datatype.hexaDecimal(10);
+    item.options[0].metadata.type = faker.string.hexadecimal({ length: 10});
 
     const params = { uuid: item.uuid };
     const editMerchItemRequest = { merchandise: { options: item.options } };
@@ -806,8 +806,8 @@ describe('merch item edits', () => {
     const params = { uuid: item.uuid };
 
     // change every option's type to a different but consistent one
-    const type = faker.datatype.hexaDecimal(10);
-    const updatedOptions = item.options.map((o) => MerchandiseItemOptionModel.merge(o, {
+    const type = faker.string.hexadecimal({ length: 10});
+    const updatedOptions = item.options.map((o) => MerchItemOptionRepository.merge(o, {
       metadata: {
         type,
         position: o.metadata.position,
@@ -901,7 +901,7 @@ describe('merch item options', () => {
       .createMerchItem(item)
       .write();
 
-    const optionWithDifferentType = MerchFactory.fakeOptionWithType(faker.datatype.hexaDecimal(10));
+    const optionWithDifferentType = MerchFactory.fakeOptionWithType(faker.string.hexadecimal({ length: 10}));
 
     const params = { uuid: item.uuid };
     const createMerchOptionRequest = { option: optionWithDifferentType };
@@ -930,7 +930,7 @@ describe('merch item options', () => {
     await merchStoreController.deleteMerchItemOption(optionParams, admin);
 
     // add option of another type
-    const optionWithDifferentType = MerchFactory.fakeOptionWithType(faker.datatype.hexaDecimal(10));
+    const optionWithDifferentType = MerchFactory.fakeOptionWithType(faker.string.hexadecimal({ length: 10}));
     const createMerchOptionRequest = { option: optionWithDifferentType };
     await merchStoreController.createMerchItemOption(itemParams, createMerchOptionRequest, admin);
 
@@ -1181,7 +1181,7 @@ describe('checkout cart', () => {
       .write();
 
     const validOptionUuids = options.map((o) => o.uuid);
-    const invalidOptionUuid = faker.datatype.uuid();
+    const invalidOptionUuid = faker.string.uuid();
     const params = { items: [...validOptionUuids, invalidOptionUuid] };
     const merchStoreController = ControllerFactory.merchStore(conn);
     await expect(merchStoreController.getCartItems(params, member))

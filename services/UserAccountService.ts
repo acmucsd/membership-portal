@@ -1,16 +1,14 @@
 import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
-import { InjectManager } from 'typeorm-typedi-extensions';
-import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
-import * as faker from 'faker';
-import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
+import { faker } from '@faker-js/faker';
+import { UserAccessUpdates } from '../api/validators/AdminControllerRequests';
 import {
   RegExpMatcher,
   englishDataset,
   englishRecommendedTransformers,
 } from 'obscenity';
-import Repositories, { TransactionsManager } from '../repositories';
+import Repositories, { TransactionsManager, UserRepository } from '../repositories';
 import {
   Uuid,
   PublicProfile,
@@ -22,7 +20,6 @@ import {
   PrivateProfile,
   NameAndEmail,
 } from '../types';
-import { UserRepository } from '../repositories/UserRepository';
 import { UserModel } from '../models/UserModel';
 
 @Service()
@@ -31,8 +28,8 @@ export default class UserAccountService {
 
   private matcher: RegExpMatcher;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactionsManager: TransactionsManager) {
+    this.transactions = transactionsManager;
     this.matcher = new RegExpMatcher({
       ...englishDataset.build(),
       ...englishRecommendedTransformers,
@@ -61,7 +58,7 @@ export default class UserAccountService {
   public static generateDefaultHandle(firstName: string, lastName: string): string {
     const nameString = `${firstName}-${lastName}`.slice(0, 25);
     // Hexadecimals look like 0x1b9Dle so we have to truncate the fixed '0x'.
-    const hashValue = faker.datatype.hexaDecimal(6).slice(2);
+    const hashValue = faker.string.hexadecimal({ length:6 }).slice(2);
     const handle = `${nameString}-${hashValue}`.toLowerCase();
     return handle;
   }
