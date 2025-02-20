@@ -8,11 +8,11 @@
     "types/*.d.ts"
   ],
   "scripts": {
-    "build": "tsc && cp -r templates build/templates && cp .env build",
-    "start": "cd build/ && node --env-file=.env index.js",
+    "build": "tsc && cp -r templates build/templates",
+    "start": "cp .env build && cd build/ && node --env-file=.env index.js",
     "test": "jest --config jest.config.json --runInBand",
     "dev": "node -r ts-node/register --env-file=.env index.ts",
-    "release": "ts-node ./node_modules/typeorm/cli.js migration:run -d DataSource.ts && cd build && node index.js",
+    "release": "ts-node ./node_modules/typeorm/cli.js migration:run -d DataSource.ts && cp .env build && cd build/ && node --env-file=.env index.js",
     "lint": "eslint **/*.ts",
     "lint:fix": "eslint **/*.ts --fix",
     "db:migrate:create": "ts-node ./node_modules/typeorm/cli.js migration:create -n",
