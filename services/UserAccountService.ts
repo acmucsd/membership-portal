@@ -2,7 +2,7 @@ import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controll
 import { Service } from 'typedi';
 import * as moment from 'moment';
 import { faker } from '@faker-js/faker';
-import { UserAccessUpdates } from 'api/validators/AdminControllerRequests';
+import { UserAccessUpdates } from '../api/validators/AdminControllerRequests';
 import {
   RegExpMatcher,
   englishDataset,

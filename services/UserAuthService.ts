@@ -3,7 +3,7 @@ import { ForbiddenError, NotFoundError, BadRequestError } from 'routing-controll
 import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { EntityManager } from 'typeorm';
-import { ExpressCheckinModel } from 'models/ExpressCheckinModel';
+import { ExpressCheckinModel } from '../models/ExpressCheckinModel';
 import { Uuid, ActivityType, UserState, UserRegistration, UserAccessType } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';

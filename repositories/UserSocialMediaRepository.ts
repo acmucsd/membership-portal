@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import Container from 'typedi';
-import { SocialMediaType, Uuid } from 'types';
+import { SocialMediaType, Uuid } from '../types';
 import { UserSocialMediaModel } from '../models/UserSocialMediaModel';
 import { UserModel } from '../models/UserModel';
 

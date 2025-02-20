@@ -3,7 +3,7 @@ import { NotFoundError, ForbiddenError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import { difference, flatten, intersection } from 'underscore';
 import * as moment from 'moment-timezone';
-import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from 'types/internal';
+import { MerchItemWithQuantity, OrderItemPriceAndQuantity } from '../types/internal';
 import {
   Uuid,
   ActivityType,

@@ -1,4 +1,4 @@
-import { UserRegistration } from 'types';
+import { UserRegistration } from '../../types';
 import { faker } from '@faker-js/faker';
 import FactoryUtils from './FactoryUtils';
 import { UserFactory } from './UserFactory';

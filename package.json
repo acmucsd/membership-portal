@@ -8,11 +8,11 @@
     "types/*.d.ts"
   ],
   "scripts": {
-    "build": "tsc && cp -r templates build/templates",
-    "start": "node build/index.js",
+    "build": "tsc && cp -r templates build/templates && cp .env build",
+    "start": "cd build/ && node --env-file=.env index.js",
     "test": "jest --config jest.config.json --runInBand",
     "dev": "node -r ts-node/register --env-file=.env index.ts",
-    "release": "ts-node ./node_modules/typeorm/cli.js migration:run -d DataSource.ts && node build/index.js",
+    "release": "ts-node ./node_modules/typeorm/cli.js migration:run -d DataSource.ts && cd build && node index.js",
     "lint": "eslint **/*.ts",
     "lint:fix": "eslint **/*.ts --fix",
     "db:migrate:create": "ts-node ./node_modules/typeorm/cli.js migration:create -n",
@@ -69,7 +69,7 @@
     "typedi": "^0.10.0",
     "typeorm": "0.3.20",
     "typeorm-typedi-extensions": "^0.4.1",
-    "typescript": "5.7",
+    "typescript": "^5.6.3",
     "underscore": "^1.13.7",
     "uuid": "^11.0.5",
     "winston": "^3.17.0",
