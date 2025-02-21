@@ -14,4 +14,7 @@
   "include": [
     "**/*.ts"
   ],
+  "exclude": [
+    "migrations/**"
+  ]
 }
