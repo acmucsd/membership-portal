@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc && cp -r templates build/templates",
-    "start": "cp .env build && cd build/ && node --env-file=.env index.js",
+    "start": "node --env-file=.env build/index.js",
     "test": "jest --config jest.config.json --runInBand",
     "dev": "node -r ts-node/register --env-file=.env index.ts",
     "release": "ts-node ./node_modules/typeorm/cli.js migration:run -d DataSource.ts && cp .env build && cd build/ && node --env-file=.env index.js",
