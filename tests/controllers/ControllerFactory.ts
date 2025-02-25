@@ -55,9 +55,8 @@ export class ControllerFactory {
     return new AuthController(userAccountService, userAuthService, emailService);
   }
 
-  public static event(conn: Connection): EventController {
-    const eventService = new EventService(conn.manager);
-    const storageService = new StorageService();
+  public static event(conn: Connection, storageService = new StorageService()): EventController {
+    const eventService = new EventService(conn.manager, storageService);
     const attendanceService = new AttendanceService(conn.manager);
     return new EventController(eventService, storageService, attendanceService);
   }

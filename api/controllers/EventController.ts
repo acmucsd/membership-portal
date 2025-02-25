@@ -123,6 +123,8 @@ export class EventController {
   async createEvent(@Body() createEventRequest: CreateEventRequest,
     @AuthenticatedUser() user: UserModel): Promise<CreateEventResponse> {
     if (!PermissionsService.canEditEvents(user)) throw new ForbiddenError();
+    // const fileName = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
+    // createEventRequest.event.cover = await this.storageService.upload(file, MediaType.EVENT_COVER, fileName);
     const event = await this.eventService.create(createEventRequest.event);
     return { error: null, event };
   }

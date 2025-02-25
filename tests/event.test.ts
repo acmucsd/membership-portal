@@ -1,10 +1,14 @@
 import * as moment from 'moment';
 import { ForbiddenError } from 'routing-controllers';
-import { UserAccessType } from '../types';
+import { anything, instance, verify } from 'ts-mockito';
+import { MediaType, UserAccessType } from '../types';
 import { ControllerFactory } from './controllers';
 import { DatabaseConnection, EventFactory, PortalState, UserFactory } from './data';
 import { CreateEventRequest } from '../api/validators/EventControllerRequests';
 import { EventModel } from '../models/EventModel';
+import Mocks from './mocks/MockFactory';
+import { FileFactory } from './data/FileFactory';
+import { Config } from '../config';
 
 beforeAll(async () => {
   await DatabaseConnection.connect();
@@ -20,6 +24,8 @@ afterAll(async () => {
 });
 
 describe('event creation', () => {
+  const fileLocation = 'https://s3.amazonaws.com/event-cover.jpg';
+
   test('successful event creation', async () => {
     // setting up inputs
     const conn = await DatabaseConnection.get();
@@ -48,11 +54,13 @@ describe('event creation', () => {
     };
 
     // creating the event
-    const eventController = ControllerFactory.event(conn);
-    const eventResponse = await eventController.createEvent(createEventRequest, admin);
+    const cover = FileFactory.image(Config.file.MAX_EVENT_COVER_FILE_SIZE / 2);
+    const storageService = Mocks.storage(fileLocation);
+    const eventController = ControllerFactory.event(conn, instance(storageService));
+    const eventResponse = await eventController.createEvent(cover, createEventRequest, admin);
 
     // verifying response from event creation
-    expect(eventResponse.event.cover).toEqual(event.cover);
+    expect(eventResponse.event.cover).toEqual(fileLocation);
     expect(eventResponse.event.title).toEqual(event.title);
     expect(eventResponse.event.location).toEqual(event.location);
     expect(eventResponse.event.committee).toEqual(event.committee);
@@ -60,6 +68,15 @@ describe('event creation', () => {
     expect(eventResponse.event.end).toEqual(event.end);
     expect(eventResponse.event.foodItems).toEqual(event.foodItems);
     expect(eventResponse.event.pointValue).toEqual(event.pointValue);
+
+    verify(storageService.deleteAtUrl(fileLocation)).never();
+    verify(
+      storageService.upload(
+        cover,
+        MediaType.EVENT_COVER,
+        anything(),
+      ),
+    ).called();
 
     // verifying response from event lookup
     const lookupEventResponse = await eventController.getOneEvent({ uuid: eventResponse.event.uuid }, user);
@@ -94,8 +111,10 @@ describe('event creation', () => {
     };
 
     // verifying correct error
-    const eventController = ControllerFactory.event(conn);
-    await expect(eventController.createEvent(createEventRequest, user))
+    const cover = FileFactory.image(Config.file.MAX_EVENT_COVER_FILE_SIZE / 2);
+    const storageService = Mocks.storage(fileLocation);
+    const eventController = ControllerFactory.event(conn, instance(storageService));
+    await expect(eventController.createEvent(cover, createEventRequest, user))
       .rejects.toThrow(ForbiddenError);
   });
 
@@ -126,9 +145,12 @@ describe('event creation', () => {
     };
 
     // verifying correct error thrown
-    const eventController = ControllerFactory.event(conn);
-    await expect(eventController.createEvent(createEventRequest, admin))
+    const cover = FileFactory.image(Config.file.MAX_EVENT_COVER_FILE_SIZE / 2);
+    const storageService = Mocks.storage(fileLocation);
+    const eventController = ControllerFactory.event(conn, instance(storageService));
+    await expect(eventController.createEvent(cover, createEventRequest, admin))
       .rejects.toThrow('Start date after end date');
+    verify(storageService.deleteAtUrl(fileLocation)).called();
   });
 });
 
