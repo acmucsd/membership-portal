@@ -1,6 +1,7 @@
 import Container from 'typedi';
 import { DataSource } from 'typeorm';
 import { models } from './models';
+import { migrations } from './migrations'
 
 require('dotenv').config();
 
@@ -12,7 +13,7 @@ export const dataSource = new DataSource({
   password: process.env.RDS_PASSWORD,
   database: process.env.RDS_DATABASE,
   entities: models,
-  migrations: ['migrations/*.ts'],
+  migrations: migrations,
   // synchronize: true, // DO NOT USE IN PRODUCTION, make migrations
 });
 
