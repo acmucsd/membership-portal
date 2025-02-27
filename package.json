@@ -12,7 +12,7 @@
     "start": "node --env-file=.env build/index.js",
     "test": "jest --config jest.config.json --runInBand",
     "dev": "node -r ts-node/register --env-file=.env index.ts",
-    "release": "ts-node ./node_modules/typeorm/cli.js migration:run -d DataSource.ts && node --env-file=.env build/index.js",
+    "release": "ts-node ./node_modules/typeorm/cli.js migration:run -d DataSource.ts && node build/index.js",
     "lint": "eslint **/*.ts",
     "lint:fix": "eslint **/*.ts --fix",
     "db:migrate:create": "ts-node ./node_modules/typeorm/cli.js migration:create -n",
