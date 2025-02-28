@@ -19,6 +19,7 @@ export class UserAuthentication implements ExpressMiddlewareInterface {
   }
 }
 
+@Service()
 export class OptionalUserAuthentication implements ExpressMiddlewareInterface {
   @Inject()
   private userAuthService: UserAuthService;
