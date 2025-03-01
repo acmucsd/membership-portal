@@ -1,10 +1,11 @@
 import { ExpressMiddlewareInterface, ForbiddenError } from 'routing-controllers';
 import * as express from 'express';
-import { Inject } from 'typedi';
+import { Inject, Service } from 'typedi';
 import UserAuthService from '../../services/UserAuthService';
 import { authActionMetadata } from '../../utils/AuthActionMetadata';
 import { logger as log } from '../../utils/Logger';
 
+@Service()
 export class UserAuthentication implements ExpressMiddlewareInterface {
   @Inject()
   private userAuthService: UserAuthService;
@@ -18,6 +19,7 @@ export class UserAuthentication implements ExpressMiddlewareInterface {
   }
 }
 
+@Service()
 export class OptionalUserAuthentication implements ExpressMiddlewareInterface {
   @Inject()
   private userAuthService: UserAuthService;
@@ -28,7 +30,7 @@ export class OptionalUserAuthentication implements ExpressMiddlewareInterface {
       request.user = await this.userAuthService.checkAuthToken(authHeader);
       log.info('user authentication (middleware)', authActionMetadata(request.trace, request.user));
     } catch (error) {
-      log.debug('optional user auth (middleware)');
+      log.debug(`optional user auth (middleware): ${error}`);
     }
     return next();
   }

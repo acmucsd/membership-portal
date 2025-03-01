@@ -1,8 +1,9 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { EventModel } from '../../models/EventModel';
 import FactoryUtils from './FactoryUtils';
+import { EventRepository } from '../../repositories';
 
 export class EventFactory {
   private static readonly ORGS = [
@@ -19,20 +20,20 @@ export class EventFactory {
   }
 
   public static with(...substitutes: Partial<EventModel>[]): EventModel[] {
-    return substitutes.map((sub) => EventModel.merge(EventFactory.fake(), sub));
+    return substitutes.map((sub) => EventRepository.merge(EventFactory.fake(), sub));
   }
 
   public static fake(substitute?: Partial<EventModel>): EventModel {
     const [start, end] = FactoryUtils.getRandomTimeInterval();
-    const fake = EventModel.create({
+    const fake = EventRepository.create({
       uuid: uuid(),
       organization: FactoryUtils.pickRandomValue(EventFactory.ORGS),
-      title: faker.datatype.hexaDecimal(10),
+      title: faker.string.hexadecimal({ length: 10 }),
       description: faker.lorem.sentences(2),
-      location: faker.datatype.hexaDecimal(10),
+      location: faker.string.hexadecimal({ length: 10 }),
       start,
       end,
-      attendanceCode: faker.datatype.hexaDecimal(10),
+      attendanceCode: faker.string.hexadecimal({ length: 10 }),
       pointValue: EventFactory.randomPointValue(),
       requiresStaff: FactoryUtils.getRandomBoolean(),
       staffPointBonus: EventFactory.randomPointValue(),
@@ -41,11 +42,11 @@ export class EventFactory {
       deleted: false,
       eventLink: faker.internet.url(),
       thumbnail: FactoryUtils.getRandomImageUrl(),
-      discordEvent: faker.datatype.hexaDecimal(10),
-      googleCalendarEvent: faker.datatype.hexaDecimal(10),
+      discordEvent: faker.string.hexadecimal({ length: 10 }),
+      googleCalendarEvent: faker.string.hexadecimal({ length: 10 }),
       foodItems: null,
     });
-    return EventModel.merge(fake, substitute);
+    return EventRepository.merge(fake, substitute);
   }
 
   public static ongoing(start = 45, end = 45): Partial<EventModel> {

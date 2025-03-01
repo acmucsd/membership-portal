@@ -13,6 +13,7 @@ import {
   UploadedFile,
 } from 'routing-controllers';
 import { v4 as uuid } from 'uuid';
+import { Service } from 'typedi';
 import PermissionsService from '../../services/PermissionsService';
 import { UserAuthentication } from '../middleware/UserAuthentication';
 import {
@@ -76,6 +77,7 @@ import { UserError } from '../../utils/Errors';
 import StorageService from '../../services/StorageService';
 
 @UseBefore(UserAuthentication)
+@Service()
 @JsonController('/merch')
 export class MerchStoreController {
   private merchStoreService: MerchStoreService;

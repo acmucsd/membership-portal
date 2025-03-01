@@ -1,7 +1,5 @@
 import { Service } from 'typedi';
-import { InjectManager } from 'typeorm-typedi-extensions';
 import { NotFoundError, ForbiddenError } from 'routing-controllers';
-import { EntityManager } from 'typeorm';
 import { difference } from 'underscore';
 import * as moment from 'moment-timezone';
 import { MerchandiseItemOptionModel } from '../models/MerchandiseItemOptionModel';
@@ -37,8 +35,8 @@ export default class MerchStoreService {
 
   private transactions: TransactionsManager;
 
-  constructor(@InjectManager() entityManager: EntityManager) {
-    this.transactions = new TransactionsManager(entityManager);
+  constructor(transactionsManager: TransactionsManager) {
+    this.transactions = transactionsManager;
   }
 
   public async findItemByUuid(uuid: Uuid, user: UserModel): Promise<PublicMerchItemWithPurchaseLimits> {
@@ -93,9 +91,12 @@ export default class MerchStoreService {
   }
 
   public async createCollection(collection: MerchCollection): Promise<PublicMerchCollection> {
-    return this.transactions.readWrite(async (txn) => Repositories
-      .merchStoreCollection(txn)
-      .upsertMerchCollection(MerchandiseCollectionModel.create(collection)));
+    return this.transactions.readWrite(async (txn) => {
+      const merchStoreCollectionRepository = Repositories.merchStoreCollection(txn);
+      return merchStoreCollectionRepository.upsertMerchCollection(
+        merchStoreCollectionRepository.create(collection),
+      );
+    });
   }
 
   public async editCollection(uuid: Uuid, collectionEdit: MerchCollectionEdit): Promise<PublicMerchCollection> {
@@ -133,7 +134,7 @@ export default class MerchStoreService {
         currentCollection.collectionPhotos.map((currentPhoto) => {
           if (!photoUpdatesByUuid.has(currentPhoto.uuid)) return;
           const photoUpdate = photoUpdatesByUuid.get(currentPhoto.uuid);
-          return MerchCollectionPhotoModel.merge(currentPhoto, photoUpdate);
+          return Repositories.merchStoreCollectionPhoto(txn).merge(currentPhoto, photoUpdate);
         });
       }
 
@@ -179,11 +180,12 @@ export default class MerchStoreService {
   public async createCollectionPhoto(collection: Uuid, properties: MerchCollectionPhoto):
   Promise<PublicMerchCollectionPhoto> {
     return this.transactions.readWrite(async (txn) => {
-      const merchCollection = await Repositories.merchStoreCollection(txn).findByUuid(collection);
+      const merchCollectionRepository = Repositories.merchStoreCollection(txn);
+      const merchCollection = await merchCollectionRepository.findByUuid(collection);
       if (!merchCollection) throw new NotFoundError('Collection not found');
 
-      const createdPhoto = MerchCollectionPhotoModel.create({ ...properties, merchCollection });
       const merchStoreCollectionPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
+      const createdPhoto = merchStoreCollectionPhotoRepository.create({ ...properties, merchCollection });
 
       // verify the result photos array
       merchCollection.collectionPhotos.push(createdPhoto);
@@ -203,8 +205,7 @@ export default class MerchStoreService {
   */
   public async getCollectionPhotoForDeletion(uuid: Uuid): Promise<MerchCollectionPhotoModel> {
     return this.transactions.readWrite(async (txn) => {
-      const merchCollectionPhotoRepository = Repositories.merchStoreCollectionPhoto(txn);
-      const collectionPhoto = await merchCollectionPhotoRepository.findByUuid(uuid);
+      const collectionPhoto = await Repositories.merchStoreCollectionPhoto(txn).findByUuid(uuid);
       if (!collectionPhoto) throw new NotFoundError('Merch collection photo not found');
 
       const collection = await Repositories.merchStoreCollection(txn).findByUuid(collectionPhoto.merchCollection.uuid);
@@ -238,7 +239,7 @@ export default class MerchStoreService {
       if (!collection) throw new NotFoundError('Merch collection not found');
 
       const merchItemRepository = Repositories.merchStoreItem(txn);
-      const merchItem = MerchandiseItemModel.create({ ...item, collection });
+      const merchItem = Repositories.merchStoreItem(txn).create({ ...item, collection });
       await merchItemRepository.upsertMerchItem(merchItem);
       return merchItemRepository.findByUuid(merchItem.uuid);
     });
@@ -299,7 +300,7 @@ export default class MerchStoreService {
               throw new UserError(`Cannot decrement option quantity below 0 for option: ${currentOption.uuid}`);
             }
           }
-          return MerchandiseItemOptionModel.merge(currentOption, optionUpdate);
+          return Repositories.merchStoreItemOption(txn).merge(currentOption, optionUpdate);
         });
       }
 
@@ -319,11 +320,11 @@ export default class MerchStoreService {
         item.merchPhotos.map((currentPhoto) => {
           if (!photoUpdatesByUuid.has(currentPhoto.uuid)) return;
           const photoUpdate = photoUpdatesByUuid.get(currentPhoto.uuid);
-          return MerchandiseItemPhotoModel.merge(currentPhoto, photoUpdate);
+          return Repositories.merchStoreItemPhoto(txn).merge(currentPhoto, photoUpdate);
         });
       }
 
-      const updatedItem = MerchandiseItemModel.merge(item, changes);
+      const updatedItem = merchItemRepository.merge(item, changes);
       MerchStoreService.verifyItemHasValidOptions(updatedItem);
 
       if (updatedCollection) {
@@ -364,7 +365,7 @@ export default class MerchStoreService {
       if (!merchItem) throw new NotFoundError('Merch item not found');
 
       const merchItemOptionRepository = Repositories.merchStoreItemOption(txn);
-      const createdOption = MerchandiseItemOptionModel.create({ ...option, item: merchItem });
+      const createdOption = merchItemOptionRepository.create({ ...option, item: merchItem });
       merchItem.options.push(createdOption);
       MerchStoreService.verifyItemHasValidOptions(merchItem);
 
@@ -419,8 +420,8 @@ export default class MerchStoreService {
       const merchItem = await Repositories.merchStoreItem(txn).findByUuid(item);
       if (!merchItem) throw new NotFoundError('Merch item not found');
 
-      const createdPhoto = MerchandiseItemPhotoModel.create({ ...properties, merchItem });
       const merchStoreItemPhotoRepository = Repositories.merchStoreItemPhoto(txn);
+      const createdPhoto = merchStoreItemPhotoRepository.create({ ...properties, merchItem });
 
       // verify the result photos array
       merchItem.merchPhotos.push(createdPhoto);

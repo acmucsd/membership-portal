@@ -1,3 +1,5 @@
+import { Container } from 'typedi';
+import { DataSource } from 'typeorm';
 import * as rfdc from 'rfdc';
 import { flatten } from 'underscore';
 import * as moment from 'moment';
@@ -11,13 +13,21 @@ import { UserModel } from '../../models/UserModel';
 import { ActivityModel } from '../../models/ActivityModel';
 import { ActivityScope, ActivityType } from '../../types';
 import { MerchandiseItemOptionModel } from '../../models/MerchandiseItemOptionModel';
-import { OrderItemModel } from '../../models/OrderItemModel';
 import { FeedbackModel } from '../../models/FeedbackModel';
 import { UserSocialMediaModel } from '../../models/UserSocialMediaModel';
-import { DatabaseConnection } from './DatabaseConnection';
 import { MerchFactory } from '.';
 import { ResumeModel } from '../../models/ResumeModel';
 import { ExpressCheckinModel } from '../../models/ExpressCheckinModel';
+import {
+  ActivityRepository,
+  AttendanceRepository,
+  FeedbackRepository,
+  MerchOrderRepository,
+  OrderItemRepository,
+  ResumeRepository,
+  UserSocialMediaRepository,
+  ExpressCheckinRepository,
+} from '../../repositories';
 
 export class PortalState {
   users: UserModel[] = [];
@@ -59,8 +69,11 @@ export class PortalState {
   }
 
   public async write(): Promise<void> {
-    const conn = await DatabaseConnection.get();
-    await conn.transaction(async (txn) => {
+    // Get the DataSource instance
+    const dataSource = Container.get(DataSource);
+
+    // Start a transaction
+    await dataSource.transaction(async (txn) => {
       this.users = await txn.save(this.users);
       this.events = await txn.save(this.events);
       this.attendances = await txn.save(this.attendances);
@@ -83,7 +96,7 @@ export class PortalState {
       else if (user.credits) user.points = Math.floor(user.credits / 100);
 
       this.users.push(user);
-      this.activities.push(ActivityModel.create({
+      this.activities.push(ActivityRepository.create({
         user,
         type: ActivityType.ACCOUNT_CREATE,
         scope: ActivityScope.PUBLIC,
@@ -128,7 +141,7 @@ export class PortalState {
   public createUserSocialMedia(user: UserModel, ...userSocialMedia: UserSocialMediaModel[]): PortalState {
     for (let s = 0; s < userSocialMedia.length; s += 1) {
       const sm = userSocialMedia[s];
-      this.userSocialMedia.push(UserSocialMediaModel.create({ ...sm, user }));
+      this.userSocialMedia.push(UserSocialMediaRepository.create({ ...sm, user }));
     }
     return this;
   }
@@ -137,7 +150,7 @@ export class PortalState {
     for (let f = 0; f < feedback.length; f += 1) {
       const fb = feedback[f];
 
-      this.feedback.push(FeedbackModel.create({ ...fb }));
+      this.feedback.push(FeedbackRepository.create({ ...fb }));
     }
     return this;
   }
@@ -152,13 +165,13 @@ export class PortalState {
         user.points += pointsEarned;
         user.credits += pointsEarned * 100;
         const timestamp = this.getDateDuring(event);
-        this.attendances.push(AttendanceModel.create({
+        this.attendances.push(AttendanceRepository.create({
           user,
           event,
           timestamp,
           asStaff,
         }));
-        this.activities.push(ActivityModel.create({
+        this.activities.push(ActivityRepository.create({
           user,
           type: asStaff ? ActivityType.ATTEND_EVENT_AS_STAFF : ActivityType.ATTEND_EVENT,
           timestamp,
@@ -178,17 +191,17 @@ export class PortalState {
 
     this.decrementOptionQuantities(order);
 
-    this.orders.push(OrderModel.create({
+    this.orders.push(MerchOrderRepository.create({
       user,
       totalCost,
       pickupEvent,
-      items: flatten(order.map(({ option, quantity }) => Array(quantity).fill(OrderItemModel.create({
+      items: flatten(order.map(({ option, quantity }) => Array(quantity).fill(OrderItemRepository.create({
         option,
         salePriceAtPurchase: option.getPrice(),
         discountPercentageAtPurchase: option.discountPercentage,
       })))),
     }));
-    this.activities.push(ActivityModel.create({
+    this.activities.push(ActivityRepository.create({
       user,
       type: ActivityType.ORDER_PLACED,
     }));
@@ -220,8 +233,8 @@ export class PortalState {
   public submitFeedback(user: UserModel, feedback: FeedbackModel[]): PortalState {
     for (let f = 0; f < feedback.length; f += 1) {
       const fb = feedback[f];
-      this.feedback.push(FeedbackModel.create({ ...fb, user }));
-      this.activities.push(ActivityModel.create({
+      this.feedback.push(FeedbackRepository.create({ ...fb, user }));
+      this.activities.push(ActivityRepository.create({
         user,
         type: ActivityType.SUBMIT_FEEDBACK,
       }));
@@ -237,8 +250,8 @@ export class PortalState {
   public createResumes(user: UserModel, ...resumes: ResumeModel[]): PortalState {
     for (let r = 0; r < resumes.length; r += 1) {
       const resume = resumes[r];
-      this.resumes.push(ResumeModel.create({ ...resume, user }));
-      this.activities.push(ActivityModel.create({
+      this.resumes.push(ResumeRepository.create({ ...resume, user }));
+      this.activities.push(ActivityRepository.create({
         user,
         type: ActivityType.RESUME_UPLOAD,
       }));
@@ -247,7 +260,7 @@ export class PortalState {
   }
 
   public createExpressCheckin(email: string, event: EventModel): PortalState {
-    this.expressCheckins.push(ExpressCheckinModel.create({
+    this.expressCheckins.push(ExpressCheckinRepository.create({
       email: email.toLowerCase(),
       event,
     }));

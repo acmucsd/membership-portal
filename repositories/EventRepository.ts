@@ -1,60 +1,61 @@
-import { EntityRepository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, SelectQueryBuilder } from 'typeorm';
+import Container from 'typedi';
 import { EventSearchOptions, Uuid } from '../types';
 import { EventModel } from '../models/EventModel';
-import { BaseRepository } from './BaseRepository';
 
-@EntityRepository(EventModel)
-export class EventRepository extends BaseRepository<EventModel> {
-  public async upsertEvent(event: EventModel, changes?: Partial<EventModel>): Promise<EventModel> {
-    if (changes) event = EventModel.merge(event, changes);
-    return this.repository.save(event);
-  }
+export const EventRepository = Container.get(DataSource)
+  .getRepository(EventModel)
+  .extend({
+    async upsertEvent(event: EventModel, changes?: Partial<EventModel>): Promise<EventModel> {
+      if (changes) event = this.merge(event, changes);
+      return this.save(event);
+    },
 
-  public async getAllEvents(options: EventSearchOptions): Promise<EventModel[]> {
-    return this.getBaseEventSearchQuery(options).getMany();
-  }
+    async getAllEvents(options: EventSearchOptions): Promise<EventModel[]> {
+      return this.getBaseEventSearchQuery(options).getMany();
+    },
 
-  public async getPastEvents(options: EventSearchOptions): Promise<EventModel[]> {
-    return this.getBaseEventSearchQuery(options)
-      .andWhere('"end" < :now')
-      .setParameter('now', new Date())
-      .getMany();
-  }
+    async getPastEvents(options: EventSearchOptions): Promise<EventModel[]> {
+      return this.getBaseEventSearchQuery(options)
+        .andWhere('"end" < :now')
+        .setParameter('now', new Date())
+        .getMany();
+    },
 
-  public async getFutureEvents(options: EventSearchOptions): Promise<EventModel[]> {
-    return this.getBaseEventSearchQuery(options)
-      .andWhere('"end" >= :now')
-      .setParameter('now', new Date())
-      .getMany();
-  }
+    async getFutureEvents(options: EventSearchOptions): Promise<EventModel[]> {
+      return this.getBaseEventSearchQuery(options)
+        .andWhere('"end" >= :now')
+        .setParameter('now', new Date())
+        .getMany();
+    },
 
-  public async findByUuid(uuid: Uuid): Promise<EventModel> {
-    return this.repository.findOne({ uuid });
-  }
+    async findByUuid(uuid: Uuid): Promise<EventModel> {
+      return this.findOne({ where: { uuid } });
+    },
 
-  public async findByAttendanceCode(attendanceCode: string): Promise<EventModel> {
-    return this.repository.findOne({ attendanceCode });
-  }
+    async findByAttendanceCode(attendanceCode: string): Promise<EventModel> {
+      return this.findOne({ where: { attendanceCode } });
+    },
 
-  public async deleteEvent(event: EventModel): Promise<EventModel> {
-    return this.repository.remove(event);
-  }
+    async deleteEvent(event: EventModel): Promise<EventModel> {
+      return this.remove(event);
+    },
 
-  public async isUnusedAttendanceCode(attendanceCode: string): Promise<boolean> {
-    const count = await this.repository.count({ attendanceCode });
-    return count === 0;
-  }
+    async isUnusedAttendanceCode(attendanceCode: string): Promise<boolean> {
+      const count = await this.count({ where: { attendanceCode } });
+      return count === 0;
+    },
 
-  private getBaseEventSearchQuery(options: EventSearchOptions): SelectQueryBuilder<EventModel> {
-    let query = this.repository.createQueryBuilder()
-      .skip(options.offset)
-      .take(options.limit)
-      .orderBy('start', options.reverse ? 'DESC' : 'ASC');
-    if (options.committee) {
-      query = query
-        .where('committee = :committee')
-        .setParameter('committee', options.committee);
-    }
-    return query;
-  }
-}
+    getBaseEventSearchQuery(options: EventSearchOptions): SelectQueryBuilder<EventModel> {
+      let query = this.createQueryBuilder()
+        .skip(options.offset)
+        .take(options.limit)
+        .orderBy('start', options.reverse ? 'DESC' : 'ASC');
+      if (options.committee) {
+        query = query
+          .where('committee = :committee')
+          .setParameter('committee', options.committee);
+      }
+      return query;
+    },
+  });

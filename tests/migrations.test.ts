@@ -6,7 +6,11 @@ describe('order of migrations', () => {
   const migrations = fs
     .readdirSync(dirname)
     .map((filename) => `./migrations/${filename}`)
-    .filter((filename) => filename.endsWith('.ts'));
+    .filter((filename) =>
+      filename.endsWith('.ts') && filename !== './migrations/index.ts'
+    );
+
+  console.log(migrations)
 
   test('filename prefixes are incremented and not duplicated', () => {
     const filenameOffset = dirname.length;

@@ -1,13 +1,17 @@
 {
-	"transform": {
-        	"^.+\\.ts$": "ts-jest"
-	},
-	"modulePaths": ["<rootDir>/src"],
-	"testRegex": "tests/.*\\.tests?\\.ts$",
-	"moduleFileExtensions": [
-		"ts",
-		"js",
-		"json",
-		"node"
-	]
+  "transform": {
+    "^.+\\.ts$": ["ts-jest", { "useESM": true }]
+  },
+  "modulePaths": ["<rootDir>/src"],
+  "testRegex": "tests/.*\\.tests?\\.ts$",
+  "moduleFileExtensions": [
+    "ts",
+    "js",
+    "json",
+    "node"
+  ],
+  "extensionsToTreatAsEsm": [".ts"],
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  }
 }

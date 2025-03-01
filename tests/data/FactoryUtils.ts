@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import * as moment from 'moment';
 
 export default class FactoryUtils {
@@ -38,10 +38,10 @@ export default class FactoryUtils {
   }
 
   public static randomHexString(): string {
-    return faker.datatype.hexaDecimal(10);
+    return faker.string.hexadecimal({ length: 10 });
   }
 
   public static getRandomImageUrl(): string {
-    return `http://i.imgur.com/${faker.random.alphaNumeric(10)}.jpeg`;
+    return `http://i.imgur.com/${faker.string.alphanumeric(10)}.jpeg`;
   }
 }
