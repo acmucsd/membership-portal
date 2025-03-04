@@ -81,7 +81,8 @@ export class AdminController {
     if (!PermissionsService.canSubmitAttendanceForUsers(currentUser)) throw new ForbiddenError();
     const { users, event, asStaff } = submitAttendanceForUsersRequest;
     const emails = users.map((e) => e.toLowerCase());
-    const attendances = await this.attendanceService.submitAttendanceForUsers(emails, event, asStaff, currentUser);
+    const attendanceModels = await this.attendanceService.submitAttendanceForUsers(emails, event, asStaff, currentUser);
+    const attendances = attendanceModels.map(attendanceModel => attendanceModel.getPublicAttendance());
     return { error: null, attendances };
   }
 
