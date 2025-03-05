@@ -65,7 +65,7 @@ export default class EventService {
       const eventRepository = Repositories.event(txn);
       const currentEvent = await eventRepository.findByUuid(uuid);
       if (!currentEvent) throw new NotFoundError('Event not found');
-      if (changes.attendanceCode !== currentEvent.attendanceCode) {
+      if (changes.attendanceCode && changes.attendanceCode !== currentEvent.attendanceCode) {
         const isUnusedAttendanceCode = await eventRepository.isUnusedAttendanceCode(changes.attendanceCode);
         if (!isUnusedAttendanceCode) throw new UserError('Attendance code has already been used');
       }
