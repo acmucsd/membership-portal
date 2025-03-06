@@ -1,11 +1,11 @@
 import { Service } from 'typedi';
-import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as multer from 'multer';
 import { InternalServerError } from 'routing-controllers';
-import AmazonS3URI = require('amazon-s3-uri');
 import { Config } from '../config';
 import { MediaType } from '../types';
+import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
 
 type File = Express.Multer.File;
 type FileOptions = multer.Options;
@@ -18,44 +18,56 @@ interface MediaTypeConfig {
 
 @Service()
 export default class StorageService {
-  private s3 = new aws.S3({
-    apiVersion: '2006-03-01',
+  private s3 = new S3Client({
     region: Config.s3.region,
     credentials: Config.s3.credentials,
   });
 
-  public async deleteAtUrl(url: string) : Promise<void> {
-    const { bucket, key } = AmazonS3URI(url);
-    const deleteParams = {
-      Bucket: bucket,
-      Key: key,
-    };
-
-    await this.s3.deleteObject(deleteParams).promise();
+  public async deleteAtUrl(url: string): Promise<void> {
+    const key = new URL(url).pathname.slice(1);
+    await this.s3.send(
+      new DeleteObjectCommand({ Bucket: Config.s3.bucket, Key: key }),
+    );
   }
 
   public async upload(file: File, mediaType: MediaType, fileName: string): Promise<string> {
     const { uploadPath } = StorageService.getMediaConfig(mediaType);
-    const params = {
-      ACL: 'public-read',
-      Body: file.buffer,
-      Bucket: Config.s3.bucket,
-      Key: `${uploadPath}/${fileName}${path.extname(file.originalname)}`,
-    };
-    const data = await this.s3.upload(params).promise();
-    return data.Location;
+    const fileExtension = path.extname(file.originalname);
+    const fullPath = `${uploadPath}/${fileName}${fileExtension}`;
+
+    const upload = new Upload({
+      client: this.s3,
+      params: {
+        ACL: 'public-read',
+        Bucket: Config.s3.bucket,
+        Key: fullPath,
+        Body: file.buffer,
+      },
+    });
+    const response = await upload.done();
+    if (!response.Location)
+      throw new InternalServerError('Resource could not be uploaded');
+    return response.Location;
   }
 
   public async uploadToFolder(file: File, mediaType: MediaType, fileName: string, folder: string): Promise<string> {
     const { uploadPath } = StorageService.getMediaConfig(mediaType);
-    const params = {
-      ACL: 'public-read',
-      Body: file.buffer,
-      Bucket: Config.s3.bucket,
-      Key: `${uploadPath}/${folder}/${fileName}${path.extname(file.originalname)}`,
-    };
-    const data = await this.s3.upload(params).promise();
-    return data.Location;
+    const fileExtension = path.extname(file.originalname);
+    const fullPath = `${uploadPath}/${folder}/${fileName}${fileExtension}`;
+
+    const upload = new Upload({
+      client: this.s3,
+      params: {
+        ACL: 'public-read',
+        Bucket: Config.s3.bucket,
+        Key: fullPath,
+        Body: file.buffer,
+      },
+    });
+    const response = await upload.done();
+    if (!response.Location)
+      throw new InternalServerError('Resource could not be uploaded');
+    return response.Location;
   }
 
   public static getFileOptions(mediaType: MediaType): FileOptions {
