@@ -11,6 +11,8 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 5. Create a new `.env` file using [`.env.example`](https://github.com/acmucsd/membership-portal/blob/master/.env.example) as a template: `cp .env.example .env`.
 6. Fill out the `.env`. See the [example file below](#sample-env).
 7. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`.
+   1. You may have to "reapply configurations" on Docker Desktop
+   2. If you do not have Docker Desktop, please install it.
 8. Initialize the database: `npm run db:migrate`.
 9. Populate the database: `npm run db:seed`.
 10. Start the Node app: `npm run dev`.
