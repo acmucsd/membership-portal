@@ -72,8 +72,7 @@
     "underscore": "^1.13.7",
     "uuid": "^11.0.5",
     "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0",
-    "yarn": "^1.22.22"
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
