@@ -7,8 +7,6 @@ jobs:
     steps:
       - checkout
       - run:
-          command: npm i -g yarn
-      - run:
           command: yarn install --frozen-lockfile
       - run:
           command: yarn build
@@ -17,8 +15,6 @@ jobs:
       - image: cimg/node:20.12.2
     steps:
       - checkout
-      - run:
-          command: npm i -g yarn
       - restore_cache:
           key: package-cache-{{ checksum "yarn.lock" }}
       - run:
@@ -44,8 +40,6 @@ jobs:
           POSTGRES_PASSWORD: password
     steps:
       - checkout
-      - run:
-          command: npm i -g yarn
       - restore_cache:
           key: package-cache-{{ checksum "yarn.lock" }}
       - run:
