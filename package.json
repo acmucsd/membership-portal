@@ -1,6 +1,6 @@
 {
   "name": "@acmucsd/membership-portal",
-  "version": "3.7.1",
+  "version": "3.8.0",
   "description": "REST API for ACM UCSD's membership portal.",
   "main": "index.d.ts",
   "files": [
@@ -33,7 +33,7 @@
     "url": "https://github.com/acmucsd/membership-portal/issues"
   },
   "engines": {
-    "node": "^20.12.2",
+    "node": "^20.19.4",
     "yarn": "^1.22.0"
   },
   "homepage": "https://github.com/acmucsd/membership-portal#readme",
