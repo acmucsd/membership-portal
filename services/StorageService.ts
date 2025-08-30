@@ -3,7 +3,6 @@ import * as aws from 'aws-sdk';
 import * as path from 'path';
 import * as multer from 'multer';
 import { InternalServerError } from 'routing-controllers';
-import AmazonS3URI = require('amazon-s3-uri');
 import { Config } from '../config';
 import { MediaType } from '../types';
 
@@ -24,17 +23,21 @@ export default class StorageService {
     credentials: Config.s3.credentials,
   });
 
-  public async deleteAtUrl(url: string) : Promise<void> {
-    const { bucket, key } = AmazonS3URI(url);
+  public async deleteAtUrl(url: string): Promise<void> {
+    const key = new URL(url).pathname.slice(1);
     const deleteParams = {
-      Bucket: bucket,
+      Bucket: Config.s3.bucket,
       Key: key,
     };
 
     await this.s3.deleteObject(deleteParams).promise();
   }
 
-  public async upload(file: File, mediaType: MediaType, fileName: string): Promise<string> {
+  public async upload(
+    file: File,
+    mediaType: MediaType,
+    fileName: string,
+  ): Promise<string> {
     const { uploadPath } = StorageService.getMediaConfig(mediaType);
     const params = {
       ACL: 'public-read',
@@ -46,13 +49,20 @@ export default class StorageService {
     return data.Location;
   }
 
-  public async uploadToFolder(file: File, mediaType: MediaType, fileName: string, folder: string): Promise<string> {
+  public async uploadToFolder(
+    file: File,
+    mediaType: MediaType,
+    fileName: string,
+    folder: string,
+  ): Promise<string> {
     const { uploadPath } = StorageService.getMediaConfig(mediaType);
     const params = {
       ACL: 'public-read',
       Body: file.buffer,
       Bucket: Config.s3.bucket,
-      Key: `${uploadPath}/${folder}/${fileName}${path.extname(file.originalname)}`,
+      Key: `${uploadPath}/${folder}/${fileName}${path.extname(
+        file.originalname,
+      )}`,
     };
     const data = await this.s3.upload(params).promise();
     return data.Location;
@@ -69,7 +79,8 @@ export default class StorageService {
   }
 
   public static getRandomString(): string {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-';
+    const chars =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-';
     const stringLength = 25;
     // according to nanoID: ~611 trillion years needed, in order to have a 1%
     //                      probability of at least one collision.

@@ -32,7 +32,7 @@ export const Config = {
 
   auth: {
     secret: process.env.AUTH_SECRET,
-    tokenLifespan: process.env.TOKEN_LIFESPAN || TWO_WEEKS_IN_SECONDS,
+    tokenLifespan: Number(process.env.TOKEN_LIFESPAN) || TWO_WEEKS_IN_SECONDS,
   },
 
   client: process.env.CLIENT,
@@ -55,23 +55,41 @@ export const Config = {
     bucket: process.env.S3_BUCKET,
   },
 
+  ses: {
+    region: process.env.SES_REGION,
+    credentials: {
+      accessKeyId: process.env.SES_ACCESS_KEY_ID,
+      secretAccessKey: process.env.SES_SECRET_ACCESS_KEY,
+    },
+  },
+
   file: {
-    MAX_PROFILE_PICTURE_FILE_SIZE: Number(process.env.MAX_PROFILE_PICTURE_FILE_SIZE) * BYTES_PER_KILOBYTE,
-    MAX_EVENT_COVER_FILE_SIZE: Number(process.env.MAX_EVENT_COVER_FILE_SIZE) * BYTES_PER_KILOBYTE,
-    MAX_BANNER_FILE_SIZE: Number(process.env.MAX_BANNER_FILE_SIZE) * BYTES_PER_KILOBYTE,
-    MAX_MERCH_PHOTO_FILE_SIZE: Number(process.env.MAX_MERCH_PHOTO_FILE_SIZE) * BYTES_PER_KILOBYTE,
-    MAX_COLLECTION_PHOTO_FILE_SIZE: Number(process.env.MAX_MERCH_PHOTO_FILE_SIZE) * BYTES_PER_KILOBYTE,
-    MAX_RESUME_FILE_SIZE: Number(process.env.MAX_RESUME_FILE_SIZE) * BYTES_PER_KILOBYTE,
-    PROFILE_PICTURE_UPLOAD_PATH: process.env.BASE_UPLOAD_PATH + process.env.PROFILE_PICTURE_UPLOAD_PATH,
-    EVENT_COVER_UPLOAD_PATH: process.env.BASE_UPLOAD_PATH + process.env.EVENT_COVER_UPLOAD_PATH,
-    BANNER_UPLOAD_PATH: process.env.BASE_UPLOAD_PATH + process.env.BANNER_UPLOAD_PATH,
-    RESUME_UPLOAD_PATH: process.env.BASE_UPLOAD_PATH + process.env.RESUME_UPLOAD_PATH,
-    MERCH_PHOTO_UPLOAD_PATH: process.env.BASE_UPLOAD_PATH + process.env.MERCH_PHOTO_UPLOAD_PATH,
+    MAX_PROFILE_PICTURE_FILE_SIZE:
+      Number(process.env.MAX_PROFILE_PICTURE_FILE_SIZE) * BYTES_PER_KILOBYTE,
+    MAX_EVENT_COVER_FILE_SIZE:
+      Number(process.env.MAX_EVENT_COVER_FILE_SIZE) * BYTES_PER_KILOBYTE,
+    MAX_BANNER_FILE_SIZE:
+      Number(process.env.MAX_BANNER_FILE_SIZE) * BYTES_PER_KILOBYTE,
+    MAX_MERCH_PHOTO_FILE_SIZE:
+      Number(process.env.MAX_MERCH_PHOTO_FILE_SIZE) * BYTES_PER_KILOBYTE,
+    MAX_COLLECTION_PHOTO_FILE_SIZE:
+      Number(process.env.MAX_MERCH_PHOTO_FILE_SIZE) * BYTES_PER_KILOBYTE,
+    MAX_RESUME_FILE_SIZE:
+      Number(process.env.MAX_RESUME_FILE_SIZE) * BYTES_PER_KILOBYTE,
+    PROFILE_PICTURE_UPLOAD_PATH:
+      process.env.BASE_UPLOAD_PATH + process.env.PROFILE_PICTURE_UPLOAD_PATH,
+    EVENT_COVER_UPLOAD_PATH:
+      process.env.BASE_UPLOAD_PATH + process.env.EVENT_COVER_UPLOAD_PATH,
+    BANNER_UPLOAD_PATH:
+      process.env.BASE_UPLOAD_PATH + process.env.BANNER_UPLOAD_PATH,
+    RESUME_UPLOAD_PATH:
+      process.env.BASE_UPLOAD_PATH + process.env.RESUME_UPLOAD_PATH,
+    MERCH_PHOTO_UPLOAD_PATH:
+      process.env.BASE_UPLOAD_PATH + process.env.MERCH_PHOTO_UPLOAD_PATH,
   },
 
   email: {
-    user: process.env.SENDGRID_USER,
-    apiKey: process.env.SENDGRID_API_KEY,
+    user: process.env.EMAIL_USER,
   },
 
   metrics: {
@@ -80,6 +98,8 @@ export const Config = {
 
   pointReward: {
     FEEDBACK_POINT_REWARD: Number(process.env.FEEDBACK_POINT_REWARD),
-    EVENT_FEEDBACK_POINT_REWARD: Number(process.env.EVENT_FEEDBACK_POINT_REWARD),
+    EVENT_FEEDBACK_POINT_REWARD: Number(
+      process.env.EVENT_FEEDBACK_POINT_REWARD,
+    ),
   },
 };
