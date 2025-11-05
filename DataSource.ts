@@ -1,9 +1,8 @@
 import Container from 'typedi';
 import { DataSource } from 'typeorm';
 import { models } from './models';
-import { migrations } from './migrations'
-
-require('dotenv').config();
+import { migrations } from './migrations';
+import 'dotenv/config';
 
 export const dataSource = new DataSource({
   type: 'postgres',

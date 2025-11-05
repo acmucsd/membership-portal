@@ -30,7 +30,11 @@ export default class StorageService {
     );
   }
 
-  public async upload(file: File, mediaType: MediaType, fileName: string): Promise<string> {
+  public async upload(
+    file: File,
+    mediaType: MediaType,
+    fileName: string,
+  ): Promise<string> {
     const { uploadPath } = StorageService.getMediaConfig(mediaType);
     const fileExtension = path.extname(file.originalname);
     const fullPath = `${uploadPath}/${fileName}${fileExtension}`;
@@ -50,7 +54,12 @@ export default class StorageService {
     return response.Location;
   }
 
-  public async uploadToFolder(file: File, mediaType: MediaType, fileName: string, folder: string): Promise<string> {
+  public async uploadToFolder(
+    file: File,
+    mediaType: MediaType,
+    fileName: string,
+    folder: string,
+  ): Promise<string> {
     const { uploadPath } = StorageService.getMediaConfig(mediaType);
     const fileExtension = path.extname(file.originalname);
     const fullPath = `${uploadPath}/${folder}/${fileName}${fileExtension}`;
@@ -81,7 +90,8 @@ export default class StorageService {
   }
 
   public static getRandomString(): string {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-';
+    const chars =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-';
     const stringLength = 25;
     // according to nanoID: ~611 trillion years needed, in order to have a 1%
     //                      probability of at least one collision.
