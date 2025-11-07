@@ -2,7 +2,7 @@
 REST API for the UC San Diego ACM chapter's membership portal. This is an open-source project, made for members by members, and we welcome any contributions! If you're interested in using the API for your own project and/or contributing, check out our guide [here](https://github.com/acmucsd/membership-portal/blob/master/.github/CONTRIBUTING.md).
 
 ### Build Instructions
-`npm install` may not work properly due to version incompatibilities. Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commit the `yarn.lock`.
+`npm install` may not work properly due to version incompatibilities. Feel free to use `yarn ...` instead of `npm run ...`.
 
 1. Clone the repository: `git clone https://github.com/acmucsd/membership-portal`.
 2. Navigate to the directory: `cd membership-portal`.
