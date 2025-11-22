@@ -14,23 +14,23 @@ if(`npm install` works fine):
 5. Create a new `.env` file using [`.env.example`](https://github.com/acmucsd/membership-portal/blob/master/.env.example) as a template: `cp .env.example .env`.
 6. Fill out the `.env`. See the [example file below](#sample-env).
 7. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`.
-8. Initialize the database: `npm run db:migrate`. 
-9. Populate the database: `npm run db:seed`. 
-10. Start the Node app: `npm run dev`. 
+8. Initialize the database: `npm run db:migrate`.
+9. Populate the database: `npm run db:seed`.
+10. Start the Node app: `npm run dev`.
 
 if(`npm install` does not work):
 
-4. Install yarn first, it is a package manager (you can find it at https://yarnpkg.com). After that, install the necessary dependencies using: `yarn install`. 
+4. Install yarn first, it is a package manager (you can find it at https://yarnpkg.com). After that, install the necessary dependencies using: `yarn install`.
 5. Create a new `.env` file using [`.env.example`](https://github.com/acmucsd/membership-portal/blob/master/.env.example) as a template: `cp .env.example .env`.
 6. Fill out the `.env`. See the [example file below](#sample-env).
 7. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`.
-8. Initialize the database: `yarn run db:migrate`. 
-9. Populate the database: `yarn run db:seed`. 
-10. Start the Node app: `yarn dev`. 
+8. Initialize the database: `yarn run db:migrate`.
+9. Populate the database: `yarn run db:seed`.
+10. Start the Node app: `yarn dev`.
 
 
 #### Installing Postgres
-Even though our actual Postgres instance runs in a Docker container, we need to install Postgres to install the official `pg` Node package. MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/), run the installer, and add the Postgres bin to the PATH environment variable.
+Even though our actual Postgres instance runs in a Docker container, we need to install Postgres to install the official `pg` Node package. MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 17.6 installer，run the installer, and add the Postgres bin to the PATH environment variable.
 
 #### Windows Build Instructions
 1. Run the Windows Powershell as administrator.

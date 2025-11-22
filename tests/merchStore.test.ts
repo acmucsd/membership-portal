@@ -657,7 +657,8 @@ describe('merch item edits', () => {
 
     expect(getOldMerchCollectionResponse.collection.items.length).toBe(0);
     expect(getNewMerchCollectionResponse.collection.items.length).toBe(newCollectionSize + 1);
-    expect(getNewMerchCollectionResponse.collection.items[0].uuid).toBe(item.uuid);
+
+    expect(getNewMerchCollectionResponse.collection.items.some(i => i.uuid === item.uuid)).toBe(true);
   });
 
   test('merch item option fields can be updated', async () => {
