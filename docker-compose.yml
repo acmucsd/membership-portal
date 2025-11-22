@@ -1,7 +1,7 @@
 services:
   rds.acmucsd.local:
     container_name: rds.acmucsd.local
-    image: postgres:11.5
+    image: postgres:17.6
     restart: always
     ports:
       - '${RDS_PORT}:5432'

@@ -2,11 +2,14 @@
 REST API for the UC San Diego ACM chapter's membership portal. This is an open-source project, made for members by members, and we welcome any contributions! If you're interested in using the API for your own project and/or contributing, check out our guide [here](https://github.com/acmucsd/membership-portal/blob/master/.github/CONTRIBUTING.md).
 
 ### Build Instructions
-Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commit the `yarn.lock`.
+`npm install` may not work properly due to version incompatibilities. Feel free to use `yarn ...` instead of `npm run ...`.
 
 1. Clone the repository: `git clone https://github.com/acmucsd/membership-portal`.
 2. Navigate to the directory: `cd membership-portal`.
 3. Install PostgreSQL. See [installation instructions below](#installing-postgres).
+
+if(`npm install` works fine):
+
 4. Install the necessary dependencies: `npm install`. For Windows users, see [specific build instructions below](#windows-build-instructions).
 5. Create a new `.env` file using [`.env.example`](https://github.com/acmucsd/membership-portal/blob/master/.env.example) as a template: `cp .env.example .env`.
 6. Fill out the `.env`. See the [example file below](#sample-env).
@@ -15,8 +18,19 @@ Feel free to use `yarn ...` instead of `npm run ...`, but make sure not to commi
 9. Populate the database: `npm run db:seed`.
 10. Start the Node app: `npm run dev`.
 
+if(`npm install` does not work):
+
+4. Install yarn first, it is a package manager (you can find it at https://yarnpkg.com). After that, install the necessary dependencies using: `yarn install`.
+5. Create a new `.env` file using [`.env.example`](https://github.com/acmucsd/membership-portal/blob/master/.env.example) as a template: `cp .env.example .env`.
+6. Fill out the `.env`. See the [example file below](#sample-env).
+7. Run the containerized service(s) (e.g. Postgres): `docker-compose up -d`.
+8. Initialize the database: `yarn run db:migrate`.
+9. Populate the database: `yarn run db:seed`.
+10. Start the Node app: `yarn dev`.
+
+
 #### Installing Postgres
-Even though our actual Postgres instance runs in a Docker container, we need to install Postgres to install the official `pg` Node package. MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 11.5 installer from [here](https://www.postgresql.org/download/windows/), run the installer, and add the Postgres bin to the PATH environment variable.
+Even though our actual Postgres instance runs in a Docker container, we need to install Postgres to install the official `pg` Node package. MacOS and Linux users can install Postgres via [Homebrew](https://brew.sh), and Linux users can use `apt`. Windows users will need to download the Postgres 17.6 installer，run the installer, and add the Postgres bin to the PATH environment variable.
 
 #### Windows Build Instructions
 1. Run the Windows Powershell as administrator.
@@ -66,6 +80,9 @@ For testing out the different portal roles, use the email `acm_[role]@ucsd.edu`,
 * `store_distributor` - User is able to execute store distributions, including viewing and fulfilling orders for each pickup event.
 
 For testing out the store, use the email `acm_store@ucsd.edu`, as the majority of demo orders will be placed with this account.
+
+Some tests may fail if your local PostgreSQL version differs from the CI environment (see .circleci/config.yml).
+Try running tests with the Dockerized Postgres image.
 
 ### Upgrading to Latest Version
 The first iteration of the membership portal is a JavaScript app written in 2019. The second and latest iteration, written 2020, is a TypeScript app built with better reliability and error handling, stronger concurrency guarantees, and a smoother development experience in mind, and includes a number of breaking changes at the API and database levels. For a more concrete list of improvements, see [acmucsd/membership-portal#115](https://github.com/acmucsd/membership-portal/pull/115).
