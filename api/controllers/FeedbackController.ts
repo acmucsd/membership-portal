@@ -29,7 +29,7 @@ export class FeedbackController {
     @AuthenticatedUser() user: UserModel): Promise<GetFeedbackResponse> {
     const canSeeAllFeedback = PermissionsService.canSeeAllFeedback(user);
     const feedback = await this.feedbackService.getFeedback(canSeeAllFeedback, user, options);
-    return { error: null, feedback };
+    return { error: null, feedback: feedback.map((singleFeedback) => singleFeedback.getPublicFeedback()) };
   }
 
   @Post()
@@ -37,7 +37,7 @@ export class FeedbackController {
     @AuthenticatedUser() user: UserModel): Promise<SubmitFeedbackResponse> {
     if (!PermissionsService.canSubmitFeedback(user)) throw new ForbiddenError();
     const feedback = await this.feedbackService.submitFeedback(user, submitFeedbackRequest.feedback);
-    return { error: null, feedback };
+    return { error: null, feedback: feedback.getPublicFeedback() };
   }
 
   @Patch('/:uuid')
@@ -46,6 +46,6 @@ export class FeedbackController {
     @AuthenticatedUser() user: UserModel): Promise<UpdateFeedbackStatusResponse> {
     if (!PermissionsService.canSeeAllFeedback(user)) throw new ForbiddenError();
     const feedback = await this.feedbackService.updateFeedbackStatus(params.uuid, updateFeedbackStatusRequest.status);
-    return { error: null, feedback };
+    return { error: null, feedback: feedback.getPublicFeedback() };
   }
 }

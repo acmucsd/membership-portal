@@ -99,7 +99,7 @@ export class MerchStoreController {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const canSeeHiddenItems = PermissionsService.canEditMerchStore(user);
     const collection = await this.merchStoreService.findCollectionByUuid(params.uuid, canSeeHiddenItems);
-    return { error: null, collection };
+    return { error: null, collection: canSeeHiddenItems ? collection : collection.getPublicMerchCollection() };
   }
 
   @Get('/collection')
@@ -107,7 +107,7 @@ export class MerchStoreController {
     if (!PermissionsService.canAccessMerchStore(user)) throw new ForbiddenError();
     const canSeeInactiveCollections = PermissionsService.canEditMerchStore(user);
     const collections = await this.merchStoreService.getAllCollections(canSeeInactiveCollections);
-    return { error: null, collections };
+    return { error: null, collections: collections.map((c) => c.getPublicMerchCollection(canSeeInactiveCollections)) };
   }
 
   @Post('/collection')
@@ -155,7 +155,7 @@ export class MerchStoreController {
       params.uuid, { uploadedPhoto, position },
     );
 
-    return { error: null, collectionPhoto };
+    return { error: null, collectionPhoto: collectionPhoto.getPublicMerchCollectionPhoto() };
   }
 
   @UseBefore(UserAuthentication)
@@ -224,7 +224,7 @@ export class MerchStoreController {
       params.uuid, { uploadedPhoto, position },
     );
 
-    return { error: null, merchPhoto };
+    return { error: null, merchPhoto: merchPhoto.getPublicMerchItemPhoto() };
   }
 
   @UseBefore(UserAuthentication)
@@ -244,7 +244,7 @@ export class MerchStoreController {
     Promise<CreateMerchItemOptionResponse> {
     if (!PermissionsService.canEditMerchStore(user)) throw new ForbiddenError();
     const option = await this.merchStoreService.createItemOption(params.uuid, createItemOptionRequest.option);
-    return { error: null, option };
+    return { error: null, option: option.getPublicMerchItemOption()};
   }
 
   @Delete('/option/:uuid')
