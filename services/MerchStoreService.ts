@@ -11,12 +11,9 @@ import {
   MerchItem,
   MerchItemOption,
   MerchItemEdit,
-  PublicMerchItemOption,
   OrderStatus,
   PublicMerchItemWithPurchaseLimits,
-  PublicMerchItemPhoto,
   MerchItemPhoto,
-  PublicMerchCollectionPhoto,
   MerchCollectionPhoto,
 } from '../types';
 import { MerchandiseItemModel } from '../models/MerchandiseItemModel';
@@ -68,7 +65,8 @@ export default class MerchStoreService {
     });
   }
 
-  public async findCollectionByUuid(uuid: Uuid, canSeeInactiveCollections = false): Promise<MerchandiseCollectionModel> {
+  public async findCollectionByUuid(uuid: Uuid,
+    canSeeInactiveCollections = false): Promise<MerchandiseCollectionModel> {
     const collection = await this.transactions.readOnly(async (txn) => Repositories
       .merchStoreCollection(txn)
       .findByUuid(uuid));

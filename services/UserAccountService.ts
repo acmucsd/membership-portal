@@ -13,7 +13,6 @@ import {
   Uuid,
   PublicProfile,
   ActivityType,
-  PublicActivity,
   Milestone,
   UserPatches,
   UserState,

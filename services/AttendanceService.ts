@@ -2,7 +2,7 @@ import { Service } from 'typedi';
 import { BadRequestError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EntityManager } from 'typeorm';
 import * as moment from 'moment';
-import { ActivityType, PublicAttendance, PublicExpressCheckin, Uuid } from '../types';
+import { ActivityType, PublicAttendance, Uuid } from '../types';
 import { Config } from '../config';
 import { UserModel } from '../models/UserModel';
 import { EventModel } from '../models/EventModel';

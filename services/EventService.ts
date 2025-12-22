@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { EventModel } from '../models/EventModel';
-import { Uuid, PublicEvent, Event, EventSearchOptions } from '../types';
+import { Uuid, Event, EventSearchOptions } from '../types';
 import Repositories, { TransactionsManager, EventRepository } from '../repositories';
 import { UserError } from '../utils/Errors';
 
