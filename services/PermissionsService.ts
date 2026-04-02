@@ -41,9 +41,7 @@ export default class PermissionsService {
   }
 
   public static canAccessMerchStore(user: UserModel): boolean {
-    const emailDomain = user.email.split('@')[1];
-    return (user.state === UserState.ACTIVE || user.state === UserState.PASSWORD_RESET) && (emailDomain === 'ucsd.edu'
-      || user.email.split('@')[1] === 'acmucsd.org');
+    return user.state === UserState.ACTIVE || user.state === UserState.PASSWORD_RESET;
   }
 
   public static canSeeOptionQuantities(user: UserModel): boolean {

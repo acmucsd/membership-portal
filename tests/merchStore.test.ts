@@ -26,42 +26,6 @@ afterAll(async () => {
 });
 
 describe('merch store permissions', () => {
-  test('members can only access store with a valid acm or ucsd email', async () => {
-    const conn = await DatabaseConnection.get();
-    const UCSDMember = UserFactory.fake({ credits: 10000 });
-    const ACMBoardMember = UserFactory.fake({
-      email: 'random@acmucsd.org',
-      credits: 10000,
-    });
-    const invalidMember = UserFactory.fake({
-      email: 'random@gmail.com',
-      credits: 10000,
-    });
-
-    const affordableOption1 = MerchFactory.fakeOption({
-      quantity: 5,
-      price: 2000,
-      discountPercentage: 0,
-    });
-    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
-
-    await new PortalState()
-      .createUsers(ACMBoardMember, UCSDMember, invalidMember)
-      .createMerchItemOptions(affordableOption1)
-      .createOrderPickupEvents(pickupEvent)
-      .write();
-
-    const merchStoreController = await ControllerFactory.merchStore(conn);
-
-    const ACMBoardMemberResponse = await merchStoreController.getAllMerchCollections(ACMBoardMember);
-    expect(ACMBoardMemberResponse.error).toBe(null);
-
-    const UCSDMemberResponse = await merchStoreController.getAllMerchCollections(UCSDMember);
-    expect(UCSDMemberResponse.error).toBe(null);
-
-    await expect(merchStoreController.getAllMerchCollections(invalidMember)).rejects.toThrow(ForbiddenError);
-  });
-
   test('archived collections are hidden from members, but not for store managers', async () => {
     const conn = await DatabaseConnection.get();
     const storeManager = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_MANAGER });
