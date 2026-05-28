@@ -522,6 +522,90 @@ export default class MerchOrderService {
     });
   }
 
+  /**
+   * Swaps an order item's option to a different option of the same merch item.
+   * Can be used to change sizes or other variants during pickup.
+   * @param orderItemUuid the uuid of the order item to swap
+   * @param newOptionUuid the uuid of the new option to swap to
+   * @returns the updated order
+   */
+  public async swapOrderItemOption(orderItemUuid: Uuid, newOptionUuid: Uuid): Promise<OrderModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderItemRepository = Repositories.merchOrderItem(txn);
+      const orderItem = await orderItemRepository.findOne({
+        where: { uuid: orderItemUuid },
+        relations: ['order', 'order.user', 'option', 'option.item'],
+      });
+      if (!orderItem) throw new NotFoundError('Order item not found');
+
+      if (orderItem.fulfilled) {
+        throw new UserError('Cannot swap an order item that has already been fulfilled');
+      }
+
+      const order = orderItem.order;
+      if (order.status !== OrderStatus.PLACED && order.status !== OrderStatus.PARTIALLY_FULFILLED) {
+        throw new UserError('Cannot swap options for this order status');
+      }
+
+      const oldOption = orderItem.option;
+      const merchStoreItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const newOption = await merchStoreItemOptionRepository.findByUuid(newOptionUuid);
+      if (!newOption) throw new NotFoundError('Merch item option not found');
+
+      // Verify both options belong to the same merch item
+      if (oldOption.item.uuid !== newOption.item.uuid) {
+        throw new UserError('Cannot swap to an option from a different merch item');
+      }
+
+      if (newOption.uuid === oldOption.uuid) {
+        throw new UserError('Selected option is already the current one');
+      }
+
+      // Check if new option has stock available
+      if (newOption.quantity <= 0) {
+        throw new UserError('The selected option is out of stock');
+      }
+
+      // Calculate price difference and check if user has enough credits
+      const priceDifference = newOption.getPrice() - oldOption.getPrice();
+      if (priceDifference > 0 && order.user.credits < priceDifference) {
+        throw new UserError('User does not have enough credits for this option swap');
+      }
+
+      // Update the order item with the new option and calculate new price
+      const newSalePrice = newOption.getPrice();
+      const newDiscountPercentage = newOption.discountPercentage;
+      orderItem.option = newOption;
+      orderItem.salePriceAtPurchase = newSalePrice;
+      orderItem.discountPercentageAtPurchase = newDiscountPercentage;
+      await orderItemRepository.save(orderItem);
+
+      // Update stock for both old and new options
+      await merchStoreItemOptionRepository.upsertMerchItemOption(newOption, {
+        quantity: newOption.quantity - 1,
+      });
+      await merchStoreItemOptionRepository.upsertMerchItemOption(oldOption, {
+        quantity: oldOption.quantity + 1,
+      });
+
+      // Update order total cost
+      const newTotalCost = order.totalCost + priceDifference;
+      const updatedOrder = await Repositories.merchOrder(txn).upsertMerchOrder(
+        order,
+        { totalCost: newTotalCost },
+      );
+
+      // Adjust user credits if there's a price difference
+      if (priceDifference !== 0) {
+        const userRepository = Repositories.user(txn);
+        const updatedUser = await userRepository.findByUuid(order.user.uuid);
+        await userRepository.upsertUser(updatedUser, { credits: updatedUser.credits - priceDifference });
+      }
+
+      return updatedOrder;
+    });
+  }
+
   private static pendingOrderStatuses(): OrderStatus[] {
     return [
       OrderStatus.PARTIALLY_FULFILLED,
