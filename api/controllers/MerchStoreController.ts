@@ -338,6 +338,18 @@ export class MerchStoreController {
     return { error: null, order: updatedOrder.getPublicOrder() };
   }
 
+  @Post('/order/:uuid/unfulfill')
+  async unfulfillMerchOrderItems(@Params() params: UuidParam, @Body() unfulfillOrderRequest: FulfillMerchOrderRequest,
+    @AuthenticatedUser() user: UserModel): Promise<FulfillMerchOrderResponse> {
+    if (!PermissionsService.canManageMerchOrders(user)) throw new ForbiddenError();
+    const numUniqueUuids = (new Set(unfulfillOrderRequest.items.map((oi) => oi.uuid))).size;
+    if (unfulfillOrderRequest.items.length !== numUniqueUuids) {
+      throw new BadRequestError('There are duplicate order items');
+    }
+    const updatedOrder = await this.merchOrderService.unfulfillOrderItems(unfulfillOrderRequest.items, params.uuid, user);
+    return { error: null, order: updatedOrder.getPublicOrder() };
+  }
+
   @Post('/order/item/swap')
   async swapOrderItemOption(@Body() swapRequest: SwapOrderItemOptionRequest,
     @AuthenticatedUser() user: UserModel): Promise<SwapOrderItemOptionResponse> {
