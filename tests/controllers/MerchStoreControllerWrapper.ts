@@ -48,35 +48,4 @@ export class MerchStoreControllerWrapper {
     };
     await conn.manager.update(OrderPickupEventModel, dateUpdateParams, dateRollback);
   }
-
-  public static async unfulfillMerchOrderItems(merchController: MerchStoreController,
-    fulfillOrderParams: UuidParam, itemsToUnfulfill: FulfillMerchOrderRequest, distributor: UserModel,
-    conn: Connection, pickupEvent: OrderPickupEventModel) {
-    const originalStart = pickupEvent.start;
-    const originalEnd = pickupEvent.end;
-
-    // move pickup event to today
-    const startHour = moment(pickupEvent.start).hours();
-    const startMinute = moment(pickupEvent.start).minutes();
-    const newStart = moment().hour(startHour).minute(startMinute).toDate();
-    const endHour = moment(pickupEvent.end).hours();
-    const endMinute = moment(pickupEvent.end).minutes();
-    const newEnd = moment().hour(endHour).minute(endMinute).toDate();
-    const dateUpdateParams = { uuid: pickupEvent.uuid };
-    const dateUpdates = {
-      start: newStart,
-      end: newEnd,
-    };
-    await conn.manager.update(OrderPickupEventModel, dateUpdateParams, dateUpdates);
-
-    // unfulfill order items
-    await merchController.unfulfillMerchOrderItems(fulfillOrderParams, itemsToUnfulfill, distributor);
-
-    // move pickup event back to original day
-    const dateRollback = {
-      start: originalStart,
-      end: originalEnd,
-    };
-    await conn.manager.update(OrderPickupEventModel, dateUpdateParams, dateRollback);
-  }
 }

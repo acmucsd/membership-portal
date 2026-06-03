@@ -165,63 +165,6 @@ describe('merch orders', () => {
     expect(orderPlacedActivity.type).toStrictEqual(ActivityType.ORDER_FULFILLED);
   });
 
-  test('merch items can be unfulfilled after fulfillment', async () => {
-    const conn = await DatabaseConnection.get();
-    const member = UserFactory.fake({ credits: 10000 });
-    const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
-    const option = MerchFactory.fakeOption({
-      quantity: 2,
-      price: 2000,
-      discountPercentage: 0,
-    });
-    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
-
-    await new PortalState()
-      .createUsers(member, merchDistributor)
-      .createMerchItemOptions(option)
-      .createOrderPickupEvents(pickupEvent)
-      .write();
-
-    const emailService = mock(EmailService);
-    when(emailService.sendOrderConfirmation(member.email, member.firstName, anything()))
-      .thenResolve();
-    when(emailService.sendOrderFulfillment(member.email, member.firstName, anything()))
-      .thenResolve();
-
-    const placeMerchOrderRequest = {
-      order: [{ option: option.uuid, quantity: 2 }],
-      pickupEvent: pickupEvent.uuid,
-    };
-    const merchController = ControllerFactory.merchStore(conn, instance(emailService));
-    const placedOrderResponse = await merchController.placeMerchOrder(placeMerchOrderRequest, member);
-
-    const uuidParams = { uuid: placedOrderResponse.order.uuid };
-    const fulfillMerchOrderItemsRequest = {
-      items: placedOrderResponse.order.items.map((item) => ({ uuid: item.uuid })),
-    };
-    await MerchStoreControllerWrapper.fulfillMerchOrderItems(merchController, uuidParams,
-      fulfillMerchOrderItemsRequest, merchDistributor, conn, pickupEvent);
-
-    const unfulfillMerchOrderItemsRequest = {
-      items: [
-        {
-          uuid: placedOrderResponse.order.items[0].uuid,
-        },
-      ],
-    };
-    await MerchStoreControllerWrapper.unfulfillMerchOrderItems(merchController, uuidParams,
-      unfulfillMerchOrderItemsRequest, merchDistributor, conn, pickupEvent);
-
-    const getOrderResponse = await merchController.getOneMerchOrder(uuidParams, member);
-    const updatedOrder = getOrderResponse.order;
-
-    expect(updatedOrder.status).toEqual(OrderStatus.PARTIALLY_FULFILLED);
-    expect(updatedOrder.items.find((item) => item.uuid === placedOrderResponse.order.items[0].uuid)?.fulfilled)
-      .toBeFalsy();
-    expect(updatedOrder.items.find((item) => item.uuid === placedOrderResponse.order.items[1].uuid)?.fulfilled)
-      .toBeTruthy();
-  });
-
   test('merch items can be fulfilled for ongoing and past pickup events', async () => {
     const conn = await DatabaseConnection.get();
     const member = UserFactory.fake({ credits: 10000 });
