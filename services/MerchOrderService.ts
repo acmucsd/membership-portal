@@ -426,8 +426,9 @@ export default class MerchOrderService {
         throw new UserError('Cannot fulfill items of an order that has a pickup event that hasn\'t started yet');
       }
       // check if order is in PLACED status (by order state machine design)
-      if (order.status !== OrderStatus.PLACED) {
-        throw new UserError(`This order is not able to be fulfilled. Order state must be PLACED, is ${order.status}`);
+      if (order.status !== OrderStatus.PLACED && order.status !== OrderStatus.PARTIALLY_FULFILLED) {
+        throw new UserError(`This order is not able to be fulfilled.
+          Order state must be PLACED or PARTIALLY_FULFILLED, is ${order.status}`);
       }
 
       const { items } = order;
@@ -505,6 +506,55 @@ export default class MerchOrderService {
     });
   }
 
+  public async unfulfillOrderItems(fulfillmentUpdates: OrderItemFulfillmentUpdate[], orderUuid: Uuid,
+    user: UserModel): Promise<OrderModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderRepository = Repositories.merchOrder(txn);
+      let order = await orderRepository.findByUuid(orderUuid);
+      if (!order) throw new NotFoundError('Order not found');
+      if (order.status !== OrderStatus.FULFILLED && order.status !== OrderStatus.PARTIALLY_FULFILLED) {
+        throw new UserError('Cannot unfulfill items for this order status');
+      }
+
+      const { items } = order;
+      const toBeUnfulfilled = fulfillmentUpdates
+        .map((oi) => oi.uuid);
+      const alreadyUnfulfilled = Array.from(items.values())
+        .filter((oi) => !oi.fulfilled)
+        .map((oi) => oi.uuid);
+      if (intersection(toBeUnfulfilled, alreadyUnfulfilled).length > 0) {
+        throw new UserError('At least one order item marked to be unfulfilled has already been unfulfilled');
+      }
+
+      const itemUpdatesByUuid = new Map(fulfillmentUpdates.map((update) => [update.uuid, update]));
+      const orderItemRepository = Repositories.merchOrderItem(txn);
+      const updatedItems = await Promise.all(Array.from(order.items.values()).map((oi) => {
+        if (!itemUpdatesByUuid.has(oi.uuid)) return oi;
+        const { notes } = itemUpdatesByUuid.get(oi.uuid);
+        return orderItemRepository.unfulfillOrderItem(oi, notes);
+      }));
+
+      const fulfilledCount = updatedItems.filter((item) => item.fulfilled).length;
+      const newStatus = fulfilledCount === 0
+        ? OrderStatus.PLACED
+        : fulfilledCount === updatedItems.length
+          ? OrderStatus.FULFILLED
+          : OrderStatus.PARTIALLY_FULFILLED;
+
+      order = await orderRepository.upsertMerchOrder(order, { status: newStatus });
+
+      const customer = order.user;
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity({
+        user: customer,
+        type: ActivityType.ORDER_UNFULFILLED,
+        description: `Order ${order.uuid} unfulfilled for user ${customer.uuid} by ${user.uuid}`,
+      });
+
+      return order;
+    });
+  }
+
   public async cancelAllPendingOrders(user: UserModel): Promise<void> {
     return this.transactions.readWrite(async (txn) => {
       const merchOrderRepository = Repositories.merchOrder(txn);
@@ -519,6 +569,99 @@ export default class MerchOrderService {
         user,
         type: ActivityType.PENDING_ORDERS_CANCELLED,
       });
+    });
+  }
+
+  /**
+   * Swaps an order item's option to a different option of the same merch item.
+   * Can be used to change sizes or other variants during pickup.
+   * @param orderItemUuid the uuid of the order item to swap
+   * @param newOptionUuid the uuid of the new option to swap to
+   * @returns the updated order
+   */
+  public async swapOrderItemOption(orderItemUuid: Uuid, newOptionUuid: Uuid, orderUuid: Uuid): Promise<OrderModel> {
+    return this.transactions.readWrite(async (txn) => {
+      const orderItemRepository = Repositories.merchOrderItem(txn);
+      const orderItem = await orderItemRepository.findOne({
+        where: { uuid: orderItemUuid },
+        relations: ['order', 'order.user', 'option', 'option.item'],
+      });
+      if (!orderItem) throw new NotFoundError('Order item not found');
+
+      if (orderItem.fulfilled) {
+        throw new UserError('Cannot swap an order item that has already been fulfilled');
+      }
+
+      const orderRepository = Repositories.merchOrder(txn);
+      let order = await orderRepository.findByUuid(orderUuid);
+      if (order.status !== OrderStatus.PLACED && order.status !== OrderStatus.PARTIALLY_FULFILLED) {
+        throw new UserError('Cannot swap options for this order status');
+      }
+
+      const oldOption = orderItem.option;
+      const merchStoreItemOptionRepository = Repositories.merchStoreItemOption(txn);
+      const newOption = await merchStoreItemOptionRepository.findByUuid(newOptionUuid);
+      if (!newOption) throw new NotFoundError('Merch item option not found');
+
+      // Verify both options belong to the same merch item
+      // Basically lets you switch sizes but not items as a whole
+      if (oldOption.item.uuid !== newOption.item.uuid) {
+        throw new UserError('Cannot swap to an option from a different merch item');
+      }
+      if (newOption.uuid === oldOption.uuid) {
+        throw new UserError('Selected option is already the current one');
+      }
+
+      // Check if new option has stock available
+      if (newOption.quantity <= 0) {
+        throw new UserError('The selected option is out of stock');
+      }
+
+      // Calculate price difference and check if user has enough credits
+      const priceDifference = newOption.getPrice() - oldOption.getPrice();
+      if (priceDifference > 0 && order.user.credits < priceDifference) {
+        throw new UserError('User does not have enough credits for this option swap');
+      }
+
+      // Update the order item with the new option and calculate new price
+      const newSalePrice = newOption.getPrice();
+      const newDiscountPercentage = newOption.discountPercentage;
+      orderItem.option = newOption;
+      order.items.find((item) => item.uuid === orderItemUuid).option = newOption;
+      orderItem.salePriceAtPurchase = newSalePrice;
+      orderItem.discountPercentageAtPurchase = newDiscountPercentage;
+      await orderItemRepository.save(orderItem);
+
+      // Update stock for both old and new options
+      await merchStoreItemOptionRepository.upsertMerchItemOption(newOption, {
+        quantity: newOption.quantity - 1,
+      });
+      await merchStoreItemOptionRepository.upsertMerchItemOption(oldOption, {
+        quantity: oldOption.quantity + 1,
+      });
+
+      // Update order total cost
+      const newTotalCost = order.totalCost + priceDifference;
+      const updatedOrder = await Repositories.merchOrder(txn).upsertMerchOrder(
+        order,
+        { totalCost: newTotalCost },
+      );
+
+      // Adjust user credits if there's a price difference
+      if (priceDifference !== 0) {
+        const userRepository = Repositories.user(txn);
+        const updatedUser = await userRepository.findByUuid(order.user.uuid);
+        await userRepository.upsertUser(updatedUser, { credits: updatedUser.credits - priceDifference });
+      }
+
+      const activityRepository = Repositories.activity(txn);
+      await activityRepository.logActivity({
+        user: order.user,
+        type: ActivityType.ORDER_ITEM_OPTION_SWAPPED,
+        description: `Item ${orderItemUuid} swapped from ${oldOption.uuid} to ${newOption.uuid} in order ${order.uuid}`,
+      });
+
+      return updatedOrder;
     });
   }
 
