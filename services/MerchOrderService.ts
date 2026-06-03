@@ -426,8 +426,9 @@ export default class MerchOrderService {
         throw new UserError('Cannot fulfill items of an order that has a pickup event that hasn\'t started yet');
       }
       // check if order is in PLACED status (by order state machine design)
-      if (order.status !== OrderStatus.PLACED) {
-        throw new UserError(`This order is not able to be fulfilled. Order state must be PLACED, is ${order.status}`);
+      if (order.status !== OrderStatus.PLACED && order.status !== OrderStatus.PARTIALLY_FULFILLED) {
+        throw new UserError(`This order is not able to be fulfilled.
+          Order state must be PLACED or PARTIALLY_FULFILLED, is ${order.status}`);
       }
 
       const { items } = order;
@@ -518,14 +519,17 @@ export default class MerchOrderService {
         throw new UserError('Cannot unfulfill items for this order status');
       }
 
-      const itemUpdatesByUuid = new Map(fulfillmentUpdates.map((update) => [update.uuid, update]));
-      const alreadyUnfulfilled = Array.from(order.items.values())
-        .filter((oi) => itemUpdatesByUuid.has(oi.uuid) && !oi.fulfilled)
+      const { items } = order;
+      const toBeUnfulfilled = fulfillmentUpdates
         .map((oi) => oi.uuid);
-      if (alreadyUnfulfilled.length > 0) {
-        throw new UserError('At least one order item marked to be unfulfilled has not been fulfilled');
+      const alreadyUnfulfilled = Array.from(items.values())
+        .filter((oi) => !oi.fulfilled)
+        .map((oi) => oi.uuid);
+      if (intersection(toBeUnfulfilled, alreadyUnfulfilled).length > 0) {
+        throw new UserError('At least one order item marked to be fulfilled has already been fulfilled');
       }
 
+      const itemUpdatesByUuid = new Map(fulfillmentUpdates.map((update) => [update.uuid, update]));
       const orderItemRepository = Repositories.merchOrderItem(txn);
       const updatedItems = await Promise.all(Array.from(order.items.values()).map((oi) => {
         if (!itemUpdatesByUuid.has(oi.uuid)) return oi;
