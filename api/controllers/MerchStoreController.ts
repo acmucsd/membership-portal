@@ -350,13 +350,14 @@ export class MerchStoreController {
     return { error: null, order: updatedOrder.getPublicOrder() };
   }
 
-  @Post('/order/item/swap')
-  async swapOrderItemOption(@Body() swapRequest: SwapOrderItemOptionRequest,
+  @Post('/order/:uuid/swap')
+  async swapOrderItemOption(@Params() params: UuidParam, @Body() swapRequest: SwapOrderItemOptionRequest,
     @AuthenticatedUser() user: UserModel): Promise<SwapOrderItemOptionResponse> {
     if (!PermissionsService.canManageMerchOrders(user)) throw new ForbiddenError();
     const updatedOrder = await this.merchOrderService.swapOrderItemOption(
       swapRequest.orderItemUuid,
       swapRequest.newOptionUuid,
+      params.uuid
     );
     return { error: null, order: updatedOrder.getPublicOrderWithItems() };
   }

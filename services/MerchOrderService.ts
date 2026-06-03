@@ -579,7 +579,7 @@ export default class MerchOrderService {
    * @param newOptionUuid the uuid of the new option to swap to
    * @returns the updated order
    */
-  public async swapOrderItemOption(orderItemUuid: Uuid, newOptionUuid: Uuid): Promise<OrderModel> {
+  public async swapOrderItemOption(orderItemUuid: Uuid, newOptionUuid: Uuid, orderUuid: Uuid): Promise<OrderModel> {
     return this.transactions.readWrite(async (txn) => {
       const orderItemRepository = Repositories.merchOrderItem(txn);
       const orderItem = await orderItemRepository.findOne({
@@ -592,7 +592,8 @@ export default class MerchOrderService {
         throw new UserError('Cannot swap an order item that has already been fulfilled');
       }
 
-      const order = orderItem.order;
+      const orderRepository = Repositories.merchOrder(txn);
+      let order = await orderRepository.findByUuid(orderUuid);
       if (order.status !== OrderStatus.PLACED && order.status !== OrderStatus.PARTIALLY_FULFILLED) {
         throw new UserError('Cannot swap options for this order status');
       }
