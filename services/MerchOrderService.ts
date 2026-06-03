@@ -512,9 +512,6 @@ export default class MerchOrderService {
       const orderRepository = Repositories.merchOrder(txn);
       let order = await orderRepository.findByUuid(orderUuid);
       if (!order) throw new NotFoundError('Order not found');
-      if (MerchOrderService.isInactiveOrder(order)) {
-        throw new UserError('Cannot modify fulfillment for inactive orders');
-      }
       if (order.status !== OrderStatus.FULFILLED && order.status !== OrderStatus.PARTIALLY_FULFILLED) {
         throw new UserError('Cannot unfulfill items for this order status');
       }
@@ -526,7 +523,7 @@ export default class MerchOrderService {
         .filter((oi) => !oi.fulfilled)
         .map((oi) => oi.uuid);
       if (intersection(toBeUnfulfilled, alreadyUnfulfilled).length > 0) {
-        throw new UserError('At least one order item marked to be fulfilled has already been fulfilled');
+        throw new UserError('At least one order item marked to be unfulfilled has already been unfulfilled');
       }
 
       const itemUpdatesByUuid = new Map(fulfillmentUpdates.map((update) => [update.uuid, update]));
