@@ -627,6 +627,7 @@ export default class MerchOrderService {
       const newSalePrice = newOption.getPrice();
       const newDiscountPercentage = newOption.discountPercentage;
       orderItem.option = newOption;
+      order.items.find((item) => item.uuid === orderItemUuid).option = newOption;
       orderItem.salePriceAtPurchase = newSalePrice;
       orderItem.discountPercentageAtPurchase = newDiscountPercentage;
       await orderItemRepository.save(orderItem);
