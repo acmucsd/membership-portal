@@ -25,7 +25,6 @@ import {
   PlaceMerchOrderRequest as IPlaceMerchOrderRequest,
   VerifyMerchOrderRequest as IVerifyMerchOrderRequest,
   FulfillMerchOrderRequest as IFulfillMerchOrderRequest,
-  SwapOrderItemOptionRequest as ISwapOrderItemOptionRequest,
   RescheduleOrderPickupRequest as IRescheduleOrderPickupRequest,
   CreateOrderPickupEventRequest as ICreateOrderPickupEventRequest,
   EditOrderPickupEventRequest as IEditOrderPickupEventRequest,
@@ -388,16 +387,6 @@ export class FulfillMerchOrderRequest implements IFulfillMerchOrderRequest {
   @ValidateNested()
   @IsDefined()
   items: OrderItemFulfillmentUpdate[];
-}
-
-export class SwapOrderItemOptionRequest implements ISwapOrderItemOptionRequest {
-  @IsDefined()
-  @IsUUID()
-  orderItemUuid: string;
-
-  @IsDefined()
-  @IsUUID()
-  newOptionUuid: string;
 }
 
 export class RescheduleOrderPickupRequest implements IRescheduleOrderPickupRequest {

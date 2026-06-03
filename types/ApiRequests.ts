@@ -334,11 +334,6 @@ export interface OrderItemFulfillmentUpdate {
   notes?: string;
 }
 
-export interface SwapOrderItemOptionRequest {
-  orderItemUuid: string;
-  newOptionUuid: string;
-}
-
 export interface MerchItemOptionAndQuantity {
   option: string;
   quantity: number;

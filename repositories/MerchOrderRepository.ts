@@ -102,13 +102,6 @@ export const OrderItemRepository = Container.get(DataSource)
       return this.save(orderItem);
     },
 
-    async unfulfillOrderItem(orderItem: OrderItemModel, notes?: string) {
-      orderItem.fulfilled = false;
-      orderItem.fulfilledAt = null;
-      if (notes) orderItem.notes = notes;
-      return this.save(orderItem);
-    },
-
     async hasCollectionBeenOrderedFrom(collection: Uuid): Promise<boolean> {
       const count = await this.createQueryBuilder('item')
         .innerJoinAndSelect('item.option', 'option')
