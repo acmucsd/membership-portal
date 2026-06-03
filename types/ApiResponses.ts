@@ -324,6 +324,10 @@ export interface FulfillMerchOrderResponse extends ApiResponse {
   order: PublicOrder;
 }
 
+export interface SwapOrderItemOptionResponse extends ApiResponse {
+  order: PublicOrderWithItems;
+}
+
 // USER
 export interface NameAndEmail {
   firstName: string;

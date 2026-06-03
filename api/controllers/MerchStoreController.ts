@@ -34,6 +34,7 @@ import {
   VerifyMerchOrderResponse,
   EditMerchOrderResponse,
   FulfillMerchOrderResponse,
+  SwapOrderItemOptionResponse,
   CreateMerchItemOptionResponse,
   DeleteMerchItemOptionResponse,
   MerchItemOptionAndQuantity,
@@ -66,6 +67,7 @@ import {
   PlaceMerchOrderRequest,
   VerifyMerchOrderRequest,
   FulfillMerchOrderRequest,
+  SwapOrderItemOptionRequest,
   RescheduleOrderPickupRequest,
   CreateMerchItemOptionRequest,
   CreateMerchItemPhotoRequest,
@@ -334,6 +336,30 @@ export class MerchStoreController {
     }
     const updatedOrder = await this.merchOrderService.fulfillOrderItems(fulfillOrderRequest.items, params.uuid, user);
     return { error: null, order: updatedOrder.getPublicOrder() };
+  }
+
+  @Post('/order/:uuid/unfulfill')
+  async unfulfillMerchOrderItems(@Params() params: UuidParam, @Body() unfulfillOrderRequest: FulfillMerchOrderRequest,
+    @AuthenticatedUser() user: UserModel): Promise<FulfillMerchOrderResponse> {
+    if (!PermissionsService.canManageMerchOrders(user)) throw new ForbiddenError();
+    const numUniqueUuids = (new Set(unfulfillOrderRequest.items.map((oi) => oi.uuid))).size;
+    if (unfulfillOrderRequest.items.length !== numUniqueUuids) {
+      throw new BadRequestError('There are duplicate order items');
+    }
+    const updatedOrder = await this.merchOrderService.unfulfillOrderItems(unfulfillOrderRequest.items, params.uuid, user);
+    return { error: null, order: updatedOrder.getPublicOrder() };
+  }
+
+  @Post('/order/:uuid/swap')
+  async swapOrderItemOption(@Params() params: UuidParam, @Body() swapRequest: SwapOrderItemOptionRequest,
+    @AuthenticatedUser() user: UserModel): Promise<SwapOrderItemOptionResponse> {
+    if (!PermissionsService.canManageMerchOrders(user)) throw new ForbiddenError();
+    const updatedOrder = await this.merchOrderService.swapOrderItemOption(
+      swapRequest.orderItemUuid,
+      swapRequest.newOptionUuid,
+      params.uuid
+    );
+    return { error: null, order: updatedOrder.getPublicOrderWithItems() };
   }
 
   @Post('/order/cleanup')
