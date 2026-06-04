@@ -426,9 +426,13 @@ export default class MerchOrderService {
         throw new UserError('Cannot fulfill items of an order that has a pickup event that hasn\'t started yet');
       }
       // check if order is in PLACED status (by order state machine design)
-      if (order.status !== OrderStatus.PLACED && order.status !== OrderStatus.PARTIALLY_FULFILLED) {
+      if (
+        order.status !== OrderStatus.PLACED &&
+        order.status !== OrderStatus.PARTIALLY_FULFILLED &&
+        order.status !== OrderStatus.PICKUP_MISSED
+      ) {
         throw new UserError(`This order is not able to be fulfilled.
-          Order state must be PLACED or PARTIALLY_FULFILLED, is ${order.status}`);
+          Order state must be PLACED, PARTIALLY_FULFILLED, or PICKUP_MISSED is ${order.status}`);
       }
 
       const { items } = order;
