@@ -9,6 +9,7 @@ import { MerchStoreController } from './MerchStoreController';
 import { LeaderboardController } from './LeaderboardController';
 import { FeedbackController } from './FeedbackController';
 import { ResumeController } from './ResumeController';
+import { MetricsController } from './MetricsController';
 
 export const controllers = [
   AuthController,
@@ -21,6 +22,7 @@ export const controllers = [
   MerchStoreController,
   FeedbackController,
   ResumeController,
+  MetricsController,
 ];
 
 // this merges our custom properties into Express's Request type
