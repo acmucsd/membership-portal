@@ -36,7 +36,7 @@ export default class UserAuthService {
         if (userHandleTaken) throw new BadRequestError('This handle is already in use.');
       }
       const userHandle = registration.handle
-         ?? UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName);
+        ?? UserAccountService.generateDefaultHandle(registration.firstName, registration.lastName);
 
       const user = await userRepository.upsertUser(userRepository.create({
         ...registration,
@@ -57,7 +57,7 @@ export default class UserAuthService {
       }
 
       return user;
-    });
+    }, { maxAttempts: 3 });
   }
 
   /**
@@ -189,8 +189,8 @@ export default class UserAuthService {
   private static parseAuthHeader(authHeader: string): string {
     const splitHeader = authHeader.split(' ');
     const invalidAuthFormat = splitHeader.length !== 2
-            || splitHeader[0] !== 'Bearer'
-            || splitHeader[1].length === 0;
+      || splitHeader[0] !== 'Bearer'
+      || splitHeader[1].length === 0;
     if (invalidAuthFormat) {
       throw new ForbiddenError();
     }
