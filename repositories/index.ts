@@ -100,8 +100,26 @@ export class TransactionsManager {
     return this.dataSource.transaction('REPEATABLE READ', fn);
   }
 
-  public readWrite<T>(fn: (entityManager: EntityManager) => Promise<T>) {
-    return this.dataSource.transaction('SERIALIZABLE', fn);
+  public async readWrite<T>(fn: (entityManager: EntityManager) => Promise<T>, { maxAttempts = 1 } = {}) {
+
+    for (let attempt = 1; ; attempt++) {
+
+      try {
+        return await this.dataSource.transaction('SERIALIZABLE', fn);
+
+      } catch (error) {
+        const code = error?.driverError?.code ?? error?.code;
+
+        if (code !== '40001' || attempt >= maxAttempts) throw error;
+
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, 25 + Math.random() * 25);
+        });
+
+      }
+
+    }
+
   }
 }
 
