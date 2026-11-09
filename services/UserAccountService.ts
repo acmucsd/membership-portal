@@ -56,7 +56,7 @@ export default class UserAccountService {
    * Generate a default user handle in the format of "[firstName]-[lastName]-[6 digit has]" truncated to 32 characters
    */
   public static generateDefaultHandle(firstName: string, lastName: string): string {
-    const nameString = `${firstName}-${lastName}`.slice(0, 25);
+    const nameString = `${firstName}-${lastName}`.replace(/\s+/g, '-').slice(0, 25);
     // Hexadecimals look like 0x1b9Dle so we have to truncate the fixed '0x'.
     const hashValue = faker.string.hexadecimal({ length:6 }).slice(2);
     const handle = `${nameString}-${hashValue}`.toLowerCase();

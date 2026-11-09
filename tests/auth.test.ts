@@ -149,6 +149,33 @@ describe('account registration', () => {
       expect(registerResponse.user.handle.length).toBe(32);
     });
 
+  test('users with spaces in their names can be found by their generated handle', async () => {
+    const conn = await DatabaseConnection.get();
+    const admin = UserFactory.fake({ accessType: UserAccessType.ADMIN });
+
+    await new PortalState().createUsers(admin).write();
+
+    const user = UserRegistrationFactory.fake({
+      firstName: 'Mary Jane',
+      lastName: 'Doe Smith',
+    });
+
+    const emailService = mock(EmailService);
+    when(emailService.sendEmailVerification(user.email.toLowerCase(), user.firstName, anyString()))
+      .thenResolve();
+    const authController = ControllerFactory.auth(conn, instance(emailService));
+    const registerResponse = await authController.register(
+      { user },
+      FactoryUtils.randomHexString(),
+    );
+    const handle = registerResponse.user.handle;
+
+    expect(handle).toMatch(/^mary-jane-doe-smith-[a-f0-9]+$/);
+
+    const getUserResponse = await ControllerFactory.user(conn).getUserByHandle({ handle }, admin);
+    expect(getUserResponse.user.uuid).toBe(registerResponse.user.uuid);
+  });
+
   test('user can register with an optional handle to be set', async () => {
     const conn = await DatabaseConnection.get();
     const existingMember = UserFactory.fake();
