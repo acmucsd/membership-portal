@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc && cp -r templates build/templates",
-    "start": "node --env-file=.env build/index.js",
+    "start": "node --require @opentelemetry/auto-instrumentations-node/register --env-file=.env build/index.js",
     "test": "jest --config jest.config.json --runInBand",
     "dev": "node -r ts-node/register --env-file=.env index.ts",
     "release": "ts-node ./node_modules/typeorm/cli.js migration:run -d DataSource.ts && node build/index.js",
