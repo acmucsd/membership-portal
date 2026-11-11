@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc && cp -r templates build/templates",
-    "start": "node --env-file=.env build/index.js",
+    "start": "node --require @opentelemetry/auto-instrumentations-node/register --env-file=.env build/index.js",
     "test": "jest --config jest.config.json --runInBand",
     "dev": "node -r ts-node/register --env-file=.env index.ts",
     "release": "ts-node ./node_modules/typeorm/cli.js migration:run -d DataSource.ts && node build/index.js",
@@ -33,7 +33,7 @@
     "url": "https://github.com/acmucsd/membership-portal/issues"
   },
   "engines": {
-    "node": "^20.19.4",
+    "node": "^22.23.1",
     "yarn": "^1.22.0"
   },
   "homepage": "https://github.com/acmucsd/membership-portal#readme",
@@ -42,6 +42,8 @@
     "@aws-sdk/client-sesv2": "^3.925.0",
     "@aws-sdk/lib-storage": "^3.758.0",
     "@faker-js/faker": "^9.4.0",
+    "@opentelemetry/api": "^1.10.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.83.0",
     "@sendgrid/mail": "^8.1.4",
     "async-retry": "^1.3.3",
     "bcrypt": "^5.1.1",
