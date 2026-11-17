@@ -20,7 +20,8 @@ export function handleError(error: Error,
     errorBody.stack = stack;
   }
   const errorResponse: ApiResponse = { error: errorBody };
-  log.warn('%s [request %s]: %s [%d]: %s \n%s\n', new Date(), request.trace, name, httpCode, message, stack);
+  log.warn('%s [request %s]: %s [%d]: %s \n%s\n',
+    new Date(), request.trace, name, httpCode, message, stack, { request_id: request.trace });
   response.status(httpCode).json(errorResponse);
   next();
 }

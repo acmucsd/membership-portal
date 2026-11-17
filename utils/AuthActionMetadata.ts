@@ -2,13 +2,13 @@ import { Uuid } from '../types';
 import { UserModel } from '../models/UserModel';
 
 export interface AuthActionMetadata {
-  trace_id: string;
+  request_id: string;
   user_uuid: Uuid;
 }
 
-export function authActionMetadata(trace_id: string, user: UserModel): AuthActionMetadata {
+export function authActionMetadata(request_id: string, user: UserModel): AuthActionMetadata {
   return {
-    trace_id,
+    request_id,
     user_uuid: user.uuid,
   };
 }
