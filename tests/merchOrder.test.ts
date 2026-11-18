@@ -957,7 +957,9 @@ describe('merch order pickup events', () => {
   test('pickup events can be created on valid input', async () => {
     const conn = await DatabaseConnection.get();
     const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
-    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent();
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({
+      orderDeadline: moment().add(1, 'day').toDate(),
+    });
 
     await new PortalState()
       .createUsers(merchDistributor)
@@ -975,6 +977,18 @@ describe('merch order pickup events', () => {
     expect(persistedPickupEvent).toStrictEqual(pickupEvent);
   });
 
+  test('pickup events cannot be created without an order deadline', async () => {
+    const conn = await DatabaseConnection.get();
+    const manager = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_MANAGER });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ orderDeadline: null });
+
+    await new PortalState().createUsers(manager).write();
+
+    await expect(ControllerFactory.merchStore(conn).createPickupEvent({ pickupEvent }, manager))
+      .rejects.toThrow('Pick an order deadline date.');
+    expect(await conn.manager.count(OrderPickupEventModel)).toBe(0);
+  });
+
   test('pickup events can be linked to normal events & edited', async () => {
     const conn = await DatabaseConnection.get();
     const merchDistributor = UserFactory.fake({ accessType: UserAccessType.MERCH_STORE_DISTRIBUTOR });
@@ -983,7 +997,10 @@ describe('merch order pickup events', () => {
     const eventController = ControllerFactory.event(conn);
     await eventController.createEvent({ event: linkedEvent }, admin);
 
-    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({ linkedEvent });
+    const pickupEvent = MerchFactory.fakeFutureOrderPickupEvent({
+      linkedEvent,
+      orderDeadline: moment().add(1, 'day').toDate(),
+    });
 
     await new PortalState()
       .createUsers(merchDistributor)
@@ -1028,6 +1045,7 @@ describe('merch order pickup events', () => {
     const pickupEvent = MerchFactory.fakeOrderPickupEvent({
       start: moment().add(1, 'hour').toDate(),
       end: moment().subtract(1, 'hour').toDate(),
+      orderDeadline: moment().add(30, 'minutes').toDate(),
     });
     await expect(ControllerFactory.merchStore(conn).createPickupEvent({ pickupEvent }, merchDistributor))
       .rejects

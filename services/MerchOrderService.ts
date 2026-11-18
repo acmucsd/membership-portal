@@ -900,6 +900,10 @@ export default class MerchOrderService {
   }
 
   public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<OrderPickupEventModel> {
+    if (pickupEvent.orderDeadline == null) {
+      throw new UserError('Pick an order deadline date.');
+    }
+
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       if (pickupEvent.start >= pickupEvent.end) {
