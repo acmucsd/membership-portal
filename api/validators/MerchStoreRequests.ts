@@ -291,6 +291,10 @@ export class OrderPickupEvent implements IOrderPickupEvent {
   @IsOptional()
   @IsUUID()
   linkedEventUuid?: Uuid;
+
+  @IsOptional()
+  @IsDateString({ strict: true })
+  orderDeadline?: Date | null;
 }
 
 export class OrderPickupEventEdit implements IOrderPickupEventEdit {
@@ -302,6 +306,10 @@ export class OrderPickupEventEdit implements IOrderPickupEventEdit {
 
   @IsDateString()
   end?: Date;
+
+  @IsOptional()
+  @IsDateString({ strict: true })
+  orderDeadline?: Date | null;
 
   @IsNotEmpty()
   description?: string;

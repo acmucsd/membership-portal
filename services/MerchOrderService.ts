@@ -66,7 +66,7 @@ export default class MerchOrderService {
    *    - the user wouldn't reach monthly or lifetime limits for any item if this order is placed
    *    - the requested item options are in stock
    *    - the user has enough credits to place the order
-   *    - the pickup event specified exists and is at least 2 days before starting
+   *    - the pickup event specified exists and the order deadline has not passed
    *    - the pickup event is not at or above the current order limit
    * The order needs to match all order verification constraints defined in verifyOrderUnderTransaction()
    *
@@ -88,8 +88,8 @@ export default class MerchOrderService {
       if (!pickupEvent) {
         throw new NotFoundError('Pickup event requested is not found');
       }
-      if (MerchOrderService.isLessThanTwoDaysBeforePickupEvent(pickupEvent)) {
-        throw new NotFoundError('Cannot pickup order at an event that starts in less than 2 days');
+      if (MerchOrderService.hasOrderDeadlinePassed(pickupEvent)) {
+        throw new NotFoundError('Cannot pickup order, order deadline has passed');
       }
 
       // Verify that this order would not set the pickup event's order count
@@ -263,17 +263,17 @@ export default class MerchOrderService {
       if (!order) throw new NotFoundError('Order not found');
       if (order.user.uuid !== user.uuid) throw new ForbiddenError('Cannot edit the order of a different user');
       if (MerchOrderService.isInactiveOrder(order)) throw new UserError('Cannot modify pickup for inactive orders');
-      // the 2-day check is only necessary on PLACED orders since for other states,
+      // order deadline check is only necessary on PLACED orders since for other states,
       // the pickup event would've already passed
       if (order.status === OrderStatus.PLACED
-        && MerchOrderService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
-        throw new UserError('Cannot reschedule an order pickup within 2 days of the event');
+        && MerchOrderService.hasOrderDeadlinePassed(order.pickupEvent)) {
+        throw new UserError('Cannot reschedule an order pickup due to deadline of orders passing');
       }
 
       const newPickupEventForOrder = await Repositories.merchOrderPickupEvent(txn).findByUuid(pickupEventUuid);
       if (!newPickupEventForOrder) throw new NotFoundError('Order pickup event not found');
-      if (MerchOrderService.isLessThanTwoDaysBeforePickupEvent(newPickupEventForOrder)) {
-        throw new UserError('Cannot change order pickup to an event that starts in less than 2 days');
+      if (MerchOrderService.hasOrderDeadlinePassed(newPickupEventForOrder)) {
+        throw new UserError('The order deadline for the new pickup event has passed.');
       }
       if (MerchOrderService.isPickupEventOrderLimitFull(newPickupEventForOrder)) {
         throw new UserError('This merch pickup event is full! Please choose a different pickup event');
@@ -287,8 +287,13 @@ export default class MerchOrderService {
     });
   }
 
-  private static isLessThanTwoDaysBeforePickupEvent(pickupEvent: OrderPickupEventModel): boolean {
-    return new Date() > moment(pickupEvent.start).subtract(2, 'days').toDate();
+  private static hasOrderDeadlinePassed(pickupEvent: OrderPickupEventModel): boolean {
+
+    // if order has no deadline revert back to the hardcoded 2 days
+    const deadLine = pickupEvent.orderDeadline
+      ?? moment(pickupEvent.start).subtract(2, 'days').toDate();
+
+      return Date.now() > moment(deadLine).valueOf();
   }
 
   private static isInactiveOrder(order: OrderModel): boolean {
@@ -344,11 +349,11 @@ export default class MerchOrderService {
         throw new ForbiddenError('Members cannot cancel other members\' orders');
       }
       if (MerchOrderService.isInactiveOrder(order)) throw new UserError('Cannot cancel an inactive order');
-      // the 2-day check is only necessary on PLACED orders since for other states,
+      // the order deadline check is only necessary on PLACED orders since for other states,
       // the pickup event would've already passed
       if (order.status === OrderStatus.PLACED
-        && MerchOrderService.isLessThanTwoDaysBeforePickupEvent(order.pickupEvent)) {
-        throw new NotFoundError('Cannot cancel an order with a pickup date less than 2 days away');
+        && MerchOrderService.hasOrderDeadlinePassed(order.pickupEvent)) {
+        throw new NotFoundError('Cannot cancel an order with a pickup date after deadline');
       }
 
       const customer = order.user;
@@ -882,7 +887,23 @@ export default class MerchOrderService {
     });
   }
 
+  private static validateOrderDeadline(pickupEvent: OrderPickupEvent): void {
+    const { orderDeadline, start } = pickupEvent;
+
+    if (orderDeadline == null){
+      return;
+    }
+
+    if (moment(orderDeadline).valueOf() > moment(start).valueOf()){
+      throw new UserError('Order deadline must be on or before pickup starts');
+    }
+  }
+
   public async createPickupEvent(pickupEvent: OrderPickupEvent): Promise<OrderPickupEventModel> {
+    if (pickupEvent.orderDeadline == null) {
+      throw new UserError('Pick an order deadline date.');
+    }
+
     return this.transactions.readWrite(async (txn) => {
       const orderPickupEventRepository = Repositories.merchOrderPickupEvent(txn);
       if (pickupEvent.start >= pickupEvent.end) {
@@ -896,8 +917,10 @@ export default class MerchOrderService {
         pickupEventModel.linkedEvent = linkedRegularEvent;
       }
 
-      if (MerchOrderService.isLessThanTwoDaysBeforePickupEvent(pickupEventModel)) {
-        throw new UserError('Cannot create a pickup event that starts in less than 2 days');
+      MerchOrderService.validateOrderDeadline(pickupEventModel);
+
+      if (MerchOrderService.hasOrderDeadlinePassed(pickupEventModel)) {
+        throw new UserError('Order deadline must be in the future');
       }
 
       return orderPickupEventRepository.upsertPickupEvent(pickupEventModel);
@@ -918,6 +941,9 @@ export default class MerchOrderService {
       if (updatedPickupEvent.start >= updatedPickupEvent.end) {
         throw new UserError('Order pickup event start time must come before the end time');
       }
+
+      MerchOrderService.validateOrderDeadline(updatedPickupEvent);
+
       const currentOrderCount = pickupEvent.orders.length;
       if (updatedPickupEvent.orderLimit < currentOrderCount) {
         throw new UserError('Pickup event cannot have order limit lower than the number of orders booked in it');

@@ -443,6 +443,7 @@ export interface PublicOrderPickupEvent {
   title: string;
   start: Date;
   end: Date;
+  orderDeadline: Date | null;
   description: string;
   orders?: PublicOrderWithItems[];
   orderLimit?: number;
