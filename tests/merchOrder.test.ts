@@ -1648,7 +1648,7 @@ describe('merch order pickup events', () => {
     const orderUuid = { uuid: placedOrderResponse.order.uuid };
     const pickupEventRequest = { pickupEvent: moreRecentPickupEvent.uuid };
     await expect(merchController.rescheduleOrderPickup(orderUuid, pickupEventRequest, member))
-      .rejects.toThrow('Cannot change order pickup to an event that starts in less than 2 days');
+      .rejects.toThrow('The order deadline for the new pickup event has passed.');
   });
 
   test('members cannot update their orders\' pickup events if the new pickup event is full', async () => {

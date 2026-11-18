@@ -167,6 +167,7 @@ export class MerchFactory {
       description: faker.lorem.sentences(2),
       start,
       end,
+      orderDeadline: null,
       orderLimit: FactoryUtils.getRandomNumber(1, 5),
       status: OrderPickupEventStatus.ACTIVE,
       orders: [],
