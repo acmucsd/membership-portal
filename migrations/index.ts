@@ -49,6 +49,7 @@ import {
 import { FixDiscordGcalField1714770061929 } from "./0045-fix-discord-gcal-field";
 import { AddFoodItemsColumn1728959627663 } from "./0046-add-food-items-column";
 import { AddOnboardingSeen1730353019494 } from "./0047-add-onboarding-seen";
+import { AddOrderPickupEventDeadline1794960000000 } from "./0048-add-order-pickup-deadline";
 
 // Organize all migrations into an array
 export const migrations = [
@@ -99,4 +100,5 @@ export const migrations = [
   FixDiscordGcalField1714770061929,
   AddFoodItemsColumn1728959627663,
   AddOnboardingSeen1730353019494,
+  AddOrderPickupEventDeadline1794960000000
 ];

@@ -17,6 +17,9 @@ export class OrderPickupEventModel {
   @Column('timestamptz')
   end: Date;
 
+  @Column('timestamptz', { nullable:true })
+  orderDeadline: Date | null
+
   @Column('text')
   description: string;
 
@@ -40,6 +43,7 @@ export class OrderPickupEventModel {
       title: this.title,
       start: this.start,
       end: this.end,
+      orderDeadline: this.orderDeadline ?? null,
       description: this.description,
       orderLimit: this.orderLimit,
       status: this.status,
